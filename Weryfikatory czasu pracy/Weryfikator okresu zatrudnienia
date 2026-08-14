@@ -1,11 +1,18 @@
 
 public override string Weryfikuj(Soneta.Kalend.DzienPlanu dzien, WeryfikujEventArgs args) {
-		
+
 		var pracownik = dzien.Pracownik;
-		var okresZatrudnienia = pracownik[dzien.Data].Etat.OkresZatrudnienia;
-	
+		if (pracownik == null)
+			return null;
+
+		var etat = pracownik[dzien.Data];
+		if (etat == null)
+			return $"Pracownik nie posiada aktywnego etatu w dniu {dzien.Data:d}";
+
+		var okresZatrudnienia = etat.Etat.OkresZatrudnienia;
+
 		if(dzien.Data < okresZatrudnienia.From || dzien.Data > okresZatrudnienia.To)
 			return $"Nie można modyfikować planu pracy w dniach poza okresem zatrudnienia: Okres zatrudnienia {okresZatrudnienia}";
-		
+
     return null;
 }
