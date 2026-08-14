@@ -1,0 +1,27 @@
+public static string WeryfikujNormeWOkresieRozliczeniowym(KalkulatorPlanuBase kalkulator, Date data)
+{
+	if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+	{
+		return null;
+	}
+	Periods periods = pracownik.WyliczOkresRoliczeniowyNadgodzin(data).ToPeriods();
+	Periods empty = Periods.Empty;
+	foreach (FromTo item in periods)
+	{
+		Periods periods2 = item.ToPeriods() - kalkulator.ZrodloPlanu.GetPlanOkresZatrudnienia(item);
+		empty += periods2;
+	}
+	periods -= empty;
+	KalkulatorKodeksowyPracownika kalkulatorKodeksowyPracownika = new KalkulatorKodeksowyPracownika(pracownik);
+	CzasDni empty2 = CzasDni.Empty;
+	foreach (FromTo item2 in periods)
+	{
+		empty2 += kalkulatorKodeksowyPracownika.Norma(item2);
+	}
+	CzasDni czasDni = kalkulator.Norma(periods);
+	if (empty2.Czas < czasDni.Czas)
+	{
+		return "Przekroczono limit godzin ({0}) o ({2}) w okresie rozliczeniowym ({1}) - {3}".TranslateFormat(empty2.Czas, periods, czasDni.Czas - empty2.Czas, pracownik);
+	}
+	return null;
+}
