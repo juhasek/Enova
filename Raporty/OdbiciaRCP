@@ -1,0 +1,249 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.Kalend;
+using Soneta.Langs;
+using Soneta.Tools;
+using Soneta.Types;
+
+namespace x.x.Reports
+{
+    // 277384 — raport z odbić RCP: dni zmodyfikowane (rekord Dzień pracy) bez godzin pracy
+    // vs dni niezmodyfikowane z czasem przepisanym z planu. Lista pracowników / Pulpit
+    // kierownika, dla zaznaczonych, parametr: okres.
+    //
+    // Czas dnia liczony kalkulatorem (KalkPracy), nie polem Praca rekordu — import RCP
+    // zapisuje godziny w strefach dnia (ImportDnia.ZapiszStrefy) i pole Praca zostaje puste.
+    public class RaportOdbicRcpSnippet : ReportSnippet
+    {
+        [DxBind]
+        private readonly XRLabel TytulRaportu;
+
+        [DxBind]
+        private readonly XRLabel Podsumowanie;
+
+        public class PrnParams : ContextBase
+        {
+            public PrnParams(Context context) : base(context)
+            {
+                Date data = ((ActualDate) context[typeof(ActualDate)]).Actual;
+                okres = new YearMonth(data).ToFromTo();
+            }
+
+            FromTo okres;
+
+            [Required]
+            [Priority(1)]
+            public FromTo Okres
+            {
+                get { return okres; }
+                set
+                {
+                    okres = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+
+            bool pokazPoprawne;
+
+            [Priority(2)]
+            [Caption("Pokaż dni z godzinami z RCP")]
+            public bool PokazPoprawne
+            {
+                get { return pokazPoprawne; }
+                set
+                {
+                    pokazPoprawne = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        PrnParams pars;
+
+        [Context(Required = true)]
+        public PrnParams Params
+        {
+            get { return pars; }
+            set { pars = value; }
+        }
+
+        int dniBezGodzin;
+        int dniZPlanu;
+        int dniPoprawne;
+
+        static readonly string[] dniTygodnia = { "Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So" };
+
+        [DxBind(Name = "Report")]
+        private void RaportOdbicRCP_BeforePrint(object sender, CancelEventArgs e)
+        {
+            if (pars == null) // designer
+            {
+                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                return;
+            }
+
+            Context dc = DxReportHelpers.GetContext(this);
+            FromTo okres = pars.Okres;
+
+            // zaznaczeni z listy; w pulpicie wiersz może być zapisem historii
+            var pracownicy = new List<Pracownik>();
+            foreach (Row row in (Row[]) dc[typeof(Row[])])
+            {
+                Pracownik p = row as Pracownik;
+                if (p == null && row is PracHistoria)
+                    p = ((PracHistoria) row).Pracownik;
+                if (p != null && !pracownicy.Contains(p))
+                    pracownicy.Add(p);
+            }
+            pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
+
+            dniBezGodzin = dniZPlanu = dniPoprawne = 0;
+            var wiersze = new List<Wiersz>();
+            foreach (Pracownik pracownik in pracownicy)
+                DodajDniPracownika(wiersze, pracownik, okres);
+
+            TytulRaportu.Text = "Raport z odbić RCP - dni zmodyfikowane i czas z planu, okres: {0}"
+                .TranslateFormat(okres.ToString());
+            Podsumowanie.Text =
+                "Pracowników: {0}   |   Dni zmodyfikowane BEZ godzin pracy: {1}   |   Dni z czasem przepisanym z planu: {2}   |   Dni zmodyfikowane z godzinami z RCP: {3}"
+                .TranslateFormat(pracownicy.Count, dniBezGodzin, dniZPlanu, dniPoprawne);
+
+            DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+        }
+
+        private void DodajDniPracownika(List<Wiersz> wiersze, Pracownik pracownik, FromTo okres)
+        {
+            // tylko dni w okresie zatrudnienia
+            Periods zatrudnienie = Periods.Empty;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(okres))
+                zatrudnienie += ph.Etat.EfektywnyOkres * okres;
+            zatrudnienie = zatrudnienie.ToFlat();
+
+            KalkulatorPracownika kalk = pracownik.Czasy;
+
+            foreach (FromTo czesc in zatrudnienie)
+            {
+                kalk.KalkPracy.LoadOkres(czesc);
+
+                foreach (Date data in czesc)
+                {
+                    DzienPracy dzienPracy = pracownik.DniPracy[data];
+                    Dzien dzienPlanu = kalk.KalkPlanu[data];
+                    Dzien dzienEwid = kalk.KalkPracy[data];
+                    Time planCzas = dzienPlanu != null ? dzienPlanu.Czas : Time.Zero;
+                    Time pracaCzas = dzienEwid != null ? dzienEwid.Czas : Time.Zero;
+
+                    string status;
+                    bool czyBlad = false;
+                    string czasEwidencji = "";
+                    string odbicia = "";
+                    string rcpOk = "";
+
+                    if (dzienPracy != null)
+                    {
+                        odbicia = FormatOdbicia(dzienPracy);
+                        rcpOk = dzienPracy.RcpOK ? "Tak".Translate() : "Nie".Translate();
+                        if (pracaCzas.IsEmptyOrZero())
+                        {
+                            status = "Zmodyfikowany - BRAK godzin pracy".Translate();
+                            czyBlad = true;
+                            dniBezGodzin++;
+                        }
+                        else
+                        {
+                            dniPoprawne++;
+                            if (!pars.PokazPoprawne)
+                                continue;
+                            status = "Zmodyfikowany - godziny z RCP".Translate();
+                            czasEwidencji = pracaCzas.ToString();
+                        }
+                    }
+                    else
+                    {
+                        // czas z planu tylko gdy kalkulator coś naliczy —
+                        // odpada nieobecność i interpretacja wg obecności
+                        if (planCzas.IsEmptyOrZero() || pracaCzas.IsEmptyOrZero())
+                            continue;
+                        status = "Niezmodyfikowany - czas z planu".Translate();
+                        czasEwidencji = pracaCzas.ToString();
+                        dniZPlanu++;
+                    }
+
+                    wiersze.Add(new Wiersz {
+                        Pracownik = pracownik.NazwiskoImię.ToString(),
+                        Kod = pracownik.Kod,
+                        Data = data.ToString(),
+                        Dzien = dniTygodnia[(int) data.DayOfWeek],
+                        PlanOdDo = FormatPlan(dzienPlanu, planCzas),
+                        PlanCzas = planCzas.IsEmptyOrZero() ? "" : planCzas.ToString(),
+                        CzasEwidencji = czasEwidencji,
+                        Odbicia = odbicia,
+                        RcpOK = rcpOk,
+                        Status = status,
+                        CzyBlad = czyBlad
+                    });
+                }
+            }
+        }
+
+        static string FormatOdbicia(DzienPracy dzien)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (WejscieWyjscie wewy in dzien.WeWy)
+            {
+                if (sb.Length > 0)
+                    sb.Append("; ");
+                sb.Append(SkrotTypu(wewy.Typ)).Append(' ').Append(wewy.Godzina.ToString());
+            }
+            return sb.Length > 0 ? sb.ToString() : "brak odbić".Translate();
+        }
+
+        static string FormatPlan(Dzien dzienPlanu, Time planCzas)
+        {
+            if (dzienPlanu == null || planCzas.IsEmptyOrZero())
+                return "";
+            var sb = new System.Text.StringBuilder();
+            foreach (FromTime ft in dzienPlanu.Praca)
+            {
+                if (sb.Length > 0)
+                    sb.Append("; ");
+                sb.Append(ft.From.ToString()).Append('-').Append(ft.To.ToString());
+            }
+            return sb.ToString();
+        }
+
+        static string SkrotTypu(TypWejsciaWyjscia typ)
+        {
+            switch (typ)
+            {
+                case TypWejsciaWyjscia.Wejscie: return "We";
+                case TypWejsciaWyjscia.Wyjscie: return "Wy";
+                case TypWejsciaWyjscia.WejscieSluzbowe: return "WeS";
+                case TypWejsciaWyjscia.WyjscieSluzbowe: return "WyS";
+                case TypWejsciaWyjscia.WejsciePrywatne: return "WeP";
+                case TypWejsciaWyjscia.WyjsciePrywatne: return "WyP";
+                default: return "?";
+            }
+        }
+
+        public class Wiersz
+        {
+            public string Pracownik { get; set; }
+            public string Kod { get; set; }
+            public string Data { get; set; }
+            public string Dzien { get; set; }
+            public string PlanOdDo { get; set; }
+            public string PlanCzas { get; set; }
+            public string CzasEwidencji { get; set; }
+            public string Odbicia { get; set; }
+            public string RcpOK { get; set; }
+            public string Status { get; set; }
+            public bool CzyBlad { get; set; }
+        }
+    }
+}
