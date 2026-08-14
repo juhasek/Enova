@@ -712,42 +712,43 @@ private void InicjujCzasPracyZNormy(Date data)
 	if (data == Date.Empty)
 		return;
 
-	// Norma dnia. Czytamy z rootu DzienPlanu (OdGodziny/Czas są tam kalkulowane i uwzględniają
-	// definicję dnia); subrow Praca rekordu Normy bywa pusty, bo godziny wynikają z definicji.
 	DzienPlanu dzienNormy = this.Pracownik.DniPlanu[data] as DzienPlanu;
-	Time czasNormy = dzienNormy == null ? Time.Zero : dzienNormy.Czas;
 
 	using (var t = Session.Logout(true))
 	{
 		DzienPracy dzienPracy = this.Pracownik.DniPracy[data] as DzienPracy;
 
-		if (czasNormy == Time.Zero)
+		if (dzienNormy == null)
 		{
-			// Dzień wolny wg Normy - typ dnia bez stref pracy. DzienPracy ma zostać
-			// zainicjowany na Kalendarz/Czas pracy tak samo jak Norma - bez stref, bez
-			// wypełniania subrowa Praca (OdGodziny jest polem wymaganym tylko wtedy, gdy
-			// subrow jest faktycznie uzupełniany).
-			if (dzienPracy == null)
-				dzienPracy = Session.AddRow(new DzienPracy(this.Pracownik, data));
-			else
-				UsunStrefyDniaPracy(dzienPracy);
+			// Brak Normy dla tego dnia - nie ma z czego zainicjować Czasu pracy.
+			if (dzienPracy != null)
+				dzienPracy.Delete();
 
 			t.Commit();
 			return;
 		}
 
 		if (dzienPracy == null)
-		{
 			dzienPracy = Session.AddRow(new DzienPracy(this.Pracownik, data));
-		}
 		else
-		{
 			UsunStrefyDniaPracy(dzienPracy);
-		}
 
-		// Godziny ustawia się na subrowie Praca - OdGodziny/Czas na samym dniu są kalkulowane.
-		dzienPracy.Praca.OdGodziny = dzienNormy.OdGodziny;
-		dzienPracy.Praca.Czas = czasNormy;
+		// Typ dnia (np. "Dzień wolny za święto") ma być dokładnie taki jak na Planie pracy,
+		// nie generyczny typ wyliczany domyślnie przez silnik dla pustego DzienPracy.
+		dzienPracy.Definicja = dzienNormy.Definicja;
+
+		// Strefy przenoszone 1:1 z Planu pracy - dla dnia bez stref (np. "Dzień wolny za
+		// święto") kolekcja jest pusta i pętla nic nie tworzy.
+		// UWAGA: nazwa typu elementu Strefy na DzienPlanu oraz konstruktor/sposób dodania
+		// wiersza StrefaPracy do zweryfikowania w IntelliSense - w tym pliku nie było
+		// dotąd przykładu tworzenia StrefaPracy, tylko iteracja po istniejących.
+		foreach (StrefaPracy strefaNormy in dzienNormy.Strefy)
+		{
+			StrefaPracy strefa = Session.AddRow(new StrefaPracy(dzienPracy));
+			strefa.Definicja = strefaNormy.Definicja;
+			strefa.OdGodziny = strefaNormy.OdGodziny;
+			strefa.Czas = strefaNormy.Czas;
+		}
 
 		t.Commit();
 	}
