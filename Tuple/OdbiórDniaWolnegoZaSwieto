@@ -723,10 +723,14 @@ private void InicjujCzasPracyZNormy(Date data)
 
 		if (czasNormy == Time.Zero)
 		{
-			// Dzień wolny wg Normy. Ewidencja wymaga godzin pracy (Praca.OdGodziny jest polem
-			// wymaganym), więc DzienPracy nie może dla takiego dnia istnieć - kasujemy go.
-			if (dzienPracy != null)
-				dzienPracy.Delete();
+			// Dzień wolny wg Normy - typ dnia bez stref pracy. DzienPracy ma zostać
+			// zainicjowany na Kalendarz/Czas pracy tak samo jak Norma - bez stref, bez
+			// wypełniania subrowa Praca (OdGodziny jest polem wymaganym tylko wtedy, gdy
+			// subrow jest faktycznie uzupełniany).
+			if (dzienPracy == null)
+				dzienPracy = Session.AddRow(new DzienPracy(this.Pracownik, data));
+			else
+				UsunStrefyDniaPracy(dzienPracy);
 
 			t.Commit();
 			return;
