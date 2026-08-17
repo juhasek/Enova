@@ -27,9 +27,13 @@ namespace x.x.Reports
         [DxBind(Name = "Report")]
         private void SzablonTabela6Kolumn_BeforePrint(object sender, CancelEventArgs e)
         {
+            string etap = "start";
             try
             {
+                etap = "pobranie kontekstu";
                 Context dc = DxReportHelpers.GetContext(this);
+
+                etap = "pobranie zaznaczenia (Row[])";
                 Row[] rows = dc?[typeof(Row[])] as Row[];
                 if (rows == null)
                 {
@@ -37,6 +41,7 @@ namespace x.x.Reports
                     return;
                 }
 
+                etap = "zbieranie pracowników z zaznaczenia";
                 var pracownicy = new List<Pracownik>();
                 foreach (Row row in rows)
                 {
@@ -46,8 +51,11 @@ namespace x.x.Reports
                     if (p != null && !pracownicy.Contains(p))
                         pracownicy.Add(p);
                 }
+
+                etap = "sortowanie listy pracowników";
                 pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
 
+                etap = "budowanie wierszy";
                 var wiersze = new List<Wiersz>();
                 int lp = 1;
                 foreach (Pracownik pracownik in pracownicy)
@@ -63,6 +71,7 @@ namespace x.x.Reports
                     });
                 }
 
+                etap = "ustawienie CustomDataSource";
                 DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
             }
             catch (Exception ex)
@@ -73,9 +82,9 @@ namespace x.x.Reports
                 ds.CustomDataSource = new List<Wiersz> {
                     new Wiersz {
                         Kolumna1 = "BŁĄD",
-                        Kolumna2 = ex.GetType().Name,
-                        Kolumna3 = ex.Message,
-                        Kolumna4 = "",
+                        Kolumna2 = "[ETAP: " + etap + "]",
+                        Kolumna3 = ex.GetType().Name,
+                        Kolumna4 = ex.Message,
                         Kolumna5 = "",
                         Kolumna6 = ""
                     }
