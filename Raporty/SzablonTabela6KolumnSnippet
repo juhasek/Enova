@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.Types;
+
+namespace x.x.Reports
+{
+    // Lista pracowników (z zaznaczenia): Lp., nr ewidencyjny, Nazwisko i Imię,
+    // data urodzenia, cecha "Jednostka obsługująca" z Wydziału bieżącego etatu.
+    // Kolumna 6 celowo pusta - do dalszej rozbudowy.
+    //
+    // UWAGA - poniższe nie zostało skompilowane ani przetestowane względem
+    // rzeczywistych assembly Soneta (brak do nich dostępu przy tworzeniu tego
+    // pliku), więc przy pierwszej kompilacji w Enova mogą wyskoczyć błędy
+    // dotyczące nazw poniższych elementów - w razie błędu wklej go, poprawię:
+    //   - Pracownik.DataUrodzenia - jeśli nie istnieje, sprawdź w IntelliSense
+    //     właściwy odpowiednik (np. dane osobowe pod inną właściwością Pracownika).
+    //   - Etat.Wydzial - właściwość Wydziału na etacie pracownika.
+    //   - Historia.Last - pobranie ostatniego wpisu historii zatrudnienia.
+    //   - nazwa techniczna cechy "JednostkaObslugujaca" w Cechy[...] musi być
+    //     zgodna z konfiguracją tej cechy na Wydziale w tej bazie
+    //     (Konfiguracja > Cechy) - może się różnić od podpisu "Jednostka obsługująca".
+    public class SzablonTabela6KolumnSnippet : ReportSnippet
+    {
+        [DxBind(Name = "Report")]
+        private void SzablonTabela6Kolumn_BeforePrint(object sender, CancelEventArgs e)
+        {
+            Context dc = DxReportHelpers.GetContext(this);
+            Row[] rows = dc?[typeof(Row[])] as Row[];
+            if (rows == null)
+            {
+                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                return;
+            }
+
+            var pracownicy = new List<Pracownik>();
+            foreach (Row row in rows)
+            {
+                Pracownik p = row as Pracownik;
+                if (p == null && row is PracHistoria)
+                    p = ((PracHistoria) row).Pracownik;
+                if (p != null && !pracownicy.Contains(p))
+                    pracownicy.Add(p);
+            }
+            pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
+
+            var wiersze = new List<Wiersz>();
+            int lp = 1;
+            foreach (Pracownik pracownik in pracownicy)
+            {
+                wiersze.Add(new Wiersz {
+                    Kolumna1 = (lp++).ToString(),
+                    Kolumna2 = pracownik.Kod,
+                    Kolumna3 = pracownik.NazwiskoImię.ToString(),
+                    Kolumna4 = pracownik.DataUrodzenia.ToString(),
+                    Kolumna5 = PobierzJednostkeObslugujaca(pracownik),
+                    Kolumna6 = ""
+                });
+            }
+
+            DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+        }
+
+        static string PobierzJednostkeObslugujaca(Pracownik pracownik)
+        {
+            PracHistoria biezaca = null;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(new FromTo(Date.Today, Date.Today)))
+                biezaca = ph;
+            if (biezaca == null)
+                biezaca = pracownik.Historia.Last;
+
+            var wydzial = biezaca?.Etat?.Wydzial;
+            if (wydzial == null)
+                return "";
+
+            object wartoscCechy = wydzial.Cechy["JednostkaObslugujaca"];
+            return wartoscCechy?.ToString() ?? "";
+        }
+
+        public class Wiersz
+        {
+            public string Kolumna1 { get; set; }
+            public string Kolumna2 { get; set; }
+            public string Kolumna3 { get; set; }
+            public string Kolumna4 { get; set; }
+            public string Kolumna5 { get; set; }
+            public string Kolumna6 { get; set; }
+        }
+    }
+}

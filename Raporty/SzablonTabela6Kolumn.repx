@@ -8,12 +8,12 @@
           <Rows>
             <Item1 Ref="5" ControlType="XRTableRow" Name="rowNaglowek" Weight="1" Dpi="254">
               <Cells>
-                <Item1 Ref="6" ControlType="XRTableCell" Name="cellNagl1" Weight="1" Text="Kolumna 1" Dpi="254" />
-                <Item2 Ref="7" ControlType="XRTableCell" Name="cellNagl2" Weight="1" Text="Kolumna 2" Dpi="254" />
-                <Item3 Ref="8" ControlType="XRTableCell" Name="cellNagl3" Weight="1" Text="Kolumna 3" Dpi="254" />
-                <Item4 Ref="9" ControlType="XRTableCell" Name="cellNagl4" Weight="1" Text="Kolumna 4" Dpi="254" />
-                <Item5 Ref="10" ControlType="XRTableCell" Name="cellNagl5" Weight="1" Text="Kolumna 5" Dpi="254" />
-                <Item6 Ref="11" ControlType="XRTableCell" Name="cellNagl6" Weight="1" Text="Kolumna 6" Dpi="254" />
+                <Item1 Ref="6" ControlType="XRTableCell" Name="cellNagl1" Weight="1" Text="Lp." Dpi="254" />
+                <Item2 Ref="7" ControlType="XRTableCell" Name="cellNagl2" Weight="1" Text="Nr ewidencyjny" Dpi="254" />
+                <Item3 Ref="8" ControlType="XRTableCell" Name="cellNagl3" Weight="1" Text="Nazwisko i Imię" Dpi="254" />
+                <Item4 Ref="9" ControlType="XRTableCell" Name="cellNagl4" Weight="1" Text="Data urodzenia" Dpi="254" />
+                <Item5 Ref="10" ControlType="XRTableCell" Name="cellNagl5" Weight="1" Text="Jednostka obsługująca" Dpi="254" />
+                <Item6 Ref="11" ControlType="XRTableCell" Name="cellNagl6" Weight="1" Text="" Dpi="254" />
               </Cells>
             </Item1>
           </Rows>
