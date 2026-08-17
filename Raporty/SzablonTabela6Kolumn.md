@@ -1,5 +1,8 @@
 # Raport – lista pracowników (6 kolumn)
 
+**Status: działa** — potwierdzone wydrukiem realnych danych pracowników w
+Enova (wersja 2512.5.6).
+
 Wzorzec wydruku Enova (`Raporty/SzablonTabela6Kolumn.repx`, format DevExpress
 XtraReports) z tabelą o 6 kolumnach, zasilany snippetem
 `Raporty/SzablonTabela6KolumnSnippet`.
@@ -12,8 +15,26 @@ XtraReports) z tabelą o 6 kolumnach, zasilany snippetem
 | 2 | Nr ewidencyjny | `Pracownik.Kod` |
 | 3 | Nazwisko i Imię | `Pracownik.NazwiskoImię` |
 | 4 | Data urodzenia | `pracownik.Historia[Date.Today].Urodzony.Data` |
-| 5 | Jednostka obsługująca | Cecha „Jednostka obsługująca” z Wydziału bieżącego etatu pracownika — **na razie wyłączona w kodzie** (metoda `PobierzJednostkeObslugujaca` zwraca `""`), bo cecha jeszcze nie istnieje w tej bazie; po jej utworzeniu odkomentować linię z `wydzial.Cechy["JednostkaObslugujaca"]` i poprawić nazwę techniczną, jeśli będzie inna |
+| 5 | Jednostka obsługująca | Cecha „Jednostka obsługująca” z Wydziału bieżącego etatu pracownika — **TODO: na razie wyłączona w kodzie** (metoda `PobierzJednostkeObslugujaca` zwraca `""`), bo cecha jeszcze nie istnieje w tej bazie |
 | 6 | (bez nagłówka) | Celowo pusta — do dalszej rozbudowy |
+
+## TODO: kolumna „Jednostka obsługująca”
+
+Cecha „Jednostka obsługująca” na Wydziale jeszcze nie istnieje w tej bazie,
+więc pobieranie jej wartości jest wyłączone (kod zakomentowany w
+`PobierzJednostkeObslugujaca`, zwraca `""`). Żeby to uzupełnić:
+
+1. Utwórz cechę „Jednostka obsługująca” na Wydziale (Konfiguracja > Cechy).
+2. Sprawdź jej **nazwę techniczną** (może różnić się od widocznego podpisu).
+3. W `Raporty/SzablonTabela6KolumnSnippet`, w metodzie
+   `PobierzJednostkeObslugujaca`, odkomentuj:
+   ```csharp
+   object wartoscCechy = wydzial.Cechy["JednostkaObslugujaca"];
+   return wartoscCechy?.ToString() ?? "";
+   ```
+   (usuwając linię `return "";` nad nią) i popraw `"JednostkaObslugujaca"`
+   na rzeczywistą nazwę techniczną, jeśli inna.
+4. Wklej zaktualizowany kod w „Kod źródłowy” i przetestuj.
 
 Raport działa na zaznaczeniu (np. z Listy pracowników) — analogicznie jak
 `Raporty/OdbiciaRCP`.
