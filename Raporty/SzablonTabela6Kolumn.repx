@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="19.1.5.0">
+  <XtraReportBase ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+                  Name="SzablonTabela6Kolumn"
+                  Font="Tahoma, 9.75pt"
+                  Margins="40, 40, 40, 40"
+                  PageWidth="827"
+                  PageHeight="1169"
+                  PaperKind="A4"
+                  Version="19.1">
+    <Bands>
+      <Item1 ControlType="DevExpress.XtraReports.UI.TopMarginBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+             Name="TopMargin"
+             HeightF="20" />
+      <Item2 ControlType="DevExpress.XtraReports.UI.PageHeaderBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+             Name="PageHeader"
+             HeightF="25">
+        <Controls>
+          <Item1 ControlType="DevExpress.XtraReports.UI.XRTable, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+                 Name="tableNaglowek"
+                 SizeF="747,25"
+                 LocationFloat="0,0"
+                 Font="Tahoma, 9.75pt, style=Bold"
+                 Borders="All">
+            <Rows>
+              <Item1 ControlType="DevExpress.XtraReports.UI.XRTableRow, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+                     Name="rowNaglowek"
+                     Weight="1">
+                <Cells>
+                  <Item1 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl1" Weight="1" Text="Kolumna 1" />
+                  <Item2 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl2" Weight="1" Text="Kolumna 2" />
+                  <Item3 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl3" Weight="1" Text="Kolumna 3" />
+                  <Item4 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl4" Weight="1" Text="Kolumna 4" />
+                  <Item5 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl5" Weight="1" Text="Kolumna 5" />
+                  <Item6 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl6" Weight="1" Text="Kolumna 6" />
+                </Cells>
+              </Item1>
+            </Rows>
+          </Item1>
+        </Controls>
+      </Item2>
+      <Item3 ControlType="DevExpress.XtraReports.UI.DetailBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+             Name="Detail"
+             HeightF="25">
+        <Controls>
+          <Item1 ControlType="DevExpress.XtraReports.UI.XRTable, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+                 Name="tableDane"
+                 SizeF="747,25"
+                 LocationFloat="0,0"
+                 Borders="All">
+            <Rows>
+              <Item1 ControlType="DevExpress.XtraReports.UI.XRTableRow, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+                     Name="rowDane"
+                     Weight="1">
+                <Cells>
+                  <Item1 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane1" Weight="1">
+                    <ExpressionBindings>
+                      <Item1 Expression="[Kolumna1]" PropertyName="Text" EventName="BeforePrint" />
+                    </ExpressionBindings>
+                  </Item1>
+                  <Item2 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane2" Weight="1">
+                    <ExpressionBindings>
+                      <Item1 Expression="[Kolumna2]" PropertyName="Text" EventName="BeforePrint" />
+                    </ExpressionBindings>
+                  </Item2>
+                  <Item3 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane3" Weight="1">
+                    <ExpressionBindings>
+                      <Item1 Expression="[Kolumna3]" PropertyName="Text" EventName="BeforePrint" />
+                    </ExpressionBindings>
+                  </Item3>
+                  <Item4 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane4" Weight="1">
+                    <ExpressionBindings>
+                      <Item1 Expression="[Kolumna4]" PropertyName="Text" EventName="BeforePrint" />
+                    </ExpressionBindings>
+                  </Item4>
+                  <Item5 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane5" Weight="1">
+                    <ExpressionBindings>
+                      <Item1 Expression="[Kolumna5]" PropertyName="Text" EventName="BeforePrint" />
+                    </ExpressionBindings>
+                  </Item5>
+                  <Item6 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane6" Weight="1">
+                    <ExpressionBindings>
+                      <Item1 Expression="[Kolumna6]" PropertyName="Text" EventName="BeforePrint" />
+                    </ExpressionBindings>
+                  </Item6>
+                </Cells>
+              </Item1>
+            </Rows>
+          </Item1>
+        </Controls>
+      </Item3>
+      <Item4 ControlType="DevExpress.XtraReports.UI.BottomMarginBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
+             Name="BottomMargin"
+             HeightF="20" />
+    </Bands>
+  </XtraReportBase>
+</XtraReportsLayoutSerializer>
