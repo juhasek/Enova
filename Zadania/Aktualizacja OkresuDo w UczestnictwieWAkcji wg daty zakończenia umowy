@@ -1,0 +1,19 @@
+public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
+{
+	var uczestnictwa = AkcjePracA1Module.GetInstance(session).UczestnictwoWAkcji;
+
+	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa)
+	{
+		Pracownik pracownik = uczestnictwo.Pracownik;
+		Date? dataZakonczeniaUmowy = pracownik?.Last?.Etat?.Okres.To;
+
+		// Brak Etatu albo umowa bezterminowa (Okres.To == Date.MaxValue) - OkresTo zostaje bez zmian.
+		if (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue)
+			continue;
+
+		if (uczestnictwo.OkresTo != dataZakonczeniaUmowy)
+			uczestnictwo.OkresTo = (Date)dataZakonczeniaUmowy;
+	}
+
+	session.Save();
+}
