@@ -69,23 +69,13 @@ namespace x.x.Reports
             {
                 var ds = DxReportHelpers.GetDataSourceEmpty(this);
                 if (ds == null)
-                {
-                    // Diagnoza: GetDataSourceEmpty(this) samo zwraca null - to by
-                    // tłumaczyło identyczny NRE zarówno w try, jak i w tym catchu.
-                    // Rzucamy nowy wyjątek z jednoznacznym komunikatem zamiast
-                    // pozwolić na kolejny "goły" NullReferenceException.
-                    throw new Exception(
-                        "DIAGNOZA: DxReportHelpers.GetDataSourceEmpty(this) zwróciło null. " +
-                        "Pierwotny wyjątek: " + ex.GetType().Name + ": " + ex.Message, ex);
-                }
+                    return;
                 ds.CustomDataSource = new List<Wiersz> {
                     new Wiersz {
                         Kolumna1 = "BŁĄD",
                         Kolumna2 = ex.GetType().Name,
                         Kolumna3 = ex.Message,
-                        Kolumna4 = ex.StackTrace != null && ex.StackTrace.Length > 0
-                            ? ex.StackTrace.Substring(0, Math.Min(200, ex.StackTrace.Length))
-                            : "",
+                        Kolumna4 = "",
                         Kolumna5 = "",
                         Kolumna6 = ""
                     }

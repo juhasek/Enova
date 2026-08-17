@@ -11,8 +11,8 @@ XtraReports) z tabelą o 6 kolumnach, zasilany snippetem
 | 1 | Lp. | Liczba porządkowa wiersza |
 | 2 | Nr ewidencyjny | `Pracownik.Kod` |
 | 3 | Nazwisko i Imię | `Pracownik.NazwiskoImię` |
-| 4 | Data urodzenia | `Pracownik.DataUrodzenia` |
-| 5 | Jednostka obsługująca | Cecha „Jednostka obsługująca” z Wydziału bieżącego etatu pracownika |
+| 4 | Data urodzenia | `pracownik.Historia[Date.Today].Urodzony.Data` |
+| 5 | Jednostka obsługująca | Cecha „Jednostka obsługująca” z Wydziału bieżącego etatu pracownika — **na razie wyłączona w kodzie** (metoda `PobierzJednostkeObslugujaca` zwraca `""`), bo cecha jeszcze nie istnieje w tej bazie; po jej utworzeniu odkomentować linię z `wydzial.Cechy["JednostkaObslugujaca"]` i poprawić nazwę techniczną, jeśli będzie inna |
 | 6 | (bez nagłówka) | Celowo pusta — do dalszej rozbudowy |
 
 Raport działa na zaznaczeniu (np. z Listy pracowników) — analogicznie jak
@@ -33,19 +33,41 @@ Raport działa na zaznaczeniu (np. z Listy pracowników) — analogicznie jak
 `Wiersz` z właściwościami `Kolumna1..Kolumna6`), więc nie trzeba nic zmieniać
 w samym layoutcie.
 
+## Historia usterki: brak źródła danych w `.repx`
+
+Pierwsza wersja `.repx` miała w `ComponentStorage` tylko komponent
+`BusinessContext` — bez żadnego `BusinessDataSource`. Snippet wywołuje
+`DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = ...`, a ta
+metoda szuka w `ComponentStorage` komponentu `BusinessDataSource` typu
+„pusty” (`DataKind="Empty"`), do którego może podpiąć własną listę. Bez
+niego `GetDataSourceEmpty(this)` zwracało `null`, więc każda próba wydruku
+kończyła się `NullReferenceException` — niezależnie od tego, co działo się
+w reszcie kodu snippetu (dlatego kolejne poprawki logiki snippetu nic nie
+zmieniały).
+
+Naprawione dodaniem do `ComponentStorage`:
+
+```xml
+<Item2 Ref="29" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSource" DataKind="Empty" />
+```
+
+oraz atrybutu `DataSource="#Ref-29"` na korzeniu `XtraReportsLayoutSerializer`,
+wskazującego na ten komponent.
+
+**Ważne:** ta poprawka jest w pliku `.repx`, nie w „Kod źródłowy” — trzeba
+więc ponownie zaimportować/podmienić cały plik `.repx` w Enova (tak jak przy
+pierwszym dodawaniu wzorca), samo wklejenie nowej treści snippetu nie
+wystarczy.
+
 ## Odporność na błędy w danych (kolumny 2–5)
 
-Nazwy właściwości użyte w snippecie (`Pracownik.Kod`, `.NazwiskoImię`,
-`.DataUrodzenia`, `.Historia`, `Etat.Wydzial`, `wydzial.Cechy[...]`)
-skompilowały się poprawnie w tej instalacji Enova. Mimo to obliczenie
-każdej z kolumn 2–5 jest opakowane w `Bezpiecznie(...)`: jeśli dla
+Obliczenie każdej z kolumn 2–5 jest opakowane w `Bezpiecznie(...)`: jeśli dla
 konkretnego pracownika coś rzuci wyjątkiem w trakcie druku (np. brak
-aktywnego etatu, brak przypisanego Wydziału, brak cechy o danej nazwie
-technicznej na tym Wydziale), w tej jednej komórce pojawi się
-`[BŁĄD: <treść wyjątku>]` zamiast wywalenia całego wydruku.
+aktywnego etatu, brak przypisanego Wydziału), w tej jednej komórce pojawi
+się `[BŁĄD: <treść wyjątku>]` zamiast wywalenia całego wydruku. Cała metoda
+`BeforePrint` jest dodatkowo opakowana w try/catch — w razie błędu poza
+pętlą po pracownikach wydruk pokaże jeden wiersz diagnostyczny zamiast się
+wywalić.
 
-Jeśli po uruchomieniu zobaczysz taki komunikat w którejś kolumnie, wklej go
-tutaj — pozwoli to precyzyjnie poprawić dane wejściowe albo logikę (np.
-zmienić nazwę techniczną cechy w `wydzial.Cechy["JednostkaObslugujaca"]`,
-jeśli w tej bazie nazywa się inaczej — sprawdź w Konfiguracja > Cechy dla
-Wydziału).
+Jeśli po uruchomieniu zobaczysz `[BŁĄD: ...]` w którejś kolumnie, wklej go
+tutaj — pozwoli to precyzyjnie poprawić dane wejściowe albo logikę.

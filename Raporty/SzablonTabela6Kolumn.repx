@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1" Name="SzablonTabela6Kolumn" DisplayName="Szablon - tabela 6 kolumn" SnapGridSize="25" ReportUnit="TenthsOfAMillimeter" Margins="198, 198, 200, 200" PaperKind="A4" PageWidth="2100" PageHeight="2970" Version="24.1" Dpi="254" Font="Calibri, 9pt">
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1" Name="SzablonTabela6Kolumn" DisplayName="Szablon - tabela 6 kolumn" SnapGridSize="25" ReportUnit="TenthsOfAMillimeter" Margins="198, 198, 200, 200" PaperKind="A4" PageWidth="2100" PageHeight="2970" Version="24.1" DataSource="#Ref-29" Dpi="254" Font="Calibri, 9pt">
   <Bands>
     <Item1 Ref="2" ControlType="TopMarginBand" Name="TopMarginBand" HeightF="200" Dpi="254" />
     <Item2 Ref="3" ControlType="PageHeaderBand" Name="PageHeader" HeightF="60" Dpi="254">
@@ -66,5 +66,6 @@
   </Bands>
   <ComponentStorage>
     <Item1 Ref="28" ObjectType="Soneta.Business.UI.DxReports.Components.BusinessContext,Soneta.Business.UI.DxReports" Name="BusinessContext" StylesSource="standardowy" TreatStringAsValueInExport="false" />
+    <Item2 Ref="29" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSource" DataKind="Empty" />
   </ComponentStorage>
 </XtraReportsLayoutSerializer>
