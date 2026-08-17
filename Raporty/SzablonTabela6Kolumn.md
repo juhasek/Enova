@@ -12,38 +12,37 @@ w projektancie wydruków Enova, nie gotowy raport biznesowy.
   (`ExpressionBindings`) z polem źródła danych: `[Kolumna1]` … `[Kolumna6]`.
 - Wszystkie kolumny mają `Weight="1"`, więc dzielą szerokość strony po równo.
 
+## Format pliku
+
+Struktura pliku (wersja serializatora, jednostki `TenthsOfAMillimeter` +
+`Dpi="254"`, zwięzłe `ControlType` bez pełnej nazwy assembly dla
+standardowych kontrolek DevExpress, atrybuty `Ref="N"` na każdym elemencie,
+blok `ComponentStorage` z komponentem `BusinessContext`) została odtworzona
+na podstawie realnego, działającego wzorca wyeksportowanego z projektanta
+wydruków tej instalacji Enova (`DevExpress.XtraReports.v24.1`,
+`SerializerVersion="24.1.5.0"`). Jeśli w innej instalacji Enova wersja
+DevExpress jest inna, trzeba odpowiednio poprawić `SerializerVersion` i
+`ControlType` na `XtraReportBase`/root (np. przez wyeksportowanie dowolnego
+działającego wydruku z tamtej instalacji i porównanie nagłówka).
+
 ## Jak uruchomić dane
 
-Sam plik `.repx` to tylko layout — bez powiązanego `ReportSnippet` (jak w
-`OdbiciaRCP`) nie ma skąd wziąć wartości `Kolumna1..Kolumna6`. Aby wydruk
-faktycznie coś pokazał, trzeba dodać snippet ustawiający źródło danych, np.:
+Plik zawiera tylko `ComponentStorage/BusinessContext` (żeby dziedziczyć
+standardowe style) — nie ma podpiętego `BusinessSource` ani
+`ReportSnippetComponent`, więc wyrażenia `[Kolumna1]`…`[Kolumna6]` w
+`DetailBand` nie mają skąd wziąć wartości i w podglądzie wydrukują się jako
+puste komórki. To celowo generyczny szablon layoutu (6 kolumn), a nie
+gotowy raport z danymi.
 
-```csharp
-public class Wiersz
-{
-    public string Kolumna1 { get; set; }
-    public string Kolumna2 { get; set; }
-    public string Kolumna3 { get; set; }
-    public string Kolumna4 { get; set; }
-    public string Kolumna5 { get; set; }
-    public string Kolumna6 { get; set; }
-}
-```
+Żeby podpiąć realne dane, trzeba — analogicznie jak w przykładzie
+`PracownicyListaPelna` — dodać do `ComponentStorage`:
 
-i przypisanie `List<Wiersz>` do `DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource`
-analogicznie jak w `Raporty/OdbiciaRCP`.
-
-## Ważne zastrzeżenie
-
-Plik został przygotowany ręcznie wg znanej struktury formatu DevExpress
-`XtraReportsLayoutSerializer` (wersja `SerializerVersion="19.1.5.0"` w
-nagłówku) — nie był wygenerowany ani zweryfikowany przez faktyczny
-projektant wydruków Enova/DevExpress. Przy pierwszym otwarciu w projektancie:
-
-- jeśli wersja DevExpress w Twojej instalacji Enova różni się od `19.1.5.0`,
-  może być konieczna zamiana numeru wersji (i ewentualnie `PublicKeyToken`,
-  choć ten jest stały dla DevExpress) w całym pliku przez znajdź-i-zamień,
-  lub po prostu zapisanie pliku ponownie z projektanta — starsze wersje
-  layoutu zwykle są automatycznie migrowane do nowszych;
-- warto od razu przejrzeć układ w podglądzie wydruku i w razie potrzeby
-  poprawić szerokości/wysokości komórek.
+- `Soneta.Business.UI.DxReports.BusinessDataSource` (`Name="BusinessSource"`,
+  `DataKind="CurrentList"`, `DesignDataTypeName="<TypObiektu>"`) wskazujący
+  listę obiektów biznesowych, z której ma korzystać raport, albo
+- `Soneta.Business.UI.DxReports.ReportSnippetComponent`
+  (`SnippetTypeName="Namespace.KlasaSnippetu,Assembly"`) wskazujący klasę
+  `ReportSnippet` (jak `Raporty/OdbiciaRCP`), która sama ustawia
+  `DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource` na listę
+  obiektów z właściwościami `Kolumna1..Kolumna6` — to prostszy wariant dla
+  danych, które nie odpowiadają wprost jednej klasie biznesowej Enova.

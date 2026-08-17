@@ -1,97 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<XtraReportsLayoutSerializer SerializerVersion="19.1.5.0">
-  <XtraReportBase ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-                  Name="SzablonTabela6Kolumn"
-                  Font="Tahoma, 9.75pt"
-                  Margins="40, 40, 40, 40"
-                  PageWidth="827"
-                  PageHeight="1169"
-                  PaperKind="A4"
-                  Version="19.1">
-    <Bands>
-      <Item1 ControlType="DevExpress.XtraReports.UI.TopMarginBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-             Name="TopMargin"
-             HeightF="20" />
-      <Item2 ControlType="DevExpress.XtraReports.UI.PageHeaderBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-             Name="PageHeader"
-             HeightF="25">
-        <Controls>
-          <Item1 ControlType="DevExpress.XtraReports.UI.XRTable, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-                 Name="tableNaglowek"
-                 SizeF="747,25"
-                 LocationFloat="0,0"
-                 Font="Tahoma, 9.75pt, style=Bold"
-                 Borders="All">
-            <Rows>
-              <Item1 ControlType="DevExpress.XtraReports.UI.XRTableRow, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-                     Name="rowNaglowek"
-                     Weight="1">
-                <Cells>
-                  <Item1 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl1" Weight="1" Text="Kolumna 1" />
-                  <Item2 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl2" Weight="1" Text="Kolumna 2" />
-                  <Item3 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl3" Weight="1" Text="Kolumna 3" />
-                  <Item4 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl4" Weight="1" Text="Kolumna 4" />
-                  <Item5 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl5" Weight="1" Text="Kolumna 5" />
-                  <Item6 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellNagl6" Weight="1" Text="Kolumna 6" />
-                </Cells>
-              </Item1>
-            </Rows>
-          </Item1>
-        </Controls>
-      </Item2>
-      <Item3 ControlType="DevExpress.XtraReports.UI.DetailBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-             Name="Detail"
-             HeightF="25">
-        <Controls>
-          <Item1 ControlType="DevExpress.XtraReports.UI.XRTable, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-                 Name="tableDane"
-                 SizeF="747,25"
-                 LocationFloat="0,0"
-                 Borders="All">
-            <Rows>
-              <Item1 ControlType="DevExpress.XtraReports.UI.XRTableRow, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-                     Name="rowDane"
-                     Weight="1">
-                <Cells>
-                  <Item1 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane1" Weight="1">
-                    <ExpressionBindings>
-                      <Item1 Expression="[Kolumna1]" PropertyName="Text" EventName="BeforePrint" />
-                    </ExpressionBindings>
-                  </Item1>
-                  <Item2 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane2" Weight="1">
-                    <ExpressionBindings>
-                      <Item1 Expression="[Kolumna2]" PropertyName="Text" EventName="BeforePrint" />
-                    </ExpressionBindings>
-                  </Item2>
-                  <Item3 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane3" Weight="1">
-                    <ExpressionBindings>
-                      <Item1 Expression="[Kolumna3]" PropertyName="Text" EventName="BeforePrint" />
-                    </ExpressionBindings>
-                  </Item3>
-                  <Item4 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane4" Weight="1">
-                    <ExpressionBindings>
-                      <Item1 Expression="[Kolumna4]" PropertyName="Text" EventName="BeforePrint" />
-                    </ExpressionBindings>
-                  </Item4>
-                  <Item5 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane5" Weight="1">
-                    <ExpressionBindings>
-                      <Item1 Expression="[Kolumna5]" PropertyName="Text" EventName="BeforePrint" />
-                    </ExpressionBindings>
-                  </Item5>
-                  <Item6 ControlType="DevExpress.XtraReports.UI.XRTableCell, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="cellDane6" Weight="1">
-                    <ExpressionBindings>
-                      <Item1 Expression="[Kolumna6]" PropertyName="Text" EventName="BeforePrint" />
-                    </ExpressionBindings>
-                  </Item6>
-                </Cells>
-              </Item1>
-            </Rows>
-          </Item1>
-        </Controls>
-      </Item3>
-      <Item4 ControlType="DevExpress.XtraReports.UI.BottomMarginBand, DevExpress.XtraReports.v19.1, Version=19.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a"
-             Name="BottomMargin"
-             HeightF="20" />
-    </Bands>
-  </XtraReportBase>
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1" Name="SzablonTabela6Kolumn" DisplayName="Szablon - tabela 6 kolumn" SnapGridSize="25" ReportUnit="TenthsOfAMillimeter" Margins="198, 198, 200, 200" PaperKind="A4" PageWidth="2100" PageHeight="2970" Version="24.1" Dpi="254" Font="Calibri, 9pt">
+  <Bands>
+    <Item1 Ref="2" ControlType="TopMarginBand" Name="TopMarginBand" HeightF="200" Dpi="254" />
+    <Item2 Ref="3" ControlType="PageHeaderBand" Name="PageHeader" HeightF="60" Dpi="254">
+      <Controls>
+        <Item1 Ref="4" ControlType="XRTable" Name="tableNaglowek" AnchorHorizontal="Both" TextAlignment="MiddleLeft" SizeF="1704,60" LocationFloat="0,0" Dpi="254" Font="Calibri, 9pt, style=Bold">
+          <Rows>
+            <Item1 Ref="5" ControlType="XRTableRow" Name="rowNaglowek" Weight="1" Dpi="254">
+              <Cells>
+                <Item1 Ref="6" ControlType="XRTableCell" Name="cellNagl1" Weight="1" Text="Kolumna 1" Dpi="254" />
+                <Item2 Ref="7" ControlType="XRTableCell" Name="cellNagl2" Weight="1" Text="Kolumna 2" Dpi="254" />
+                <Item3 Ref="8" ControlType="XRTableCell" Name="cellNagl3" Weight="1" Text="Kolumna 3" Dpi="254" />
+                <Item4 Ref="9" ControlType="XRTableCell" Name="cellNagl4" Weight="1" Text="Kolumna 4" Dpi="254" />
+                <Item5 Ref="10" ControlType="XRTableCell" Name="cellNagl5" Weight="1" Text="Kolumna 5" Dpi="254" />
+                <Item6 Ref="11" ControlType="XRTableCell" Name="cellNagl6" Weight="1" Text="Kolumna 6" Dpi="254" />
+              </Cells>
+            </Item1>
+          </Rows>
+        </Item1>
+      </Controls>
+    </Item2>
+    <Item3 Ref="12" ControlType="DetailBand" Name="Detail" HeightF="60" Dpi="254">
+      <Controls>
+        <Item1 Ref="13" ControlType="XRTable" Name="tableDane" AnchorHorizontal="Both" TextAlignment="MiddleLeft" SizeF="1704,60" LocationFloat="0,0" Dpi="254">
+          <Rows>
+            <Item1 Ref="14" ControlType="XRTableRow" Name="rowDane" Weight="1" Dpi="254">
+              <Cells>
+                <Item1 Ref="15" ControlType="XRTableCell" Name="cellDane1" Weight="1" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="16" Expression="[Kolumna1]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item1>
+                <Item2 Ref="17" ControlType="XRTableCell" Name="cellDane2" Weight="1" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="18" Expression="[Kolumna2]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item2>
+                <Item3 Ref="19" ControlType="XRTableCell" Name="cellDane3" Weight="1" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="20" Expression="[Kolumna3]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item3>
+                <Item4 Ref="21" ControlType="XRTableCell" Name="cellDane4" Weight="1" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="22" Expression="[Kolumna4]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item4>
+                <Item5 Ref="23" ControlType="XRTableCell" Name="cellDane5" Weight="1" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="24" Expression="[Kolumna5]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item5>
+                <Item6 Ref="25" ControlType="XRTableCell" Name="cellDane6" Weight="1" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="26" Expression="[Kolumna6]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item6>
+              </Cells>
+            </Item1>
+          </Rows>
+        </Item1>
+      </Controls>
+    </Item3>
+    <Item4 Ref="27" ControlType="BottomMarginBand" Name="BottomMarginBand" HeightF="200" Dpi="254" />
+  </Bands>
+  <ComponentStorage>
+    <Item1 Ref="28" ObjectType="Soneta.Business.UI.DxReports.Components.BusinessContext,Soneta.Business.UI.DxReports" Name="BusinessContext" StylesSource="standardowy" TreatStringAsValueInExport="false" />
+  </ComponentStorage>
 </XtraReportsLayoutSerializer>
