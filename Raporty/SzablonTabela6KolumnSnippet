@@ -14,50 +14,72 @@ namespace x.x.Reports
     // Kolumna 6 celowo pusta - do dalszej rozbudowy.
     //
     // Każde pole liczone jest przez Bezpiecznie(...) - jeśli dla któregoś
-    // pracownika coś rzuci wyjątkiem (np. brak aktywnego etatu, brak Wydziału,
-    // brak cechy o danej nazwie), w tej jednej komórce pojawi się
-    // "[BŁĄD: ...]" z treścią wyjątku zamiast wywalenia całego wydruku -
-    // dzięki temu widać od razu, które pole i dlaczego zawodzi.
+    // pracownika coś rzuci wyjątkiem, w tej jednej komórce pojawi się
+    // "[BŁĄD: ...]" zamiast wywalenia całego wydruku.
+    //
+    // Cała metoda BeforePrint jest dodatkowo opakowana w try/catch - jeśli
+    // wyjątek wystąpi poza pętlą po pracownikach (np. przy pobieraniu
+    // zaznaczenia z kontekstu), wydruk i tak się wygeneruje z jednym
+    // diagnostycznym wierszem "BŁĄD" pokazującym typ i treść wyjątku,
+    // zamiast wywalać się z samym stack trace bez numeru linii.
     public class SzablonTabela6KolumnSnippet : ReportSnippet
     {
         [DxBind(Name = "Report")]
         private void SzablonTabela6Kolumn_BeforePrint(object sender, CancelEventArgs e)
         {
-            Context dc = DxReportHelpers.GetContext(this);
-            Row[] rows = dc?[typeof(Row[])] as Row[];
-            if (rows == null)
+            try
             {
-                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
-                return;
-            }
+                Context dc = DxReportHelpers.GetContext(this);
+                Row[] rows = dc?[typeof(Row[])] as Row[];
+                if (rows == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
 
-            var pracownicy = new List<Pracownik>();
-            foreach (Row row in rows)
+                var pracownicy = new List<Pracownik>();
+                foreach (Row row in rows)
+                {
+                    Pracownik p = row as Pracownik;
+                    if (p == null && row is PracHistoria)
+                        p = ((PracHistoria) row).Pracownik;
+                    if (p != null && !pracownicy.Contains(p))
+                        pracownicy.Add(p);
+                }
+                pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
+
+                var wiersze = new List<Wiersz>();
+                int lp = 1;
+                foreach (Pracownik pracownik in pracownicy)
+                {
+                    Pracownik pr = pracownik;
+                    wiersze.Add(new Wiersz {
+                        Kolumna1 = (lp++).ToString(),
+                        Kolumna2 = Bezpiecznie(() => pr.Kod),
+                        Kolumna3 = Bezpiecznie(() => pr.NazwiskoImię.ToString()),
+                        Kolumna4 = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString()),
+                        Kolumna5 = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)),
+                        Kolumna6 = ""
+                    });
+                }
+
+                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+            }
+            catch (Exception ex)
             {
-                Pracownik p = row as Pracownik;
-                if (p == null && row is PracHistoria)
-                    p = ((PracHistoria) row).Pracownik;
-                if (p != null && !pracownicy.Contains(p))
-                    pracownicy.Add(p);
+                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz> {
+                    new Wiersz {
+                        Kolumna1 = "BŁĄD",
+                        Kolumna2 = ex.GetType().Name,
+                        Kolumna3 = ex.Message,
+                        Kolumna4 = ex.StackTrace != null && ex.StackTrace.Length > 0
+                            ? ex.StackTrace.Substring(0, Math.Min(200, ex.StackTrace.Length))
+                            : "",
+                        Kolumna5 = "",
+                        Kolumna6 = ""
+                    }
+                };
             }
-            pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
-
-            var wiersze = new List<Wiersz>();
-            int lp = 1;
-            foreach (Pracownik pracownik in pracownicy)
-            {
-                Pracownik pr = pracownik;
-                wiersze.Add(new Wiersz {
-                    Kolumna1 = (lp++).ToString(),
-                    Kolumna2 = Bezpiecznie(() => pr.Kod),
-                    Kolumna3 = Bezpiecznie(() => pr.NazwiskoImię.ToString()),
-                    Kolumna4 = Bezpiecznie(() => pr.DataUrodzenia.ToString()),
-                    Kolumna5 = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)),
-                    Kolumna6 = ""
-                });
-            }
-
-            DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
         }
 
         static string Bezpiecznie(Func<string> policz)
@@ -78,14 +100,17 @@ namespace x.x.Reports
             foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(new FromTo(Date.Today, Date.Today)))
                 biezaca = ph;
             if (biezaca == null)
-                biezaca = pracownik.Historia.Last;
+                biezaca = pracownik.Historia[Date.Today];
 
             var wydzial = biezaca?.Etat?.Wydzial;
             if (wydzial == null)
                 return "";
 
-            object wartoscCechy = wydzial.Cechy["JednostkaObslugujaca"];
-            return wartoscCechy?.ToString() ?? "";
+            // Cecha "Jednostka obsługująca" na Wydziale - jeszcze nieutworzona
+            // w tej bazie, na razie wyłączona. Po utworzeniu cechy odkomentuj
+            // i popraw nazwę techniczną, jeśli będzie inna niż "JednostkaObslugujaca".
+            //object wartoscCechy = wydzial.Cechy["JednostkaObslugujaca"];
+            return ""; // wartoscCechy?.ToString() ?? "";
         }
 
         public class Wiersz
