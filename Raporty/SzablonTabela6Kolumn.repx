@@ -20,9 +20,9 @@
         </Item1>
       </Controls>
     </Item2>
-    <Item3 Ref="12" ControlType="DetailBand" Name="Detail" HeightF="60" Dpi="254">
+    <Item3 Ref="12" ControlType="DetailBand" Name="Detail" HeightF="150" Dpi="254">
       <Controls>
-        <Item1 Ref="13" ControlType="XRTable" Name="tableDane" AnchorHorizontal="Both" TextAlignment="MiddleLeft" SizeF="1704,60" LocationFloat="0,0" Dpi="254">
+        <Item1 Ref="13" ControlType="XRTable" Name="tableDane" AnchorHorizontal="Both" TextAlignment="MiddleLeft" SizeF="1704,150" LocationFloat="0,0" Dpi="254">
           <Rows>
             <Item1 Ref="14" ControlType="XRTableRow" Name="rowDane" Weight="1" Dpi="254">
               <Cells>
@@ -36,7 +36,7 @@
                     <Item1 Ref="18" Expression="[Kolumna2]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
                 </Item2>
-                <Item3 Ref="19" ControlType="XRTableCell" Name="cellDane3" Weight="1" Dpi="254">
+                <Item3 Ref="19" ControlType="XRTableCell" Name="cellDane3" Weight="1" Multiline="true" Dpi="254">
                   <ExpressionBindings>
                     <Item1 Ref="20" Expression="[Kolumna3]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>

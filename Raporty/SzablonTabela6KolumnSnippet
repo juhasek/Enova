@@ -79,12 +79,15 @@ namespace x.x.Reports
                 var ds = DxReportHelpers.GetDataSourceEmpty(this);
                 if (ds == null)
                     return;
+                string opis = "ETAP=" + (etap ?? "(null)")
+                    + " | TYP=" + ex.GetType().FullName
+                    + " | KOMUNIKAT=" + ex.Message;
                 ds.CustomDataSource = new List<Wiersz> {
                     new Wiersz {
                         Kolumna1 = "BŁĄD",
-                        Kolumna2 = "[ETAP: " + etap + "]",
-                        Kolumna3 = ex.GetType().Name,
-                        Kolumna4 = ex.Message,
+                        Kolumna2 = "",
+                        Kolumna3 = opis,
+                        Kolumna4 = "",
                         Kolumna5 = "",
                         Kolumna6 = ""
                     }
