@@ -45,16 +45,25 @@ kończyła się `NullReferenceException` — niezależnie od tego, co działo si
 w reszcie kodu snippetu (dlatego kolejne poprawki logiki snippetu nic nie
 zmieniały).
 
-Naprawione dodaniem do `ComponentStorage`:
+Naprawione (częściowo) dodaniem do `ComponentStorage`:
 
 ```xml
 <Item2 Ref="29" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSource" DataKind="Empty" />
 ```
 
 oraz atrybutu `DataSource="#Ref-29"` na korzeniu `XtraReportsLayoutSerializer`,
-wskazującego na ten komponent.
+wskazującego na ten komponent. To naprawiło `GetDataSourceEmpty`, ale
+diagnostyka etapowa w snippecie ujawniła kolejny, analogiczny brak: wywołanie
+`DxReportHelpers.GetContext(this)` (na samym początku metody, jeszcze przed
+pobraniem zaznaczenia) też zwracało `null`/rzucało `NullReferenceException` —
+bo w `ComponentStorage` brakowało osobnego komponentu typu „Context”. Dodany
+drugi komponent:
 
-**Ważne:** ta poprawka jest w pliku `.repx`, nie w „Kod źródłowy” — trzeba
+```xml
+<Item3 Ref="30" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSourceContext" DataKind="Context" />
+```
+
+**Ważne:** obie poprawki są w pliku `.repx`, nie w „Kod źródłowy” — trzeba
 więc ponownie zaimportować/podmienić cały plik `.repx` w Enova (tak jak przy
 pierwszym dodawaniu wzorca), samo wklejenie nowej treści snippetu nie
 wystarczy.
