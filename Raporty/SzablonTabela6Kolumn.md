@@ -33,21 +33,19 @@ Raport działa na zaznaczeniu (np. z Listy pracowników) — analogicznie jak
 `Wiersz` z właściwościami `Kolumna1..Kolumna6`), więc nie trzeba nic zmieniać
 w samym layoutcie.
 
-## Ważne zastrzeżenie — do zweryfikowania przy pierwszej kompilacji
+## Odporność na błędy w danych (kolumny 2–5)
 
-Kod snippetu został napisany na podstawie wzorców widocznych w
-`Raporty/OdbiciaRCP` (bez dostępu do rzeczywistych assembly Soneta przy jego
-tworzeniu), więc może wymagać drobnych poprawek nazw. Jeśli kompilacja w
-Enova zgłosi błąd, wklej go — poprawię. Miejsca najbardziej niepewne:
+Nazwy właściwości użyte w snippecie (`Pracownik.Kod`, `.NazwiskoImię`,
+`.DataUrodzenia`, `.Historia`, `Etat.Wydzial`, `wydzial.Cechy[...]`)
+skompilowały się poprawnie w tej instalacji Enova. Mimo to obliczenie
+każdej z kolumn 2–5 jest opakowane w `Bezpiecznie(...)`: jeśli dla
+konkretnego pracownika coś rzuci wyjątkiem w trakcie druku (np. brak
+aktywnego etatu, brak przypisanego Wydziału, brak cechy o danej nazwie
+technicznej na tym Wydziale), w tej jednej komórce pojawi się
+`[BŁĄD: <treść wyjątku>]` zamiast wywalenia całego wydruku.
 
-- **`Pracownik.DataUrodzenia`** — jeśli taka właściwość nie istnieje wprost na
-  `Pracownik`, sprawdź w IntelliSense projektanta właściwy odpowiednik (dane
-  osobowe bywają pod osobną właściwością).
-- **`Etat.Wydzial`** — właściwość Wydziału na etacie pracownika.
-- **`Historia.Last`** — pobranie ostatniego wpisu historii zatrudnienia, gdy
-  brak wpisu obejmującego dzisiejszą datę.
-- **Nazwa techniczna cechy** w `wydzial.Cechy["JednostkaObslugujaca"]` — musi
-  być zgodna z nazwą techniczną tej cechy zdefiniowaną w bazie
-  (Konfiguracja > Cechy dla Wydziału), która może się różnić od widocznego
-  podpisu „Jednostka obsługująca”. Jeśli cecha ma inną nazwę techniczną,
-  popraw ciąg w `Cechy["..."]`.
+Jeśli po uruchomieniu zobaczysz taki komunikat w którejś kolumnie, wklej go
+tutaj — pozwoli to precyzyjnie poprawić dane wejściowe albo logikę (np.
+zmienić nazwę techniczną cechy w `wydzial.Cechy["JednostkaObslugujaca"]`,
+jeśli w tej bazie nazywa się inaczej — sprawdź w Konfiguracja > Cechy dla
+Wydziału).

@@ -13,17 +13,11 @@ namespace x.x.Reports
     // data urodzenia, cecha "Jednostka obsługująca" z Wydziału bieżącego etatu.
     // Kolumna 6 celowo pusta - do dalszej rozbudowy.
     //
-    // UWAGA - poniższe nie zostało skompilowane ani przetestowane względem
-    // rzeczywistych assembly Soneta (brak do nich dostępu przy tworzeniu tego
-    // pliku), więc przy pierwszej kompilacji w Enova mogą wyskoczyć błędy
-    // dotyczące nazw poniższych elementów - w razie błędu wklej go, poprawię:
-    //   - Pracownik.DataUrodzenia - jeśli nie istnieje, sprawdź w IntelliSense
-    //     właściwy odpowiednik (np. dane osobowe pod inną właściwością Pracownika).
-    //   - Etat.Wydzial - właściwość Wydziału na etacie pracownika.
-    //   - Historia.Last - pobranie ostatniego wpisu historii zatrudnienia.
-    //   - nazwa techniczna cechy "JednostkaObslugujaca" w Cechy[...] musi być
-    //     zgodna z konfiguracją tej cechy na Wydziale w tej bazie
-    //     (Konfiguracja > Cechy) - może się różnić od podpisu "Jednostka obsługująca".
+    // Każde pole liczone jest przez Bezpiecznie(...) - jeśli dla któregoś
+    // pracownika coś rzuci wyjątkiem (np. brak aktywnego etatu, brak Wydziału,
+    // brak cechy o danej nazwie), w tej jednej komórce pojawi się
+    // "[BŁĄD: ...]" z treścią wyjątku zamiast wywalenia całego wydruku -
+    // dzięki temu widać od razu, które pole i dlaczego zawodzi.
     public class SzablonTabela6KolumnSnippet : ReportSnippet
     {
         [DxBind(Name = "Report")]
@@ -52,17 +46,30 @@ namespace x.x.Reports
             int lp = 1;
             foreach (Pracownik pracownik in pracownicy)
             {
+                Pracownik pr = pracownik;
                 wiersze.Add(new Wiersz {
                     Kolumna1 = (lp++).ToString(),
-                    Kolumna2 = pracownik.Kod,
-                    Kolumna3 = pracownik.NazwiskoImię.ToString(),
-                    Kolumna4 = pracownik.DataUrodzenia.ToString(),
-                    Kolumna5 = PobierzJednostkeObslugujaca(pracownik),
+                    Kolumna2 = Bezpiecznie(() => pr.Kod),
+                    Kolumna3 = Bezpiecznie(() => pr.NazwiskoImię.ToString()),
+                    Kolumna4 = Bezpiecznie(() => pr.DataUrodzenia.ToString()),
+                    Kolumna5 = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)),
                     Kolumna6 = ""
                 });
             }
 
             DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+        }
+
+        static string Bezpiecznie(Func<string> policz)
+        {
+            try
+            {
+                return policz() ?? "";
+            }
+            catch (Exception ex)
+            {
+                return "[BŁĄD: " + ex.Message + "]";
+            }
         }
 
         static string PobierzJednostkeObslugujaca(Pracownik pracownik)
