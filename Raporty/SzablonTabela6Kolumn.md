@@ -73,12 +73,21 @@ Dodanie komponentu `BusinessSourceContext` (DataKind="Context") w `.repx`
 `NullReferenceException` w tym samym miejscu. Poprawka poszła więc w inną
 stronę, wzorem `Raporty/OdbiciaRCP`: snippet musi mieć właściwość
 oznaczoną atrybutem `[Context(Required = true)]` (klasa `PrnParams`
-dziedzicząca po `ContextBase`) — to prawdopodobnie ten atrybut, a nie
-konfiguracja `.repx`, powoduje, że silnik Enova przed drukiem faktycznie
-wstrzykuje działający `Context` do instancji snippetu. Nasz raport nie ma
-żadnych parametrów do wypełnienia przez użytkownika, więc `PrnParams` jest
-celowo pusta — liczy się sama jej obecność, tak jak w `OdbiciaRCP`
-(`if (pars == null) // designer` z wczesnym `return`, dokładnie jak tam).
+dziedzicząca po `ContextBase`) — to ten atrybut powoduje, że silnik Enova
+przed drukiem pokazuje okno parametrów (potwierdzone: po dodaniu tej
+właściwości Enova zaczęła wyświetlać okienko do zatwierdzenia przed
+drukiem) i wstrzykuje działający `Context` do instancji snippetu. Nasz
+raport nie ma żadnych parametrów do wypełnienia przez użytkownika, więc
+`PrnParams` jest celowo pusta — liczy się sama jej obecność, tak jak w
+`OdbiciaRCP` (`if (pars == null) // designer` z wczesnym `return`,
+dokładnie jak tam).
+
+Ostateczna poprawka: `pars` (typu `PrnParams`, dziedziczący po
+`ContextBase`) ma bezpośrednio dostępną (odziedziczoną) właściwość
+`Context` — potwierdzone przez IntelliSense w edytorze Enova (`pars.`
+pokazuje `Context`). `DxReportHelpers.GetContext(this)` w ogóle nie był
+potrzebny i konsekwentnie zwracał `null` w tej instalacji — zastąpiony
+bezpośrednio przez `pars.Context`.
 
 ## Odporność na błędy w danych (kolumny 2–5)
 

@@ -58,7 +58,7 @@ namespace x.x.Reports
                 }
 
                 etap = "pobranie kontekstu";
-                Context dc = DxReportHelpers.GetContext(this);
+                Context dc = pars.Context;
 
                 etap = "pobranie zaznaczenia (Row[])";
                 Row[] rows = dc?[typeof(Row[])] as Row[];
