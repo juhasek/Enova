@@ -68,6 +68,18 @@ więc ponownie zaimportować/podmienić cały plik `.repx` w Enova (tak jak przy
 pierwszym dodawaniu wzorca), samo wklejenie nowej treści snippetu nie
 wystarczy.
 
+Dodanie komponentu `BusinessSourceContext` (DataKind="Context") w `.repx`
+**nie wystarczyło** — `GetContext(this)` nadal rzucał identyczny
+`NullReferenceException` w tym samym miejscu. Poprawka poszła więc w inną
+stronę, wzorem `Raporty/OdbiciaRCP`: snippet musi mieć właściwość
+oznaczoną atrybutem `[Context(Required = true)]` (klasa `PrnParams`
+dziedzicząca po `ContextBase`) — to prawdopodobnie ten atrybut, a nie
+konfiguracja `.repx`, powoduje, że silnik Enova przed drukiem faktycznie
+wstrzykuje działający `Context` do instancji snippetu. Nasz raport nie ma
+żadnych parametrów do wypełnienia przez użytkownika, więc `PrnParams` jest
+celowo pusta — liczy się sama jej obecność, tak jak w `OdbiciaRCP`
+(`if (pars == null) // designer` z wczesnym `return`, dokładnie jak tam).
+
 ## Odporność na błędy w danych (kolumny 2–5)
 
 Obliczenie każdej z kolumn 2–5 jest opakowane w `Bezpiecznie(...)`: jeśli dla

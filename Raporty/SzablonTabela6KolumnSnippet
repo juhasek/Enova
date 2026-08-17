@@ -24,12 +24,39 @@ namespace x.x.Reports
     // zamiast wywalać się z samym stack trace bez numeru linii.
     public class SzablonTabela6KolumnSnippet : ReportSnippet
     {
+        // Wzorowane na Raporty/OdbiciaRCP: obecność właściwości oznaczonej
+        // [Context(Required = true)] jest tym, co powoduje, że silnik Enova
+        // przed drukiem wstrzykuje do snippetu działający Context - bez niej
+        // DxReportHelpers.GetContext(this) nie ma skąd go wziąć. Ten raport
+        // nie ma żadnych parametrów do wypełnienia przez użytkownika, więc
+        // klasa PrnParams jest celowo pusta - liczy się sama jej obecność.
+        public class PrnParams : ContextBase
+        {
+            public PrnParams(Context context) : base(context) { }
+        }
+
+        PrnParams pars;
+
+        [Context(Required = true)]
+        public PrnParams Params
+        {
+            get { return pars; }
+            set { pars = value; }
+        }
+
         [DxBind(Name = "Report")]
         private void SzablonTabela6Kolumn_BeforePrint(object sender, CancelEventArgs e)
         {
             string etap = "start";
             try
             {
+                etap = "sprawdzenie trybu (designer)";
+                if (pars == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
+
                 etap = "pobranie kontekstu";
                 Context dc = DxReportHelpers.GetContext(this);
 
