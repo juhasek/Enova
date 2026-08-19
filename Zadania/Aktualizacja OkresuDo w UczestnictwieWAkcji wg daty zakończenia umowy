@@ -1,13 +1,15 @@
-public override bool IsEnable() { 
+public override bool IsEnable() {
 
-if(Row.Last.Etat.OkresZatrudnienia.To < Date.MaxValue)
-{
-	// Zamykanie Akcji pracowniczych 
-	// Zawężone przez WgPracownik do wierszy TEGO pracownika - bez tego task odpalany przy zapisie 
-	// jednego pracownika przeglądał całą tabelę UczestnictwoWAkcji i potrafił wywalić się na danych 
-	// zupełnie innego, niezwiązanego z edytowaną kartoteką pracownika. 
-	
-	var uczestnictwa = AkcjePracA1Module.GetInstance(Session).UczesWAkcji.WgPracownik[Row]; 
+	// Bez warunku "czy umowa ma koniec" na wejściu - inaczej scenariusz wycofania się z zakończenia
+	// umowy (data końca skasowana, OkresZatrudnienia.To znowu == Date.MaxValue) nigdy by nie wszedł
+	// do pętli i OkresDo zostałoby błędnie "zawieszone" na starej dacie zamiast wrócić do bezterminowości.
+	{
+	// Zamykanie Akcji pracowniczych
+	// Zawężone przez WgPracownik do wierszy TEGO pracownika - bez tego task odpalany przy zapisie
+	// jednego pracownika przeglądał całą tabelę UczestnictwoWAkcji i potrafił wywalić się na danych
+	// zupełnie innego, niezwiązanego z edytowaną kartoteką pracownika.
+
+	var uczestnictwa = AkcjePracA1Module.GetInstance(Session).UczesWAkcji.WgPracownik[Row];
 	
 	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa) 
 	{ 
@@ -17,20 +19,22 @@ if(Row.Last.Etat.OkresZatrudnienia.To < Date.MaxValue)
 			if (!uczestnictwo.Okres.Contains(Date.Today)) 
 				continue; 
 			
-			var dataZakonczeniaUmowy = Row.Historia[Date.Today].Etat.OkresZatrudnienia.To; 
-			
-			// Brak Etatu albo umowa bezterminowa (Okres.To == Date.MaxValue) - OkresTo zostaje bez zmian. 
-			
-			if (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue) 
-				continue;   
-			
-			if (uczestnictwo.OkresDo == dataZakonczeniaUmowy) 
-				continue; 
-			
-			try 
-			{ 
-				uczestnictwo.OkresDo = (Date)dataZakonczeniaUmowy; 
-			} 
+			var dataZakonczeniaUmowy = Row.Historia[Date.Today].Etat.OkresZatrudnienia.To;
+
+			// OkresDo ma zawsze odzwierciedlać stan umowy: jeśli ktoś wpisał datę końca i się z tego
+			// wycofał (skasował datę / umowa znów bezterminowa), wracamy do Date.MaxValue zamiast
+			// zostawiać wiersz "zawieszony" na wcześniej wpisanej dacie.
+			Date nowaWartoscOkresDo = (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue)
+				? Date.MaxValue
+				: (Date)dataZakonczeniaUmowy;
+
+			if (uczestnictwo.OkresDo == nowaWartoscOkresDo)
+				continue;
+
+			try
+			{
+				uczestnictwo.OkresDo = nowaWartoscOkresDo;
+			}
 			catch (Exception ex) 
 			{ 
 			// Diagnostyka do wyjaśnienia "Błędny zakres dat" - pokazuje w raporcie błędu Enova, 
