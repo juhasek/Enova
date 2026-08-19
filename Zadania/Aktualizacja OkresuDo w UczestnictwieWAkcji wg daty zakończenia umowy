@@ -10,10 +10,22 @@ public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
 			continue;
 
 		Pracownik pracownik = uczestnictwo.Pracownik;
-		Date? dataZakonczeniaUmowy = pracownik?.Last?.Etat?.Okres.To;
+		if (pracownik == null)
+			continue;
+
+		// pracownik.Last zwraca ostatni wg Lp Etat, niekoniecznie ten obowiązujący dziś (np. po zmianie
+		// stanowiska w trakcie zatrudnienia) - bierzemy Etat aktualny "na dziś", tak jak w Weryfikatorze
+		// okresu zatrudnienia (Weryfikatory czasu pracy/Weryfikator okresu zatrudnienia).
+		var etatDzis = pracownik[Date.Today];
+		Date? dataZakonczeniaUmowy = etatDzis?.Etat?.OkresZatrudnienia.To;
 
 		// Brak Etatu albo umowa bezterminowa (Okres.To == Date.MaxValue) - OkresTo zostaje bez zmian.
 		if (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue)
+			continue;
+
+		// Data końca umowy sprzed początku bieżącej edycji akcji (AktualnoscFrom) dałaby framework'owi
+		// nieprawidłowy zakres dat przy zapisie (OkresDo przelicza też AktualnoscDo) - pomijamy taki wiersz.
+		if (dataZakonczeniaUmowy < uczestnictwo.AktualnoscFrom)
 			continue;
 
 		if (uczestnictwo.OkresTo != dataZakonczeniaUmowy)
