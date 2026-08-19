@@ -2,7 +2,8 @@ public override bool IsEnable() {
 
 	// Bez warunku "czy umowa ma koniec" na wejściu - inaczej scenariusz wycofania się z zakończenia
 	// umowy (data końca skasowana, OkresZatrudnienia.To znowu == Date.MaxValue) nigdy by nie wszedł
-	// do pętli i OkresDo zostałoby błędnie "zawieszone" na starej dacie zamiast wrócić do bezterminowości.
+	// do pętli i OkresDo zostałoby błędnie "zawieszone" na starej dacie zamiast wrócić do pełnego
+	// okresu edycji.
 	{
 	// Zamykanie Akcji pracowniczych
 	// Zawężone przez WgPracownik do wierszy TEGO pracownika - bez tego task odpalany przy zapisie
@@ -10,45 +11,68 @@ public override bool IsEnable() {
 	// zupełnie innego, niezwiązanego z edytowaną kartoteką pracownika.
 
 	var uczestnictwa = AkcjePracA1Module.GetInstance(Session).UczesWAkcji.WgPracownik[Row];
-	
-	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa) 
-	{ 
-			// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) - 
-			
-			// zmieniamy tylko aktualną edycję, czyli wiersz, którego Okres obejmuje dzisiejszą datę. 
-			if (!uczestnictwo.Okres.Contains(Date.Today)) 
-				continue; 
-			
-			var dataZakonczeniaUmowy = Row.Historia[Date.Today].Etat.OkresZatrudnienia.To;
 
-			// OkresDo ma zawsze odzwierciedlać stan umowy: jeśli ktoś wpisał datę końca i się z tego
-			// wycofał (skasował datę / umowa znów bezterminowa), wracamy do Date.MaxValue zamiast
-			// zostawiać wiersz "zawieszony" na wcześniej wpisanej dacie.
-			Date nowaWartoscOkresDo = (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue)
-				? Date.MaxValue
-				: (Date)dataZakonczeniaUmowy;
+	// Docelowy koniec okresu: data końca umowy, o ile jest wcześniejsza niż naturalny koniec danej
+	// edycji akcji, w przeciwnym razie pełny okres edycji (czyli brak wcześniejszego zamknięcia).
+	Date ObliczDocelowyKoniec(Date pelnyKoniecEdycji, Date? koniecUmowy)
+	{
+		if (koniecUmowy != null && koniecUmowy != Date.MaxValue && koniecUmowy < pelnyKoniecEdycji)
+			return (Date)koniecUmowy;
+		return pelnyKoniecEdycji;
+	}
 
-			if (uczestnictwo.OkresDo == nowaWartoscOkresDo)
+	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa)
+	{
+		// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) -
+		// zmieniamy tylko aktualną edycję, czyli wiersz, którego Okres obejmuje dzisiejszą datę.
+		if (!uczestnictwo.Okres.Contains(Date.Today))
+			continue;
+
+		var dataZakonczeniaUmowy = Row.Historia[Date.Today].Etat.OkresZatrudnienia.To;
+
+		// Pełny (domyślny) koniec obowiązywania wynika z samej edycji akcji - przy przystąpieniu
+		// pracownika do edycji to on jest domyślnie wpisywany jako OkresDo.
+		Date pelnyKoniecEdycji = uczestnictwo.EdycjaAkcji.Okres.To;
+
+		try
+		{
+			// Wiersz ma już okres krótszy niż pełny okres edycji - ktoś go już wcześniej skrócił
+			// (ręczna rezygnacja z akcji przed końcem umowy albo wcześniejsze zamknięcie przez ten
+			// task). Nie ma osobnego znacznika odróżniającego te dwa przypadki, więc traktujemy to
+			// jako świadomą decyzję i nie nadpisujemy - koszt: cofnięcie/korekta daty końca umowy po
+			// takim skróceniu nie zostanie już automatycznie uwzględniona.
+			if (uczestnictwo.OkresDo < pelnyKoniecEdycji)
 				continue;
 
-			try
+			Date docelowyKoniec = ObliczDocelowyKoniec(pelnyKoniecEdycji, dataZakonczeniaUmowy);
+			if (uczestnictwo.OkresDo != docelowyKoniec)
+				uczestnictwo.OkresDo = docelowyKoniec;
+
+			// Poza samym przystąpieniem do edycji pracownik ma też okres w ramach kategorii SEOP
+			// (grid "Parametry") - zamykamy go tą samą regułą.
+			foreach (var parametr in uczestnictwo.Parametry)
 			{
-				uczestnictwo.OkresDo = nowaWartoscOkresDo;
+				if (parametr.OkresDo < pelnyKoniecEdycji)
+					continue;
+
+				Date docelowyKoniecParametru = ObliczDocelowyKoniec(pelnyKoniecEdycji, dataZakonczeniaUmowy);
+				if (parametr.OkresDo != docelowyKoniecParametru)
+					parametr.OkresDo = docelowyKoniecParametru;
 			}
-			catch (Exception ex) 
-			{ 
-			// Diagnostyka do wyjaśnienia "Błędny zakres dat" - pokazuje w raporcie błędu Enova, 
-			// który dokładnie pracownik/wiersz/edycja i jakie daty brały udział w próbie zapisu. 
-			throw new Exception( 
-				$"Błąd przy ustawianiu OkresTo dla UczestnictwoWAkcji Guid={uczestnictwo.Guid}, " + 
-				$"Pracownik={Row} (Guid={Row.Guid}), EdycjaAkcji={uczestnictwo.EdycjaAkcji}, " + 
-				$"OkresFrom={uczestnictwo.OkresOd}, OkresTo(przed)={uczestnictwo.OkresDo}, " + 
-				$"AktualnoscFrom={uczestnictwo.AktualnoscOd}, AktualnoscTo(przed)={uczestnictwo.AktualnoscDo}, " + 
-				$"nowa data (koniec umowy)={dataZakonczeniaUmowy}, " + 
-				$"EtatOkresZatrudnienia={Row.Historia[Date.Today].Etat.OkresZatrudnienia}: {ex.Message}", 
-			ex); 
-			} 
-		} 
-	}  
-	return false; 
-} 
+		}
+		catch (Exception ex)
+		{
+			// Diagnostyka do wyjaśnienia "Błędny zakres dat" - pokazuje w raporcie błędu Enova,
+			// który dokładnie pracownik/wiersz/edycja i jakie daty brały udział w próbie zapisu.
+			throw new Exception(
+				$"Błąd przy zamykaniu UczestnictwoWAkcji Guid={uczestnictwo.Guid}, " +
+				$"Pracownik={Row} (Guid={Row.Guid}), EdycjaAkcji={uczestnictwo.EdycjaAkcji}, " +
+				$"OkresOd={uczestnictwo.OkresOd}, OkresDo(przed)={uczestnictwo.OkresDo}, " +
+				$"AktualnoscOd={uczestnictwo.AktualnoscOd}, AktualnoscDo(przed)={uczestnictwo.AktualnoscDo}, " +
+				$"pełny koniec edycji={pelnyKoniecEdycji}, koniec umowy={dataZakonczeniaUmowy}: {ex.Message}",
+				ex);
+		}
+	}
+	}
+	return false;
+}
