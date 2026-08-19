@@ -1,52 +1,50 @@
-public static void AktualizujOkresDoUczestnictwaWAkcji(Pracownik pracownik)
+public override bool IsEnable() { 
+
+if(Row.Last.Etat.OkresZatrudnienia.To < Date.MaxValue)
 {
-	if (pracownik == null)
-		return;
-
-	// Zawężone przez WgPracownik do wierszy TEGO pracownika - bez tego task odpalany przy zapisie
-	// jednego pracownika przeglądał całą tabelę UczestnictwoWAkcji i potrafił wywalić się na danych
-	// zupełnie innego, niezwiązanego z edytowaną kartoteką pracownika.
-	var uczestnictwa = AkcjePracA1Module.GetInstance(pracownik.Session).UczestnictwoWAkcji.WgPracownik[pracownik];
-
-	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa)
-	{
-		// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) -
-		// zmieniamy tylko aktualną edycję, czyli wiersz, którego Okres obejmuje dzisiejszą datę.
-		if (!uczestnictwo.Okres.Contains(Date.Today))
-			continue;
-
-		// pracownik.Last zwraca ostatni wg Lp Etat, niekoniecznie ten obowiązujący dziś (np. po zmianie
-		// stanowiska w trakcie zatrudnienia) - bierzemy Etat aktualny "na dziś" z historii.
-		var dataZakonczeniaUmowy = pracownik.Historia[Date.Today].Etat.OkresZatrudnienia.To;
-
-		// Brak Etatu albo umowa bezterminowa (Okres.To == Date.MaxValue) - OkresTo zostaje bez zmian.
-		if (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue)
-			continue;
-
-		// Data końca umowy sprzed początku bieżącej edycji akcji (AktualnoscFrom) dałaby framework'owi
-		// nieprawidłowy zakres dat przy zapisie (OkresDo przelicza też AktualnoscDo) - pomijamy taki wiersz.
-		if (dataZakonczeniaUmowy < uczestnictwo.AktualnoscFrom)
-			continue;
-
-		if (uczestnictwo.OkresTo == dataZakonczeniaUmowy)
-			continue;
-
-		try
-		{
-			uczestnictwo.OkresTo = (Date)dataZakonczeniaUmowy;
-		}
-		catch (Exception ex)
-		{
-			// Diagnostyka do wyjaśnienia "Błędny zakres dat" - pokazuje w raporcie błędu Enova,
-			// który dokładnie pracownik/wiersz/edycja i jakie daty brały udział w próbie zapisu.
-			throw new Exception(
-				$"Błąd przy ustawianiu OkresTo dla UczestnictwoWAkcji Guid={uczestnictwo.Guid}, " +
-				$"Pracownik={pracownik} (Guid={pracownik.Guid}), EdycjaAkcji={uczestnictwo.EdycjaAkcji}, " +
-				$"OkresFrom={uczestnictwo.OkresFrom}, OkresTo(przed)={uczestnictwo.OkresTo}, " +
-				$"AktualnoscFrom={uczestnictwo.AktualnoscFrom}, AktualnoscTo(przed)={uczestnictwo.AktualnoscTo}, " +
-				$"nowa data (koniec umowy)={dataZakonczeniaUmowy}, " +
-				$"EtatOkresZatrudnienia={pracownik.Historia[Date.Today].Etat.OkresZatrudnienia}: {ex.Message}",
-				ex);
-		}
-	}
-}
+	// Zamykanie Akcji pracowniczych 
+	// Zawężone przez WgPracownik do wierszy TEGO pracownika - bez tego task odpalany przy zapisie 
+	// jednego pracownika przeglądał całą tabelę UczestnictwoWAkcji i potrafił wywalić się na danych 
+	// zupełnie innego, niezwiązanego z edytowaną kartoteką pracownika. 
+	
+	var uczestnictwa = AkcjePracA1Module.GetInstance(Session).UczesWAkcji.WgPracownik[Row]; 
+	
+	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa) 
+	{ 
+			// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) - 
+			
+			// zmieniamy tylko aktualną edycję, czyli wiersz, którego Okres obejmuje dzisiejszą datę. 
+			if (!uczestnictwo.Okres.Contains(Date.Today)) 
+				continue; 
+			
+			var dataZakonczeniaUmowy = Row.Historia[Date.Today].Etat.OkresZatrudnienia.To; 
+			
+			// Brak Etatu albo umowa bezterminowa (Okres.To == Date.MaxValue) - OkresTo zostaje bez zmian. 
+			
+			if (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue) 
+				continue;   
+			
+			if (uczestnictwo.OkresDo == dataZakonczeniaUmowy) 
+				continue; 
+			
+			try 
+			{ 
+				uczestnictwo.OkresDo = (Date)dataZakonczeniaUmowy; 
+			} 
+			catch (Exception ex) 
+			{ 
+			// Diagnostyka do wyjaśnienia "Błędny zakres dat" - pokazuje w raporcie błędu Enova, 
+			// który dokładnie pracownik/wiersz/edycja i jakie daty brały udział w próbie zapisu. 
+			throw new Exception( 
+				$"Błąd przy ustawianiu OkresTo dla UczestnictwoWAkcji Guid={uczestnictwo.Guid}, " + 
+				$"Pracownik={Row} (Guid={Row.Guid}), EdycjaAkcji={uczestnictwo.EdycjaAkcji}, " + 
+				$"OkresFrom={uczestnictwo.OkresOd}, OkresTo(przed)={uczestnictwo.OkresDo}, " + 
+				$"AktualnoscFrom={uczestnictwo.AktualnoscOd}, AktualnoscTo(przed)={uczestnictwo.AktualnoscDo}, " + 
+				$"nowa data (koniec umowy)={dataZakonczeniaUmowy}, " + 
+				$"EtatOkresZatrudnienia={Row.Historia[Date.Today].Etat.OkresZatrudnienia}: {ex.Message}", 
+			ex); 
+			} 
+		} 
+	}  
+	return false; 
+} 
