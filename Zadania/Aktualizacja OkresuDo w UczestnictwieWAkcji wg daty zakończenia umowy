@@ -16,8 +16,8 @@ public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
 		// pracownik.Last zwraca ostatni wg Lp Etat, niekoniecznie ten obowiązujący dziś (np. po zmianie
 		// stanowiska w trakcie zatrudnienia) - bierzemy Etat aktualny "na dziś", tak jak w Weryfikatorze
 		// okresu zatrudnienia (Weryfikatory czasu pracy/Weryfikator okresu zatrudnienia).
-		var etatDzis = pracownik[Date.Today];
-		Date? dataZakonczeniaUmowy = etatDzis?.Etat?.OkresZatrudnienia.To;
+
+		var dataZakonczeniaUmowy = pracownik.Historia[Date.Today].Etat.OkresZatrudnienia.To;
 
 		// Brak Etatu albo umowa bezterminowa (Okres.To == Date.MaxValue) - OkresTo zostaje bez zmian.
 		if (dataZakonczeniaUmowy == null || dataZakonczeniaUmowy == Date.MaxValue)
