@@ -6,7 +6,7 @@ public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
 	{
 		// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) -
 		// zmieniamy tylko aktualną edycję, czyli wiersz jeszcze niezastąpiony nowszą (AktualnoscTo otwarte).
-		if (uczestnictwo.AktualnoscTo != Date.MaxValue)
+		if (!uczestnictwo.Okres.Contains(Date.Today))
 			continue;
 
 		Pracownik pracownik = uczestnictwo.Pracownik;
