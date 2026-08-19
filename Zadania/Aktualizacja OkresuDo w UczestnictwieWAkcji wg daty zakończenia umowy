@@ -28,7 +28,14 @@ public override bool IsEnable() {
 		if (!uczestnictwo.Okres.Contains(Date.Today))
 			continue;
 
-		var dataZakonczeniaUmowy = Row.Historia[Date.Today].Etat.OkresZatrudnienia.To;
+		// Sama wpisana data końca umowy (np. kontrakt terminowy, który może zostać przedłużony) nie
+		// oznacza jeszcze zwolnienia - do zamykania uczestnictwa honorujemy ją tylko, gdy pracownik
+		// jest faktycznie oznaczony jako zwolniony. Dzięki temu odznaczenie PracownikZwolniony też
+		// otwiera z powrotem wiersze zamknięte wcześniej automatycznie przez ten task.
+		// Do potwierdzenia: dokładna nazwa/lokalizacja pola (przyjąłem Row.PracownikZwolniony).
+		Date? dataZakonczeniaUmowy = Row.PracownikZwolniony
+			? Row.Historia[Date.Today].Etat.OkresZatrudnienia.To
+			: (Date?)null;
 
 		// Pełny (domyślny) koniec obowiązywania wynika z samej edycji akcji - przy przystąpieniu
 		// pracownika do edycji to on jest domyślnie wpisywany jako OkresDo.
