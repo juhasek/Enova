@@ -28,8 +28,25 @@ public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
 		if (dataZakonczeniaUmowy < uczestnictwo.AktualnoscFrom)
 			continue;
 
-		if (uczestnictwo.OkresTo != dataZakonczeniaUmowy)
+		if (uczestnictwo.OkresTo == dataZakonczeniaUmowy)
+			continue;
+
+		try
+		{
 			uczestnictwo.OkresTo = (Date)dataZakonczeniaUmowy;
+		}
+		catch (Exception ex)
+		{
+			// Diagnostyka do wyjaśnienia "Błędny zakres dat" - pokazuje w raporcie błędu Enova,
+			// który dokładnie pracownik/wiersz/edycja i jakie daty brały udział w próbie zapisu.
+			throw new Exception(
+				$"Błąd przy ustawianiu OkresTo dla UczestnictwoWAkcji Guid={uczestnictwo.Guid}, " +
+				$"Pracownik={pracownik} (Guid={pracownik.Guid}), EdycjaAkcji={uczestnictwo.EdycjaAkcji}, " +
+				$"OkresFrom={uczestnictwo.OkresFrom}, OkresTo(przed)={uczestnictwo.OkresTo}, " +
+				$"AktualnoscFrom={uczestnictwo.AktualnoscFrom}, AktualnoscTo(przed)={uczestnictwo.AktualnoscTo}, " +
+				$"nowa data (koniec umowy)={dataZakonczeniaUmowy}, EtatOkresZatrudnienia={etatDzis.Etat.OkresZatrudnienia}: {ex.Message}",
+				ex);
+		}
 	}
 
 	session.Save();
