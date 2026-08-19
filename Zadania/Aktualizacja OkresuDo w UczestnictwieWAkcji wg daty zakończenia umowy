@@ -5,7 +5,7 @@ public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
 	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa)
 	{
 		// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) -
-		// zmieniamy tylko aktualną edycję, czyli wiersz jeszcze niezastąpiony nowszą (AktualnoscTo otwarte).
+		// zmieniamy tylko aktualną edycję, czyli wiersz, którego Okres obejmuje dzisiejszą datę.
 		if (!uczestnictwo.Okres.Contains(Date.Today))
 			continue;
 
