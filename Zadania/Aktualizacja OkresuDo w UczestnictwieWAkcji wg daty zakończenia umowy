@@ -1,16 +1,18 @@
-public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
+public static void AktualizujOkresDoUczestnictwaWAkcji(Pracownik pracownik)
 {
-	var uczestnictwa = AkcjePracA1Module.GetInstance(session).UczestnictwoWAkcji;
+	if (pracownik == null)
+		return;
+
+	// Zawężone przez WgPracownik do wierszy TEGO pracownika - bez tego task odpalany przy zapisie
+	// jednego pracownika przeglądał całą tabelę UczestnictwoWAkcji i potrafił wywalić się na danych
+	// zupełnie innego, niezwiązanego z edytowaną kartoteką pracownika.
+	var uczestnictwa = AkcjePracA1Module.GetInstance(pracownik.Session).UczestnictwoWAkcji.WgPracownik[pracownik];
 
 	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa)
 	{
 		// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) -
 		// zmieniamy tylko aktualną edycję, czyli wiersz, którego Okres obejmuje dzisiejszą datę.
 		if (!uczestnictwo.Okres.Contains(Date.Today))
-			continue;
-
-		Pracownik pracownik = uczestnictwo.Pracownik;
-		if (pracownik == null)
 			continue;
 
 		// pracownik.Last zwraca ostatni wg Lp Etat, niekoniecznie ten obowiązujący dziś (np. po zmianie
@@ -47,6 +49,4 @@ public static void AktualizujOkresDoUczestnictwaWAkcji(Session session)
 				ex);
 		}
 	}
-
-	session.Save();
 }
