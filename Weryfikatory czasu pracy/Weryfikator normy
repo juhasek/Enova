@@ -1,0 +1,31 @@
+public static string WeryfikujNormeDobowaA1(Kalendarz kalendarz, KalkulatorBase kp, Date d, Pracownik pracownik) //na podstawie standardowego weryfikatora
+{
+	if(kalendarz == null)
+	{
+		return null;
+	}
+	Time czas = kp[d].Czas;
+	if(czas == Time.Zero)
+	{
+		return null;
+	}
+	bool uwzgledniajWymiarEtatu = kalendarz.UwzglWymiarEtatu;
+	Fraction wymiar = pracownik[d].Etat.Zaszeregowanie.Wymiar;
+	Time wartoscDobowa = Time.Zero;
+	if(kalendarz.RownowaznyCzasPracy)
+	{
+		wartoscDobowa = new Time(12,0);
+		if(czas > wartoscDobowa)
+			return "Dla dnia ({2}) zaplanowano czas ({0}) przekraczający dopuszczalną normę ({1})".TranslateFormat(czas, wartoscDobowa, d, kp[d]);
+	}
+	else if(!kalendarz.RownowaznyCzasPracy)
+	{
+		if(uwzgledniajWymiarEtatu)
+			wartoscDobowa = kalendarz.Nadgodziny.WartoscDobowa * wymiar ;
+		else
+			wartoscDobowa = kalendarz.Nadgodziny.WartoscDobowa;
+		if(wartoscDobowa != czas)
+			return "Dla dnia ({0}) zaplanowano błędną ilość godzin ({1}) prawidłowa to ({2})".TranslateFormat(d, czas, wartoscDobowa);
+	}
+	return null;
+}
