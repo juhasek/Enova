@@ -80,67 +80,18 @@ możliwe — niezależnie od tego, czy aktualny plan wygląda na razie na „za 
 
 ## 4. Scenariusze testowe
 
-Poniższe scenariusze zostały zweryfikowane na żywym środowisku Enova w trakcie tworzenia
-weryfikatora i opisują oczekiwane zachowanie.
+Poniższe scenariusze opisują oczekiwane zachowanie weryfikatora. Kolumna „Zweryfikowano na żywo”
+wskazuje, które z nich zostały faktycznie sprawdzone na żywym środowisku Enova w trakcie
+tworzenia weryfikatora, a które wynikają wprost z konstrukcji kodu.
 
-### 4.1. Nadwyżka w jednym miesiącu, reszta okresu wolna — brak błędu
-
-- Okres rozliczeniowy: 3-miesięczny.
-- Miesiąc 1: jeden dzień zaplanowany z nadwyżką godzin (np. dłuższa zmiana w systemie
-  równoważnym).
-- Miesiące 2–3: brak jakichkolwiek wpisów.
-
-**Oczekiwany wynik:** brak błędu. Nadwyżka z jednego dnia jest znikoma w porównaniu z zapasem
-dostępnym w niezaplanowanej reszcie okresu.
-
-### 4.2. Cały pierwszy miesiąc wyzerowany, reszta okresu nietknięta — komunikat o niedoborze, blisko granicy
-
-- Okres rozliczeniowy: 3-miesięczny (lipiec–wrzesień).
-- Lipiec: jawnie wpisane 0 godzin dla każdego dnia (np. cały miesiąc bezpłatny/wyłączony z pracy).
-- Sierpień, wrzesień: brak wpisów (w pełni elastyczne).
-
-**Oczekiwany wynik:** komunikat o niedoborze, z bardzo małą brakującą wartością (rzędu
-pojedynczych godzin) — bo zapas wynikający z możliwości wydłużenia dni w sierpniu i wrześniu do
-12:00 (system równoważny) niemal w całości pokrywa normę kodeksową wyzerowanego lipca. To
-oczekiwane zachowanie „skrajnej wykonalności”, nie błąd — sprawdzamy, czy da się jeszcze dojść do
-normy przy maksymalnym możliwym wykorzystaniu pozostałych dni, a nie przy typowym, ośmiogodzinnym
-planowaniu.
-
-### 4.3. Cały pierwszy i drugi miesiąc wyzerowane — komunikat o niedoborze, duży brak
-
-- Jak w 4.2, ale zarówno lipiec, jak i sierpień są jawnie wyzerowane; elastyczny pozostaje tylko
-  wrzesień.
-
-**Oczekiwany wynik:** komunikat o niedoborze ze znacznie większą brakującą wartością — sam
-wrzesień, nawet zaplanowany w całości po 12:00 dziennie, nie jest w stanie pokryć normy kodeksowej
-dwóch wyzerowanych miesięcy.
-
-### 4.4. Realne, niemożliwe do skompensowania przekroczenie
-
-- Sytuacja, w której suma godzin z dni już jawnie wpisanych (bez uwzględniania dni jeszcze
-  niezaplanowanych) sama w sobie przekracza normę kodeksową całego okresu.
-
-**Oczekiwany wynik:** komunikat o przekroczeniu, niezależnie od tego, ile dni okresu pozostało
-jeszcze niezaplanowanych — nadwyżki nie da się już cofnąć.
-
-### 4.5. Dokładne dopasowanie do normy kodeksowej
-
-- Wszystkie dni okresu jawnie wpisane, suma godzin dokładnie równa normie kodeksowej.
-
-**Oczekiwany wynik:** brak błędu (norma kodeksowa mieści się w przedziale [minimum, maksimum],
-który w tym przypadku sprowadza się do jednej wartości).
-
-### 4.6. Zmiana systemu czasu pracy w trakcie okresu rozliczeniowego
-
-- Pracownik ma w trakcie okresu rozliczeniowego zmianę systemu czasu pracy, np. z równoważnego na
-  podstawowy.
-
-**Oczekiwany wynik:** dobowe maksimum dla dni bez jawnego wpisu jest liczone osobno dla każdego
-dnia na podstawie historii etatu pracownika obowiązującej w tym konkretnym dniu (`Historia[data]`)
-— dni sprzed zmiany dostają maksimum właściwe systemowi równoważnemu (12:00), dni po zmianie
-maksimum właściwe nowemu systemowi. Nie testowano tego scenariusza na żywym środowisku (brak
-danych testowych z pracownikiem zmieniającym system w trakcie okresu), ale wynika to wprost z
-konstrukcji kodu — patrz pkt 5.
+| # | Scenariusz | Opis sytuacji | Oczekiwany wynik | Zweryfikowano na żywo |
+|---|---|---|---|---|
+| 4.1 | Nadwyżka w jednym miesiącu, reszta okresu wolna | Okres 3-miesięczny. Miesiąc 1: jeden dzień zaplanowany z nadwyżką godzin (np. dłuższa zmiana w systemie równoważnym). Miesiące 2–3: brak jakichkolwiek wpisów. | Brak błędu — nadwyżka z jednego dnia jest znikoma wobec zapasu dostępnego w niezaplanowanej reszcie okresu. | Tak |
+| 4.2 | Cały pierwszy miesiąc wyzerowany, reszta okresu nietknięta | Okres 3-miesięczny (lipiec–wrzesień). Lipiec: jawnie wpisane 0 godzin dla każdego dnia. Sierpień, wrzesień: brak wpisów (w pełni elastyczne). | Komunikat o niedoborze z bardzo małą brakującą wartością (rzędu pojedynczych godzin) — zapas z możliwości wydłużenia dni w sierpniu i wrześniu do 12:00 (system równoważny) niemal w całości pokrywa normę kodeksową wyzerowanego lipca. To oczekiwane zachowanie „skrajnej wykonalności”, nie błąd. | Tak |
+| 4.3 | Cały pierwszy i drugi miesiąc wyzerowane | Jak w 4.2, ale lipiec i sierpień są jawnie wyzerowane; elastyczny pozostaje tylko wrzesień. | Komunikat o niedoborze ze znacznie większą brakującą wartością — sam wrzesień, nawet zaplanowany w całości po 12:00 dziennie, nie pokrywa normy kodeksowej dwóch wyzerowanych miesięcy. | Tak |
+| 4.4 | Realne, niemożliwe do skompensowania przekroczenie | Suma godzin z dni już jawnie wpisanych (bez dni jeszcze niezaplanowanych) sama w sobie przekracza normę kodeksową całego okresu. | Komunikat o przekroczeniu, niezależnie od tego, ile dni okresu pozostało niezaplanowanych — nadwyżki nie da się już cofnąć. | Tak |
+| 4.5 | Dokładne dopasowanie do normy kodeksowej | Wszystkie dni okresu jawnie wpisane, suma godzin dokładnie równa normie kodeksowej. | Brak błędu (norma kodeksowa mieści się w przedziale [minimum, maksimum], który sprowadza się tu do jednej wartości). | Nie |
+| 4.6 | Zmiana systemu czasu pracy w trakcie okresu rozliczeniowego | Pracownik ma w trakcie okresu zmianę systemu czasu pracy, np. z równoważnego na podstawowy. | Dobowe maksimum dla dni bez jawnego wpisu liczone jest osobno dla każdego dnia na podstawie historii etatu obowiązującej w tym dniu (`Historia[data]`) — dni sprzed zmiany dostają maksimum właściwe systemowi równoważnemu (12:00), dni po zmianie maksimum właściwe nowemu systemowi. Wynika wprost z konstrukcji kodu — patrz pkt 5. | Nie |
 
 ## 5. Znane ograniczenia
 
