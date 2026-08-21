@@ -27,7 +27,8 @@ public static string WeryfikujNormeWOkresieRozliczeniowym(KalkulatorPlanuBase ka
 		}
 	}
 
-	Time maksimumElastycznych = new Time(0, 0);
+	Time zero = new Time(0, 0);
+	Time maksimumElastycznych = zero;
 	foreach (FromTo item in periods)
 	{
 		for (Date dt = item.From; dt <= item.To; dt++)
@@ -36,6 +37,18 @@ public static string WeryfikujNormeWOkresieRozliczeniowym(KalkulatorPlanuBase ka
 			{
 				continue;
 			}
+
+			// Dzień bez jawnego wpisu może zwiększyć maksimum tylko wtedy, gdy kalendarz
+			// w ogóle przewiduje go jako dzień roboczy (domyślna wartość z FillDefault > 0).
+			// Dni z definicji wolne (weekendy, święta wg kalendarza) nie dają się "podciągnąć"
+			// do dobowego maksimum.
+			Periods jedenDzien = new FromTo(dt, dt).ToPeriods();
+			Time domyslnaWartoscDnia = kalkulator.Norma(jedenDzien).Czas;
+			if (domyslnaWartoscDnia <= zero)
+			{
+				continue;
+			}
+
 			bool rownowaznyCzasPracyDt = pracownik.Historia[dt].Etat.Kalendarz.RownowaznyCzasPracy;
 			Time maxDzienDt = rownowaznyCzasPracyDt
 				? new Time(12, 0)
