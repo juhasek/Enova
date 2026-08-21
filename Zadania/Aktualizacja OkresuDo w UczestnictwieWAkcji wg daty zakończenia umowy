@@ -1,0 +1,92 @@
+public override bool IsEnable() {
+
+	// Bez warunku "czy umowa ma koniec" na wejściu - inaczej scenariusz wycofania się z zakończenia
+	// umowy (data końca skasowana, OkresZatrudnienia.To znowu == Date.MaxValue) nigdy by nie wszedł
+	// do pętli i OkresDo zostałoby błędnie "zawieszone" na starej dacie zamiast wrócić do pełnego
+	// okresu edycji.
+	{
+	// Zamykanie Akcji pracowniczych
+	// Zawężone przez WgPracownik do wierszy TEGO pracownika - bez tego task odpalany przy zapisie
+	// jednego pracownika przeglądał całą tabelę UczestnictwoWAkcji i potrafił wywalić się na danych
+	// zupełnie innego, niezwiązanego z edytowaną kartoteką pracownika.
+
+	var uczestnictwa = AkcjePracA1Module.GetInstance(Session).UczesWAkcji.WgPracownik[Row];
+
+	// Docelowy koniec okresu: data końca umowy, o ile jest wcześniejsza niż naturalny koniec danej
+	// edycji akcji, w przeciwnym razie pełny okres edycji (czyli brak wcześniejszego zamknięcia).
+	Date ObliczDocelowyKoniec(Date pelnyKoniecEdycji, Date? koniecUmowy)
+	{
+		if (koniecUmowy != null && koniecUmowy != Date.MaxValue && koniecUmowy < pelnyKoniecEdycji)
+			return (Date)koniecUmowy;
+		return pelnyKoniecEdycji;
+	}
+
+	foreach (UczestnictwoWAkcji uczestnictwo in uczestnictwa)
+	{
+		// Pracownik może mieć kilka wierszy UczestnictwoWAkcji (różne edycje akcji w historii) -
+		// zmieniamy tylko aktualną edycję, czyli wiersz, którego Okres obejmuje dzisiejszą datę.
+		if (!uczestnictwo.Okres.Contains(Date.Today))
+			continue;
+
+		// Sama wpisana data końca umowy (np. kontrakt terminowy, który może zostać przedłużony) nie
+		// oznacza jeszcze zwolnienia - do zamykania uczestnictwa honorujemy ją tylko, gdy pracownik
+		// jest faktycznie oznaczony jako zwolniony. Dzięki temu odznaczenie PracownikZwolniony też
+		// otwiera z powrotem wiersze zamknięte wcześniej automatycznie przez ten task.
+		// Do potwierdzenia: dokładna nazwa/lokalizacja pola (przyjąłem Row.PracownikZwolniony).
+		Date? dataZakonczeniaUmowy = Row.PracownikZwolniony
+			? Row.Historia[Date.Today].Etat.OkresZatrudnienia.To
+			: (Date?)null;
+
+		// Pełny (domyślny) koniec obowiązywania wynika z samej edycji akcji - przy przystąpieniu
+		// pracownika do edycji to on jest domyślnie wpisywany jako OkresDo.
+		Date pelnyKoniecEdycji = uczestnictwo.EdycjaAkcji.Okres.To;
+
+		// Cecha AutomatyczneZakonczenie na UczesWAkcji odróżnia zamknięcie zrobione przez ten task
+		// od ręcznej ingerencji (np. wcześniejsza rezygnacja z akcji) - tylko wiersze oznaczone jako
+		// automatyczne task może dalej swobodnie korygować/otwierać z powrotem.
+		bool zamknieteAutomatycznie = uczestnictwo.Features["AutomatyczneZakonczenie"] is bool b && b;
+
+		try
+		{
+			// Wiersz ma już okres krótszy niż pełny okres edycji i nie jest oznaczony jako zamknięty
+			// automatycznie - to ręczna decyzja (rezygnacja z akcji przed końcem umowy), nie ruszamy.
+			if (uczestnictwo.OkresDo < pelnyKoniecEdycji && !zamknieteAutomatycznie)
+				continue;
+
+			Date docelowyKoniec = ObliczDocelowyKoniec(pelnyKoniecEdycji, dataZakonczeniaUmowy);
+			if (uczestnictwo.OkresDo != docelowyKoniec)
+			{
+				uczestnictwo.OkresDo = docelowyKoniec;
+				uczestnictwo.Features["AutomatyczneZakonczenie"] = true;
+			}
+
+			// Poza samym przystąpieniem do edycji pracownik ma też okres w ramach kategorii SEOP
+			// (grid "Parametry") - zamykamy go tą samą regułą, sterowaną tą samą cechą co wiersz
+			// nadrzędny.
+			foreach (var parametr in uczestnictwo.Parametry)
+			{
+				if (parametr.OkresDo < pelnyKoniecEdycji && !zamknieteAutomatycznie)
+					continue;
+
+				Date docelowyKoniecParametru = ObliczDocelowyKoniec(pelnyKoniecEdycji, dataZakonczeniaUmowy);
+				if (parametr.OkresDo != docelowyKoniecParametru)
+					parametr.OkresDo = docelowyKoniecParametru;
+			}
+		}
+		catch (Exception ex)
+		{
+			// Diagnostyka do wyjaśnienia "Błędny zakres dat" - pokazuje w raporcie błędu Enova,
+			// który dokładnie pracownik/wiersz/edycja i jakie daty brały udział w próbie zapisu.
+			throw new Exception(
+				$"Błąd przy zamykaniu UczestnictwoWAkcji Guid={uczestnictwo.Guid}, " +
+				$"Pracownik={Row} (Guid={Row.Guid}), EdycjaAkcji={uczestnictwo.EdycjaAkcji}, " +
+				$"OkresOd={uczestnictwo.OkresOd}, OkresDo(przed)={uczestnictwo.OkresDo}, " +
+				$"AktualnoscOd={uczestnictwo.AktualnoscOd}, AktualnoscDo(przed)={uczestnictwo.AktualnoscDo}, " +
+				$"zamknieteAutomatycznie={zamknieteAutomatycznie}, pełny koniec edycji={pelnyKoniecEdycji}, " +
+				$"koniec umowy={dataZakonczeniaUmowy}: {ex.Message}",
+				ex);
+		}
+	}
+	}
+	return false;
+}
