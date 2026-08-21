@@ -29,6 +29,8 @@ public static string WeryfikujNormeWOkresieRozliczeniowym(KalkulatorPlanuBase ka
 
 	Time zero = new Time(0, 0);
 	Time maksimumElastycznych = zero;
+	int liczbaDniElastycznych = 0;
+	var maksymalneWymiaryDobowe = new System.Collections.Generic.HashSet<Time>();
 	foreach (FromTo item in periods)
 	{
 		for (Date dt = item.From; dt <= item.To; dt++)
@@ -49,11 +51,15 @@ public static string WeryfikujNormeWOkresieRozliczeniowym(KalkulatorPlanuBase ka
 				continue;
 			}
 
+			// Dobowe maksimum zależy od systemu czasu pracy przypisanego pracownikowi w danym dniu
+			// (może się różnić w obrębie okresu, np. przy zmianie kalendarza w trakcie okresu rozliczeniowego).
 			bool rownowaznyCzasPracyDt = pracownik.Historia[dt].Etat.Kalendarz.RownowaznyCzasPracy;
 			Time maxDzienDt = rownowaznyCzasPracyDt
 				? new Time(12, 0)
 				: pracownik.Historia[dt].Etat.Kalendarz.Nadgodziny.WartoscDobowa;
 			maksimumElastycznych += maxDzienDt;
+			liczbaDniElastycznych++;
+			maksymalneWymiaryDobowe.Add(maxDzienDt);
 		}
 	}
 
@@ -66,7 +72,21 @@ public static string WeryfikujNormeWOkresieRozliczeniowym(KalkulatorPlanuBase ka
 	}
 	if (maksymalnyMozliwy < normaKodeksowa.Czas)
 	{
-		return "Nie da się już osiągnąć normy godzin ({0}) w okresie rozliczeniowym ({1}), brakuje ({2}) - {3}".TranslateFormat(normaKodeksowa.Czas, periods, normaKodeksowa.Czas - maksymalnyMozliwy, pracownik);
+		string opisPozostalychDni;
+		if (maksymalneWymiaryDobowe.Count == 1)
+		{
+			Time jedynyMaxDzien = zero;
+			foreach (Time wartosc in maksymalneWymiaryDobowe)
+			{
+				jedynyMaxDzien = wartosc;
+			}
+			opisPozostalychDni = "{0} dni roboczych x {1} = {2}".TranslateFormat(liczbaDniElastycznych, jedynyMaxDzien, maksimumElastycznych);
+		}
+		else
+		{
+			opisPozostalychDni = "{0} dni roboczych, łącznie {1} (dobowy limit różni się w zależności od kalendarza)".TranslateFormat(liczbaDniElastycznych, maksimumElastycznych);
+		}
+		return "Nie da się już osiągnąć normy godzin ({0}) w okresie rozliczeniowym ({1}), brakuje ({2}) - {3}. W pozostałych dniach można maksymalnie zaplanować: {4}".TranslateFormat(normaKodeksowa.Czas, periods, normaKodeksowa.Czas - maksymalnyMozliwy, pracownik, opisPozostalychDni);
 	}
 	return null;
 }
