@@ -1,0 +1,305 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.KadryPlace;
+using Soneta.Types;
+using Soneta.Tools;
+using DevExpress.XtraPrinting;
+using System.Globalization;
+
+namespace SeopEnrollmentFileSnippet {
+
+    public class SeopEnrollmentFileSnippet : ReportSnippet {
+
+        // =========================
+        // PARAMETR RAPORTU
+        // =========================
+
+        public class Params : ContextBase {
+
+            public Params(Context context) : base(context) {
+
+                var aktualnaData = context.GetOrDefault<ActualDate>()?.Actual ?? Date.Today;
+
+                okres = new FromTo(
+                    aktualnaData.FirstDayMonth(),
+                    aktualnaData.LastDayMonth()
+                );
+            }
+
+            private FromTo okres;
+
+            [Priority(1)]
+            [Caption("Okres")]
+            public FromTo Okres {
+                get { return okres; }
+                set {
+                    okres = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        Params pars;
+
+        [Context(Required = true)]
+        public Params Parametry {
+            set { pars = value; }
+        }
+
+        // =========================
+
+        BusinessDataSource dc;
+        Log log = new Log("SEOP", true);
+
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.DetailReportBand Lista;
+
+        [DxBind(Name = "Report")]
+        private void Report_BeforePrint(object sender, CancelEventArgs e) {
+
+            log.WriteLine("=== START RAPORTU SEOP ===");
+
+            if (this.DataSource == null || pars == null)
+                return;
+
+            if (pars.Okres.From == Date.Empty || pars.Okres.To == Date.Empty)
+                return;
+
+            log.WriteLine($"Okres raportu: {pars.Okres}");
+
+            dc = (BusinessDataSource)this.DataSource;
+
+            Date data = pars.Okres.From;
+
+            var rows = dc.Context[typeof(Row[])] as Row[];
+            if (rows == null)
+                return;
+
+            log.WriteLine($"Liczba pracowników w źródle: {rows.Length}");
+
+            List<RaportAkcjeRow> wynik = new List<RaportAkcjeRow>();
+
+
+            // ===============================
+            // MODUŁ AKCJI PRACOWNICZYCH
+            // ===============================
+
+            var akcjeModule = AltOne.Skanska.AkcjePracownicze.AkcjePracA1Module.GetInstance(Context.Session);
+
+
+            // ===============================
+            // PĘTLA PRACOWNIKÓW
+            // ===============================
+
+            foreach (Pracownik p in rows) {
+
+                log.WriteLine($"Pracownik: {p.Kod} {p.Nazwisko}");
+
+                // problem kiedy pracownik zaczyna pracę w trakcie miesiąca - obsłużyc zmienną data
+
+                var historia = p.Historia?[data];
+                if (historia == null)
+                    continue;
+
+                var oddzial = historia.Etat?.Wydzial?.Oddzial;
+
+                log.WriteLine($"Oddział: {oddzial}");
+
+                if (oddzial == null)
+                    continue;
+
+
+                // ===============================
+                // ZNAJDŹ EDYCJĘ DLA ODDZIAŁU
+                // ===============================
+
+                AltOne.Skanska.AkcjePracownicze.EdycjaAkcjiPracowniczej edycja = null;
+
+                foreach (AltOne.Skanska.AkcjePracownicze.EdycjaAkcjiPracowniczej ed in akcjeModule.EdycjeAkcjiPrac)
+                {
+                    if (
+                        ed.OkresOd <= pars.Okres.To &&
+                        ed.OkresDo >= pars.Okres.From &&
+                        ed.Oddzial == oddzial
+                    )
+                    {
+                        edycja = ed;
+
+                        log.WriteLine($"Znaleziono edycję: {ed.OkresOd} - {ed.OkresDo}");
+
+                        break;
+                    }
+                }
+
+                if (edycja == null)
+                {
+                    log.WriteLine("Brak edycji dla oddziału");
+                    continue;
+                }
+
+                var uczestnictwo = edycja.Uczestnictwa
+                    .FirstOrDefault(u => u.Pracownik == p);
+
+                if (uczestnictwo == null)
+                {
+                    log.WriteLine("Pracownik nie jest uczestnikiem tej edycji");
+                    continue;
+                }
+
+                // Enrollment file ma pokazywać WYŁĄCZNIE osoby, które w raportowanym okresie po raz
+                // pierwszy przystąpiły do programu SEOP lub po raz pierwszy przystąpiły do nowej
+                // edycji SEOP - nie wszystkich aktualnych uczestników edycji. Każde przystąpienie
+                // (czy to pierwsze w ogóle, czy do kolejnej edycji) tworzy nowy wiersz
+                // UczestnictwoWAkcji, którego OkresOd to data przystąpienia - filtrujemy więc po tym,
+                // czy OkresOd mieści się w raportowanym okresie. Kontynuujący uczestnicy (OkresOd
+                // sprzed raportowanego okresu) są pomijani.
+                if (!pars.Okres.Contains(uczestnictwo.OkresOd))
+                {
+                    log.WriteLine($"Uczestnictwo pracownika rozpoczęło się poza raportowanym okresem (OkresOd={uczestnictwo.OkresOd}) - pomijam");
+                    continue;
+                }
+
+                log.WriteLine($"Pracownik przystąpił do edycji w raportowanym okresie (OkresOd={uczestnictwo.OkresOd})");
+
+
+                string division = string.Empty;
+                string subsidiary = string.Empty;
+                string companyCode = string.Empty;
+
+                if (oddzial != null) {
+
+                    division = oddzial.Nadrzedny?.Features?["SEOP_Division"]?.ToString()
+                               ?? oddzial.Features?["SEOP_Division"]?.ToString();
+
+                    subsidiary = oddzial.Nadrzedny?.Features?["SEOP_Subsidiary"]?.ToString()
+                                 ?? oddzial.Features?["SEOP_Subsidiary"]?.ToString();
+
+                    companyCode = oddzial.Nadrzedny?.Features?["SEOP_GlobalCode"]?.ToString()
+                                  ?? oddzial.Features?["SEOP_GlobalCode"]?.ToString();
+                }
+
+
+                wynik.Add(new RaportAkcjeRow {
+
+                    KontoAktywne = "Tak",
+
+                    InternalParticipantID = historia?.Etat?.OkresZatrudnienia.From
+                        .ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
+
+                    RelationshipToCompanyHireDate = historia?.Etat?.OkresZatrudnienia.From
+                        .ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
+
+                    Gid = p.Features["SEOP_GlobalId"]?.ToString(),
+
+                    FirstName = p.Imie,
+                    MiddleName = historia?.ImieDrugie,
+                    LastName = p.Nazwisko,
+
+                    LanguagePreference = "PL",
+                    StatementCurrencyPreference = "PLN",
+
+                    WorkEmail = p.EMAIL,
+                    PreferredEmail = "",
+
+                    RelationshipToCompany = "Employee",
+
+                    Division = division,
+                    Subsidiary = subsidiary,
+                    UsaPayrollCode = "",
+
+                    SubsidiaryCode = companyCode,
+
+                    TaxState = "In Window",
+                    HostCountry = "POL",
+
+                    ResidentAdress1 = historia?.AdresZamieszkania?.Linia1,
+                    ResidentAdress2 = "",
+                    ResidentAdress3 = "",
+
+                    ResidentCity = historia?.AdresZamieszkania?.Miejscowosc,
+                    ResidentState = "",
+
+                    ResidenPostalCode =
+                        historia?.AdresZamieszkania?.KodPocztowy == 0
+                        ? ""
+                        : historia?.AdresZamieszkania?.KodPocztowy.ToString("00000"),
+
+                    ResidentCountry = historia?.AdresZamieszkania?.KodKraju,
+
+                    DateOfBirth = historia?.Urodzony.Data
+                        .ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US"))
+                });
+
+                log.WriteLine("Dodano pracownika do raportu");
+            }
+
+            log.WriteLine($"Liczba pracowników w raporcie: {wynik.Count}");
+
+            Lista.DataSource = wynik;
+
+
+            if (this.Report != null) {
+
+                this.Report.ExportOptions.Xlsx.ExportMode =
+                    XlsxExportMode.SingleFilePageByPage;
+
+                this.Report.ExportOptions.Xlsx.RawDataMode = false;
+
+                this.Report.ExportOptions.Xlsx.TextExportMode =
+                    TextExportMode.Value;
+            }
+
+            log.WriteLine("=== KONIEC RAPORTU SEOP ===");
+        }
+    }
+
+
+    public class RaportAkcjeRow {
+
+        public string KontoAktywne { get; set; }
+        public string InternalParticipantID { get; set; }
+        public string ExternalParticipantID { get; set; }
+
+        public string Gid { get; set; }
+        public string FirstName { get; set; }
+        public string MiddleName { get; set; }
+        public string LastName { get; set; }
+
+        public string AlternateName { get; set; }
+        public string LanguagePreference { get; set; }
+        public string StatementCurrencyPreference { get; set; }
+
+        public string WorkEmail { get; set; }
+        public string PreferredEmail { get; set; }
+
+        public string RelationshipToCompany { get; set; }
+        public string RelationshipToCompanyHireDate { get; set; }
+
+        public string Division { get; set; }
+        public string Subsidiary { get; set; }
+        public string UsaPayrollCode { get; set; }
+
+        public string SubsidiaryName { get; set; }
+        public string SubsidiaryCode { get; set; }
+
+        public string TaxState { get; set; }
+        public string HostCountry { get; set; }
+
+        public string ResidentAdress1 { get; set; }
+        public string ResidentAdress2 { get; set; }
+        public string ResidentAdress3 { get; set; }
+
+        public string ResidentCity { get; set; }
+        public string ResidentState { get; set; }
+
+        public string ResidenPostalCode { get; set; }
+        public string ResidentCountry { get; set; }
+
+        public string DateOfBirth { get; set; }
+    }
+}
