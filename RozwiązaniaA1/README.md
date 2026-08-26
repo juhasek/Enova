@@ -29,6 +29,11 @@ gdzie wniosek wynika z odczytu samego kodu IL a nie z domysłu, jest to zaznaczo
 - **[Benefity.md](Benefity.md)** — główny moduł: kafeteria benefitów pozapłacowych (Karta Sportowa,
   Opieka, Ubezpieczenie), przyznawanych pracownikom i osobom towarzyszącym jako elementy listy płac.
   Opis obejmuje pełny mechanizm zapisu (na poziomie odczytanego IL), nie tylko listę klas.
+- **[Benefity - dokument powdrożeniowy.md](Benefity%20-%20dokument%20powdrożeniowy.md)** —
+  zestawienie wymagań z analizy przedwdrożeniowej (Medicover, UNUM, Multisport) ze stanem
+  potwierdzonym w kodzie: co jest zaimplementowane zgodnie ze specyfikacją, co jest mechanizmem
+  generycznym opartym o dane (do weryfikacji w środowisku), a czego nie udało się potwierdzić w tym
+  DLL (rekomendacje do dalszej weryfikacji z zespołem wdrożeniowym).
 - **[Pozostale-funkcje.md](Pozostale-funkcje.md)** — pozostała zawartość tego samego DLL,
   niezwiązana z Benefitami: podzielnik kosztów (praca zdalna / dodatek brygadzistowski, eksport do
   Oracle GL/PPM), załączniki BHP i przypomnienia (badania lekarskie, okres zasiłkowy), pełny raport
