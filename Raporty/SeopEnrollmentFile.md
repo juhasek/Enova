@@ -50,7 +50,27 @@ if (!pars.Okres.Contains(uczestnictwo.OkresOd))
 }
 ```
 
-## 4. Znane ograniczenia / do potwierdzenia
+## 4. Poprawka: brak adresu zamieszkania
+
+**Objaw:** adres zamieszkania pracownika (`historia.AdresZamieszkania`) nie zawsze jest
+uzupełniony w kartotece, przez co kolumny adresowe raportu (`ResidentAdress1`,
+`ResidentCity`, `ResidenPostalCode`, `ResidentCountry`) wychodziły puste.
+
+**Poprawka:** jeśli adres zamieszkania jest pusty (brak miejscowości), dane adresowe do
+raportu pobierane są z adresu zameldowania (`historia.AdresZameldowania`) — ten sam subrow
+`Soneta.Core.Adres`, więc te same pola (`Linia1`/`Miejscowosc`/`KodPocztowy`/`KodKraju`).
+
+```csharp
+var adresZamieszkania = historia?.AdresZamieszkania;
+var adresDoRaportu = string.IsNullOrWhiteSpace(adresZamieszkania?.Miejscowosc)
+    ? historia?.AdresZameldowania
+    : adresZamieszkania;
+```
+
+Wszystkie pola adresowe w wierszu raportu korzystają teraz z `adresDoRaportu` zamiast
+bezpośrednio z `historia?.AdresZamieszkania`.
+
+## 5. Znane ograniczenia / do potwierdzenia
 
 - Filtr opiera się na założeniu, że `UczestnictwoWAkcji.OkresOd` to
   rzeczywista data przystąpienia pracownika do danej edycji (a nie np. data

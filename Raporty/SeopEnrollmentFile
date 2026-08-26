@@ -167,6 +167,17 @@ namespace SeopEnrollmentFileSnippet {
                 log.WriteLine($"Pracownik przystąpił do edycji w raportowanym okresie (OkresOd={uczestnictwo.OkresOd})");
 
 
+                // Adres zamieszkania nie zawsze jest uzupełniony - gdy jest pusty (brak miejscowości),
+                // do raportu bierzemy dane z adresu zameldowania zamiast zamieszkania.
+                var adresZamieszkania = historia?.AdresZamieszkania;
+                var adresDoRaportu = string.IsNullOrWhiteSpace(adresZamieszkania?.Miejscowosc)
+                    ? historia?.AdresZameldowania
+                    : adresZamieszkania;
+
+                if (adresDoRaportu != adresZamieszkania)
+                    log.WriteLine("Adres zamieszkania pusty - użyto adresu zameldowania");
+
+
                 string division = string.Empty;
                 string subsidiary = string.Empty;
                 string companyCode = string.Empty;
@@ -217,19 +228,19 @@ namespace SeopEnrollmentFileSnippet {
                     TaxState = "In Window",
                     HostCountry = "POL",
 
-                    ResidentAdress1 = historia?.AdresZamieszkania?.Linia1,
+                    ResidentAdress1 = adresDoRaportu?.Linia1,
                     ResidentAdress2 = "",
                     ResidentAdress3 = "",
 
-                    ResidentCity = historia?.AdresZamieszkania?.Miejscowosc,
+                    ResidentCity = adresDoRaportu?.Miejscowosc,
                     ResidentState = "",
 
                     ResidenPostalCode =
-                        historia?.AdresZamieszkania?.KodPocztowy == 0
+                        adresDoRaportu?.KodPocztowy == 0
                         ? ""
-                        : historia?.AdresZamieszkania?.KodPocztowy.ToString("00000"),
+                        : adresDoRaportu?.KodPocztowy.ToString("00000"),
 
-                    ResidentCountry = historia?.AdresZamieszkania?.KodKraju,
+                    ResidentCountry = adresDoRaportu?.KodKraju,
 
                     DateOfBirth = historia?.Urodzony.Data
                         .ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US"))
