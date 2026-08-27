@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="Unicode"?>
+<session xmlns="http://www.soneta.pl/schema/business">
+  <DefinicjaElementu id="DefinicjaElementu_25" guid="df97dc0b-2cb9-47b3-b8f0-81ce39934a06">
+    <Podstawowa />
+    <Wydzial />
+    <Nastepny />
+    <DoDnia>(max)</DoDnia>
+    <RodzajZrodla>Dodatek</RodzajZrodla>
+    <Nazwa>Dodatek funkcyjny</Nazwa>
+    <NazwaPomocnicza />
+    <Skrot>Dod.funk.</Skrot>
+    <Kod />
+    <Blokada>False</Blokada>
+    <Kolejnosc>50</Kolejnosc>
+    <Zatrudnienie>Etat</Zatrudnienie>
+    <DefinicjaListyPlac>00000000-0007-0001-0001-000000000000</DefinicjaListyPlac>
+    <Zakres />
+    <OkresNaliczania>
+      <Naliczanie>PłatnaZDołu</Naliczanie>
+      <Opoznienie>0</Opoznienie>
+      <Typ>CoNMiesięcy</Typ>
+      <Ilosc>1</Ilosc>
+      <DlaKazdejUmowy>Nie</DlaKazdejUmowy>
+    </OkresNaliczania>
+    <Algorytm>
+      <Priorytet>0</Priorytet>
+      <Potracenie>False</Potracenie>
+      <LimitPotracenia>NieDotyczy</LimitPotracenia>
+      <Typ>KreatorAlgorytmu</Typ>
+      <KreatorAlgorytmu>
+        <PodstawaTyp>Kwota</PodstawaTyp>
+        <PodstawaNazwa />
+        <Proporcjonalnie>False</Proporcjonalnie>
+        <SposobProporcjonalnosci>NiePomniejszany</SposobProporcjonalnosci>
+        <PodstawaZa>Miesięcznie</PodstawaZa>
+        <Wspolczynnik>
+          <Typ>BezWspółczynnika</Typ>
+          <Wskaznik>False</Wskaznik>
+          <NazwaWskaznika />
+          <PracaWFirmie>False</PracaWFirmie>
+          <PracaNaDzien>OstatniDzieńOkresu</PracaNaDzien>
+          <PodstawaStazu />
+        </Wspolczynnik>
+        <Czas>
+          <Typ>NieUwzględniaj</Typ>
+          <Strefa />
+        </Czas>
+        <Korekta>
+          <Odchylki>True</Odchylki>
+          <Nieusprawiedliwione>Proporcjonalnie</Nieusprawiedliwione>
+          <Usprawiedliwione>Proporcjonalnie</Usprawiedliwione>
+          <Platne>NiePomniejsza</Platne>
+          <Macierzynske>Proporcjonalnie</Macierzynske>
+          <Rehabilitacyjne>Proporcjonalnie</Rehabilitacyjne>
+          <Opiekuncze>Proporcjonalnie</Opiekuncze>
+          <Chorobowe>Proporcjonalnie</Chorobowe>
+          <Wychowawcze>Proporcjonalnie</Wychowawcze>
+          <OgraniczeniePomniejszen>False</OgraniczeniePomniejszen>
+          <WybraneOdchylki>False</WybraneOdchylki>
+          <OdchylkiPlus>False</OdchylkiPlus>
+          <OdchylkiMinus>False</OdchylkiMinus>
+          <Postojowe>False</Postojowe>
+          <OdchylkiAkord>False</OdchylkiAkord>
+          <WybraneOdchylkiPlus>False</WybraneOdchylkiPlus>
+          <OdchylkiPlus50>False</OdchylkiPlus50>
+          <OdchylkiPlus100>False</OdchylkiPlus100>
+          <OdchylkiPlusSW>False</OdchylkiPlusSW>
+          <OdchylkiPlusPozostale>False</OdchylkiPlusPozostale>
+          <OdchylkiRozliczane>False</OdchylkiRozliczane>
+        </Korekta>
+        <PrzeliczNa1h>NiePrzeliczaj</PrzeliczNa1h>
+      </KreatorAlgorytmu>
+      <JakUrlopWypoczynkowy />
+      <JakUrlopOkolicznosciowy />
+      <JakEkwiwalentZaUrlop>
+        <WgWymiaruEtatu>False</WgWymiaruEtatu>
+        <DefinicjaLimitu />
+      </JakEkwiwalentZaUrlop>
+      <Edytor />
+      <JakChorobowe>
+        <Zatrudnienie>0</Zatrudnienie>
+      </JakChorobowe>
+      <Klasa>
+        <Nazwa />
+      </Klasa>
+      <ZaNieobecnosc>
+        <Macierzynskiego>False</Macierzynskiego>
+        <Rehabilitacyjnego>False</Rehabilitacyjnego>
+        <Opiekunczego>False</Opiekunczego>
+        <Chorobowego>False</Chorobowego>
+        <Wychowawczego>False</Wychowawczego>
+      </ZaNieobecnosc>
+      <PomniejszeniaIOdchylki>
+        <WybranaStrefa />
+      </PomniejszeniaIOdchylki>
+      <Liczba>0</Liczba>
+      <Podstawa>0.00 PLN</Podstawa>
+      <Ulamek>0/1</Ulamek>
+      <Czas>0:00</Czas>
+      <Dni>0</Dni>
+      <DodPodstawa>Dodatek funkcyjny</DodPodstawa>
+      <DodUlamek />
+      <DodProcent />
+      <DodWspolczynnik />
+      <DodCzas />
+      <DodDni />
+      <ElPodglad>False</ElPodglad>
+      <ElPodstawa1>Dodatek funkcyjny nominalnie</ElPodstawa1>
+      <ElPodstawa2 />
+      <ElPodstawa3 />
+      <ElPodstawa4 />
+      <ElPodstawa5 />
+      <ElUlamek />
+      <ElProcent />
+      <ElWspolczynnik />
+      <ElCzas />
+      <ElDni />
+      <ElIlosc />
+      <ElPodstawaOkres />
+      <ElRazemCzas />
+      <ElRazemDni />
+      <Umowa>
+        <TypWartosci>Dowolny</TypWartosci>
+        <RodzajRozliczenia>Dowolny</RodzajRozliczenia>
+        <MinimalnaStawkaGodz>NieDotyczy</MinimalnaStawkaGodz>
+      </Umowa>
+      <RozliczenieCzasuUmowy>
+        <Podstawowa />
+        <WliczanyDoRozliczenia>False</WliczanyDoRozliczenia>
+      </RozliczenieCzasuUmowy>
+      <ZapisObliczen>
+        <Nazwa>Algorytmy płacowe</Nazwa>
+      </ZapisObliczen>
+      <JakEkwiwalent>False</JakEkwiwalent>
+      <TylkoPelnePotracenie>False</TylkoPelnePotracenie>
+    </Algorytm>
+    <Deklaracje>
+      <PozycjaPIT>00000000-0007-0004-0001-000000000000</PozycjaPIT>
+      <OpisNaPIT8C />
+      <Priorytet>0</Priorytet>
+      <Koszty>
+        <Typ>ZeStosunkuPracy</Typ>
+        <Procent>0.00%</Procent>
+      </Koszty>
+      <Zaliczka>
+        <Typ>NaliczaćWgSkaliPodatkowej</Typ>
+        <Procent>0.00%</Procent>
+        <PomniejszonaZUS>True</PomniejszonaZUS>
+        <NaliczaniePit26>Warunkowo</NaliczaniePit26>
+      </Zaliczka>
+      <Ulga>
+        <Typ>Naliczać</Typ>
+      </Ulga>
+      <KodRSA />
+      <PozycjaRCA>NieDotyczy</PozycjaRCA>
+      <KodRNA>PremiaMiesięczna</KodRNA>
+      <PozycjaRP7>SkładnikiStałe</PozycjaRP7>
+      <Spoleczne>
+        <Typ>Naliczać</Typ>
+      </Spoleczne>
+      <Zdrowotne>
+        <Typ>Naliczać</Typ>
+        <PomniejszaFIS>PomniejszaDoFIS</PomniejszaFIS>
+        <PomniejszoneZUS>True</PomniejszoneZUS>
+      </Zdrowotne>
+      <Narzuty>
+        <SkladkaFP>Domyślna</SkladkaFP>
+        <SkladkaFGSP>Domyślna</SkladkaFGSP>
+      </Narzuty>
+      <Umowa>NieDotyczy</Umowa>
+      <UmowaTyUb />
+      <UmowaJakEtat>False</UmowaJakEtat>
+      <NieWliczajSOD>False</NieWliczajSOD>
+      <NieRozrzucaj>False</NieRozrzucaj>
+      <PodstawaSkladek>
+        <UrlopWychowawczy>WliczaćDla</UrlopWychowawczy>
+      </PodstawaSkladek>
+      <NieoskladkowanyZUS>False</NieoskladkowanyZUS>
+      <TrybPodleganiaRozpMF070122>Domyślnie</TrybPodleganiaRozpMF070122>
+      <WliczajDoKosztowPlacy>Domyślnie</WliczajDoKosztowPlacy>
+    </Deklaracje>
+    <Nieobecnosci>
+      <WahaniaWysokosci>False</WahaniaWysokosci>
+      <Urlop>
+        <Typ>NieWliczać</Typ>
+        <Dopelnienie>False</Dopelnienie>
+        <WspolczynnikTyp>0</WspolczynnikTyp>
+        <WspolczynnikNazwa />
+      </Urlop>
+      <Ekwiwalent>
+        <Typ>NieWliczać</Typ>
+        <Dopelnienie>False</Dopelnienie>
+        <WspolczynnikTyp>0</WspolczynnikTyp>
+        <WspolczynnikNazwa />
+      </Ekwiwalent>
+      <ZasilkiPracownicy>
+        <Typ>WliczaćDla</Typ>
+        <Chorobowych>True</Chorobowych>
+        <Macierzynskich>True</Macierzynskich>
+        <Rehabilitacyjnych>True</Rehabilitacyjnych>
+        <Opiekunczych>True</Opiekunczych>
+      </ZasilkiPracownicy>
+      <ZasilkiInni>
+        <Typ>WliczaćDla</Typ>
+        <Chorobowych>True</Chorobowych>
+        <Macierzynskich>True</Macierzynskich>
+        <Rehabilitacyjnych>True</Rehabilitacyjnych>
+        <Opiekunczych>True</Opiekunczych>
+      </ZasilkiInni>
+      <DefinicjaLimitu />
+      <WliczanieDoPodstawyChorobowego>Domyślnie</WliczanieDoPodstawyChorobowego>
+      <OdMiesiaca>styczen</OdMiesiaca>
+      <DoMinimalnej>False</DoMinimalnej>
+    </Nieobecnosci>
+    <Zaokraglenie>
+      <Precyzja>DoPełnegoGrosza</Precyzja>
+      <Sposob>Standardowe</Sposob>
+      <Podstawa>False</Podstawa>
+    </Zaokraglenie>
+    <GUS>
+      <Kategoria>WgDefinicjiElementu</Kategoria>
+      <ZaliczajDoCzasuPracy>False</ZaliczajDoCzasuPracy>
+    </GUS>
+    <Rozliczenie>
+      <Ewidencja />
+      <ZmianaOdbiorcy>False</ZmianaOdbiorcy>
+      <WspolnaPlatnosc>False</WspolnaPlatnosc>
+      <OpisPrzelewu />
+    </Rozliczenie>
+    <Zajecie>
+      <Komornik>Domyślnie</Komornik>
+      <Alimenty>Domyślnie</Alimenty>
+      <Pozostale>Domyślnie</Pozostale>
+      <UwzgledniajJakWyplatyZFSS>False</UwzgledniajJakWyplatyZFSS>
+    </Zajecie>
+    <Korygowany>True</Korygowany>
+    <MinimalneWynagrodzenie>True</MinimalneWynagrodzenie>
+    <DoWyplaty>True</DoWyplaty>
+    <ZawszeGotowka>False</ZawszeGotowka>
+    <GenerujZerowy>False</GenerujZerowy>
+    <Aktualizacja>False</Aktualizacja>
+    <Zerowanie>False</Zerowanie>
+    <Dodatkowe>
+      <DodatekDoEtatu>True</DodatekDoEtatu>
+      <RefundowanyInfo>Domyślny</RefundowanyInfo>
+    </Dodatkowe>
+    <Tekst />
+    <RodzajNaliczania>Wszystkie</RodzajNaliczania>
+    <PracownicyZaGranica>
+      <KorektaPodstaw>False</KorektaPodstaw>
+      <Podstawa>NieDotyczy</Podstawa>
+    </PracownicyZaGranica>
+    <StanowiKUP>Domyślnie</StanowiKUP>
+    <UwzgledniajZwrotSkladkiPPK>NieDotyczy</UwzgledniajZwrotSkladkiPPK>
+    <UwzgledniajWLimicieZFSS>False</UwzgledniajWLimicieZFSS>
+    <PulpitPracownika>False</PulpitPracownika>
+    <WliczajDoPodstawyWynagrodzeniaZaNadgodziny>Nie</WliczajDoPodstawyWynagrodzeniaZaNadgodziny>
+    <RuntimeInfo>
+      <Project />
+      <Identifier />
+      <FileName />
+    </RuntimeInfo>
+    <WliczajUmoweDoStazuPracy>False</WliczajUmoweDoStazuPracy>
+    <Definicja_relacji_odbiorcy_elementu />
+    <Progi />
+  </DefinicjaElementu>
+</session>
