@@ -40,19 +40,23 @@ public decimal Feature_Nadgodziny_okresowe {
 
               Time suma = (dzienPracy != null && dzienPracy.NieobecnośćCałyDzień) ? norma : Time.Zero;
 
-                // Poprawka 27.08.2026 - zgłoszenie klienta: nadgodziny okresowe błędnie liczone dla
-                // "Praca poza normą"/"Praca poza normą awaria" przypadającej w święto. Święto to
-                // TypDnia.Świąteczny, a nie TypDnia.Wolny, więc bez tego warunku taka praca trafiała
-                // do gałęzi "else" (pełny etat, zwykły dzień roboczy) i zwracała płaski wynik
-                // norma - plan (zwykle 8h, bo w święto plan = 0) zamiast realnego czasu przepracowanego
-                // w danej strefie - liczone tak samo jak dzień wolny (proporcjonalnie do sumy stref,
-                // z limitem czasTemp).
-                bool dzienWolny = dzienPracy.Definicja.Typ == TypDnia.Wolny && dzienPracy.Definicja.Nazwa.Contains("Dzień wolny") && !dzienPracy.Definicja.NadgodzinySW;
-                bool dzienSwiateczny = dzienPracy.Definicja.Typ == TypDnia.Świąteczny && !dzienPracy.Definicja.NadgodzinySW;
+                // Poprawka 27.08.2026 - zgłoszenie klienta: w święto nie powinno być w ogóle
+                // "nadgodzin okresowych" - taka praca ("Praca poza normą"/"Praca poza normą awaria"
+                // w TypDnia.Świąteczny) ma być rozliczana osobną cechą "Nadgodziny NSW"
+                // (nadgodziny niedzielno-świąteczne), więc ta cecha dla święta zwraca 0.
+                if (dzienPracy.Definicja.Typ == TypDnia.Świąteczny)
+                    return 0;
 
                 foreach(StrefaPracy st in Row.Dzien.Strefy.OrderBy(s => s.OdGodziny))
                 {
-                    if(Row.Definicja.Nazwa.Contains(strefa1) && (dzienWolny || dzienSwiateczny))
+                    // Poprawka 27.08.2026 - warunek zawierał sztywne dopasowanie nazwy dnia
+                    // "Dzień wolny", podczas gdy realna definicja dnia wolnego w tym środowisku
+                    // nazywa się po prostu "Wolny" (zdiagnozowane logiem). Praca poza normą w taki
+                    // dzień nigdy nie łapała się w ten warunek i trafiała do gałęzi "else" (pełny
+                    // etat), zwracającej płaskie 8h zamiast realnie przepracowanego czasu. Warunek
+                    // oparty teraz tylko o TypDnia.Wolny i flagę NadgodzinySW (analogicznie do
+                    // gałęzi świątecznej wyżej).
+                    if(Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Wolny && !dzienPracy.Definicja.NadgodzinySW)
                     {
                         suma +=st.Czas;
                         if(st == Row)
