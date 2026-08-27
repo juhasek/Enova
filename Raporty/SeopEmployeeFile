@@ -126,6 +126,16 @@ namespace SeopEmployeeFileSnippet {
                     continue;
                 }
 
+                // Adres zamieszkania nie zawsze jest uzupełniony - gdy jest pusty (brak miejscowości),
+                // do raportu bierzemy dane z adresu zameldowania zamiast zamieszkania.
+                var adresZamieszkania = historia?.AdresZamieszkania;
+                var adresDoRaportu = string.IsNullOrWhiteSpace(adresZamieszkania?.Miejscowosc)
+                    ? historia?.AdresZameldowania
+                    : adresZamieszkania;
+
+                if (adresDoRaportu != adresZamieszkania)
+                    log.WriteLine($"Pracownik {p} - adres zamieszkania pusty, użyto adresu zameldowania");
+
                 // ===============================
                 // SEOP – daty przystąpienia / rezygnacji
                 // ===============================
@@ -196,13 +206,13 @@ namespace SeopEmployeeFileSnippet {
                     Division = division,
                     Subsidiary = subsidiary,
                     CompanyCode = companyCode,
-                    ResidentAdress1 = historia?.AdresZamieszkania?.Linia1,
+                    ResidentAdress1 = adresDoRaportu?.Linia1,
                     ResidentAdress2 = "",
                     ResidentAdress3 = "",
-                    ResidentCity = historia?.AdresZamieszkania?.Miejscowosc,
+                    ResidentCity = adresDoRaportu?.Miejscowosc,
                     ResidentState = "",
-                    ResidenPostalCode = historia?.AdresZamieszkania?.KodPocztowy == 0 ? "" : historia?.AdresZamieszkania?.KodPocztowy.ToString("00000"),
-                    ResidentCountry = historia?.AdresZamieszkania?.KodKraju == "PL" ? "POL" : historia?.AdresZamieszkania?.KodKraju,
+                    ResidenPostalCode = adresDoRaportu?.KodPocztowy == 0 ? "" : adresDoRaportu?.KodPocztowy.ToString("00000"),
+                    ResidentCountry = adresDoRaportu?.KodKraju == "PL" ? "POL" : adresDoRaportu?.KodKraju,
                     Nationality = historia?.Obywatelstwo?.KodKraju == "PL" ? "POL" : historia?.AdresZamieszkania?.KodKraju,
                     PersonalIdentityCode = historia?.PESEL,
                     UsaPayrollCode = ""
