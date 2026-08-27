@@ -4,6 +4,16 @@ Dokumentacja biznesowa i techniczna mechanizmu generującego pliki importu XML
 (`session/DefinicjaElementu`, business.xml) dla definicji elementów kadrowo-płacowych
 w enova365.
 
+> **Odstępstwo od konwencji repo:** w odróżnieniu od folderów takich jak
+> `ElementyPlac/`, `Weryfikatory/` czy `Raporty/`, które przechowują pojedyncze
+> fragmenty kodu C# wklejane bezpośrednio do edytora skryptów enova365 (plik bez
+> rozszerzenia + `.md`), `DefinicjaElementuXmlBuilder.cs` w tym folderze to
+> samodzielna, wieloklasowa biblioteka C# (LINQ to XML) — narzędzie działające
+> **poza** enova, które generuje plik XML do późniejszego zaimportowania przez
+> standardowy import XML w enova (Kadry i Płace). Stąd rozszerzenie `.cs` (a nie
+> plik bez rozszerzenia) i osobny podfolder w `Zadania/`, analogicznie do
+> `RozwiązaniaA1/`.
+
 ## 1. Do czego służy mechanizm
 
 Definiowanie elementów listy płac (dodatków, potrąceń) ręcznie w enova, element po
