@@ -1,0 +1,169 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.KadryPlace;
+using Soneta.Types;
+using Soneta.Tools;
+using System.Globalization;
+
+namespace SeopContributionFileSnippet {
+
+    public class SeopContributionFileSnippet : ReportSnippet {
+
+        // =========================
+        // PARAMETR RAPORTU
+        // =========================
+
+        public class Params : ContextBase {
+
+            public Params(Context context) : base(context) {
+
+                var aktualnaData = context.GetOrDefault<ActualDate>()?.Actual ?? Date.Today;
+                okres = new FromTo(aktualnaData.FirstDayMonth(), aktualnaData.LastDayMonth());
+            }
+
+            private FromTo okres;
+
+            [Priority(1)]
+            [Caption("Okres")]
+            public FromTo Okres {
+                get { return okres; }
+                set {
+                    okres = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        Params pars;
+
+        [Context(Required = true)]
+        public Params Parametry {
+            set { pars = value; }
+        }
+
+        // =========================
+
+        BusinessDataSource dc;
+
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.DetailReportBand Lista;
+
+        [DxBind(Name = "Report")]
+        private void Report_BeforePrint(object sender, CancelEventArgs e) {
+
+            if (this.DataSource == null || pars == null)
+                return;
+
+            if (pars.Okres.From == Date.Empty
+                || pars.Okres.To == Date.Empty)
+                return;
+
+            dc = (BusinessDataSource)this.DataSource;
+
+            FromTo okres = pars.Okres;
+
+            Date data = Context.GetOrDefault<ActualDate>()?.Actual ?? Date.Today;
+
+            var rows = dc.Context[typeof(Row[])] as Row[];
+            if (rows == null)
+                return;
+
+            List<RaportAkcjeRow> wynik = new List<RaportAkcjeRow>();
+
+            foreach (Pracownik p in rows) {
+
+                if (p?.Wyplaty == null)
+                    continue;
+
+                var wyplaty = p.Wyplaty
+                    .Where(w =>
+                        w.ListaPlac != null &&
+                        w.ListaPlac.DataWyplaty != Date.Empty &&
+                        okres.From <= w.ListaPlac.DataWyplaty &&
+                        w.ListaPlac.DataWyplaty <= okres.To);
+
+                foreach (var w in wyplaty) {
+
+                    var el = w.Elementy.FirstOrDefault(e =>
+                        e.Definicja != null &&
+                        (e.Definicja.Nazwa == "Potrącenie - akcje" || e.Definicja.Nazwa == "Potrącenie - akcje_old") &&
+                        e.Wartosc != 0m);
+
+                    if (el == null)
+                        continue;
+
+                    string pid = string.Empty;
+                    string cashDepositCode = string.Empty;
+
+                    var historia = p.Historia?[data];
+                    var oddzial = historia?.Etat?.Wydzial?.Oddzial;
+
+                    if (oddzial != null) {
+
+                        pid = oddzial.Nadrzedny?
+                                .Features?["SEOP_Pid"]?.ToString()
+                              ?? oddzial.Features?["SEOP_Pid"]?.ToString();
+
+                        cashDepositCode = oddzial.Nadrzedny?
+                                .Features?["SEOP_CashDepositCode"]?.ToString()
+                              ?? oddzial.Features?["SEOP_CashDepositCode"]?.ToString();
+                    }
+
+                    // Level (bez konfliktu nazw)
+                    string level = string.Empty;
+
+                    var worker = new AltOne.Skanska.AkcjePracownicze.Workers.SeopPracownikWorker {
+                        Actual = Context.GetOrDefault<ActualDate>(),
+                        Pracownik = p
+                    };
+
+                    var paramWorker =
+                        new AltOne.Skanska.AkcjePracownicze.Workers.AktualnyParametrUczestnictwaWorker(Context) {
+                            Uczestnictwo = worker.Uczestnictwo
+                        };
+
+                    if (paramWorker.Uczestnictwo != null)
+                        level = paramWorker.ParamUczestAkcji?.Kategoria?.Nazwa;
+
+                    switch (level) {
+                        case "Employee": level = "1"; break;
+                        case "Key": level = "2"; break;
+                        case "Top C": level = "4"; break;
+                        case "Top B": level = "6"; break;
+                    }
+
+                    wynik.Add(new RaportAkcjeRow {
+
+                        Pid = pid,
+                        LastName = p.Nazwisko,
+                        Gid = p.Features?["SEOP_GlobalId"]?.ToString(),
+                        CashDepositCode = cashDepositCode,
+                        ContributionDate = w.ListaPlac.DataWyplaty.ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
+                        EmployeeContributionAmount = -el.Wartosc,
+                        ContributionCurrency = el.SkładnikGłówny?.WartoscCy.Symbol,
+                        Level = level
+                    });
+                }
+            }
+
+            Lista.DataSource = wynik;
+        }
+    }
+
+    public class RaportAkcjeRow {
+
+        public string Pid { get; set; }
+        public string LastName { get; set; }
+        public string Gid { get; set; }
+        public string CashDepositCode { get; set; }
+        public string ContributionDate { get; set; }
+        public decimal EmployeeContributionAmount { get; set; }
+        public string ContributionCurrency { get; set; }
+        public string Level { get; set; }
+    }
+}
