@@ -5,23 +5,88 @@ public static string WeryfikujNormeWOkresieRozliczeniowym(KalkulatorPlanuBase ka
 		return null;
 	}
 	Periods periods = pracownik.WyliczOkresRoliczeniowyNadgodzin(data).ToPeriods();
-	Periods empty = Periods.Empty;
+
+	KalkulatorKodeksowyPracownika kalkulatorKodeksowyPracownika = new KalkulatorKodeksowyPracownika(pracownik);
+	CzasDni normaKodeksowa = CzasDni.Empty;
 	foreach (FromTo item in periods)
 	{
-		Periods periods2 = item.ToPeriods() - kalkulator.ZrodloPlanu.GetPlanOkresZatrudnienia(item);
-		empty += periods2;
+		normaKodeksowa += kalkulatorKodeksowyPracownika.Norma(item);
 	}
-	periods -= empty;
-	KalkulatorKodeksowyPracownika kalkulatorKodeksowyPracownika = new KalkulatorKodeksowyPracownika(pracownik);
-	CzasDni empty2 = CzasDni.Empty;
-	foreach (FromTo item2 in periods)
+
+	// Dni z jawnym wpisem w planie traktujemy jako ostatecznie zdecydowane (ich godzin nie da się już cofnąć).
+	// Dni bez jawnego wpisu są wciąż elastyczne - mogą przyjąć dowolną wartość od zera do dobowego
+	// maksimum wynikającego z systemu czasu pracy, więc same w sobie nie mogą jeszcze przesądzać o błędzie.
+	var dniZJawnymWpisem = new System.Collections.Generic.HashSet<Date>();
+	CzasDni sztywne = CzasDni.Empty;
+	foreach (FromTo item in periods)
 	{
-		empty2 += kalkulatorKodeksowyPracownika.Norma(item2);
+		foreach (DzienPlanu dzien in kalkulator.ZrodloPlanu.GetPlanDniPlanu(item))
+		{
+			dniZJawnymWpisem.Add(dzien.Data);
+			sztywne += kalkulator.Norma(new FromTo(dzien.Data, dzien.Data).ToPeriods());
+		}
 	}
-	CzasDni czasDni = kalkulator.Norma(periods);
-	if (empty2.Czas < czasDni.Czas)
+
+	Time zero = new Time(0, 0);
+	Time maksimumElastycznych = zero;
+	int liczbaDniElastycznych = 0;
+	var maksymalneWymiaryDobowe = new System.Collections.Generic.HashSet<Time>();
+	foreach (FromTo item in periods)
 	{
-		return "Przekroczono limit godzin ({0}) o ({2}) w okresie rozliczeniowym ({1}) - {3}".TranslateFormat(empty2.Czas, periods, czasDni.Czas - empty2.Czas, pracownik);
+		for (Date dt = item.From; dt <= item.To; dt++)
+		{
+			if (dniZJawnymWpisem.Contains(dt))
+			{
+				continue;
+			}
+
+			// Dzień bez jawnego wpisu może zwiększyć maksimum tylko wtedy, gdy kalendarz
+			// w ogóle przewiduje go jako dzień roboczy (domyślna wartość z FillDefault > 0).
+			// Dni z definicji wolne (weekendy, święta wg kalendarza) nie dają się "podciągnąć"
+			// do dobowego maksimum.
+			Periods jedenDzien = new FromTo(dt, dt).ToPeriods();
+			Time domyslnaWartoscDnia = kalkulator.Norma(jedenDzien).Czas;
+			if (domyslnaWartoscDnia <= zero)
+			{
+				continue;
+			}
+
+			// Dobowe maksimum zależy od systemu czasu pracy przypisanego pracownikowi w danym dniu
+			// (może się różnić w obrębie okresu, np. przy zmianie kalendarza w trakcie okresu rozliczeniowego).
+			bool rownowaznyCzasPracyDt = pracownik.Historia[dt].Etat.Kalendarz.RownowaznyCzasPracy;
+			Time maxDzienDt = rownowaznyCzasPracyDt
+				? new Time(12, 0)
+				: pracownik.Historia[dt].Etat.Kalendarz.Nadgodziny.WartoscDobowa;
+			maksimumElastycznych += maxDzienDt;
+			liczbaDniElastycznych++;
+			maksymalneWymiaryDobowe.Add(maxDzienDt);
+		}
+	}
+
+	Time minimalnyMozliwy = sztywne.Czas;
+	Time maksymalnyMozliwy = sztywne.Czas + maksimumElastycznych;
+
+	if (minimalnyMozliwy > normaKodeksowa.Czas)
+	{
+		return "Przekroczono limit godzin ({0}) o ({2}) w okresie rozliczeniowym ({1}) - {3}".TranslateFormat(normaKodeksowa.Czas, periods, minimalnyMozliwy - normaKodeksowa.Czas, pracownik);
+	}
+	if (maksymalnyMozliwy < normaKodeksowa.Czas)
+	{
+		string opisPozostalychDni;
+		if (maksymalneWymiaryDobowe.Count == 1)
+		{
+			Time jedynyMaxDzien = zero;
+			foreach (Time wartosc in maksymalneWymiaryDobowe)
+			{
+				jedynyMaxDzien = wartosc;
+			}
+			opisPozostalychDni = "{0} dni roboczych x {1} = {2}".TranslateFormat(liczbaDniElastycznych, jedynyMaxDzien, maksimumElastycznych);
+		}
+		else
+		{
+			opisPozostalychDni = "{0} dni roboczych, łącznie {1} (dobowy limit różni się w zależności od kalendarza)".TranslateFormat(liczbaDniElastycznych, maksimumElastycznych);
+		}
+		return "Nie da się już osiągnąć normy godzin ({0}) w okresie rozliczeniowym ({1}), brakuje ({2}) - {3}. W pozostałych dniach można maksymalnie zaplanować: {4}".TranslateFormat(normaKodeksowa.Czas, periods, normaKodeksowa.Czas - maksymalnyMozliwy, pracownik, opisPozostalychDni);
 	}
 	return null;
 }
