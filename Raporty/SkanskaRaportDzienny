@@ -280,7 +280,7 @@ namespace Soneta.KadryPlace.Reports
                         // inaczej każdy wiersz strefy tego samego dnia (np. praca w normie
                         // i nadgodziny) pokazywał identyczne "od-do" całego dnia.
                         colOd.Text = linia.Strefa.OdGodziny == Time.Zero ? "" : linia.Strefa.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
-                        Time strefaDoGodziny = linia.Strefa.OdGodziny + linia.Strefa.Czas;
+                        Time strefaDoGodziny = linia.DoGodzinyLaczna;
 
                         if (colOd.Text == "")
                             colDo.Text = "";
@@ -289,7 +289,7 @@ namespace Soneta.KadryPlace.Reports
 
                         if (linia.Strefa.OdGodziny != Time.Zero)
                         {
-                            Time nocnerob = PoliczPoreNocna(linia.Prac, data, linia.Strefa.OdGodziny, linia.Strefa.OdGodziny + linia.Strefa.Czas);
+                            Time nocnerob = PoliczPoreNocna(linia.Prac, data, linia.Strefa.OdGodziny, linia.DoGodzinyLaczna);
                             colNocne.Text = nocnerob == Time.Zero ? "" : nocnerob.ToString();
                             if (linia.Strefa.Definicja.Nazwa == "Praca w godzinach nocnych")
                                 colNocne.Text = nocnerob == Time.Zero ? kalkulator.Nocne(new FromTo(data, data)).ToString() : nocnerob.ToString();
@@ -538,9 +538,29 @@ namespace Soneta.KadryPlace.Reports
                     }
                     else
                     {
-                        foreach (var strefa in dzienPracy.Strefy)
+                        // Kilka zapisów strefy tego samego typu, z tym samym Projektem i
+                        // Taskiem (np. dwa osobne zapisy "Praca poza normą" o różnych
+                        // godzinach), traktujemy jako jeden ciągły wpis w karcie - inaczej
+                        // ten sam dzień drukował kilka wierszy wyglądających na zdublowane.
+                        foreach (var strefa in dzienPracy.Strefy
+                            .Where(s => strefyraportu.Contains(s.Definicja.Nazwa))
+                            .OrderBy(s => s.OdGodziny))
                         {
-                            if (strefyraportu.Contains(strefa.Definicja.Nazwa))
+                            string projektSym = GetFeatureSymbol(strefa, "Projekt");
+                            string taskSym = GetFeatureSymbol(strefa, "Task");
+
+                            Linia poprzednia = linie.Count > 0 ? linie[linie.Count - 1] : null;
+                            bool mozeScalic = poprzednia != null && poprzednia.DzienM == dataSpr &&
+                                poprzednia.Strefa != null &&
+                                poprzednia.Strefa.Definicja.Nazwa == strefa.Definicja.Nazwa &&
+                                GetFeatureSymbol(poprzednia.Strefa, "Projekt") == projektSym &&
+                                GetFeatureSymbol(poprzednia.Strefa, "Task") == taskSym;
+
+                            if (mozeScalic)
+                            {
+                                poprzednia.DoGodzinyLaczna = Time.Max(poprzednia.DoGodzinyLaczna, strefa.OdGodziny + strefa.Czas);
+                            }
+                            else
                             {
                                 linie.Add(new Linia(dataSpr, strefa, pracownik));
                             }
@@ -572,12 +592,26 @@ namespace Soneta.KadryPlace.Reports
                 this.DzienM = data;
                 this.Prac = prac;
                 this.Strefa = strefa;
+                this.DoGodzinyLaczna = strefa.OdGodziny + strefa.Czas;
             }
 
             public StrefaPracy Strefa { get; set; }
             public Date DzienM { get; set; }
             public ElementPodzielnika ElemPodz { get; set; }
             public Pracownik Prac { get; set; }
+
+            // Łączna godzina zakończenia po ewentualnym scaleniu kilku zapisów strefy
+            // o tym samym typie/Projekcie/Tasku w jeden wiersz karty (patrz
+            // detailReportBand1_BeforePrint). Dla niescalonego wiersza to po prostu
+            // koniec pojedynczej strefy (OdGodziny + Czas).
+            public Time DoGodzinyLaczna { get; set; }
+        }
+
+        [TranslateIgnore]
+        static string GetFeatureSymbol(StrefaPracy strefa, string nazwaCechy)
+        {
+            ElemSlownika elem = strefa.Features[nazwaCechy] as ElemSlownika;
+            return elem?.Symbol;
         }
 
         [DxBind(Name = "GroupHeader1")]

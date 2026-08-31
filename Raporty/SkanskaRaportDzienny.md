@@ -92,3 +92,33 @@ rzeczywisty przedział czasowy strefy danego wiersza. Dzięki temu dzień z
 kilkoma strefami drukuje kilka wierszy z rozłącznymi przedziałami godzin (np.
 7:00–15:00, 15:00–16:00, 16:00–18:00) zamiast powtarzania godzin całego dnia
 w każdym wierszu.
+
+## 5. Scalanie wielu zapisów tej samej strefy z tym samym Projektem/Taskiem
+
+**Objaw:** dla dnia z kilkoma osobnymi zapisami strefy tego samego typu (np.
+dwa zapisy „Praca poza normą” o różnych godzinach — 15:00–16:00 i
+16:00–18:00), ale z tymi samymi wartościami cech **Projekt** i **Task**, karta
+drukowała osobny wiersz dla każdego zapisu. Wizualnie wyglądało to jak
+zdublowane wiersze tego samego dnia, a kolumna nadgodzin (licząca się jako
+suma dla całego dnia — patrz `PracaWStrefie`) była dodatkowo powielana przy
+każdym takim wierszu, co zawyżało odczyt.
+
+**Przyczyna:** budowanie listy wierszy (`linie`) w
+`detailReportBand1_BeforePrint` tworzyło jeden obiekt `Linia` na każdy
+pojedynczy rekord strefy z `dzienPracy.Strefy`, bez sprawdzania, czy kolejny
+zapis tego samego dnia nie jest w istocie kontynuacją poprzedniego (ten sam
+typ strefy, ten sam Projekt, ten sam Task, inne tylko godziny).
+
+**Poprawka:** przy budowaniu `linie`, zapisy strefy danego dnia są sortowane
+po godzinie rozpoczęcia; jeśli kolejny zapis ma ten sam typ strefy
+(`Definicja.Nazwa`) oraz te same wartości cech **Projekt** i **Task** co
+poprzednio dodany wiersz tego dnia, nie tworzy się dla niego nowy wiersz —
+zamiast tego rozszerza się godzinę zakończenia poprzedniego wiersza
+(`Linia.DoGodzinyLaczna`, nowe pole, domyślnie `OdGodziny + Czas` pojedynczej
+strefy, dla scalonych wierszy — maksimum z dotychczasowego i nowego końca).
+Kolumny „Godz. pracy od/do” oraz obliczenie pory nocnej
+(`PoliczPoreNocna`) korzystają teraz z `Linia.DoGodzinyLaczna` zamiast
+liczyć koniec bezpośrednio z pojedynczej strefy. Zapisy o innym typie strefy
+(np. „Praca w normie”) albo innym Projekcie/Tasku nadal drukują się jako
+osobne wiersze — scalane są wyłącznie zapisy identyczne pod względem typu
+strefy i Projektu/Tasku.
