@@ -275,13 +275,17 @@ namespace Soneta.KadryPlace.Reports
                     }
                     else
                     {
-                        colOd.Text = dzień.OdGodziny == Time.Zero ? "" : dzień.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
-                        var doGodziny = Dzien.DoGodziny(dzień);
+                        // Kolumny "Godz. pracy od/do" mają pokazywać przedział konkretnej
+                        // strefy tego wiersza, a nie zagregowany przedział całego dnia -
+                        // inaczej każdy wiersz strefy tego samego dnia (np. praca w normie
+                        // i nadgodziny) pokazywał identyczne "od-do" całego dnia.
+                        colOd.Text = linia.Strefa.OdGodziny == Time.Zero ? "" : linia.Strefa.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+                        Time strefaDoGodziny = linia.Strefa.OdGodziny + linia.Strefa.Czas;
 
                         if (colOd.Text == "")
                             colDo.Text = "";
                         else
-                            colDo.Text = doGodziny == Time.Zero ? "" : Dzien.DoGodziny(dzień).ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+                            colDo.Text = strefaDoGodziny == Time.Zero ? "" : strefaDoGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
 
                         if (linia.Strefa.OdGodziny != Time.Zero)
                         {

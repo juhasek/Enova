@@ -66,3 +66,29 @@ się dzień z nadgodzinami, wartość zostanie poprawnie nadpisana; jeśli nie �
 zostanie poprawne zero zamiast wyniku poprzedniego pracownika.
 
 Przy okazji poprawiono formatowanie/wcięcia całego pliku na standardowe dla C#.
+
+## 4. Poprawka: błędne godziny „od–do” przy kilku strefach w jednym dniu
+
+**Objaw:** gdy w danym dniu pracownik miał więcej niż jedną strefę (np. „Praca
+w normie” 7:00–15:00 i „Praca poza normą” 15:00–18:00 jako nadgodziny), raport
+drukował dla obu wierszy tego samego dnia identyczne godziny „Godz. pracy
+od/do” — pełny zakres całego dnia (np. 7:00–18:00) zamiast osobnego przedziału
+dla każdej strefy. W efekcie karta pokazywała dwa (lub więcej) pozornie
+zdublowane wiersze dla tej samej daty, a nadgodziny w kolumnie były trudne do
+zweryfikowania względem godzin „od–do”.
+
+**Przyczyna:** w `Grid1ListaWiersz_BeforePrint`, w gałęzi obsługującej wiersz
+z przypisaną strefą (`linia.Strefa != null`), kolumny `colOd`/`colDo` były
+liczone z `dzień.OdGodziny` / `Dzien.DoGodziny(dzień)` — czyli z
+zagregowanego, wspólnego dla całego dnia obiektu `Dzien`, a nie z przedziału
+konkretnej strefy (`linia.Strefa`) reprezentowanej przez dany wiersz.
+Obliczenie pory nocnej (`PoliczPoreNocna`) tuż niżej już poprawnie używało
+`linia.Strefa.OdGodziny`/`linia.Strefa.Czas` — tylko godziny „od–do” tego nie
+robiły.
+
+**Poprawka:** `colOd.Text` ustawiane jest teraz na `linia.Strefa.OdGodziny`, a
+`colDo.Text` na `linia.Strefa.OdGodziny + linia.Strefa.Czas` — czyli
+rzeczywisty przedział czasowy strefy danego wiersza. Dzięki temu dzień z
+kilkoma strefami drukuje kilka wierszy z rozłącznymi przedziałami godzin (np.
+7:00–15:00, 15:00–16:00, 16:00–18:00) zamiast powtarzania godzin całego dnia
+w każdym wierszu.
