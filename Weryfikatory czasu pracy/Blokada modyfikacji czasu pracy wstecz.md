@@ -36,13 +36,16 @@ Dla wpisanej wartości `N` i dzisiejszej daty:
 Błąd zwracany, gdy `data < blokadaOd`. Dzień równy `blokadaOd` jest dozwolony
 (semantyka `<`, jak w oryginale).
 
-### Przykład (cecha = 4)
+### Przykład (cecha = 5)
+
+Piątego dnia miesiąca blokują się poprzednie miesiące. **5 września →
+sierpień i wcześniejsze miesiące zablokowane.**
 
 | Dziś | Próg aktywny? | `blokadaOd` | Można edytować |
 |---|---|---|---|
-| 2026-08-02 | nie (2 < 4) | 2026-07-01 | lipiec 2026 i nowsze |
-| 2026-08-04 | tak (4 ≥ 4) | 2026-08-01 | sierpień 2026 i nowsze |
-| 2026-08-20 | tak | 2026-08-01 | sierpień 2026 i nowsze |
+| 2026-09-04 | nie (4 < 5) | 2026-08-01 | sierpień 2026 i nowsze |
+| 2026-09-05 | tak (5 ≥ 5) | 2026-09-01 | wrzesień 2026 i nowsze (sierpień zablokowany) |
+| 2026-09-20 | tak | 2026-09-01 | wrzesień 2026 i nowsze |
 
 ## Odczyt cechy globalnej
 
