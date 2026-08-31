@@ -165,7 +165,40 @@ bez źródła) i obie są potrzebne:
   duplikował widok nieobecności niezależnie od liczby rzeczywistych wierszy w bazie, bo w ogóle nie
   patrzył na numer kolumny (`Strefa`).
 
-## 6. Do potwierdzenia / obserwacje
+## 6. Zgłoszony błąd i poprawka (31.08.2026) — wyszukiwanie w liście Task po nazwie zamiast po kodzie
+
+**Zgłoszenie klienta:** w siatce można wyszukiwać Projekt i Task z listy rozwijanej (ComboBox).
+Wyszukiwanie działało po nazwie, a klient chce po kodzie.
+
+**Diagnoza:** kolumna „Projekt” (właściwość `CechaProjektProxy`, `[Caption("Projekt")]`) korzysta z
+`GetListCechaProjektProxy()`, który już filtrował po `"Symbol"` (kod) — to działało poprawnie.
+Kolumna „Task” (właściwość `CechaTask`, `[Caption("Task")]`) korzysta z `GetListCechaTask()`, który
+filtrował po `"Nazwa"`:
+
+```csharp
+public object GetListCechaTask(){
+    var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["Task"].ElementySlownika.Cast<ElemSlownika>().ToList();
+    return new LookupInfo.EnumerableItem("Wow", elementy, "Nazwa") { ComboBox = true };
+}
+```
+
+Trzeci parametr `LookupInfo.EnumerableItem(caption, items, "PropertyName")` to nazwa właściwości, po
+której użytkownik może wyszukiwać/filtrować w polu ComboBox — stąd wyszukiwanie Task po nazwie.
+
+**Poprawka:** zmieniono `"Nazwa"` na `"Symbol"`, analogicznie do już poprawnie działającego
+`GetListCechaProjektProxy`:
+
+```csharp
+return new LookupInfo.EnumerableItem("Wow", elementy, "Symbol") { ComboBox = true };
+```
+
+**Uwaga:** w pliku istnieje też nieużywana już (osierocona po wprowadzeniu wzorca `*Proxy`) para
+`CechaProjekt`/`GetListCechaProjekt()` — nie jest podpięta pod żadną kolumnę siatki (brak atrybutu
+`[Field]`/`[Caption]` bezpośrednio nad `CechaProjekt`), więc nie została ruszona. `GetListCechaExpenditure`
+i `GetListCechaEkwiwalent` nadal filtrują po `"Nazwa"` — zostały bez zmian, bo nie były przedmiotem
+tego zgłoszenia (dotyczyło tylko Projektu i Taska).
+
+## 7. Do potwierdzenia / obserwacje
 
 - Pozostałe właściwości `Cecha*` (Projekt, Task, DodatekBryg, EkwiwalentZaPranie,
   Expenditure_organization) w gettery **nie** miały tego problemu — nie mają wczesnego zwrotu na

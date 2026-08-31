@@ -779,9 +779,10 @@ public ElemSlownika CechaProjekt {
 }
 
 public object GetListCechaTask(){
-	
-	var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["Task"].ElementySlownika.Cast<ElemSlownika>().ToList();	
-  return new LookupInfo.EnumerableItem("Wow", elementy, "Nazwa") { ComboBox = true };
+	// Poprawka 31.08.2026 - zgłoszenie klienta: wyszukiwanie w liście Task miało być po kodzie
+	// (Symbol), a nie po nazwie - analogicznie do Projektu (GetListCechaProjektProxy, "Symbol").
+	var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["Task"].ElementySlownika.Cast<ElemSlownika>().ToList();
+  return new LookupInfo.EnumerableItem("Wow", elementy, "Symbol") { ComboBox = true };
 }
 
 //CechaSPSlownik
