@@ -3,7 +3,12 @@
 Metoda pomocnicza weryfikatora planu/czasu pracy. Blokuje zapis czasu pracy
 w dniach należących do „zamkniętych" miesięcy. Zastępuje wcześniejszą wersję
 `BlokadaMiesiacaWstecz`, w której data graniczna była zawsze 1. dniem bieżącego
-miesiąca (`Date.Today.FirstDayMonth()`).
+miesiąca.
+
+Cała logika jest w jednej metodzie — bez metod pomocniczych, bez typów
+`Nullable`, bez `AddMonths`/`FirstDayMonth` (edytor skryptów enova ich nie
+łyka: `int?` daje ostrzeżenie „int nigdy nie równa się null", a złe wnioskowanie
+typu psuło `data < blokadaOd`).
 
 ## Zmiana względem poprzedniej wersji
 
@@ -15,13 +20,12 @@ miesiąca (`Date.Today.FirstDayMonth()`).
 
 ## Cecha globalna
 
-- **Gdzie:** okno „Cechy globalne" (tabela `CfgNodes`).
-- **Nazwa:** `BlokadaOdDnia` — stała `NazwaCechyBlokadaOdDnia` na górze skryptu;
-  zmień w obu miejscach, jeśli nazwiesz cechę inaczej.
+- **Gdzie:** okno „Cechy globalne".
+- **Nazwa:** `BlokadaOdDnia` (w kodzie jako literał w `Features["BlokadaOdDnia"]`).
 - **Typ:** liczba całkowita.
 - **Wartość:** dzień miesiąca **1–28** (zalecane; 29–31 działa, ale w krótszych
   miesiącach próg jest przycinany do ostatniego dnia miesiąca).
-- **Pusta / brak / poza 1–31:** blokada całkowicie wyłączona (metoda zwraca `null`).
+- **Pusta / brak / < 1:** blokada całkowicie wyłączona (metoda zwraca `null`).
 
 ## Logika progu
 
@@ -50,18 +54,13 @@ sierpień i wcześniejsze miesiące zablokowane.**
 ## Odczyt cechy globalnej
 
 ```csharp
-object wartosc = session.Global.Features["BlokadaOdDnia"];
+object wartoscCechy = pracownik.Session.Global.Features["BlokadaOdDnia"];
+if (wartoscCechy == null) return null;   // pusta cecha -> brak blokady
+int dzienBlokady = (int)wartoscCechy;
 ```
 
 `Session.Global` niesie cechy globalne; `.Features["nazwa"]` zwraca `object`
-(`null`, gdy cecha bez wartości). Wartość jest liczbą całkowitą:
-
-```csharp
-int dzien = System.Convert.ToInt32(wartosc);   // lub (int)wartosc, gdy pewne że boxed int
-```
-
-`PobierzDzienBlokady` sprawdza `null` przed rzutowaniem (pusta cecha → brak
-blokady) i odrzuca wartości spoza 1..31.
+(`null`, gdy cecha bez wartości) — dlatego sprawdzamy `null` przed rzutem `(int)`.
 
 ## Sygnatura i wpięcie
 
@@ -69,14 +68,14 @@ blokady) i odrzuca wartości spoza 1..31.
 public static string BlokadaMiesiacaWstecz(Pracownik pracownik, Date data)
 ```
 
-Bez zmian względem poprzedniej wersji — `pracownik` służy teraz wyłącznie do
-pobrania `Session` (`pracownik.Session`). Metodę wywołuje się z właściwego
-weryfikatora planu/kalendarza dla `(pracownik, dzień)`; zwrócony niepusty string
-to komunikat błędu, `null` = brak blokady.
+Sygnatura bez zmian — `pracownik` służy do pobrania `Session`
+(`pracownik.Session`). Metodę wywołuje się z weryfikatora planu/kalendarza dla
+`(pracownik, dzień)`; niepusty string = komunikat błędu, `null` = brak blokady.
 
 ## API użyte w skrypcie
 
-- `session.Global.Features["nazwa"]` — odczyt cechy globalnej
-- `Date.Today`, `Date.FirstDayMonth()`, `Date.AddMonths(int)`, `Date.Day/Month/Year`
+- `pracownik.Session.Global.Features["nazwa"]` — odczyt cechy globalnej, rzut `(int)` po null-checku
+- `Date.Today`, `Date.Day/Month/Year`, `new Date(rok, miesiąc, 1)`
+- poprzedni miesiąc liczony ręcznie (`miesiac-1`, przejście przez 0 → grudzień/rok-1) — bez `AddMonths`
 - `YearMonth(Date)` + `TranslateFormat` — komunikat jak w oryginale
-- `System.DateTime.DaysInMonth`, `System.Math.Min` — przycięcie progu do długości miesiąca
+- `System.DateTime.DaysInMonth` — przycięcie progu do długości miesiąca
