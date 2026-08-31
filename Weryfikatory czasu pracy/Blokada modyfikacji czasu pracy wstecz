@@ -37,8 +37,12 @@ public static string BlokadaMiesiacaWstecz(Pracownik pracownik, Date data)
 
 	if (data < blokadaOd)
 	{
-		YearMonth ym = new YearMonth(blokadaOd);
-		return "Dla miesięcy wcześniejszych niż {0} nie można modyfikować czasu pracy.".TranslateFormat(ym);
+		// Komunikat: numer miesiąca i rok w formacie MM.rrrr (np. 08.2026).
+		// Nazwa miesiąca zamiast numeru: odkomentuj tablicę i użyj nazwy[miesiac - 1].
+		// string[] nazwy = new string[] { "styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec",
+		//     "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień" };
+		string miesiacRok = miesiac.ToString("00") + "." + rok.ToString();
+		return "Dla miesięcy wcześniejszych niż {0} nie można modyfikować czasu pracy.".TranslateFormat(miesiacRok);
 	}
 	return null;
 }
