@@ -382,20 +382,25 @@ public string Numer {
 [DefaultWidth(12)]
 public DefinicjaStrefy Definicja { 
     get {
-			
-			  INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+
         // Poprawka 31.08.2026 - zgłoszenie klienta: dzień z nieobecnością pokazywał strefę
-        // "Nieobecność" zduplikowaną we wszystkich kolumnach siatki (Strefa 0,1,2...), bo ten
-        // warunek ignorował, która kolumna jest renderowana, i zwracał wartość "NB" niezależnie
-        // od Strefa - dla każdej z 3 kolumn z osobna. Analogicznie do właściwości Osoba (która
-        // też pokazuje się tylko przy Strefa == 0), nieobecność ma być widoczna tylko w pierwszej
-        // kolumnie - reszta ma normalnie spadać do DaneStrefy (pusto, tak jak dla dnia roboczego
-        // bez danych w tej kolumnie).
+        // "Nieobecność" zduplikowaną we wszystkich kolumnach siatki (Strefa 0,1,2...), bo warunek
+        // na nb sprawdzał się PRZED sięgnięciem po realne dane i ignorował, która kolumna jest
+        // renderowana. Poprawka 31.08.2026 (2) - to samo ograniczone do Strefa == 0 nadal było
+        // błędne dla dnia mieszanego (praca + nieobecność): kolumna 0 bywa realną strefą pracy
+        // (np. "Praca zdalna regulaminowa"), a wymuszone "NB" ją przesłaniało. Realne dane
+        // (DaneStrefy) mają zawsze pierwszeństwo - "NB" pokazujemy tylko jako fallback dla
+        // kolumny 0, gdy dla niej NIE ma żadnej realnej strefy (np. dzień jeszcze
+        // niezainicjowany).
+				object ds = DaneStrefy(TypDanych.Definicja);
+        if (ds != null)
+            return (DefinicjaStrefy)ds;
+
+			  INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
         if (nb != null && Strefa == 0)
             return KalendModule.GetInstance(Pracownik).DefinicjeStref.WgKodu["NB"].First();
-			
-				object ds = DaneStrefy(TypDanych.Definicja);
-        return (DefinicjaStrefy)ds;
+
+        return null;
     }
     set {// log.WriteLine($"Def Rozpoczęcie dodawania");
         if (Blokada())
@@ -462,20 +467,22 @@ public object GetListDefinicja()
 [DefaultWidth(4)]
 public string OdGodziny { 
     get {
-        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
-        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (duplikacja NB w kolumnach)
-        if (nb != null && Strefa == 0)
-            return nb.Definicja.Kod;
+        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
+        // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
 				object ds = DaneStrefy(TypDanych.OdGodziny);
-			
 			if(ds != null)
 			{
-				if(ds is Time from && from >= new Time(24,0))	
+				if(ds is Time from && from >= new Time(24,0))
 					return "+" + (from - new Time(24,0)).ToString();
 				return ds.ToString();
 			}
+
+        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+        if (nb != null && Strefa == 0)
+            return nb.Definicja.Kod;
+
 			return string.Empty;
-    } 
+    }
     set {
         if (Blokada())
             throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
@@ -525,24 +532,25 @@ public string OdGodziny {
 [DefaultWidth(4)]
 public string DoGodziny { 
     get {
-        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
-        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (duplikacja NB w kolumnach)
-        if (nb != null && Strefa == 0)
-            return nb.Definicja.Kod;
+        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
+        // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
 				object ds = DaneStrefy(TypDanych.DoGodziny);
-			
-			var od = this.OdGodziny;
-			if (od == string.Empty)
-			  return "\u00A0";
-			
 			if(ds != null)
 			{
-				if(ds is Time to && to >= new Time(24,0))	
+				if(ds is Time to && to >= new Time(24,0))
 					return "+" + (to - new Time(24,0)).ToString();
 				return ds.ToString();
 			}
-			return ds.ToString();
-			//return ds != null ? ds.ToString() : string.Empty;
+
+        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+        if (nb != null && Strefa == 0)
+            return nb.Definicja.Kod;
+
+			var od = this.OdGodziny;
+			if (od == string.Empty)
+			  return "\u00A0";
+
+			return string.Empty;
 
     } 
     set {
@@ -594,12 +602,17 @@ public string DoGodziny {
 [DefaultWidth(4)]
 public string Czas { 
     get {
+        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
+        // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
+				object ds = DaneStrefy(TypDanych.Czas);
+				if (ds != null)
+					return ds.ToString();
+
         INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
-        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (duplikacja NB w kolumnach)
         if (nb != null && Strefa == 0)
             return nb.Definicja.Kod;
-				object ds = DaneStrefy(TypDanych.Czas);
-				return ds != null ? ds.ToString() : string.Empty;
+
+				return string.Empty;
     } 
     set {
         if (Blokada())

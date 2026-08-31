@@ -57,20 +57,67 @@ poprawnie sięgała do `DaneStrefy(...)`, która indeksuje **rzeczywiste** stref
 pozostałe dwie były puste. To wyjaśnia różnicę zaobserwowaną przez klienta między dniem roboczym a
 dniem nieobecności.
 
-**Poprawka:** do każdego z czterech warunków dodano `&& Strefa == 0`, analogicznie do sposobu, w
-jaki właściwość `Osoba` ogranicza się do pierwszej kolumny:
+**Pierwsza próba poprawki (31.08.2026):** do każdego z czterech warunków dodano `&& Strefa == 0`,
+analogicznie do sposobu, w jaki właściwość `Osoba` ogranicza się do pierwszej kolumny:
 
 ```csharp
 if (nb != null && Strefa == 0)
     return KalendModule.GetInstance(Pracownik).DefinicjeStref.WgKodu["NB"].First();
 ```
 
-Dzięki temu nieobecność wyświetla się tylko raz — w pierwszej kolumnie/wierszu strefy — a pozostałe
-kolumny normalnie spadają do `DaneStrefy(...)`, zwracając pusto (tak jak dla dnia roboczego bez
-danych w danej kolumnie). Zmiana dotyczy właściwości `Definicja` (linia z `WgKodu["NB"]`),
-`OdGodziny`, `DoGodziny` i `Czas` (linie zwracające `nb.Definicja.Kod`).
+To usunęło trojenie się wiersza „Nieobecność”, ale ujawniło **kolejny błąd** — patrz punkt 3.
 
-## 3. Zależność od poprawki w cesze
+## 3. Zgłoszony błąd i poprawka (31.08.2026, cd.) — dzień mieszany (praca + nieobecność) tracił pierwszą realną strefę
+
+**Zgłoszenie klienta (zrzuty ekranu):** dzień w kalendarzu pracownika miał 3 realne strefy: „Praca
+zdalna regulaminowa” 7:00–8:00 (1h), „Praca zdalna regulaminowa” 12:00–15:00 (3h) i „Nieobecność”
+(bez godzin, typ OPIEKA). W zestawieniu ten sam dzień pokazywał: kolumna 1 — „Nieobecność”
+OPIEKA/OPIEKA/OPIEKA (**błędnie** — powinna być pierwsza „Praca zdalna” 7:00–8:00), kolumna 2 —
+„Praca zdalna” 12:00–15:00 (poprawnie), kolumna 3 — „Nieobecność” 0:00 (poprawnie).
+
+**Przyczyna:** warunek `if (nb != null && Strefa == 0)` z poprzedniej poprawki nadal sprawdzał się
+**przed** sięgnięciem po realne dane strefy (`DaneStrefy`). Działa to poprawnie dla dnia z samą
+nieobecnością (bo tam kolumna 0 i tak nie ma nic innego do pokazania), ale dla dnia **mieszanego**
+(praca + nieobecność, wszystko jako realne wiersze `StrefaPracyAktualizacja` — tak jak w
+kalendarzu na zrzucie) kolumna 0 bywa realną strefą pracy. Wymuszone „NB” bezwarunkowo przesłaniało
+tę realną, pierwszą strefę pracy — kolumny 1 i 2 wypadały poprawnie tylko dlatego, że warunek już
+ich nie dotyczył (`Strefa != 0`), więc normalnie spadały do `DaneStrefy(...)`.
+
+**Poprawka:** odwrócono kolejność sprawdzania w `Definicja`, `OdGodziny`, `DoGodziny` i `Czas` —
+najpierw próba pobrania **realnych** danych strefy (`DaneStrefy(...)`), a dopiero gdy dla danej
+kolumny nie ma żadnych realnych danych (`ds == null`), fallback do „NB”/kodu nieobecności — nadal
+ograniczony do `Strefa == 0`, żeby nie duplikować:
+
+```csharp
+public DefinicjaStrefy Definicja {
+    get {
+        object ds = DaneStrefy(TypDanych.Definicja);
+        if (ds != null)
+            return (DefinicjaStrefy)ds;
+
+        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+        if (nb != null && Strefa == 0)
+            return KalendModule.GetInstance(Pracownik).DefinicjeStref.WgKodu["NB"].First();
+
+        return null;
+    }
+    ...
+}
+```
+
+Dzięki temu:
+
+- dzień mieszany (praca + nieobecność, wszystko jako realne wiersze) — każda kolumna pokazuje
+  swoje realne dane, bez przesłaniania; nieobecność pokazuje się tam, gdzie faktycznie jest w
+  danych (tak jak kolumna 3 na zrzucie), nie wymuszona na kolumnie 0,
+- dzień z samą nieobecnością, dla którego cecha inicjująca dodała już jeden realny wiersz „NB”
+  (patrz `Cechy/Inicjacja pozycji aktualizacji czasu pracy`) — kolumna 0 i tak dostaje ten wiersz
+  przez `DaneStrefy`, fallback praktycznie się nie uruchamia,
+- fallback na „NB” w kolumnie 0 zostaje jako zabezpieczenie na wypadek dnia, dla którego naprawdę
+  nie ma jeszcze żadnych realnych danych (np. całkowicie niezainicjowana komórka), żeby użytkownik
+  widział choć sygnał nieobecności zamiast pustki.
+
+## 4. Zależność od poprawki w cesze
 
 Ta poprawka jest **niezależna** od wcześniejszej poprawki w
 `Cechy/Inicjacja pozycji aktualizacji czasu pracy` (ograniczenie do jednego wiersza „NB” na dzień
@@ -82,7 +129,7 @@ bez źródła) i obie są potrzebne:
   duplikował widok nieobecności niezależnie od liczby rzeczywistych wierszy w bazie, bo w ogóle nie
   patrzył na numer kolumny (`Strefa`).
 
-## 4. Do potwierdzenia / obserwacje
+## 5. Do potwierdzenia / obserwacje
 
 - Pozostałe właściwości `Cecha*` (Projekt, Task, DodatekBryg, EkwiwalentZaPranie,
   Expenditure_organization) w gettery **nie** miały tego problemu — nie mają wczesnego zwrotu na
