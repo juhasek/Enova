@@ -15,17 +15,6 @@ public object GetInitValueInicjacja() {
 
 		if (brakEdycjiDnia)
 		{
-			List<DefinicjaStrefy> defStrefy = new List<DefinicjaStrefy>();
-
-			defStrefy.Add(KalendModule.GetInstance(Session).DefinicjeStref.WgNazwy["Praca w normie"]);
-
-			foreach (Date data in Row.Dokument.Okres)
-			{
-				DzienPracy dzienPracy = pracownik.DniPracy[data];
-				if (dzienPracy != null)
-					defStrefy.AddRange(dzienPracy.Strefy.Select(x => x.Definicja).Where(x => x.Kod != "NB"));
-			}
-
 			using (ITransaction t = Row.Session.Logout(true))
 			{
 				foreach (Date data in Row.Dokument.Okres)
@@ -62,19 +51,23 @@ public object GetInitValueInicjacja() {
 					// Poprawka 31.08.2026 - zgłoszenie klienta: strefa "Nieobecność" dublowała się,
 					// gdy nieobecność była już wcześniej wpisana w kalendarzu pracownika. W takim
 					// wypadku dzienakt.Copy(da)/Copy(d) wyżej kopiuje dzień razem z jego strefami,
-					// czyli razem z już istniejącą strefą "NB". Poniższa pętla ręcznie dokłada kolejne
-					// strefy "NB" niezależnie od tego, dlatego przy dniu skopiowanym ze źródła powstawał
-					// duplikat. Ręczne dokładanie stref "NB" ma sens tylko wtedy, gdy dzień nie został
-					// skopiowany (czyli przeliczony od zera przez PrzeliczDzieńPracyAktualizacja, które
-					// nie zna jeszcze nieobecności) - stąd dodatkowy warunek !skopiowanoZeZrodla.
+					// czyli razem z już istniejącą strefą "NB". Ręczne dokładanie strefy "NB" ma sens
+					// tylko wtedy, gdy dzień nie został skopiowany (czyli przeliczony od zera przez
+					// PrzeliczDzieńPracyAktualizacja, które nie zna jeszcze nieobecności) - stąd
+					// dodatkowy warunek !skopiowanoZeZrodla.
+					//
+					// Poprawka 31.08.2026 (2) - zgłoszenie klienta: dla dnia bez źródła strefa "NB"
+					// i tak dokładała się po kilka razy (np. 3x dla jednej nieobecności), bo pętla
+					// dodawała po jednym wierszu za każdą odrębną definicję strefy pracy spotkaną
+					// gdziekolwiek w całym okresie dokumentu (zmienna defStrefy), a nie jeden wiersz
+					// na nieobecność. Pracownik wypełnia ten dzień w gridzie po Projekt/Task ręcznie -
+					// inicjacja ma tylko przygotować jeden wiersz "Nieobecność" na dzień absencji, nie
+					// mnożyć go po liczbie niepowiązanych z tym dniem definicji stref.
 					if (nb != null && dzienakt != null && !skopiowanoZeZrodla)
 					{
-						for (int i = 0; i < defStrefy.Distinct().Count(); i++)
-						{
-							StrefaPracyAktualizacja strefaPracy = new StrefaPracyAktualizacja(dzienakt);
-							KalendModule.GetInstance(Row).StrefyPracyAkt.AddRow(strefaPracy);
-							strefaPracy.Definicja = KalendModule.GetInstance(Row).DefinicjeStref.WgKodu["NB"].First();
-						}
+						StrefaPracyAktualizacja strefaPracy = new StrefaPracyAktualizacja(dzienakt);
+						KalendModule.GetInstance(Row).StrefyPracyAkt.AddRow(strefaPracy);
+						strefaPracy.Definicja = KalendModule.GetInstance(Row).DefinicjeStref.WgKodu["NB"].First();
 					}
 				}
 

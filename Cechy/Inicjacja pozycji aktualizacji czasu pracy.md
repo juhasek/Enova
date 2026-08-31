@@ -58,14 +58,48 @@ których dzień trzeba było zbudować od zera i nieobecność nie jest jeszcze 
 Dla dni skopiowanych ze źródła strefa „Nieobecność” pochodzi wyłącznie z `Copy` i nie jest już
 dokładana drugi raz.
 
-## 3. Do potwierdzenia / obserwacji na przyszłość
+## 3. Zgłoszony błąd i poprawka (31.08.2026, cd.) — strefa „Nieobecność” dokładana kilka razy dla jednego dnia bez źródła
 
-- `defStrefy` jest budowane **raz, przed pętlą po dniach**, jako suma stref występujących w
-  *całym okresie dokumentu* (`Row.Dokument.Okres`), a nie osobno dla każdego dnia. W efekcie w
-  gałęzi „przeliczenie od zera” liczba dokładanych stref „NB” dla konkretnego dnia zależy od tego,
-  jakie strefy pracy występują gdziekolwiek w całym okresie, a nie od tego, co faktycznie powinno
-  wystąpić danego dnia. Nie było to przyczyną zgłoszonego dublowania i nie zostało zmienione w tej
-  poprawce, ale warto to zweryfikować pod kątem zamierzonego zachowania, jeśli okres obejmuje dni o
-  różnym układzie stref.
+**Zgłoszenie klienta:** nawet po poprawce z punktu 2, dla dnia nieobecności (np. 04.08) bez
+istniejącego źródła do skopiowania strefa „Nieobecność” potrafiła dokładać się **trzy razy**
+zamiast raz. Kontekst: siatka (grid) widoczna na formularzu to sposób, w jaki pracownicy sami
+wypełniają swój czas pracy (wiersz na każdą kombinację Definicja/Projekt/Task) — ta cecha ma tylko
+zainicjować dni dokumentu, więc dzień nieobecności powinien dostać dokładnie jeden wiersz
+„Nieobecność”, który pracownik ewentualnie sam uzupełni o Projekt/Task.
+
+**Przyczyna:** w gałęzi „przeliczenie od zera” (`!skopiowanoZeZrodla`) liczba dokładanych stref
+„NB” nie wynosiła 1, tylko `defStrefy.Distinct().Count()` — czyli liczbę **odrębnych definicji
+stref pracy**, zebranych z góry, **raz dla całego okresu dokumentu** (`Row.Dokument.Okres`), a nie
+dla konkretnego dnia:
+
+```csharp
+List<DefinicjaStrefy> defStrefy = new List<DefinicjaStrefy>();
+defStrefy.Add(KalendModule.GetInstance(Session).DefinicjeStref.WgNazwy["Praca w normie"]);
+foreach (Date data in Row.Dokument.Okres)
+{
+    DzienPracy dzienPracy = pracownik.DniPracy[data];
+    if (dzienPracy != null)
+        defStrefy.AddRange(dzienPracy.Strefy.Select(x => x.Definicja).Where(x => x.Kod != "NB"));
+}
+...
+for (int i = 0; i < defStrefy.Distinct().Count(); i++)
+{
+    // kolejny wiersz "NB"
+}
+```
+
+Jeśli w całym okresie dokumentu pracownik miał choćby kilka dni z różnymi definicjami stref pracy
+(np. „Praca w normie”, „Praca zdalna”, „Nadgodziny” — każda odrębna definicja), `defStrefy` rosło
+odpowiednio, i **każdy** dzień bez własnego źródła dostawał tyle samo wierszy „NB”, ile wynosił ten
+łączny, niepowiązany z tym konkretnym dniem licznik — stąd 3 identyczne wiersze „Nieobecność” dla
+jednego dnia.
+
+**Poprawka:** usunięto budowanie `defStrefy` (nie było już do niczego innego potrzebne) i zamiast
+pętli po `defStrefy.Distinct().Count()` dodawany jest **dokładnie jeden** wiersz
+`StrefaPracyAktualizacja` ze strefą „NB” na dzień nieobecności bez źródła. Pracownik uzupełnia
+Projekt/Task ręcznie w gridzie, tak jak przy normalnym wypełnianiu czasu pracy.
+
+## 4. Do potwierdzenia / obserwacji na przyszłość
+
 - Kod zawiera zakomentowany fragment diagnostyczny (log dla konkretnego pracownika/daty) — pozostał
   bez zmian, nieaktywny.
