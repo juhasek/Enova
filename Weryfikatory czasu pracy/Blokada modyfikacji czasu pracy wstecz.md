@@ -15,9 +15,9 @@ miesiąca (`Date.Today.FirstDayMonth()`).
 
 ## Cecha globalna
 
-- **Tabela:** `CfgNodes` (cecha globalna / konfiguracji).
-- **Nazwa:** `BlokadaCzasuPracyDzienMiesiaca` — stała `NazwaCechyDzienBlokady`
-  na górze skryptu; zmień w obu miejscach, jeśli nazwiesz cechę inaczej.
+- **Gdzie:** okno „Cechy globalne" (tabela `CfgNodes`).
+- **Nazwa:** `BlokadaOdDnia` — stała `NazwaCechyBlokadaOdDnia` na górze skryptu;
+  zmień w obu miejscach, jeśli nazwiesz cechę inaczej.
 - **Typ:** liczba całkowita.
 - **Wartość:** dzień miesiąca **1–28** (zalecane; 29–31 działa, ale w krótszych
   miesiącach próg jest przycinany do ostatniego dnia miesiąca).
@@ -44,34 +44,21 @@ Błąd zwracany, gdy `data < blokadaOd`. Dzień równy `blokadaOd` jest dozwolon
 | 2026-08-04 | tak (4 ≥ 4) | 2026-08-01 | sierpień 2026 i nowsze |
 | 2026-08-20 | tak | 2026-08-01 | sierpień 2026 i nowsze |
 
-## Odczyt cechy globalnej — DO POTWIERDZENIA W ŚRODOWISKU
-
-Cecha globalna („Cechy globalne", okno `GlobalFeatures`) to w enova365 cecha
-(`FeatureDefinition`) zarejestrowana dla tabeli `CfgNodes` — jej wartość leży w
-tabeli `Features` przy wierszu roota konfiguracji (`Soneta.Config.CfgNode`).
-
-Skrypt czyta ją przez:
+## Odczyt cechy globalnej
 
 ```csharp
-Configuration.GetInstance(session).Features["BlokadaCzasuPracyDzienMiesiaca"]
+object wartosc = session.Global.Features["BlokadaOdDnia"];
 ```
 
-z `using Soneta.Config;`. **Tego wywołania nie udało się potwierdzić** — ani w
-dokumentacji online, ani w lokalnym pakiecie `soneta-erp-skills` (opisuje on
-klasę ORM `Verifier` i cechy zwykłych wierszy, nie cechy globalne ani skrypt
-weryfikatora kalendarza). Jeśli nie kompiluje się w edytorze skryptów, podmień
-ciało `PobierzDzienBlokady` na jeden z wariantów:
+`Session.Global` niesie cechy globalne; `.Features["nazwa"]` zwraca `object`
+(`null`, gdy cecha bez wartości). Wartość jest liczbą całkowitą:
 
-1. `session.GetBusiness().Config` → root konfiguracji (`CfgNodeProxy`), odczyt
-   `...Features["..."]` na węźle
-2. bezpośrednio przez tabelę `CfgNodes`: pobierz wiersz roota (`Parent == null`)
-   i `root["BlokadaCzasuPracyDzienMiesiaca"]`
-3. własny helper do cech globalnych, jeśli jest w środowisku (por. folder
-   `RozwiązaniaA1`)
+```csharp
+int dzien = System.Convert.ToInt32(wartosc);   // lub (int)wartosc, gdy pewne że boxed int
+```
 
-Najszybsze ustalenie: wkleić do edytora skryptów i sprawdzić błąd kompilatora,
-albo przetestować na żywej bazie (`buscall call`). Po ustaleniu — zaktualizować
-tę sekcję i `PobierzDzienBlokady`.
+`PobierzDzienBlokady` sprawdza `null` przed rzutowaniem (pusta cecha → brak
+blokady) i odrzuca wartości spoza 1..31.
 
 ## Sygnatura i wpięcie
 
@@ -86,6 +73,7 @@ to komunikat błędu, `null` = brak blokady.
 
 ## API użyte w skrypcie
 
+- `session.Global.Features["nazwa"]` — odczyt cechy globalnej
 - `Date.Today`, `Date.FirstDayMonth()`, `Date.AddMonths(int)`, `Date.Day/Month/Year`
 - `YearMonth(Date)` + `TranslateFormat` — komunikat jak w oryginale
 - `System.DateTime.DaysInMonth`, `System.Math.Min` — przycięcie progu do długości miesiąca

@@ -1,7 +1,8 @@
-// Nazwa cechy GLOBALNEJ (tabela CfgNodes) przechowującej DZIEŃ MIESIĄCA (1..28),
-// od którego - włącznie - w danym miesiącu domyka się miesiąc poprzedni.
-// Cecha typu liczba całkowita. Pusta / brak wartości / wartość niepoprawna = brak jakiejkolwiek blokady.
-const string NazwaCechyDzienBlokady = "BlokadaCzasuPracyDzienMiesiaca";
+// Nazwa cechy GLOBALNEJ (okno "Cechy globalne", tabela CfgNodes) przechowującej
+// DZIEŃ MIESIĄCA (1..28), od którego - włącznie - w danym miesiącu domyka się
+// miesiąc poprzedni. Cecha typu liczba całkowita.
+// Pusta / brak wartości / wartość poza 1..31 = brak jakiejkolwiek blokady.
+const string NazwaCechyBlokadaOdDnia = "BlokadaOdDnia";
 
 public static string BlokadaMiesiacaWstecz(Pracownik pracownik, Date data)
 {
@@ -33,27 +34,14 @@ public static string BlokadaMiesiacaWstecz(Pracownik pracownik, Date data)
 	return null;
 }
 
-// Odczyt cechy globalnej z tabeli CfgNodes. Zwraca null, gdy cecha nieustawiona / pusta / poza zakresem 1..31.
-//
-// UWAGA: dostęp do cech globalnych bywa różny w zależności od wersji/konfiguracji enova365.
-// Jeśli poniższa linia z Configuration.GetInstance(...) nie skompiluje się w Twoim edytorze skryptów,
-// patrz sekcja "Odczyt cechy globalnej" w pliku .md - są tam warianty do podmiany.
+// Odczyt cechy globalnej. Zwraca null, gdy cecha nieustawiona / pusta / poza zakresem 1..31.
 private static int? PobierzDzienBlokady(Session session)
 {
-	object wartosc = Configuration.GetInstance(session).Features[NazwaCechyDzienBlokady];
+	object wartosc = session.Global.Features[NazwaCechyBlokadaOdDnia];
 	if (wartosc == null)
 		return null;
 
-	int dzien;
-	if (wartosc is int i)
-		dzien = i;
-	else if (wartosc is decimal dec)
-		dzien = (int)dec;
-	else if (wartosc is double dbl)
-		dzien = (int)dbl;
-	else if (!int.TryParse(wartosc.ToString(), out dzien))
-		return null;
-
+	int dzien = System.Convert.ToInt32(wartosc);
 	if (dzien < 1 || dzien > 31)
 		return null;
 
