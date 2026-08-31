@@ -469,6 +469,17 @@ public string OdGodziny {
     get {
         // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
         // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
+        //
+        // Poprawka 31.08.2026 (2) - zgłoszenie klienta: dla realnej strefy "Nieobecność" (nie
+        // tylko dla fallbacku kolumny 0) w Od/Do/Czas ma być widoczne, jakiego rodzaju to
+        // nieobecność (np. "OPIEKA"), zamiast pustych/zerowych godzin tej strefy.
+        object dsDef = DaneStrefy(TypDanych.Definicja);
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+            INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
+            if (nbStrefa != null)
+                return nbStrefa.Definicja.Kod;
+        }
+
 				object ds = DaneStrefy(TypDanych.OdGodziny);
 			if(ds != null)
 			{
@@ -534,6 +545,16 @@ public string DoGodziny {
     get {
         // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
         // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
+        //
+        // Poprawka 31.08.2026 (2) - patrz komentarz przy OdGodziny.get (informacja o rodzaju
+        // nieobecności w Od/Do/Czas dla realnej strefy "Nieobecność", nie tylko dla fallbacku)
+        object dsDef = DaneStrefy(TypDanych.Definicja);
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+            INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
+            if (nbStrefa != null)
+                return nbStrefa.Definicja.Kod;
+        }
+
 				object ds = DaneStrefy(TypDanych.DoGodziny);
 			if(ds != null)
 			{
@@ -604,6 +625,16 @@ public string Czas {
     get {
         // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
         // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
+        //
+        // Poprawka 31.08.2026 (2) - patrz komentarz przy OdGodziny.get (informacja o rodzaju
+        // nieobecności w Od/Do/Czas dla realnej strefy "Nieobecność", nie tylko dla fallbacku)
+        object dsDef = DaneStrefy(TypDanych.Definicja);
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+            INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
+            if (nbStrefa != null)
+                return nbStrefa.Definicja.Kod;
+        }
+
 				object ds = DaneStrefy(TypDanych.Czas);
 				if (ds != null)
 					return ds.ToString();
@@ -613,7 +644,7 @@ public string Czas {
             return nb.Definicja.Kod;
 
 				return string.Empty;
-    } 
+    }
     set {
         if (Blokada())
             throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");

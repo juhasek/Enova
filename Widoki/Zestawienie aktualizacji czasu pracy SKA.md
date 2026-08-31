@@ -117,7 +117,35 @@ Dzięki temu:
   nie ma jeszcze żadnych realnych danych (np. całkowicie niezainicjowana komórka), żeby użytkownik
   widział choć sygnał nieobecności zamiast pustki.
 
-## 4. Zależność od poprawki w cesze
+## 4. Zgłoszony błąd i poprawka (31.08.2026, cd.) — Od/Do/Czas realnej strefy „Nieobecność” miały pokazywać rodzaj nieobecności
+
+**Zgłoszenie klienta:** po poprawce z punktu 3 realna strefa „Nieobecność” (np. kolumna 3 na
+zrzucie z punktu 3 — dzień 10.08, `Czas = 0:00`, puste Od/Do) pokazywała pustkę/zero w Od, Do i
+Czas. Klient chce, żeby dla **każdej** strefy „Nieobecność” (nie tylko fallbacku kolumny 0) w tych
+trzech kolumnach był widoczny rodzaj nieobecności (np. „OPIEKA”) — tak jak wcześniej pokazywał to
+tylko fallback (kolumna 0 na zrzucie z punktu 3).
+
+**Poprawka:** w `OdGodziny`, `DoGodziny` i `Czas` dodano, przed sięgnięciem po surowe dane
+godzinowe strefy, sprawdzenie, czy realna definicja tej kolumny (`DaneStrefy(TypDanych.Definicja)`)
+oznacza nieobecność (`DefinicjaStrefy.OznaczaNieobecnosc` — ta sama flaga, której już używa
+`GetBackColor` do kolorowania stref nieobecności). Jeśli tak, kolumna zwraca kod konkretnej
+nieobecności z kalendarza pracownika (`getKalk(pak).Nieobecnosc(Data).Definicja.Kod`, np.
+„OPIEKA”), zamiast realnych (pustych/zerowych) godzin tej strefy:
+
+```csharp
+object dsDef = DaneStrefy(TypDanych.Definicja);
+if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+    INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
+    if (nbStrefa != null)
+        return nbStrefa.Definicja.Kod;
+}
+```
+
+Dotyczy to teraz **każdej** kolumny z realną strefą „Nieobecność”, niezależnie od jej numeru
+(`Strefa`) — nie tylko fallbacku dla kolumny 0 z punktu 2/3, który zostaje bez zmian jako
+zabezpieczenie dla dnia bez żadnych realnych danych.
+
+## 5. Zależność od poprawki w cesze
 
 Ta poprawka jest **niezależna** od wcześniejszej poprawki w
 `Cechy/Inicjacja pozycji aktualizacji czasu pracy` (ograniczenie do jednego wiersza „NB” na dzień
@@ -129,7 +157,7 @@ bez źródła) i obie są potrzebne:
   duplikował widok nieobecności niezależnie od liczby rzeczywistych wierszy w bazie, bo w ogóle nie
   patrzył na numer kolumny (`Strefa`).
 
-## 5. Do potwierdzenia / obserwacje
+## 6. Do potwierdzenia / obserwacje
 
 - Pozostałe właściwości `Cecha*` (Projekt, Task, DodatekBryg, EkwiwalentZaPranie,
   Expenditure_organization) w gettery **nie** miały tego problemu — nie mają wczesnego zwrotu na
