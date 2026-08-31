@@ -127,19 +127,27 @@ tylko fallback (kolumna 0 na zrzucie z punktu 3).
 
 **Poprawka:** w `OdGodziny`, `DoGodziny` i `Czas` dodano, przed sięgnięciem po surowe dane
 godzinowe strefy, sprawdzenie, czy realna definicja tej kolumny (`DaneStrefy(TypDanych.Definicja)`)
-oznacza nieobecność (`DefinicjaStrefy.OznaczaNieobecnosc` — ta sama flaga, której już używa
-`GetBackColor` do kolorowania stref nieobecności). Jeśli tak, kolumna zwraca kod konkretnej
-nieobecności z kalendarza pracownika (`getKalk(pak).Nieobecnosc(Data).Definicja.Kod`, np.
-„OPIEKA”), zamiast realnych (pustych/zerowych) godzin tej strefy:
+to strefa nieobecności. Jeśli tak, kolumna zwraca kod konkretnej nieobecności z kalendarza
+pracownika (`getKalk(pak).Nieobecnosc(Data).Definicja.Kod`, np. „OPIEKA”), zamiast realnych
+(pustych/zerowych) godzin tej strefy:
 
 ```csharp
 object dsDef = DaneStrefy(TypDanych.Definicja);
-if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+if (dsDef is DefinicjaStrefy defStrefy && defStrefy.Kod == "NB") {
     INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
     if (nbStrefa != null)
         return nbStrefa.Definicja.Kod;
 }
 ```
+
+**Pierwsza wersja tego warunku (31.08.2026) używała `DefinicjaStrefy.OznaczaNieobecnosc`** — tej
+samej flagi, której `GetBackColor` w tym pliku używa do kolorowania stref nieobecności. U klienta
+ten warunek jednak nie zadziałał (realna strefa „Nieobecność” dalej pokazywała `0:00`/puste Od-Do) —
+najwyraźniej `OznaczaNieobecnosc` dla realnej strefy „Nieobecność” w tym środowisku zwraca `false`,
+mimo że wizualnie to nieobecność. Zamieniono warunek na `defStrefy.Kod == "NB"` — dokładnie ten sam
+sposób identyfikacji strefy nieobecności, którego już wcześniej, sprawdzalnie, używa reszta tego
+pliku (istniejący fallback kolumny 0 przez `WgKodu["NB"]`) oraz cecha inicjująca
+(`Cechy/Inicjacja pozycji aktualizacji czasu pracy`).
 
 Dotyczy to teraz **każdej** kolumny z realną strefą „Nieobecność”, niezależnie od jej numeru
 (`Strefa`) — nie tylko fallbacku dla kolumny 0 z punktu 2/3, który zostaje bez zmian jako

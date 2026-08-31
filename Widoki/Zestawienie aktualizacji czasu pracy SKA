@@ -474,7 +474,7 @@ public string OdGodziny {
         // tylko dla fallbacku kolumny 0) w Od/Do/Czas ma być widoczne, jakiego rodzaju to
         // nieobecność (np. "OPIEKA"), zamiast pustych/zerowych godzin tej strefy.
         object dsDef = DaneStrefy(TypDanych.Definicja);
-        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.Kod == "NB") {
             INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
             if (nbStrefa != null)
                 return nbStrefa.Definicja.Kod;
@@ -549,7 +549,7 @@ public string DoGodziny {
         // Poprawka 31.08.2026 (2) - patrz komentarz przy OdGodziny.get (informacja o rodzaju
         // nieobecności w Od/Do/Czas dla realnej strefy "Nieobecność", nie tylko dla fallbacku)
         object dsDef = DaneStrefy(TypDanych.Definicja);
-        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.Kod == "NB") {
             INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
             if (nbStrefa != null)
                 return nbStrefa.Definicja.Kod;
@@ -629,7 +629,7 @@ public string Czas {
         // Poprawka 31.08.2026 (2) - patrz komentarz przy OdGodziny.get (informacja o rodzaju
         // nieobecności w Od/Do/Czas dla realnej strefy "Nieobecność", nie tylko dla fallbacku)
         object dsDef = DaneStrefy(TypDanych.Definicja);
-        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.OznaczaNieobecnosc) {
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.Kod == "NB") {
             INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
             if (nbStrefa != null)
                 return nbStrefa.Definicja.Kod;
