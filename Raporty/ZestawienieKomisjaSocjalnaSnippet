@@ -1,0 +1,217 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.Ksiega;
+using Soneta.Place;
+using Soneta.Types;
+
+namespace x.x.Reports
+{
+    // Zestawienie na posiedzenie Komisji Socjalnej.
+    //
+    // Wydruk (ZestawienieKomisjaSocjalna.repx) wywoływany jest z listy
+    // pracowników (ew. z Pulpitu kierownika) dla zaznaczonych pracowników.
+    // Jeśli zaznaczone są wiersze historii zatrudnienia (PracHistoria),
+    // rozpoznajemy pracownika, do którego należą. Jeden wiersz wydruku =
+    // jeden pracownik, posortowane po "Nazwisko i Imię".
+    //
+    // Wypełniane kolumny: Lp, NrEwid, NazwiskoImie, DataUrodzenia,
+    // JednostkaObslugujaca oraz KwotaZapomogiZ2Lat (suma elementów wypłat z
+    // nazwą "zapomog(a)" wypłaconych w ostatnich 24 miesiącach do dziś).
+    // Pozostałe kolumny (dochód na członka rodziny, Data/Kwota wypłat,
+    // "poprzednie 2 lata") celowo zostają puste - do uzupełnienia.
+    //
+    // Każde pole liczone jest przez Bezpiecznie(...) - jeśli dla któregoś
+    // wiersza coś rzuci wyjątkiem, w tej jednej komórce pojawi się
+    // "[BŁĄD: ...]" zamiast wywalenia całego wydruku. Cała metoda BeforePrint
+    // jest dodatkowo opakowana w try/catch (jeden diagnostyczny wiersz "BŁĄD"
+    // z etapem i treścią wyjątku).
+    public class ZestawienieKomisjaSocjalnaSnippet : ReportSnippet
+    {
+        // Wzorowane na Raporty/OdbiciaRCP i Raporty/SzablonTabela6KolumnSnippet:
+        // obecność właściwości oznaczonej [Context(Required = true)] jest tym,
+        // co powoduje, że silnik Enova przed drukiem wstrzykuje do snippetu
+        // działający Context (pars.Context). W tej instalacji
+        // DxReportHelpers.GetContext(this) zwraca null - nie używamy go.
+        // Raport nie ma parametrów do wypełnienia przez użytkownika, więc
+        // klasa PrnParams jest celowo pusta - liczy się sama jej obecność.
+        public class PrnParams : ContextBase
+        {
+            public PrnParams(Context context) : base(context) { }
+        }
+
+        PrnParams pars;
+
+        [Context(Required = true)]
+        public PrnParams Params
+        {
+            get { return pars; }
+            set { pars = value; }
+        }
+
+        [DxBind(Name = "Report")]
+        private void ZestawienieKomisjaSocjalna_BeforePrint(object sender, CancelEventArgs e)
+        {
+            string etap = "start";
+            try
+            {
+                etap = "sprawdzenie trybu (designer)";
+                if (pars == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
+
+                etap = "pobranie kontekstu";
+                Context dc = pars.Context;
+
+                etap = "pobranie zaznaczenia (Row[])";
+                Row[] rows = dc != null ? dc[typeof(Row[])] as Row[] : null;
+                if (rows == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
+
+                etap = "zbieranie pracowników z zaznaczenia";
+                var pracownicy = new List<Pracownik>();
+                foreach (Row row in rows)
+                {
+                    Pracownik p = row as Pracownik;
+                    if (p == null && row is PracHistoria)
+                        p = ((PracHistoria) row).Pracownik;
+                    if (p != null && !pracownicy.Contains(p))
+                        pracownicy.Add(p);
+                }
+
+                etap = "sortowanie listy pracowników";
+                pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
+
+                etap = "budowanie wierszy";
+                var wiersze = new List<Wiersz>();
+                int lp = 1;
+                foreach (Pracownik pracownik in pracownicy)
+                {
+                    Pracownik pr = pracownik;
+                    wiersze.Add(new Wiersz {
+                        Lp = (lp++).ToString(),
+                        NrEwid = Bezpiecznie(() => pr.Kod),
+                        NazwiskoImie = Bezpiecznie(() => pr.NazwiskoImię.ToString()),
+                        DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString()),
+                        JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)),
+                        DochodNaCzlonkaRodziny = "",
+                        KwotaZapomogiZ2Lat = Bezpiecznie(() => FormatKwota(SumaZapomog(pr, Date.Today.AddMonths(-24), Date.Today))),
+                        DataWyplaty = "",
+                        KwotaWyplaty = "",
+                        KwotaZapomogPoprzednich2Lat = "",
+                        DataWyplatyPoprzedniej = "",
+                        KwotaWyplatyPoprzedniej = ""
+                    });
+                }
+
+                etap = "ustawienie CustomDataSource";
+                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+            }
+            catch (Exception ex)
+            {
+                var ds = DxReportHelpers.GetDataSourceEmpty(this);
+                if (ds == null)
+                    return;
+                string opis = "ETAP=" + (etap ?? "(null)")
+                    + " | TYP=" + ex.GetType().FullName
+                    + " | KOMUNIKAT=" + ex.Message;
+                ds.CustomDataSource = new List<Wiersz> {
+                    new Wiersz {
+                        Lp = "BŁĄD",
+                        NazwiskoImie = opis
+                    }
+                };
+            }
+        }
+
+        static string Bezpiecznie(Func<string> policz)
+        {
+            try
+            {
+                return policz() ?? "";
+            }
+            catch (Exception ex)
+            {
+                return "[BŁĄD: " + ex.Message + "]";
+            }
+        }
+
+        // Cecha "Jednostka obsługująca" z Wydziału bieżącego etatu pracownika.
+        // Cecha jest typu "element słownika" - jej wartością jest rekord
+        // Soneta.Ksiega.ElemSlownika. Czytamy ją nietypowanym indeksatorem
+        // Features["..."], rzutujemy na ElemSlownika i bierzemy .Nazwa.
+        // Nazwa cechy to dokładnie "Jednostka obsługująca" (ze spacją).
+        static string PobierzJednostkeObslugujaca(Pracownik pracownik)
+        {
+            PracHistoria biezaca = null;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(new FromTo(Date.Today, Date.Today)))
+                biezaca = ph;
+            if (biezaca == null)
+                biezaca = pracownik.Historia[Date.Today];
+
+            var wydzial = biezaca != null && biezaca.Etat != null ? biezaca.Etat.Wydzial : null;
+            if (wydzial == null)
+                return "";
+
+            ElemSlownika elem = (ElemSlownika) wydzial.Features["Jednostka obsługująca"];
+            return elem != null ? elem.Nazwa : "brak";
+        }
+
+        // Suma elementów wypłat pracownika z nazwą zawierającą "zapomog(a)",
+        // wypłaconych w podanym oknie dat (wg daty wypłaty). Elementy
+        // wystornowane/stornujące pomijane (RozliczenieStorna).
+        static decimal SumaZapomog(Pracownik pracownik, Date od, Date doDaty)
+        {
+            decimal suma = 0m;
+            foreach (Wyplata w in pracownik.Wyplaty[(Wyplata x) => x.Data >= od && x.Data <= doDaty])
+            {
+                foreach (WypElement e in w.Elementy)
+                {
+                    if (e.RozliczenieStorna)
+                        continue;
+                    if (NazwaZapomoga(e.Nazwa) || (e.Definicja != null && NazwaZapomoga(e.Definicja.Nazwa)))
+                        suma += e.Wartosc;
+                }
+            }
+            return suma;
+        }
+
+        static bool NazwaZapomoga(string nazwa)
+        {
+            if (string.IsNullOrEmpty(nazwa))
+                return false;
+            string n = nazwa.ToLowerInvariant();
+            return n.Contains("zapomog") || n.Contains("zapomóg");
+        }
+
+        static string FormatKwota(decimal kwota)
+        {
+            return kwota != 0m ? kwota.ToString("N2") : "";
+        }
+
+        public class Wiersz
+        {
+            public string Lp { get; set; }
+            public string NrEwid { get; set; }
+            public string NazwiskoImie { get; set; }
+            public string DataUrodzenia { get; set; }
+            public string JednostkaObslugujaca { get; set; }
+            public string DochodNaCzlonkaRodziny { get; set; }
+            public string KwotaZapomogiZ2Lat { get; set; }
+            public string DataWyplaty { get; set; }
+            public string KwotaWyplaty { get; set; }
+            public string KwotaZapomogPoprzednich2Lat { get; set; }
+            public string DataWyplatyPoprzedniej { get; set; }
+            public string KwotaWyplatyPoprzedniej { get; set; }
+        }
+    }
+}
