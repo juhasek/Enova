@@ -44,25 +44,34 @@ Błąd zwracany, gdy `data < blokadaOd`. Dzień równy `blokadaOd` jest dozwolon
 | 2026-08-04 | tak (4 ≥ 4) | 2026-08-01 | sierpień 2026 i nowsze |
 | 2026-08-20 | tak | 2026-08-01 | sierpień 2026 i nowsze |
 
-## Odczyt cechy globalnej
+## Odczyt cechy globalnej — DO POTWIERDZENIA W ŚRODOWISKU
 
-Skrypt używa:
+Cecha globalna („Cechy globalne", okno `GlobalFeatures`) to w enova365 cecha
+(`FeatureDefinition`) zarejestrowana dla tabeli `CfgNodes` — jej wartość leży w
+tabeli `Features` przy wierszu roota konfiguracji (`Soneta.Config.CfgNode`).
+
+Skrypt czyta ją przez:
 
 ```csharp
 Configuration.GetInstance(session).Features["BlokadaCzasuPracyDzienMiesiaca"]
 ```
 
-z `using Soneta.Config;`. Dostęp do cech globalnych bywa zależny od wersji
-enova365 — jeśli powyższe nie kompiluje się w edytorze skryptów, podmień ciało
-`PobierzDzienBlokady` na jeden z wariantów:
+z `using Soneta.Config;`. **Tego wywołania nie udało się potwierdzić** — ani w
+dokumentacji online, ani w lokalnym pakiecie `soneta-erp-skills` (opisuje on
+klasę ORM `Verifier` i cechy zwykłych wierszy, nie cechy globalne ani skrypt
+weryfikatora kalendarza). Jeśli nie kompiluje się w edytorze skryptów, podmień
+ciało `PobierzDzienBlokady` na jeden z wariantów:
 
-1. `session.GetConfiguration().Features[...]`
-2. przez `CfgNode` roota konfiguracji: pobierz wiersz tabeli `CfgNodes`
-   reprezentujący konfigurację i odczytaj `.Features[...]` / `[...]`
-3. jeśli w środowisku jest własny helper do cech globalnych (np. w folderze
-   `RozwiązaniaA1`) — użyj go.
+1. `session.GetBusiness().Config` → root konfiguracji (`CfgNodeProxy`), odczyt
+   `...Features["..."]` na węźle
+2. bezpośrednio przez tabelę `CfgNodes`: pobierz wiersz roota (`Parent == null`)
+   i `root["BlokadaCzasuPracyDzienMiesiaca"]`
+3. własny helper do cech globalnych, jeśli jest w środowisku (por. folder
+   `RozwiązaniaA1`)
 
-Po ustaleniu poprawnego wywołania w tym środowisku zaktualizuj tę sekcję.
+Najszybsze ustalenie: wkleić do edytora skryptów i sprawdzić błąd kompilatora,
+albo przetestować na żywej bazie (`buscall call`). Po ustaleniu — zaktualizować
+tę sekcję i `PobierzDzienBlokady`.
 
 ## Sygnatura i wpięcie
 
