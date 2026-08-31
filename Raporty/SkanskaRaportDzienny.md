@@ -183,3 +183,33 @@ zdalna” korzystają teraz z tej metody zamiast z tablic
 z `strefyraportu`). Dzięki temu każdy przyszły wariant nazwy strefy pracy
 zdalnej (np. „Praca zdalna uprzywilejowana”) jest automatycznie rozpoznawany
 bez konieczności edycji kodu raportu.
+
+## 8. Poprawka: dni po zwolnieniu pokazywały Harmonogram/Nieobecność z ostatniego dnia zatrudnienia
+
+**Objaw:** dla pracownika zwolnionego w trakcie miesiąca (np. 27.08, z
+nieobecnością wpisaną do 27.08 włącznie) karta poprawnie drukowała cały
+miesiąc (do 31.08), ale dni PO zwolnieniu (28–31.08) pokazywały
+„Harmonogram” (mimo że pracownik nie miał już planu pracy) oraz
+„Nieobecność” w kolumnie nieobecności — mimo że nie powinny pokazywać
+żadnych danych.
+
+**Przyczyna:** `Grid1ListaWiersz_BeforePrint` już zawierało warunek
+`if (!okresy_zatrudnienia.Contains(data)) return;`, który poprawnie pomijał
+dalsze przetwarzanie dnia spoza okresu zatrudnienia. Problem w tym, że sam
+`return` niczego nie czyścił — a komórki tabeli (`Harmonogram`, `colOd`,
+`colDo`, `colNocne`, `colNieob`, `pracazdalna`, `DodatekBryg`, `DaneProj`,
+`DaneAC`, `tableCellSC`) są tymi samymi obiektami UI, używanymi ponownie dla
+każdego kolejnego wiersza karty (ten sam mechanizm, który wcześniej powodował
+błąd z kolumną `RazemNad` — patrz punkt 1–2). Dla dnia spoza okresu
+zatrudnienia komórki po prostu zachowywały tekst wydrukowany dla
+OSTATNIEGO dnia, w którym pracownik był jeszcze zatrudniony (tu: 27.08,
+który akurat miał zaewidencjonowaną nieobecność) — stąd dni 28–31.08
+pokazywały ten sam harmonogram i tę samą nieobecność co 27.08.
+
+**Poprawka:** przed `return` dla dnia spoza okresu zatrudnienia jawnie
+czyszczone są teraz wszystkie te komórki (`Harmonogram.Text = colOd.Text =
+colDo.Text = colNocne.Text = colNieob.Text = pracazdalna.Text =
+DodatekBryg.Text = DaneProj.Text = DaneAC.Text = tableCellSC.Text = ""`).
+Numer/data dnia (`colDM`) nadal się drukuje (dzień jest widoczny w karcie
+jako pusty wiersz), ale bez żadnych danych o pracy czy nieobecności
+przeniesionych z poprzedniego dnia.

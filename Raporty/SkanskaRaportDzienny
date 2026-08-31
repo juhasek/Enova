@@ -258,7 +258,16 @@ namespace Soneta.KadryPlace.Reports
                 Date data = linia.DzienM;
                 colDM.Text = data.ToString();
                 if (!okresy_zatrudnienia.Contains(data))
+                {
+                    // Komórki tabeli są tymi samymi obiektami UI używanymi dla
+                    // wszystkich wierszy - bez jawnego wyczyszczenia dzień spoza
+                    // okresu zatrudnienia (np. po zwolnieniu pracownika) pokazywał
+                    // Harmonogram/Nieobecność itd. przepisane z ostatniego
+                    // wydrukowanego dnia, w którym pracownik był jeszcze zatrudniony.
+                    Harmonogram.Text = colOd.Text = colDo.Text = colNocne.Text = colNieob.Text =
+                        pracazdalna.Text = DodatekBryg.Text = DaneProj.Text = DaneAC.Text = tableCellSC.Text = "";
                     return;
+                }
 
                 Dzien dzień = kalkulator[data];
 
