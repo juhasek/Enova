@@ -1,0 +1,61 @@
+// Nazwa cechy GLOBALNEJ (tabela CfgNodes) przechowującej DZIEŃ MIESIĄCA (1..28),
+// od którego - włącznie - w danym miesiącu domyka się miesiąc poprzedni.
+// Cecha typu liczba całkowita. Pusta / brak wartości / wartość niepoprawna = brak jakiejkolwiek blokady.
+const string NazwaCechyDzienBlokady = "BlokadaCzasuPracyDzienMiesiaca";
+
+public static string BlokadaMiesiacaWstecz(Pracownik pracownik, Date data)
+{
+	int? dzienBlokady = PobierzDzienBlokady(pracownik.Session);
+	if (dzienBlokady == null)
+	{
+		// Cecha globalna pusta -> blokada wyłączona, nic nie sprawdzamy.
+		return null;
+	}
+
+	Date dzisiaj = Date.Today;
+	Date pierwszyBiezacego = dzisiaj.FirstDayMonth();
+
+	// Do dnia "dzienBlokady" bieżącego miesiąca (wyłącznie) trwa jeszcze okno na domknięcie
+	// miesiąca poprzedniego. Od tego dnia (włącznie) miesiąc poprzedni również jest zamknięty.
+	// Próg przycinamy do liczby dni bieżącego miesiąca (np. cecha = 30 w lutym -> próg = 28/29).
+	int dniWMiesiacu = System.DateTime.DaysInMonth(dzisiaj.Year, dzisiaj.Month);
+	int prog = System.Math.Min(dzienBlokady.Value, dniWMiesiacu);
+
+	Date blokadaOd = dzisiaj.Day >= prog
+		? pierwszyBiezacego
+		: pierwszyBiezacego.AddMonths(-1);
+
+	if (data < blokadaOd)
+	{
+		YearMonth miesiac = new YearMonth(blokadaOd);
+		return "Dla miesięcy wcześniejszych niż {0} nie można modyfikować czasu pracy.".TranslateFormat(miesiac);
+	}
+	return null;
+}
+
+// Odczyt cechy globalnej z tabeli CfgNodes. Zwraca null, gdy cecha nieustawiona / pusta / poza zakresem 1..31.
+//
+// UWAGA: dostęp do cech globalnych bywa różny w zależności od wersji/konfiguracji enova365.
+// Jeśli poniższa linia z Configuration.GetInstance(...) nie skompiluje się w Twoim edytorze skryptów,
+// patrz sekcja "Odczyt cechy globalnej" w pliku .md - są tam warianty do podmiany.
+private static int? PobierzDzienBlokady(Session session)
+{
+	object wartosc = Configuration.GetInstance(session).Features[NazwaCechyDzienBlokady];
+	if (wartosc == null)
+		return null;
+
+	int dzien;
+	if (wartosc is int i)
+		dzien = i;
+	else if (wartosc is decimal dec)
+		dzien = (int)dec;
+	else if (wartosc is double dbl)
+		dzien = (int)dbl;
+	else if (!int.TryParse(wartosc.ToString(), out dzien))
+		return null;
+
+	if (dzien < 1 || dzien > 31)
+		return null;
+
+	return dzien;
+}
