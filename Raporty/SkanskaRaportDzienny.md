@@ -122,3 +122,33 @@ liczyć koniec bezpośrednio z pojedynczej strefy. Zapisy o innym typie strefy
 (np. „Praca w normie”) albo innym Projekcie/Tasku nadal drukują się jako
 osobne wiersze — scalane są wyłącznie zapisy identyczne pod względem typu
 strefy i Projektu/Tasku.
+
+## 6. Poprawka: nadgodziny liczone z sumy dnia zamiast z własnego wiersza
+
+**Objaw:** gdy dzień miał kilka odrębnych zapisów nadgodzin (np. strefa
+„Praca poza normą” w dwóch kawałkach: 1h i 2h), kolumna „Nadgodziny” nie
+pokazywała 1h przy pierwszym i 2h przy drugim zapisie — pokazywała 3h przy
+obu. Ponieważ wartość ta jest też dodawana do akumulatora `nadlicz`
+(a stąd do sumy miesięcznej `RazemNad`), dzienny wynik doliczał się do sumy
+tyle razy, ile było takich wierszy tego dnia — zawyżając miesięczne
+nadgodziny.
+
+**Przyczyna:** wartość wpisywana do `colNadlicz.Text`/`nadlicz` pochodziła z
+`pracaPozaNorma = PracaWStrefie(dzień, ..."Praca poza normą"..., false)` —
+funkcji sumującej czas strefy „Praca poza normą” dla **całego dnia**
+(obiekt `Dzien`), a nie tylko dla zapisu/wiersza, który akurat jest
+drukowany. Każdy wiersz z zapisem nadgodzin tego dnia dostawał więc tę samą,
+dzienną sumę zamiast swojej własnej wartości.
+
+**Poprawka:** kolumna „Nadgodziny” oraz akumulator `nadlicz` korzystają
+teraz z `linia.CzasLaczny` — czasu należącego wyłącznie do danego wiersza
+(sumy Czas zapisów scalonych w ten wiersz zgodnie z poprawką z punktu 5, a
+dla niescalonego wiersza po prostu Czas jego pojedynczej strefy). Dzięki
+temu: (a) różne, niescalone zapisy nadgodzin tego samego dnia poprawnie
+pokazują swoje własne wartości (1h i 2h) zamiast powielonej sumy dnia (3h),
+(b) zapisy scalone w jeden wiersz (bo ten sam typ strefy i ten sam
+Projekt/Task) poprawnie pokazują sumę tylko swoich godzin, oraz (c)
+`nadlicz`/`RazemNad` nie jest już wielokrotnie zawyżane przez powtórne
+doliczanie tej samej dziennej sumy przy każdym wierszu nadgodzin danego dnia.
+Nieużywane już po tej zmianie wyliczenie `pracaPozaNorma` (dzienna suma przez
+`PracaWStrefie`) zostało usunięte.

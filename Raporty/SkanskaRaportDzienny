@@ -347,11 +347,6 @@ namespace Soneta.KadryPlace.Reports
                         .WgNazwy["Przerwa na karmienie".TranslateIgnore()], false);
                 karmienie += przerwaK;
 
-                // 02.06.2026 TK dodane, żeby nadgodziny były brane ze strefy a nie ze statystyki bo nie były wykazywane nadgodizny do odbioru
-                Time pracaPozaNorma = PracaWStrefie(dzień,
-                    KalendModule.GetInstance(dc.Context.Session).DefinicjeStref
-                        .WgNazwy["Praca poza normą".TranslateIgnore()], false);
-
                 FromTo okres = new FromTo(data, data);
                 ZestawienieNadgodzin zn = nadgodziny.Nadgodziny(okres);
 
@@ -366,8 +361,17 @@ namespace Soneta.KadryPlace.Reports
                     }
                     else
                     {
-                        colNadlicz.Text += pracaPozaNorma.ToString();
-                        nadlicz += pracaPozaNorma;
+                        // Nadgodziny tego wiersza liczymy z czasu WŁASNEGO wiersza
+                        // (linia.CzasLaczny - suma Czas zapisów scalonych w ten wiersz,
+                        // patrz detailReportBand1_BeforePrint), a nie z sumy strefy
+                        // "Praca poza normą" dla CAŁEGO dnia (jak wcześniej przez
+                        // PracaWStrefie(dzień, ...)). Użycie sumy dnia powodowało, że przy
+                        // kilku odrębnych zapisach nadgodzin tego samego dnia (np. 1h i 2h)
+                        // każdy wiersz pokazywał ten sam dzienny sumaryczny wynik (3h)
+                        // zamiast własnej wartości, a nadlicz (i w efekcie RazemNad)
+                        // sumowało dzienny wynik po razie na każdy taki wiersz.
+                        colNadlicz.Text += linia.CzasLaczny.ToString();
+                        nadlicz += linia.CzasLaczny;
                     }
 
                     RazemNad.Text = nadlicz.ToString();
@@ -559,6 +563,7 @@ namespace Soneta.KadryPlace.Reports
                             if (mozeScalic)
                             {
                                 poprzednia.DoGodzinyLaczna = Time.Max(poprzednia.DoGodzinyLaczna, strefa.OdGodziny + strefa.Czas);
+                                poprzednia.CzasLaczny += strefa.Czas;
                             }
                             else
                             {
@@ -593,6 +598,7 @@ namespace Soneta.KadryPlace.Reports
                 this.Prac = prac;
                 this.Strefa = strefa;
                 this.DoGodzinyLaczna = strefa.OdGodziny + strefa.Czas;
+                this.CzasLaczny = strefa.Czas;
             }
 
             public StrefaPracy Strefa { get; set; }
@@ -605,6 +611,11 @@ namespace Soneta.KadryPlace.Reports
             // detailReportBand1_BeforePrint). Dla niescalonego wiersza to po prostu
             // koniec pojedynczej strefy (OdGodziny + Czas).
             public Time DoGodzinyLaczna { get; set; }
+
+            // Suma Czas wszystkich zapisów strefy scalonych w ten wiersz (dla
+            // niescalonego wiersza - Czas pojedynczej strefy). Używana do wyliczenia
+            // nadgodzin WŁASNYCH tego wiersza zamiast sumy dziennej z PracaWStrefie.
+            public Time CzasLaczny { get; set; }
         }
 
         [TranslateIgnore]
