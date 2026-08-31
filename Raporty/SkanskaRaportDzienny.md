@@ -152,3 +152,34 @@ Projekt/Task) poprawnie pokazują sumę tylko swoich godzin, oraz (c)
 doliczanie tej samej dziennej sumy przy każdym wierszu nadgodzin danego dnia.
 Nieużywane już po tej zmianie wyliczenie `pracaPozaNorma` (dzienna suma przez
 `PracaWStrefie`) zostało usunięte.
+
+## 7. Poprawka: dzień z nietypową nazwą strefy pracy zdalnej znikał z raportu
+
+**Objaw:** pracownik, który zamiast „Praca w normie” miał danego dnia strefę
+pracy zdalnej o nazwie spoza zamkniętej listy (np. „Praca zdalna
+uprzywilejowana”), w ogóle nie miał wydrukowanego tego dnia w karcie — wiersz
+całkowicie znikał z raportu.
+
+**Przyczyna:** budowanie listy wierszy (`linie`) w `detailReportBand1_BeforePrint`
+filtrowało zapisy strefy danego dnia przez `strefyraportu.Contains(s.Definicja.Nazwa)`
+— porównanie z zamkniętą listą dokładnych nazw stref. Lista wymieniała tylko
+trzy konkretne warianty pracy zdalnej („Praca zdalna”, „Praca zdalna
+regulaminowa”, „Praca zdalna okazjonalna”). Podobnie flaga „Praca zdalna”
+(kolumna `pracazdalna`) sprawdzana była przez `strefyPracyZdalnej.Contains(...)`
+— osobną, też zamkniętą listę tych samych trzech nazw. Gdy w danych pojawiał
+się jakikolwiek inny wariant nazwy (np. dopisany później „Praca zdalna
+uprzywilejowana”), żaden z zapisów strefy tego dnia nie przechodził filtra —
+a ponieważ `dzienPracy.Strefy.Any` było prawdą (strefa jednak istniała), kod
+nie wchodził też w gałąź dodającą pusty wiersz dnia bez strefy. Dzień znikał
+całkowicie.
+
+**Poprawka:** rozpoznawanie strefy pracy zdalnej nie opiera się już o
+zamkniętą listę nazw, tylko o nową metodę `JestStrefaZdalna(nazwa)`, która
+uznaje strefę za zdalną, gdy jej nazwa zawiera (bez rozróżniania wielkości
+liter) słowo „zdalna”. Filtr budujący `linie` oraz flaga kolumny „Praca
+zdalna” korzystają teraz z tej metody zamiast z tablic
+`strefyPracyZdalnej`/wpisów „Praca zdalna…” w `strefyraportu` (tablica
+`strefyPracyZdalnej` została usunięta jako zbędna, a jej trzy wpisy wykreślone
+z `strefyraportu`). Dzięki temu każdy przyszły wariant nazwy strefy pracy
+zdalnej (np. „Praca zdalna uprzywilejowana”) jest automatycznie rozpoznawany
+bez konieczności edycji kodu raportu.

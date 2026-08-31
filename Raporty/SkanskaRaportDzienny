@@ -75,8 +75,8 @@ namespace Soneta.KadryPlace.Reports
         private readonly DevExpress.XtraReports.UI.CalculatedField Nadgodziny;
 
         public static string[] strefyraportu = new string[] {
-            "Praca w normie", "Praca poza normą", "Nieobecność", "Praca zdalna regulaminowa",
-            "Praca zdalna", "Praca zdalna okazjonalna", "Nadgodziny 100%", "Nadgodziny 100% (M)",
+            "Praca w normie", "Praca poza normą", "Nieobecność",
+            "Nadgodziny 100%", "Nadgodziny 100% (M)",
             "Nadgodziny 50% (M)", "Nadgodziny 50%", "Praca w godzinach nocnych"
         };
 
@@ -85,9 +85,14 @@ namespace Soneta.KadryPlace.Reports
             "Praca poza normą", "Nadgodziny 100%", "Nadgodziny 100% (M)", "Nadgodziny 50% (M)", "Nadgodziny 50%"
         };
 
-        public static string[] strefyPracyZdalnej = new string[] {
-            "Praca zdalna regulaminowa", "Praca zdalna", "Praca zdalna okazjonalna"
-        };
+        // Praca zdalna występuje pod kilkoma różnymi nazwami stref ("Praca zdalna",
+        // "Praca zdalna regulaminowa", "Praca zdalna okazjonalna", "Praca zdalna
+        // uprzywilejowana" itd.) i bywają dopisywane nowe warianty. Zamiast
+        // utrzymywać zamkniętą listę nazw (przez co dzień z nowym, niewymienionym
+        // wariantem w ogóle znikał z raportu), rozpoznajemy strefę pracy zdalnej po
+        // tym, że jej nazwa zawiera słowo "zdalna".
+        static bool JestStrefaZdalna(string nazwaStrefy) =>
+            nazwaStrefy != null && nazwaStrefy.IndexOf("zdalna", StringComparison.OrdinalIgnoreCase) >= 0;
 
         static string[] czas_przepracowany = new string[] { };
         static string[] dodatkowe_dane = new string[] { };
@@ -314,7 +319,7 @@ namespace Soneta.KadryPlace.Reports
                             tableCellSC.Text = elEXP.Symbol;
                         }
 
-                        if (strefyPracyZdalnej.Contains(linia.Strefa.Definicja.Nazwa))
+                        if (JestStrefaZdalna(linia.Strefa.Definicja.Nazwa))
                             pracazdalna.Text = "TAK";
                     }
                 }
@@ -547,7 +552,7 @@ namespace Soneta.KadryPlace.Reports
                         // godzinach), traktujemy jako jeden ciągły wpis w karcie - inaczej
                         // ten sam dzień drukował kilka wierszy wyglądających na zdublowane.
                         foreach (var strefa in dzienPracy.Strefy
-                            .Where(s => strefyraportu.Contains(s.Definicja.Nazwa))
+                            .Where(s => strefyraportu.Contains(s.Definicja.Nazwa) || JestStrefaZdalna(s.Definicja.Nazwa))
                             .OrderBy(s => s.OdGodziny))
                         {
                             string projektSym = GetFeatureSymbol(strefa, "Projekt");
