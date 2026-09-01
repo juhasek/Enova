@@ -290,15 +290,14 @@ namespace SeopEnrollmentFileSnippet {
         // Pseudo-autofit: DevExpress mapuje szerokości kolumn w wyeksportowanym Excelu wprost
         // z Weight komórek tabeli w layoucie raportu (nie ma odpowiednika EPPlus.AutoFitColumns).
         // Dopasowujemy więc Weight każdej kolumny do długości najdłuższej wartości w tej kolumnie
-        // (dane z `wynik` dla komórek związanych bindowaniem [DataBindings["Text"]] + statyczny
-        // tekst komórek nagłówkowych), synchronizując tę samą wartość we wszystkich XRTable
-        // znalezionych w paśmie `Lista` (nagłówek i wiersz danych to zwykle osobne tabele -
-        // muszą mieć zsynchronizowane Weight per kolumna, inaczej siatka w Excelu się rozjedzie).
-        //
-        // UWAGA: nie da się tego zweryfikować bez podglądu rzeczywistego pliku .repx - jeśli
-        // layout raportu nie korzysta z XRTable (tylko z osobnych XRLabel na paśmie), metoda
-        // nie znajdzie żadnych komórek i nic nie zmieni; wtedy trzeba dopasować ją do
-        // rzeczywistej struktury kontrolek w projektancie wydruku.
+        // (dane z `wynik`, dla komórek bindowanych przez ExpressionBindings["Text"] - w tym
+        // raporcie każda komórka danych ma wyrażenie w postaci "[NazwaWlasciwosci]", np.
+        // "[Gid]" - + statyczny tekst komórek nagłówkowych), synchronizując tę samą wartość
+        // we wszystkich XRTable znalezionych w paśmie `Lista`: `table1` (ListaWiersz, wiersz
+        // danych) i `table2` (ListaNagłówek, nagłówek) mają tę samą liczbę kolumn (32) w tej
+        // samej kolejności, więc dopasowanie po indeksie komórki jest tu w pełni poprawne -
+        // musi być zsynchronizowane między obiema tabelami, inaczej siatka kolumn w
+        // wyeksportowanym Excelu się rozjedzie.
         private void DopasujSzerokosciKolumn(List<RaportAkcjeRow> wynik) {
 
             if (wynik.Count == 0)
@@ -328,7 +327,7 @@ namespace SeopEnrollmentFileSnippet {
                             continue;
 
                         var komorka = wiersz.Cells[indeksKolumny];
-                        string pole = komorka.DataBindings["Text"]?.DataMember;
+                        string pole = OdczytajNazwePola(komorka);
 
                         if (!string.IsNullOrEmpty(pole)) {
 
@@ -365,6 +364,24 @@ namespace SeopEnrollmentFileSnippet {
 
                 log.WriteLine($"Kolumna {indeksKolumny}: szerokość={nowaSzerokosc} (najdłuższa treść={maxDlugoscTresci} znaków)");
             }
+        }
+
+        // Nazwa właściwości RaportAkcjeRow, do której jest podpięta komórka - w tym raporcie
+        // przez ExpressionBindings (Expression="[NazwaWlasciwosci]"), tak jak generuje je
+        // domyślnie edytor wydruków Enova. Dodatkowo, dla kompatybilności z innymi wydrukami,
+        // sprawdzany jest też klasyczny XRBinding (DataBindings["Text"].DataMember).
+        private static string OdczytajNazwePola(DevExpress.XtraReports.UI.XRTableCell komorka) {
+
+            var wiazanieWyrazenia = komorka.ExpressionBindings
+                .Cast<DevExpress.XtraReports.UI.ExpressionBinding>()
+                .FirstOrDefault(eb => eb.PropertyName == "Text");
+
+            string wyrazenie = wiazanieWyrazenia?.Expression;
+
+            if (!string.IsNullOrEmpty(wyrazenie) && wyrazenie.StartsWith("[") && wyrazenie.EndsWith("]"))
+                return wyrazenie.Substring(1, wyrazenie.Length - 2);
+
+            return komorka.DataBindings["Text"]?.DataMember;
         }
 
         private void UstawWysokoscWierszy() {

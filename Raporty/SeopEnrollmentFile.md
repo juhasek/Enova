@@ -97,39 +97,48 @@ zadziałał (patrz historia commitów — podejście z EPPlus/Workerem zostało 
 tego formatowanie jest robione **natywnie przez DevExpress**, w samym `Report_BeforePrint`,
 bo to on i tak generuje ten plik przy eksporcie.
 
+**Struktura wzorca `SeopEnrollmentFile.repx` (potwierdzona z rzeczywistego pliku):**
+pasmo `Lista` (`DetailReportBand`) zawiera dwa podpasma — `ListaWiersz` (`DetailBand`) z tabelą
+`table1` (wiersz danych) i `ListaNagłówek` (`GroupHeaderBand`, `RepeatEveryPage="true"`) z tabelą
+`table2` (nagłówek). Obie tabele mają dokładnie **32 komórki w tej samej kolejności**, więc
+dopasowanie kolumn po indeksie komórki jest w pełni poprawne. Komórki danych są bindowane przez
+`ExpressionBindings` (`Expression="[Gid]"`, `"[FirstName]"` itd.), **nie** przez klasyczny
+`DataBindings["Text"]` — to sposób, w jaki edytor wydruków Enova domyślnie generuje bindowanie.
+Komórki nagłówka mają statyczny `Text` (np. `"First_Name"`, `"Statement_Currency_Preference"`).
+
 **Jak to działa (`DopasujSzerokosciKolumn`, `UstawWysokoscWierszy`):**
 
 1. Po ustawieniu `Lista.DataSource = wynik` kod rekurencyjnie zbiera wszystkie kontrolki
-   `XRTable`/`XRTableRow`/`XRTableCell` z pasma `Lista` (nagłówek i wiersz danych są zwykle
-   osobnymi tabelami/wierszami w layoucie).
-2. Dla każdej kolumny (indeks komórki) sprawdza, czy komórka jest zbindowana do właściwości
-   `RaportAkcjeRow` (`DataBindings["Text"].DataMember`) — jeśli tak, liczy długość najdłuższej
-   wartości tej właściwości w `wynik`; jeśli to statyczna komórka nagłówkowa, bierze długość
-   jej tekstu.
+   `XRTable`/`XRTableRow`/`XRTableCell` z pasma `Lista` (czyli `table1` i `table2`).
+2. Dla każdej kolumny (indeks komórki) `OdczytajNazwePola` odczytuje `ExpressionBindings["Text"]`
+   (parsując `"[NazwaWlasciwosci]"` → `"NazwaWlasciwosci"`, z fallbackiem na klasyczny
+   `DataBindings["Text"].DataMember` dla kompatybilności z innymi wydrukami) — jeśli komórka jest
+   zbindowana, liczy długość najdłuższej wartości tej właściwości w `wynik`; jeśli to statyczna
+   komórka nagłówkowa (jak w `table2`), bierze długość jej tekstu.
 3. Na tej podstawie liczy nową szerokość (`długość znaków × ok. 6,5 + margines`, przycięte do
-   sensownego zakresu 40–400) i ustawia ją na **wszystkich** komórkach tej kolumny, we
-   wszystkich znalezionych tabelach (żeby nagłówek i wiersz danych zostały wyrównane — inaczej
-   siatka kolumn w wyeksportowanym Excelu się rozjedzie).
-4. `UstawWysokoscWierszy` ustawia stałą wysokość (`WysokoscWiersza = 18`) na wszystkich
-   znalezionych `XRTableRow`.
+   sensownego zakresu 40–400) i ustawia ją na **wszystkich** komórkach tej kolumny, w obu
+   tabelach (żeby nagłówek i wiersz danych zostały wyrównane — inaczej siatka kolumn w
+   wyeksportowanym Excelu się rozjedzie). Z uwagi na długie techniczne nazwy w nagłówku (np.
+   `Relationship_to_Company_Hire_Date`, 34 znaki) to zwykle nagłówek, a nie dane, będzie
+   dominował szerokość większości kolumn.
+4. `UstawWysokoscWierszy` ustawia stałą wysokość (`WysokoscWiersza = 18`) na obu `XRTableRow`.
 
 **Ograniczenia w porównaniu do EPPlus:** to przybliżenie (stała szerokość znaku dla domyślnej
 czcionki, a nie rzeczywisty pomiar renderowanego tekstu jak w `AutoFitColumns()`) — dla
 większości kolumn tekstowych powinno dać wynik „wystarczająco dobry", ale nie jest identyczne
 z prawdziwym auto-fit.
 
-**Do zweryfikowania na żywej aplikacji (nie da się potwierdzić bez podglądu rzeczywistego
-pliku `.repx`):**
+**Do zweryfikowania na żywej aplikacji:**
 
-- Metoda zakłada, że layout raportu używa `XRTable`/`XRTableRow`/`XRTableCell` (stąd nazwa
-  wzorca `SzablonTabela6Kolumn` w repo dla podobnych raportów). Jeśli layout korzysta z
-  osobnych `XRLabel` na paśmie zamiast tabeli, `ZbierzKontrolki` nie znajdzie żadnych komórek
-  (log wypisze „nie znaleziono XRTable w paśmie Lista") i nic się nie zmieni — trzeba wtedy
-  dopasować metodę do rzeczywistej struktury kontrolek w projektancie wydruku.
 - `XRTableCell.Weight` i `WidthF` są ustawiane jednocześnie dla pewności (w zależności od
   wersji DevExpress i trybu layoutu tabeli o realnej szerokości kolumny może decydować jedno
   lub drugie) — warto to zweryfikować na jednym wygenerowanym pliku i w razie potrzeby usunąć
   zbędne przypisanie.
+- Kolumna „LP." (`tableCell1`) nie ma żadnego bindowania tekstu — numerację generuje
+  `<Summary Func="RecordNumber">`, a jej `Text="LP."` jest statycznym tekstem domyślnym z
+  projektanta. `OdczytajNazwePola` zwróci dla niej `null`, więc szerokość liczy się z długości
+  literału `"LP."` (3 znaki) — wystarczające dla numeracji do ok. 999 wierszy, ale warto to
+  mieć na uwadze, gdyby lista miała być znacznie dłuższa.
 
 ## 7. Znane ograniczenia / do potwierdzenia
 
