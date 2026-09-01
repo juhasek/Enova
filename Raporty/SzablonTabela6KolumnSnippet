@@ -1,0 +1,166 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.Types;
+
+namespace x.x.Reports
+{
+    // Lista pracowników (z zaznaczenia): Lp., nr ewidencyjny, Nazwisko i Imię,
+    // data urodzenia, cecha "Jednostka obsługująca" z Wydziału bieżącego etatu.
+    // Kolumna 6 celowo pusta - do dalszej rozbudowy.
+    //
+    // Każde pole liczone jest przez Bezpiecznie(...) - jeśli dla któregoś
+    // pracownika coś rzuci wyjątkiem, w tej jednej komórce pojawi się
+    // "[BŁĄD: ...]" zamiast wywalenia całego wydruku.
+    //
+    // Cała metoda BeforePrint jest dodatkowo opakowana w try/catch - jeśli
+    // wyjątek wystąpi poza pętlą po pracownikach (np. przy pobieraniu
+    // zaznaczenia z kontekstu), wydruk i tak się wygeneruje z jednym
+    // diagnostycznym wierszem "BŁĄD" pokazującym typ i treść wyjątku,
+    // zamiast wywalać się z samym stack trace bez numeru linii.
+    public class SzablonTabela6KolumnSnippet : ReportSnippet
+    {
+        // Wzorowane na Raporty/OdbiciaRCP: obecność właściwości oznaczonej
+        // [Context(Required = true)] jest tym, co powoduje, że silnik Enova
+        // przed drukiem wstrzykuje do snippetu działający Context - bez niej
+        // DxReportHelpers.GetContext(this) nie ma skąd go wziąć. Ten raport
+        // nie ma żadnych parametrów do wypełnienia przez użytkownika, więc
+        // klasa PrnParams jest celowo pusta - liczy się sama jej obecność.
+        public class PrnParams : ContextBase
+        {
+            public PrnParams(Context context) : base(context) { }
+        }
+
+        PrnParams pars;
+
+        [Context(Required = true)]
+        public PrnParams Params
+        {
+            get { return pars; }
+            set { pars = value; }
+        }
+
+        [DxBind(Name = "Report")]
+        private void SzablonTabela6Kolumn_BeforePrint(object sender, CancelEventArgs e)
+        {
+            string etap = "start";
+            try
+            {
+                etap = "sprawdzenie trybu (designer)";
+                if (pars == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
+
+                etap = "pobranie kontekstu";
+                Context dc = pars.Context;
+
+                etap = "pobranie zaznaczenia (Row[])";
+                Row[] rows = dc?[typeof(Row[])] as Row[];
+                if (rows == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
+
+                etap = "zbieranie pracowników z zaznaczenia";
+                var pracownicy = new List<Pracownik>();
+                foreach (Row row in rows)
+                {
+                    Pracownik p = row as Pracownik;
+                    if (p == null && row is PracHistoria)
+                        p = ((PracHistoria) row).Pracownik;
+                    if (p != null && !pracownicy.Contains(p))
+                        pracownicy.Add(p);
+                }
+
+                etap = "sortowanie listy pracowników";
+                pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
+
+                etap = "budowanie wierszy";
+                var wiersze = new List<Wiersz>();
+                int lp = 1;
+                foreach (Pracownik pracownik in pracownicy)
+                {
+                    Pracownik pr = pracownik;
+                    wiersze.Add(new Wiersz {
+                        Kolumna1 = (lp++).ToString(),
+                        Kolumna2 = Bezpiecznie(() => pr.Kod),
+                        Kolumna3 = Bezpiecznie(() => pr.NazwiskoImię.ToString()),
+                        Kolumna4 = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString()),
+                        Kolumna5 = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)),
+                        Kolumna6 = ""
+                    });
+                }
+
+                etap = "ustawienie CustomDataSource";
+                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+            }
+            catch (Exception ex)
+            {
+                var ds = DxReportHelpers.GetDataSourceEmpty(this);
+                if (ds == null)
+                    return;
+                string opis = "ETAP=" + (etap ?? "(null)")
+                    + " | TYP=" + ex.GetType().FullName
+                    + " | KOMUNIKAT=" + ex.Message;
+                ds.CustomDataSource = new List<Wiersz> {
+                    new Wiersz {
+                        Kolumna1 = "BŁĄD",
+                        Kolumna2 = "",
+                        Kolumna3 = opis,
+                        Kolumna4 = "",
+                        Kolumna5 = "",
+                        Kolumna6 = ""
+                    }
+                };
+            }
+        }
+
+        static string Bezpiecznie(Func<string> policz)
+        {
+            try
+            {
+                return policz() ?? "";
+            }
+            catch (Exception ex)
+            {
+                return "[BŁĄD: " + ex.Message + "]";
+            }
+        }
+
+        static string PobierzJednostkeObslugujaca(Pracownik pracownik)
+        {
+            PracHistoria biezaca = null;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(new FromTo(Date.Today, Date.Today)))
+                biezaca = ph;
+            if (biezaca == null)
+                biezaca = pracownik.Historia[Date.Today];
+
+            var wydzial = biezaca?.Etat?.Wydzial;
+            if (wydzial == null)
+                return "";
+
+            // Cecha "Jednostka obsługująca" na Wydziale - jeszcze nieutworzona
+            // w tej bazie, na razie wyłączona. Po utworzeniu cechy odkomentuj
+            // i popraw nazwę techniczną, jeśli będzie inna niż "JednostkaObslugujaca".
+            //object wartoscCechy = wydzial.Cechy["JednostkaObslugujaca"];
+            return ""; // wartoscCechy?.ToString() ?? "";
+        }
+
+        public class Wiersz
+        {
+            public string Kolumna1 { get; set; }
+            public string Kolumna2 { get; set; }
+            public string Kolumna3 { get; set; }
+            public string Kolumna4 { get; set; }
+            public string Kolumna5 { get; set; }
+            public string Kolumna6 { get; set; }
+        }
+    }
+}

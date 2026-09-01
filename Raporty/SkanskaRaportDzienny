@@ -1,0 +1,617 @@
+namespace Soneta.KadryPlace.Reports
+{
+    using System.ComponentModel;
+    using Soneta.Langs;
+    using System;
+    using Soneta.Web;
+    using Soneta.Kadry;
+    using Soneta.Ksiega;
+    using Soneta.Kalend;
+    using Soneta.Place;
+    using Soneta.Business;
+    using Soneta.Tools;
+    using Soneta.Types;
+    using System.Collections.Generic;
+    using Soneta.Business.UI.DxReports;
+    using DevExpress.XtraReports.UI;
+    using System.Linq;
+    using Soneta.Core;
+
+    public class SkanskaRaportDzienny : ReportSnippet
+    {
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.DetailReportBand Grid1Lista;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTable table1;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell colDM;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell Harmonogram;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell tableCell1;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell colOd;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell colDo;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell colNieob;
+        //[DxBind]
+        //private readonly DevExpress.XtraReports.UI.XRTableCell colJednostka;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell colNocne;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell colNadlicz;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell pracazdalna;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell DodatekBryg;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell DaneProj;
+        //[DxBind]
+        //private readonly DevExpress.XtraReports.UI.XRTableCell DaneRC;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell DaneAC;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell tableCellSC;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTable table2;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTable table3;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell tableCell39;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell tableCell41;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell RazemNoc;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell RazemNad;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell RazemNom;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.XRTableCell RazemGod;
+        [DxBind]
+        private readonly Soneta.Business.UI.DxReports.Controls.Header SzablonNagłówkaStrony;
+        [DxBind]
+        private readonly DevExpress.XtraReports.UI.CalculatedField Nadgodziny;
+
+        public static string[] strefyraportu = new string[] {
+            "Praca w normie", "Praca poza normą", "Nieobecność", "Praca zdalna regulaminowa",
+            "Praca zdalna", "Praca zdalna okazjonalna", "Nadgodziny 100%", "Nadgodziny 100% (M)",
+            "Nadgodziny 50% (M)", "Nadgodziny 50%", "Praca w godzinach nocnych"
+        };
+
+        // TK dopisałem strefy ze względu na migracje
+        public static string[] strefynadgodzin = new string[] {
+            "Praca poza normą", "Nadgodziny 100%", "Nadgodziny 100% (M)", "Nadgodziny 50% (M)", "Nadgodziny 50%"
+        };
+
+        public static string[] strefyPracyZdalnej = new string[] {
+            "Praca zdalna regulaminowa", "Praca zdalna", "Praca zdalna okazjonalna"
+        };
+
+        static string[] czas_przepracowany = new string[] { };
+        static string[] dodatkowe_dane = new string[] { };
+
+        public class PrnParams : ContextBase
+        {
+            public PrnParams(Context context) : base(context)
+            {
+                Date data = ((ActualDate)context[typeof(ActualDate)]).Actual;
+                ym = new YearMonth(data);
+            }
+
+            YearMonth ym;
+
+            [Required]
+            [Priority(1)]
+            public YearMonth Miesiąc
+            {
+                get { return ym; }
+                set
+                {
+                    ym = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        public class SrParams : Soneta.Kadry.UI.PlShareableContextBase
+        {
+            [TranslateIgnore]
+            public SrParams(Context context)
+                : base(context, "Pozostała dokumentacja/Ewidencja czasu pracy",
+                    context.Session.GetCore().TuplesDefs.Domyślne.Wydruk_EwidencjaCzasuSzczegolowaRCP)
+            {
+            }
+        }
+
+        PrnParams pars;
+
+        [Context]
+        public PrnParams Params
+        {
+            set { pars = value; }
+        }
+
+        SrParams srpars;
+
+        [SettingsContext]
+        public SrParams SrPars
+        {
+            get { return srpars; }
+            set { srpars = value; }
+        }
+
+        [DxBind(Name = "Report")]
+        private void EwidencjaCzasuPracySzczegolowaRCP_BeforePrint(object sender, CancelEventArgs e)
+        {
+            BusinessDataSource dc = (BusinessDataSource)this.DataSource;
+
+            var originalList = DxReportHelpers.GetDataSourceList<object>(this);
+            var filteredList = originalList
+                .OfType<Pracownik>()
+                .Where(pracownik => ShouldIncludeWorker(pracownik))
+                .ToList();
+
+            dc.CustomDataSource = filteredList;
+
+            SzablonNagłówkaStrony.Title = "Karta ewidencji czasu pracy za ".Translate() + pars.Miesiąc.ToString().ToLower();
+        }
+
+        private bool ShouldIncludeWorker(Pracownik worker)
+        {
+            Periods okresyZatrudnienia = Periods.Empty;
+
+            foreach (PracHistoria ph in worker.Historia.GetIntersectedRows(pars.Miesiąc.ToFromTo()))
+            {
+                if (ph.Etat.EfektywnyOkres != FromTo.Empty &&
+                    ph.Etat.EfektywnyOkres.From != Date.Empty &&
+                    ph.Etat.EfektywnyOkres.To != Date.Empty)
+                {
+                    okresyZatrudnienia += ph.Etat.EfektywnyOkres;
+                }
+            }
+
+            okresyZatrudnienia *= pars.Miesiąc.ToFromTo();
+            okresyZatrudnienia = okresyZatrudnienia.ToFlat();
+
+            if (okresyZatrudnienia == Periods.Empty)
+            {
+                return false;
+            }
+
+            CzasDni cd = worker.Czasy.KalkPlanu.Norma(okresyZatrudnienia);
+            if (cd.Dni == 0 && cd.Czas.TotalHours == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        string StopkaRtf;
+
+        Periods okresy_zatrudnienia;
+        KalkulatorPracy kalkulator;
+        KalkulatorNadgodzin nadgodziny;
+        Time mies50;
+        Time mies100;
+        Time prev50;
+        Time prev100;
+        KalkulatorPlanu kalkulatorPlanu;
+
+        string GetStanowisko(PracHistoria ph)
+        {
+            string stanowiskoPelne = "";
+            stanowiskoPelne = ph.Etat.Stanowisko;
+            return stanowiskoPelne;
+        }
+
+        // te drugie daty
+        public static Time PoliczPoreNocna(Pracownik pracownik, Date data, Time godzinaRozpoczecia, Time godzinaZakonczenia)
+        {
+            // przedział pobrany z kalendarza
+            Time nocOd = pracownik[data].Etat.Kalendarz.Nocne.Od;
+            Time nocDo = pracownik[data].Etat.Kalendarz.Nocne.Do;
+
+            Time pracaOd = godzinaRozpoczecia;
+            Time pracaDo = godzinaZakonczenia;
+
+            Time start = Time.Max(nocOd, pracaOd);
+            Time end = Time.Min(nocDo, pracaDo);
+
+            if (end <= start)
+                return Time.Zero;
+
+            return end - start;
+        }
+
+        Dictionary<string, Time> sumaDyżurow;
+        Dictionary<string, Time> sumaPrzerw;
+        Dictionary<string, string> LegendaAll;
+
+        static string[] nazwaDnia = new string[] {
+            "ND".Translate(), "PN".Translate(), "WT".Translate(), "ŚR".Translate(),
+            "CZ".Translate(), "PT".Translate(), "SB".Translate()
+        };
+
+        Time czas, czasPrzestoju, swieta, wolne, nocne, nadlicz, uw, uwd, uok, uop, usz, ub, ch, op, wych, nu, nn, nad50, nad100, karmienie, dp, dd, pbez, nadZP, nadDoP;
+        DevExpress.XtraReports.UI.XRTableCell kolumna = null;
+
+        [DxBind]
+        private void Grid1ListaWiersz_BeforePrint(object sender, CancelEventArgs e)
+        {
+            Linia linia = (Linia)Grid1Lista.GetCurrentRow();
+
+            if (linia == null) return;
+
+            colNadlicz.Text = string.Empty;
+
+            try
+            {
+                Log log = new Log("Linia Raport dzienny", true);
+                Date data = linia.DzienM;
+                colDM.Text = data.ToString();
+                if (!okresy_zatrudnienia.Contains(data))
+                    return;
+
+                Dzien dzień = kalkulator[data];
+
+                pracazdalna.Text = DodatekBryg.Text = tableCellSC.Text = DaneAC.Text = colNocne.Text = DaneProj.Text = colNieob.Text = "";
+
+                if (dzień.Czas == Time.Zero && linia.Strefa == null)
+                {
+                    colOd.Text = colDo.Text = colNocne.Text = "";
+                }
+                else
+                {
+                    if (linia.Strefa == null)
+                    {
+                        log.WriteLine($"brak liniStrefy");
+                        colOd.Text = dzień.OdGodziny == Time.Zero ? "" : dzień.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+                        var doGodziny = Dzien.DoGodziny(dzień);
+                        colDo.Text = doGodziny == Time.Zero ? "" : Dzien.DoGodziny(dzień).ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+                        colNocne.Text = kalkulator.Nocne(new FromTo(data, data)) == Time.Zero ? "" : kalkulator.Nocne(new FromTo(data, data)).ToString();
+                    }
+                    else
+                    {
+                        colOd.Text = dzień.OdGodziny == Time.Zero ? "" : dzień.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+                        var doGodziny = Dzien.DoGodziny(dzień);
+
+                        if (colOd.Text == "")
+                            colDo.Text = "";
+                        else
+                            colDo.Text = doGodziny == Time.Zero ? "" : Dzien.DoGodziny(dzień).ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+
+                        if (linia.Strefa.OdGodziny != Time.Zero)
+                        {
+                            Time nocnerob = PoliczPoreNocna(linia.Prac, data, linia.Strefa.OdGodziny, linia.Strefa.OdGodziny + linia.Strefa.Czas);
+                            colNocne.Text = nocnerob == Time.Zero ? "" : nocnerob.ToString();
+                            if (linia.Strefa.Definicja.Nazwa == "Praca w godzinach nocnych")
+                                colNocne.Text = nocnerob == Time.Zero ? kalkulator.Nocne(new FromTo(data, data)).ToString() : nocnerob.ToString();
+                        }
+
+                        DodatekBryg.Text = linia.Strefa.Features.GetBool("DodatekBryg") ? "TAK" : "";
+                        ElemSlownika elProj = (ElemSlownika)linia.Strefa.Features["Projekt"];
+                        if (elProj != null)
+                        {
+                            DaneProj.Text = elProj.Symbol;
+                        }
+
+                        ElemSlownika elAC = (ElemSlownika)linia.Strefa.Features["Task"];
+                        if (elAC != null)
+                        {
+                            DaneAC.Text = elAC.Symbol;
+                        }
+
+                        ElemSlownika elEXP = (ElemSlownika)linia.Strefa.Features["Expenditure_organization"];
+                        if (elEXP != null)
+                        {
+                            tableCellSC.Text = elEXP.Symbol;
+                        }
+
+                        if (strefyPracyZdalnej.Contains(linia.Strefa.Definicja.Nazwa))
+                            pracazdalna.Text = "TAK";
+                    }
+                }
+
+                if (kalkulator.Plan[data].Czas == Time.Zero)
+                    Harmonogram.Text = "";
+                else
+                {
+                    string HOd = kalkulatorPlanu[data].OdGodziny.ToString();
+                    Time doGodz = (kalkulatorPlanu[data].OdGodziny + kalkulatorPlanu[data].Czas);
+                    string HDo = doGodz.ToString();
+
+                    if (doGodz >= new Time(24, 0))
+                        HDo = "+" + (doGodz - new Time(24, 0)).ToString();
+
+                    Harmonogram.Text = $"{HOd} - {HDo} ";
+                }
+
+                czas += dzień.Czas;
+
+                BusinessDataSource dc = (BusinessDataSource)this.DataSource;
+                var rozliczenieNadgodzinFirma = PracaWStrefie(dzień,
+                    KalendModule.GetInstance(dc.Context.Session).DefinicjeStref
+                        .WgNazwy["Rozliczenie nadgodzin (firma)".TranslateIgnore()], true);
+                var rozliczenieNadgodzinPrac = PracaWStrefie(dzień,
+                    KalendModule.GetInstance(dc.Context.Session).DefinicjeStref
+                        .WgNazwy["Rozliczenie nadgodzin (prac)".TranslateIgnore()], true);
+                Time przerwaK = PracaWStrefie(dzień,
+                    KalendModule.GetInstance(dc.Context.Session).DefinicjeStref
+                        .WgNazwy["Przerwa na karmienie".TranslateIgnore()], false);
+                karmienie += przerwaK;
+
+                // 02.06.2026 TK dodane, żeby nadgodziny były brane ze strefy a nie ze statystyki bo nie były wykazywane nadgodizny do odbioru
+                Time pracaPozaNorma = PracaWStrefie(dzień,
+                    KalendModule.GetInstance(dc.Context.Session).DefinicjeStref
+                        .WgNazwy["Praca poza normą".TranslateIgnore()], false);
+
+                FromTo okres = new FromTo(data, data);
+                ZestawienieNadgodzin zn = nadgodziny.Nadgodziny(okres);
+
+                if (linia.Strefa != null && strefynadgodzin.Contains(linia.Strefa.Definicja.Nazwa))
+                {
+                    if (pars.Miesiąc < new YearMonth(2026, 8))
+                    {
+                        colNadlicz.Text = (zn.N50 + zn.N100 + zn.NSW) == Time.Zero
+                            ? ""
+                            : (zn.N50 + zn.N100 + zn.NSW).ToString();
+                        nadlicz += (zn.N50 + zn.N100 + zn.NSW);
+                    }
+                    else
+                    {
+                        colNadlicz.Text += pracaPozaNorma.ToString();
+                        nadlicz += pracaPozaNorma;
+                    }
+
+                    RazemNad.Text = nadlicz.ToString();
+                }
+
+                switch (dzień.Definicja.Typ)
+                {
+                    case TypDnia.Świąteczny:
+                        swieta += dzień.Czas;
+                        break;
+                    case TypDnia.Wolny:
+                        wolne += dzień.Czas;
+                        break;
+                }
+
+                Time colUwDoba = Time.Zero;
+                Time colUwdDoba = Time.Zero;
+                Time colUOpDoba = Time.Zero;
+
+                Time czasNie = Time.Zero;
+                if (kolumna != null) kolumna.Text = "";
+                foreach (INieobecnosc nie in kalkulator.Nieobecnosci(FromTo.Day(data), true))
+                {
+                    Nieobecnosc nieobecność = (Nieobecnosc)((OkresNieobecności)nie);
+                    if (nieobecność != null && nieobecność.Definicja.Typ != TypNieobecnosci.Storno)
+                    {
+                        colNieob.Text = nieobecność.Definicja.Nazwa;
+                    }
+                }
+            }
+            catch (Soneta.Kalend.KalkulatorPracy.ZestPracyException ex)
+            {
+                throw new RowException(ex, kalkulator.Pracownik,
+                    "Próba wykonania raportu dla pracownika rozliczanego wg zestawień czasu pracy.".Translate());
+            }
+        }
+
+        static Time CzasPrzestoju(Dzien dzień)
+        {
+            bool any = false;
+            Time result = Time.Zero;
+            foreach (Dzien.Strefa s in dzień)
+                if (s.Definicja.Przestój)
+                {
+                    result += s.Czas;
+                    any = true;
+                }
+
+            return any ? result : Time.Empty;
+        }
+
+        [TranslateIgnore]
+        Time PracaWStrefie(Dzien dzień, DefinicjaStrefy def, bool czasRozliczany)
+        {
+            if (def == null)
+                return Time.Empty;
+
+            bool any = false;
+            Time result = Time.Zero;
+            foreach (Dzien.Strefa s in dzień)
+                if (s.Definicja == def)
+                {
+                    if (czasRozliczany)
+                    {
+                        var strefaPracy = s.Bazowa as StrefaPracy;
+                        if (strefaPracy != null)
+                        {
+                            result += strefaPracy.CzasRozliczanyWyliczony;
+
+                            if (s.Definicja.ToString() == "Rozliczenie nadgodzin (firma)" ||
+                                s.Definicja.ToString() == "Rozliczenie nadgodzin (prac)")
+                                nadZP += strefaPracy.CzasRozliczanyWyliczony;
+                        }
+                    }
+                    else
+                    {
+                        if (s.Definicja.ToString() == "Nadgodziny do przeniesienia") nadDoP += s.Czas;
+                        result += s.Czas;
+                    }
+                    any = true;
+                }
+
+            return any ? result : Time.Empty;
+        }
+
+        [DxBind]
+        private void detailReportBand1_BeforePrint(object sender, CancelEventArgs e)
+        {
+            BusinessDataSource dc = (BusinessDataSource)this.DataSource;
+            Log log = new Log("Raport dzienny", true);
+            Pracownik pracownik = (Pracownik)this.GetCurrentRow();
+            if (pracownik == null)
+                return;
+
+            // Reset akumulatorów czasu na potrzeby KAŻDEGO pracownika z osobna.
+            // Pola te (czas, nocne, nadlicz, karmienie, nadZP, nadDoP, swieta, wolne, ...)
+            // są polami instancji raportu, a raport jest jedną instancją dla wszystkich
+            // wydrukowanych pracowników - bez resetu ich wartości sumowały się między
+            // kolejnymi pracownikami (np. RazemNad pokazywał u drugiego pracownika sumę
+            // jego nadgodzin i nadgodzin poprzedniego pracownika).
+            czas = czasPrzestoju = swieta = wolne = nocne = nadlicz = uw = uwd = uok = uop =
+                usz = ub = ch = op = wych = nu = nn = nad50 = nad100 = karmienie = dp = dd =
+                pbez = nadZP = nadDoP = Time.Zero;
+
+            // RazemNad.Text jest ustawiane dopiero w Grid1ListaWiersz_BeforePrint, i to tylko
+            // gdy trafi się dzień ze strefą nadgodzin. Jeśli pracownik w danym miesiącu nie ma
+            // ani jednej takiej strefy, to przypisanie nigdy się nie wykona i komórka zostaje
+            // z tekstem wydrukowanym dla POPRZEDNIEGO pracownika. Dlatego jawnie zerujemy ją
+            // tutaj, zanim zaczną się drukować wiersze dni bieżącego pracownika.
+            RazemNad.Text = nadlicz.ToString();
+
+            okresy_zatrudnienia = Periods.Empty;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(pars.Miesiąc.ToFromTo()))
+                if (ph.Etat.EfektywnyOkres != FromTo.Empty)
+                    okresy_zatrudnienia += ph.Etat.EfektywnyOkres;
+            okresy_zatrudnienia *= pars.Miesiąc.ToFromTo();
+            okresy_zatrudnienia = okresy_zatrudnienia.ToFlat();
+
+            tableCell1.Text = $"{pracownik.Kod} {pracownik.ImięNazwisko}";
+
+            PracHistoria historia =
+                pracownik[okresy_zatrudnienia == Periods.Empty ? pars.Miesiąc.LastDay : okresy_zatrudnienia.To];
+            CzasDni cd = pracownik.Czasy.KalkPlanu.Norma(okresy_zatrudnienia);
+            RazemNom.Text = cd.Czas.ToString();
+            CzasDni cdpracy = pracownik.Czasy.KalkPracy.Praca(okresy_zatrudnienia);
+            RazemGod.Text = cdpracy.Czas.ToString();
+            kalkulator = pracownik.Czasy.KalkPracy;
+            nadgodziny = new KalkulatorNadgodzin(kalkulator);
+            kalkulatorPlanu = pracownik.Czasy.KalkPlanu;
+
+            kalkulator.LoadOkres(pars.Miesiąc.ToFromTo());
+
+            Time n50 = Time.Zero;
+            Time n100 = Time.Zero;
+
+            foreach (FromTo oz in okresy_zatrudnienia)
+            {
+                ZestawienieNadgodzin zn = nadgodziny.Nadgodziny(oz);
+                n50 += zn.N50;
+                n100 += zn.N100 + zn.NSW;
+                nocne += kalkulator.Nocne(oz);
+            }
+
+            nadgodziny.TrybRozliczania = KalkulatorNadgodzin.TrybRozliczaniaNadgodzin.TylkoDobowe;
+
+            RazemNoc.Text = nocne.ToString();
+
+            List<Linia> linie = new List<Linia>();
+            linie.Clear();
+
+            for (int i = 0; i < pars.Miesiąc.Days; i++)
+            {
+                Date dataSpr = pars.Miesiąc.FirstDay + i;
+
+                // rezygnujemy z podzielnika odczytywanego z danych kadrowych - zakłądamy ze
+                // raport będzie drukowany dla osób które podzielnik mają na strefach
+
+                DzienPracy dzienPracy = pracownik.DniPracy[dataSpr];
+                if (dzienPracy == null)
+                {
+                    linie.Add(new Linia(dataSpr, pracownik));
+                }
+                else
+                {
+                    if (!dzienPracy.Strefy.Any)
+                    {
+                        linie.Add(new Linia(dataSpr, pracownik));
+                    }
+                    else
+                    {
+                        foreach (var strefa in dzienPracy.Strefy)
+                        {
+                            if (strefyraportu.Contains(strefa.Definicja.Nazwa))
+                            {
+                                linie.Add(new Linia(dataSpr, strefa, pracownik));
+                            }
+                        }
+                    }
+                }
+            }
+
+            Grid1Lista.DataSource = linie;
+        }
+
+        public class Linia
+        {
+            public Linia(Date data, ElementPodzielnika elem, Pracownik prac)
+            {
+                this.DzienM = data;
+                this.ElemPodz = elem;
+                this.Prac = prac;
+            }
+
+            public Linia(Date data, Pracownik prac)
+            {
+                this.DzienM = data;
+                this.Prac = prac;
+            }
+
+            public Linia(Date data, StrefaPracy strefa, Pracownik prac)
+            {
+                this.DzienM = data;
+                this.Prac = prac;
+                this.Strefa = strefa;
+            }
+
+            public StrefaPracy Strefa { get; set; }
+            public Date DzienM { get; set; }
+            public ElementPodzielnika ElemPodz { get; set; }
+            public Pracownik Prac { get; set; }
+        }
+
+        [DxBind(Name = "GroupHeader1")]
+        private void NagłówekRaportu_BeforePrint(object sender, CancelEventArgs e)
+        {
+            BusinessDataSource dc = (BusinessDataSource)this.DataSource;
+
+            Pracownik pracownik = (Pracownik)this.GetCurrentRow();
+            if (pracownik == null)
+                return;
+
+            okresy_zatrudnienia = Periods.Empty;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(pars.Miesiąc.ToFromTo()))
+                if (ph.Etat.EfektywnyOkres != FromTo.Empty)
+                    okresy_zatrudnienia += ph.Etat.EfektywnyOkres;
+            okresy_zatrudnienia *= pars.Miesiąc.ToFromTo();
+            okresy_zatrudnienia = okresy_zatrudnienia.ToFlat();
+
+            PracHistoria historia =
+                pracownik[okresy_zatrudnienia == Periods.Empty ? pars.Miesiąc.LastDay : okresy_zatrudnienia.To];
+            CzasDni cd = pracownik.Czasy.KalkPlanu.Norma(okresy_zatrudnienia);
+            string line1 = "Imię i nazwisko: ".Translate() + pracownik.ImięNazwisko + "\\b0, stanowisko pracy: ".Translate() +
+                           GetStanowisko(historia);
+            string line2 = "Normatywny czas pracy w dniach: ".Translate() + cd.Dni.ToString() + "\\b0, w godzinach: ".Translate() +
+                           cd.Czas.ToString();
+            SzablonNagłówkaStrony.FiltersDescription = new string[] { line1, line2 };
+        }
+
+        [TranslateIgnore]
+        [DxBind]
+        private void Grid1ListaStopka_BeforePrint(object sender, CancelEventArgs e)
+        {
+        }
+
+        [DxBind]
+        private void Stopka_BeforePrint(object sender, CancelEventArgs e)
+        {
+            var lastPage = XtraReportHelper.IsLastPageForGroupItem(sender as XRPageInfo);
+        }
+    }
+}
