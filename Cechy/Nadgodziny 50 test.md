@@ -13,12 +13,22 @@ niedzielno-świątecznymi (ponad 8h w danym dniu wolnym).
 Wersja robocza/testowa (`_test` w nazwie właściwości) — do finalnej weryfikacji przed wdrożeniem
 produkcyjnym.
 
-## 2. Ograniczenie: brak obsługi „czarnych dziur"
+## 2. Obsługa „czarnych dziur" (01.09.2026)
 
-Cecha **nie obsługuje** tzw. „czarnych dziur", czyli godzin przypadających po dobie
-niedzielno-świątecznej w niedzielę/święto, a przed dobą poniedziałkową (przejście doby na granicy
-dnia świątecznego i kolejnego dnia roboczego).
+Cecha obsługuje tzw. „czarne dziury", czyli godziny przypadające po dobie niedzielno-świątecznej
+(od godz. 6:00 w niedzielę/święto) a przed dobą planowanego dnia roboczego, gdy dzień poprzedni był
+świąteczny (`TypDnia.Świąteczny`), a bieżący dzień ma niezerowy plan pracy. Logika przeniesiona
+analogicznie z cechy **„Nadgodziny okresowe"** (`Cechy/Nadgodziny okresowe`):
 
-Kod obsługujący ten przypadek istnieje już w cesze **„Nadgodziny okresowe"**
-(`Cechy/Nadgodziny okresowe`, sekcja z komentarzem „obsługa tzn «czarnych dziur»...") i w razie
-potrzeby powinien zostać analogicznie przeniesiony/dostosowany do tej cechy.
+- gdy cały czas strefy mieści się w „czarnej dziurze" (między dobą niedzielną a początkiem pracy z
+  planu) — zwracany jest cały czas strefy;
+- gdy strefa zaczyna się przed dobą niedzielną, a kończy w „czarnej dziurze" — zwracana jest tylko
+  część od doby niedzielnej;
+- gdy strefa zaczyna się w „czarnej dziurze", a kończy po starcie planu — zwracana jest tylko część
+  do początku planu;
+- gdy strefa obejmuje całą „czarną dziurę" (zaczyna się przed dobą niedzielną i kończy po starcie
+  planu) — zwracana jest cała długość „czarnej dziury".
+
+Dopasowanie zwraca wynik od razu (`return`), z pominięciem standardowego liczenia nadgodzin 50% dla
+danego wiersza — jest to niezależny od strefy przypadek, tak samo jak w cesze „Nadgodziny
+okresowe".

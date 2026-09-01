@@ -30,6 +30,7 @@ public decimal Feature_Nadgodziny_50_test {
 				//Time sobota = new Time(8,0);
 				Time praca = Time.Zero;
 				Time plan = Time.Zero;
+				Time dobaNiedziela = new Time(6,0); //(Time)KalendModule.GetInstance(Row).Config.PoczątekDobyPracWNdIŚwiętaOddział;
 
 				KalkulatorPracy kalkpracy = Row.Dzien.Pracownik.Czasy.KalkPracy;
 				KalkulatorPlanu kalkplanu = Row.Dzien.Pracownik.Czasy.KalkPlanu;
@@ -38,6 +39,7 @@ public decimal Feature_Nadgodziny_50_test {
 
 				Dzien dzienPracy = kalkpracy[Row.Dzien.Data];
 				Dzien dzienPlanu = kalkplanu[Row.Dzien.Data];
+				Dzien dzienPracyPoprzedni = kalkpracy[Row.Dzien.Data.AddDays(-1)];
 				praca = dzienPracy.Czas;
 				plan = dzienPlanu.Czas;
 				Time czasTemp = new Time(8,0);// * Row.Dzien.Pracownik.Last.Etat.Wymiar;
@@ -93,6 +95,18 @@ public decimal Feature_Nadgodziny_50_test {
 						}
 					}
 
+					//obsługa tzw "czarnych dziur" czyli godzin przypadających po dobie w niedziele/święto a przed dobą poniedziałkową
+					if(dzienPracyPoprzedni.Definicja.Typ == TypDnia.Świąteczny && dzienPlanu.Czas != Time.Zero)
+					{
+						if(odGodziny >= dobaNiedziela && doGodziny <= dzienPlanu.OdGodziny)
+							return (decimal)Row.Czas.TotalHours;
+						if(odGodziny < dobaNiedziela && doGodziny <= dzienPlanu.OdGodziny)
+							return (decimal)(doGodziny - dobaNiedziela).TotalHours;
+						if(odGodziny >= dobaNiedziela && odGodziny <= dzienPlanu.OdGodziny && doGodziny > dzienPlanu.OdGodziny)
+							return (decimal)(dzienPlanu.OdGodziny - odGodziny).TotalHours;
+						if(odGodziny < dobaNiedziela && doGodziny > dzienPlanu.OdGodziny)
+							return (decimal)(dzienPlanu.OdGodziny - dobaNiedziela).TotalHours;
+					}
 
 					/*if(Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Wolny && praca > czasTemp && !dzienPracy.Definicja.NadgodzinySW){
 						if(odGodziny >= (odGodzinyDzien + czasTemp + roznica) && odGodziny <= poraNocnaOd && doGodziny <=poraNocnaOd)
