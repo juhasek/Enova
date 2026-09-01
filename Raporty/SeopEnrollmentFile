@@ -54,7 +54,7 @@ namespace SeopEnrollmentFileSnippet {
         // =========================
 
         BusinessDataSource dc;
-        Log log = new Log("SEOP", true);
+        Log log = new Log("SEOP", false);
 
         [DxBind]
         private readonly DevExpress.XtraReports.UI.DetailReportBand Lista;
@@ -190,23 +190,27 @@ namespace SeopEnrollmentFileSnippet {
                     subsidiary = oddzial.Nadrzedny?.Features?["SEOP_Subsidiary"]?.ToString()
                                  ?? oddzial.Features?["SEOP_Subsidiary"]?.ToString();
 
-                    companyCode = oddzial.Nadrzedny?.Features?["SEOP_GlobalCode"]?.ToString()
-                                  ?? oddzial.Features?["SEOP_GlobalCode"]?.ToString();
+                    companyCode = oddzial.Nadrzedny?.Features?["SEOP_CompanyCode"]?.ToString()
+                                  ?? oddzial.Features?["SEOP_CompanyCode"]?.ToString();
                 }
 
 
                 wynik.Add(new RaportAkcjeRow {
 
-                    KontoAktywne = "Tak",
+                    KontoAktywne = uczestnictwo?.AktualnoscOd != Date.Empty ? "Tak" : "",
 
-                    InternalParticipantID = historia?.Etat?.OkresZatrudnienia.From
+                    AsOfDate = historia?.Etat?.OkresZatrudnienia.From
                         .ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
+
+                    InternalParticipantID = "",// uczestnictwo?.AktualnoscOd
+                        //.ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
 
                     RelationshipToCompanyHireDate = historia?.Etat?.OkresZatrudnienia.From
                         .ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
 
                     Gid = p.Features["SEOP_GlobalId"]?.ToString(),
 
+                    PersonalIdentityCode = historia?.PESEL,
                     FirstName = p.Imie,
                     MiddleName = historia?.ImieDrugie,
                     LastName = p.Nazwisko,
@@ -223,7 +227,7 @@ namespace SeopEnrollmentFileSnippet {
                     Subsidiary = subsidiary,
                     UsaPayrollCode = "",
 
-                    SubsidiaryCode = companyCode,
+                    Company = companyCode,
 
                     TaxState = "In Window",
                     HostCountry = "POL",
@@ -240,7 +244,7 @@ namespace SeopEnrollmentFileSnippet {
                         ? ""
                         : adresDoRaportu?.KodPocztowy.ToString("00000"),
 
-                    ResidentCountry = adresDoRaportu?.KodKraju,
+                    ResidentCountry = "POL",
 
                     DateOfBirth = historia?.Urodzony.Data
                         .ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US"))
@@ -273,10 +277,12 @@ namespace SeopEnrollmentFileSnippet {
     public class RaportAkcjeRow {
 
         public string KontoAktywne { get; set; }
+        public string AsOfDate { get; set; }
         public string InternalParticipantID { get; set; }
         public string ExternalParticipantID { get; set; }
 
         public string Gid { get; set; }
+        public string PersonalIdentityCode { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }
         public string LastName { get; set; }
@@ -293,6 +299,7 @@ namespace SeopEnrollmentFileSnippet {
 
         public string Division { get; set; }
         public string Subsidiary { get; set; }
+        public string Company { get; set; }
         public string UsaPayrollCode { get; set; }
 
         public string SubsidiaryName { get; set; }

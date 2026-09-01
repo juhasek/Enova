@@ -70,9 +70,79 @@ var adresDoRaportu = string.IsNullOrWhiteSpace(adresZamieszkania?.Miejscowosc)
 Wszystkie pola adresowe w wierszu raportu korzystają teraz z `adresDoRaportu` zamiast
 bezpośrednio z `historia?.AdresZamieszkania`.
 
-## 5. Znane ograniczenia / do potwierdzenia
+## 5. Synchronizacja z wersją produkcyjną (zmiany wprowadzone poza tą sesją)
 
-- Filtr opiera się na założeniu, że `UczestnictwoWAkcji.OkresOd` to
+Po poprawkach 3–4 plik `Raporty/SeopEnrollmentFile` został ręcznie zmieniony bezpośrednio w
+edytorze skryptów Enova i zsynchronizowany z powrotem do repo. Zmiany:
+
+- log wyłączony na stałe (`new Log("SEOP", false)`),
+- cecha oddziału `SEOP_GlobalCode` → `SEOP_CompanyCode` (zmiana nazwy technicznej cechy),
+- `KontoAktywne` liczone z `uczestnictwo.AktualnoscOd` zamiast na sztywno `"Tak"`,
+- nowe kolumny `AsOfDate` (data zatrudnienia) i `PersonalIdentityCode` (PESEL),
+- `InternalParticipantID` tymczasowo pusty (zakomentowany kod źródłowy — do uzupełnienia),
+- kolumna `SubsidiaryCode` w wierszu zastąpiona kolumną `Company` (ta sama wartość —
+  `companyCode` z cechy oddziału),
+- `ResidentCountry` zapisywany na sztywno jako `"POL"` zamiast kodu kraju z adresu — świadoma
+  decyzja biznesowa, spójna z `HostCountry = "POL"`.
+
+## 6. Generowanie pliku z formatowaniem Excel (EPPlus) — `Raporty/SeopEnrollmentFileWorker`
+
+**Potrzeba:** plik `.xlsx` ma mieć pełne formatowanie arkusza — auto-dopasowaną szerokość
+kolumn do treści oraz ustaloną wysokość wierszy.
+
+**Dlaczego nie da się tego zrobić w samym wydruku:** przy eksporcie z poziomu standardowego
+podglądu wydruku Enova (`Raporty/SeopEnrollmentFile`) DevExpress sam zapisuje plik na dysk —
+nie ma udokumentowanego zdarzenia dającego dostęp do już zapisanego pliku, żeby doformatować go
+po fakcie. `PrintingSystemBase.XlsxDocumentCreated` jest przestarzałe, a jego następca
+(`XlSheetCreated`/`CustomizeSheetSettings`) działa na własnej reprezentacji arkusza DevExpress
+(nie na surowym pliku) i **nie jest wywoływany przy eksporcie do pojedynczego pliku**
+(`XlsxExportMode.SingleFilePageByPage`, który już jest ustawiony w tym raporcie).
+
+**Rozwiązanie:** osobna akcja w menu Czynności listy Pracownicy — „Generuj plik SEOP (xlsx)"
+(`Raporty/SeopEnrollmentFileWorker`, klasa `SeopEnrollmentFileWorker`, `[assembly: Worker<...,
+Pracownicy>]`). Zamiast polegać na interaktywnym eksporcie:
+
+1. generuje plik programowo przez `IReportService.GenerateReport(...)` (`OutputFormat =
+   ReportFormats.XLSX`), używając tego samego wzorca `.repx` i tej samej klasy parametrów
+   (`Okres`) co zwykły wydruk,
+2. otwiera zwrócony strumień biblioteką **EPPlus** (`OfficeOpenXml.ExcelPackage`),
+3. woła `AutoFitColumns()` na całym zakresie danych (szerokość kolumn dopasowana do treści) i
+   ustawia stałą wysokość wszystkich wierszy (`arkusz.Row(i).Height = 18`),
+4. zwraca gotowy plik do pobrania (`NamedStream`).
+
+```csharp
+var rr = new ReportResult {
+    TemplateFileName = "SeopEnrollmentFile.repx",
+    DataType = typeof(Pracownik[]),
+    Rows = Pracownicy,
+    Context = context,
+    OutputFormat = ReportFormats.XLSX,
+    AskForParameters = false,
+};
+
+using var strumien = raporty.GenerateReport(rr);
+// ... EPPlus: ExcelPackage, AutoFitColumns(), Row(i).Height = 18
+```
+
+**Do zweryfikowania na żywej aplikacji (nie da się potwierdzić bez dostępu do konkretnej
+instalacji enova):**
+
+- `TemplateFileName = "SeopEnrollmentFile.repx"` — nazwa placeholder, musi się zgadzać z
+  rzeczywistą nazwą pliku wzorca zarejestrowaną dla tego wydruku w Enova (Konfiguracja >
+  Wydruki). Jeśli wzorzec nazywa się inaczej, trzeba tu podmienić nazwę.
+- `ReportResult.Rows = Pracownicy` zakłada, że silnik raportów sam zbuduje z tej kolekcji
+  kontekst `Row[]`, który `Report_BeforePrint` odczytuje przez
+  `dc.Context[typeof(Row[])]` — to udokumentowany mechanizm („wiersze źródłowe zamiast
+  Context"), ale warto potwierdzić jednym wygenerowanym plikiem, że rzeczywiście dociera do
+  pętli po pracownikach.
+- **Licencja EPPlus:** EPPlus 5+ wymaga jawnego określenia kontekstu licencji
+  (`ExcelPackage.LicenseContext` w wersjach 5–6, `ExcelPackage.License` od wersji 8) — przy
+  komercyjnym użyciu (Skanska) potrzebna jest licencja komercyjna EPPlus, a nie tryb
+  `NonCommercial`. Warto to zweryfikować przed wdrożeniem produkcyjnym.
+
+## 7. Znane ograniczenia / do potwierdzenia
+
+- Filtr „nowo przystępujący" opiera się na założeniu, że `UczestnictwoWAkcji.OkresOd` to
   rzeczywista data przystąpienia pracownika do danej edycji (a nie np. data
   początku samej edycji, jednakowa dla wszystkich jej uczestników). Warto
   zweryfikować to założenie na danych produkcyjnych — jeśli `OkresOd`
@@ -84,3 +154,6 @@ bezpośrednio z `historia?.AdresZamieszkania`.
   pętla pobiera historię pracownika na dzień `pars.Okres.From` (początek
   miesiąca), co może pomijać pracownika, który zaczął pracę w trakcie
   raportowanego miesiąca.
+- `InternalParticipantID` jest obecnie pusty (kod źródłowy zakomentowany w
+  `Raporty/SeopEnrollmentFile`) — do uzupełnienia właściwą wartością przed wysyłką pliku do
+  operatora SEOP.
