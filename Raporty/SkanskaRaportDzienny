@@ -94,6 +94,13 @@ namespace Soneta.KadryPlace.Reports
         static bool JestStrefaZdalna(string nazwaStrefy) =>
             nazwaStrefy != null && nazwaStrefy.IndexOf("zdalna", StringComparison.OrdinalIgnoreCase) >= 0;
 
+        // Odbiór nadgodzin (czas wolny w zamian za nadgodziny) jest zapisywany na
+        // strefie "Rozliczenie nadgodzin (prac)" lub "Rozliczenie nadgodzin (firma)".
+        // Rozpoznajemy obie po wspólnym fragmencie nazwy, żeby nie trzeba było
+        // utrzymywać osobnej listy dla każdego wariantu.
+        static bool JestStrefaOdbioruNadgodzin(string nazwaStrefy) =>
+            nazwaStrefy != null && nazwaStrefy.IndexOf("Rozliczenie nadgodzin", StringComparison.OrdinalIgnoreCase) >= 0;
+
         static string[] czas_przepracowany = new string[] { };
         static string[] dodatkowe_dane = new string[] { };
 
@@ -415,6 +422,19 @@ namespace Soneta.KadryPlace.Reports
                         colNieob.Text = nieobecność.Definicja.Nazwa;
                     }
                 }
+
+                // Odbiór nadgodzin (strefa "Rozliczenie nadgodzin (prac)"/"(firma)")
+                // dopisujemy do kolumny Nieobecność razem z liczbą odebranych
+                // nadgodzin - CzasRozliczanyLaczny to suma WŁASNA tego wiersza
+                // (patrz detailReportBand1_BeforePrint), nie dzienna suma z
+                // PracaWStrefie, żeby uniknąć powielania wartości między wierszami.
+                if (linia.Strefa != null && JestStrefaOdbioruNadgodzin(linia.Strefa.Definicja.Nazwa))
+                {
+                    string wpisOdbioru = "Odbiór nadgodzin " + linia.CzasRozliczanyLaczny.ToString();
+                    colNieob.Text = string.IsNullOrEmpty(colNieob.Text)
+                        ? wpisOdbioru
+                        : colNieob.Text + ", " + wpisOdbioru;
+                }
             }
             catch (Soneta.Kalend.KalkulatorPracy.ZestPracyException ex)
             {
@@ -561,7 +581,7 @@ namespace Soneta.KadryPlace.Reports
                         // godzinach), traktujemy jako jeden ciągły wpis w karcie - inaczej
                         // ten sam dzień drukował kilka wierszy wyglądających na zdublowane.
                         foreach (var strefa in dzienPracy.Strefy
-                            .Where(s => strefyraportu.Contains(s.Definicja.Nazwa) || JestStrefaZdalna(s.Definicja.Nazwa))
+                            .Where(s => strefyraportu.Contains(s.Definicja.Nazwa) || JestStrefaZdalna(s.Definicja.Nazwa) || JestStrefaOdbioruNadgodzin(s.Definicja.Nazwa))
                             .OrderBy(s => s.OdGodziny))
                         {
                             string projektSym = GetFeatureSymbol(strefa, "Projekt");
@@ -578,6 +598,7 @@ namespace Soneta.KadryPlace.Reports
                             {
                                 poprzednia.DoGodzinyLaczna = Time.Max(poprzednia.DoGodzinyLaczna, strefa.OdGodziny + strefa.Czas);
                                 poprzednia.CzasLaczny += strefa.Czas;
+                                poprzednia.CzasRozliczanyLaczny += strefa.CzasRozliczanyWyliczony;
                             }
                             else
                             {
@@ -613,6 +634,7 @@ namespace Soneta.KadryPlace.Reports
                 this.Strefa = strefa;
                 this.DoGodzinyLaczna = strefa.OdGodziny + strefa.Czas;
                 this.CzasLaczny = strefa.Czas;
+                this.CzasRozliczanyLaczny = strefa.CzasRozliczanyWyliczony;
             }
 
             public StrefaPracy Strefa { get; set; }
@@ -630,6 +652,12 @@ namespace Soneta.KadryPlace.Reports
             // niescalonego wiersza - Czas pojedynczej strefy). Używana do wyliczenia
             // nadgodzin WŁASNYCH tego wiersza zamiast sumy dziennej z PracaWStrefie.
             public Time CzasLaczny { get; set; }
+
+            // Suma StrefaPracy.CzasRozliczanyWyliczony zapisów scalonych w ten wiersz
+            // (dla niescalonego wiersza - wartość pojedynczej strefy). Dla stref
+            // "Rozliczenie nadgodzin (prac/firma)" to liczba odebranych nadgodzin,
+            // wyświetlana w kolumnie Nieobecność.
+            public Time CzasRozliczanyLaczny { get; set; }
         }
 
         [TranslateIgnore]

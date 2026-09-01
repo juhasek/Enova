@@ -213,3 +213,33 @@ DodatekBryg.Text = DaneProj.Text = DaneAC.Text = tableCellSC.Text = ""`).
 Numer/data dnia (`colDM`) nadal się drukuje (dzień jest widoczny w karcie
 jako pusty wiersz), ale bez żadnych danych o pracy czy nieobecności
 przeniesionych z poprzedniego dnia.
+
+## 9. Nowa funkcja: informacja o odbiorze nadgodzin w kolumnie Nieobecność
+
+**Potrzeba:** odbiór nadgodzin (czas wolny udzielany w zamian za wcześniej
+wypracowane nadgodziny) zapisywany jest w kalendarzu na strefie „Rozliczenie
+nadgodzin (prac)” lub „Rozliczenie nadgodzin (firma)”. Karta nie pokazywała
+tej informacji — dzień z taką strefą (o ile nie miał żadnej innej strefy z
+`strefyraportu`) w ogóle nie pojawiał się w raporcie (ten sam mechanizm, co
+opisany w punkcie 7 dla strefy pracy zdalnej).
+
+**Zmiana:**
+- Dodano `JestStrefaOdbioruNadgodzin(nazwa)` — rozpoznaje obie nazwy strefy
+  („Rozliczenie nadgodzin (prac)”/„(firma)”) po wspólnym fragmencie
+  „Rozliczenie nadgodzin”, tym samym mechanizmem co rozpoznawanie pracy
+  zdalnej (punkt 7).
+- Filtr budujący wiersze dnia (`detailReportBand1_BeforePrint`) uwzględnia
+  teraz też tę strefę, więc dzień z odbiorem nadgodzin poprawnie pojawia się
+  w karcie, nawet jeśli to jedyna strefa tego dnia.
+- Dodano do `Linia` pole `CzasRozliczanyLaczny` — sumę
+  `StrefaPracy.CzasRozliczanyWyliczony` zapisów scalonych w dany wiersz
+  (analogicznie do `CzasLaczny`/`DoGodzinyLaczna` z punktu 5), żeby liczba
+  odebranych nadgodzin była WŁASNA dla wiersza, a nie dzienną sumą (unikamy w
+  ten sposób błędu opisanego w punkcie 6 — dzienna suma powielana na kilku
+  wierszach).
+- W `Grid1ListaWiersz_BeforePrint`, dla wiersza reprezentującego strefę
+  odbioru nadgodzin, do kolumny „Nieobecność” dopisywany jest tekst „Odbiór
+  nadgodzin” wraz z liczbą odebranych godzin (`linia.CzasRozliczanyLaczny`).
+  Jeśli w kolumnie było już coś wpisane (rzadki przypadek zbiegu z realną
+  nieobecnością tego samego dnia), nowy wpis jest dopisywany po przecinku, a
+  nie nadpisuje istniejącej treści.
