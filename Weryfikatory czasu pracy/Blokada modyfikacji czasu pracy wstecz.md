@@ -40,6 +40,11 @@ Dla wpisanej wartości `N` i dzisiejszej daty:
 Błąd zwracany, gdy `data < blokadaOd`. Dzień równy `blokadaOd` jest dozwolony
 (semantyka `<`, jak w oryginale).
 
+Komunikat zawiera **numer miesiąca i rok** granicy w formacie `MM.rrrr`
+(np. `08.2026`) — składany z lokalnych `miesiac`/`rok`, bez `YearMonth`.
+Aby pokazać nazwę miesiąca („sierpień 2026"), w skrypcie jest zakomentowana
+tablica nazw — wystarczy ją odkomentować i podstawić `nazwy[miesiac - 1]`.
+
 ### Przykład (cecha = 5)
 
 Piątego dnia miesiąca blokują się poprzednie miesiące. **5 września →
@@ -77,5 +82,5 @@ Sygnatura bez zmian — `pracownik` służy do pobrania `Session`
 - `pracownik.Session.Global.Features["nazwa"]` — odczyt cechy globalnej, rzut `(int)` po null-checku
 - `Date.Today`, `Date.Day/Month/Year`, `new Date(rok, miesiąc, 1)`
 - poprzedni miesiąc liczony ręcznie (`miesiac-1`, przejście przez 0 → grudzień/rok-1) — bez `AddMonths`
-- `YearMonth(Date)` + `TranslateFormat` — komunikat jak w oryginale
+- `miesiac.ToString("00") + "." + rok` + `TranslateFormat` — komunikat `MM.rrrr` (np. `08.2026`)
 - `System.DateTime.DaysInMonth` — przycięcie progu do długości miesiąca

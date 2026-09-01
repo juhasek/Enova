@@ -75,8 +75,8 @@ namespace Soneta.KadryPlace.Reports
         private readonly DevExpress.XtraReports.UI.CalculatedField Nadgodziny;
 
         public static string[] strefyraportu = new string[] {
-            "Praca w normie", "Praca poza normą", "Nieobecność", "Praca zdalna regulaminowa",
-            "Praca zdalna", "Praca zdalna okazjonalna", "Nadgodziny 100%", "Nadgodziny 100% (M)",
+            "Praca w normie", "Praca poza normą", "Nieobecność",
+            "Nadgodziny 100%", "Nadgodziny 100% (M)",
             "Nadgodziny 50% (M)", "Nadgodziny 50%", "Praca w godzinach nocnych"
         };
 
@@ -85,9 +85,21 @@ namespace Soneta.KadryPlace.Reports
             "Praca poza normą", "Nadgodziny 100%", "Nadgodziny 100% (M)", "Nadgodziny 50% (M)", "Nadgodziny 50%"
         };
 
-        public static string[] strefyPracyZdalnej = new string[] {
-            "Praca zdalna regulaminowa", "Praca zdalna", "Praca zdalna okazjonalna"
-        };
+        // Praca zdalna występuje pod kilkoma różnymi nazwami stref ("Praca zdalna",
+        // "Praca zdalna regulaminowa", "Praca zdalna okazjonalna", "Praca zdalna
+        // uprzywilejowana" itd.) i bywają dopisywane nowe warianty. Zamiast
+        // utrzymywać zamkniętą listę nazw (przez co dzień z nowym, niewymienionym
+        // wariantem w ogóle znikał z raportu), rozpoznajemy strefę pracy zdalnej po
+        // tym, że jej nazwa zawiera słowo "zdalna".
+        static bool JestStrefaZdalna(string nazwaStrefy) =>
+            nazwaStrefy != null && nazwaStrefy.IndexOf("zdalna", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        // Odbiór nadgodzin (czas wolny w zamian za nadgodziny) jest zapisywany na
+        // strefie "Rozliczenie nadgodzin (prac)" lub "Rozliczenie nadgodzin (firma)".
+        // Rozpoznajemy obie po wspólnym fragmencie nazwy, żeby nie trzeba było
+        // utrzymywać osobnej listy dla każdego wariantu.
+        static bool JestStrefaOdbioruNadgodzin(string nazwaStrefy) =>
+            nazwaStrefy != null && nazwaStrefy.IndexOf("Rozliczenie nadgodzin", StringComparison.OrdinalIgnoreCase) >= 0;
 
         static string[] czas_przepracowany = new string[] { };
         static string[] dodatkowe_dane = new string[] { };
@@ -253,7 +265,16 @@ namespace Soneta.KadryPlace.Reports
                 Date data = linia.DzienM;
                 colDM.Text = data.ToString();
                 if (!okresy_zatrudnienia.Contains(data))
+                {
+                    // Komórki tabeli są tymi samymi obiektami UI używanymi dla
+                    // wszystkich wierszy - bez jawnego wyczyszczenia dzień spoza
+                    // okresu zatrudnienia (np. po zwolnieniu pracownika) pokazywał
+                    // Harmonogram/Nieobecność itd. przepisane z ostatniego
+                    // wydrukowanego dnia, w którym pracownik był jeszcze zatrudniony.
+                    Harmonogram.Text = colOd.Text = colDo.Text = colNocne.Text = colNieob.Text =
+                        pracazdalna.Text = DodatekBryg.Text = DaneProj.Text = DaneAC.Text = tableCellSC.Text = "";
                     return;
+                }
 
                 Dzien dzień = kalkulator[data];
 
@@ -275,17 +296,21 @@ namespace Soneta.KadryPlace.Reports
                     }
                     else
                     {
-                        colOd.Text = dzień.OdGodziny == Time.Zero ? "" : dzień.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
-                        var doGodziny = Dzien.DoGodziny(dzień);
+                        // Kolumny "Godz. pracy od/do" mają pokazywać przedział konkretnej
+                        // strefy tego wiersza, a nie zagregowany przedział całego dnia -
+                        // inaczej każdy wiersz strefy tego samego dnia (np. praca w normie
+                        // i nadgodziny) pokazywał identyczne "od-do" całego dnia.
+                        colOd.Text = linia.Strefa.OdGodziny == Time.Zero ? "" : linia.Strefa.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+                        Time strefaDoGodziny = linia.DoGodzinyLaczna;
 
                         if (colOd.Text == "")
                             colDo.Text = "";
                         else
-                            colDo.Text = doGodziny == Time.Zero ? "" : Dzien.DoGodziny(dzień).ToString("+", System.Globalization.CultureInfo.InvariantCulture);
+                            colDo.Text = strefaDoGodziny == Time.Zero ? "" : strefaDoGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
 
                         if (linia.Strefa.OdGodziny != Time.Zero)
                         {
-                            Time nocnerob = PoliczPoreNocna(linia.Prac, data, linia.Strefa.OdGodziny, linia.Strefa.OdGodziny + linia.Strefa.Czas);
+                            Time nocnerob = PoliczPoreNocna(linia.Prac, data, linia.Strefa.OdGodziny, linia.DoGodzinyLaczna);
                             colNocne.Text = nocnerob == Time.Zero ? "" : nocnerob.ToString();
                             if (linia.Strefa.Definicja.Nazwa == "Praca w godzinach nocnych")
                                 colNocne.Text = nocnerob == Time.Zero ? kalkulator.Nocne(new FromTo(data, data)).ToString() : nocnerob.ToString();
@@ -310,7 +335,7 @@ namespace Soneta.KadryPlace.Reports
                             tableCellSC.Text = elEXP.Symbol;
                         }
 
-                        if (strefyPracyZdalnej.Contains(linia.Strefa.Definicja.Nazwa))
+                        if (JestStrefaZdalna(linia.Strefa.Definicja.Nazwa))
                             pracazdalna.Text = "TAK";
                     }
                 }
@@ -343,11 +368,6 @@ namespace Soneta.KadryPlace.Reports
                         .WgNazwy["Przerwa na karmienie".TranslateIgnore()], false);
                 karmienie += przerwaK;
 
-                // 02.06.2026 TK dodane, żeby nadgodziny były brane ze strefy a nie ze statystyki bo nie były wykazywane nadgodizny do odbioru
-                Time pracaPozaNorma = PracaWStrefie(dzień,
-                    KalendModule.GetInstance(dc.Context.Session).DefinicjeStref
-                        .WgNazwy["Praca poza normą".TranslateIgnore()], false);
-
                 FromTo okres = new FromTo(data, data);
                 ZestawienieNadgodzin zn = nadgodziny.Nadgodziny(okres);
 
@@ -362,8 +382,17 @@ namespace Soneta.KadryPlace.Reports
                     }
                     else
                     {
-                        colNadlicz.Text += pracaPozaNorma.ToString();
-                        nadlicz += pracaPozaNorma;
+                        // Nadgodziny tego wiersza liczymy z czasu WŁASNEGO wiersza
+                        // (linia.CzasLaczny - suma Czas zapisów scalonych w ten wiersz,
+                        // patrz detailReportBand1_BeforePrint), a nie z sumy strefy
+                        // "Praca poza normą" dla CAŁEGO dnia (jak wcześniej przez
+                        // PracaWStrefie(dzień, ...)). Użycie sumy dnia powodowało, że przy
+                        // kilku odrębnych zapisach nadgodzin tego samego dnia (np. 1h i 2h)
+                        // każdy wiersz pokazywał ten sam dzienny sumaryczny wynik (3h)
+                        // zamiast własnej wartości, a nadlicz (i w efekcie RazemNad)
+                        // sumowało dzienny wynik po razie na każdy taki wiersz.
+                        colNadlicz.Text += linia.CzasLaczny.ToString();
+                        nadlicz += linia.CzasLaczny;
                     }
 
                     RazemNad.Text = nadlicz.ToString();
@@ -392,6 +421,19 @@ namespace Soneta.KadryPlace.Reports
                     {
                         colNieob.Text = nieobecność.Definicja.Nazwa;
                     }
+                }
+
+                // Odbiór nadgodzin (strefa "Rozliczenie nadgodzin (prac)"/"(firma)")
+                // dopisujemy do kolumny Nieobecność razem z liczbą odebranych
+                // nadgodzin - CzasRozliczanyLaczny to suma WŁASNA tego wiersza
+                // (patrz detailReportBand1_BeforePrint), nie dzienna suma z
+                // PracaWStrefie, żeby uniknąć powielania wartości między wierszami.
+                if (linia.Strefa != null && JestStrefaOdbioruNadgodzin(linia.Strefa.Definicja.Nazwa))
+                {
+                    string wpisOdbioru = "Odbiór nadgodzin " + linia.CzasRozliczanyLaczny.ToString();
+                    colNieob.Text = string.IsNullOrEmpty(colNieob.Text)
+                        ? wpisOdbioru
+                        : colNieob.Text + ", " + wpisOdbioru;
                 }
             }
             catch (Soneta.Kalend.KalkulatorPracy.ZestPracyException ex)
@@ -534,9 +576,31 @@ namespace Soneta.KadryPlace.Reports
                     }
                     else
                     {
-                        foreach (var strefa in dzienPracy.Strefy)
+                        // Kilka zapisów strefy tego samego typu, z tym samym Projektem i
+                        // Taskiem (np. dwa osobne zapisy "Praca poza normą" o różnych
+                        // godzinach), traktujemy jako jeden ciągły wpis w karcie - inaczej
+                        // ten sam dzień drukował kilka wierszy wyglądających na zdublowane.
+                        foreach (var strefa in dzienPracy.Strefy
+                            .Where(s => strefyraportu.Contains(s.Definicja.Nazwa) || JestStrefaZdalna(s.Definicja.Nazwa) || JestStrefaOdbioruNadgodzin(s.Definicja.Nazwa))
+                            .OrderBy(s => s.OdGodziny))
                         {
-                            if (strefyraportu.Contains(strefa.Definicja.Nazwa))
+                            string projektSym = GetFeatureSymbol(strefa, "Projekt");
+                            string taskSym = GetFeatureSymbol(strefa, "Task");
+
+                            Linia poprzednia = linie.Count > 0 ? linie[linie.Count - 1] : null;
+                            bool mozeScalic = poprzednia != null && poprzednia.DzienM == dataSpr &&
+                                poprzednia.Strefa != null &&
+                                poprzednia.Strefa.Definicja.Nazwa == strefa.Definicja.Nazwa &&
+                                GetFeatureSymbol(poprzednia.Strefa, "Projekt") == projektSym &&
+                                GetFeatureSymbol(poprzednia.Strefa, "Task") == taskSym;
+
+                            if (mozeScalic)
+                            {
+                                poprzednia.DoGodzinyLaczna = Time.Max(poprzednia.DoGodzinyLaczna, strefa.OdGodziny + strefa.Czas);
+                                poprzednia.CzasLaczny += strefa.Czas;
+                                poprzednia.CzasRozliczanyLaczny += strefa.CzasRozliczanyWyliczony;
+                            }
+                            else
                             {
                                 linie.Add(new Linia(dataSpr, strefa, pracownik));
                             }
@@ -568,12 +632,39 @@ namespace Soneta.KadryPlace.Reports
                 this.DzienM = data;
                 this.Prac = prac;
                 this.Strefa = strefa;
+                this.DoGodzinyLaczna = strefa.OdGodziny + strefa.Czas;
+                this.CzasLaczny = strefa.Czas;
+                this.CzasRozliczanyLaczny = strefa.CzasRozliczanyWyliczony;
             }
 
             public StrefaPracy Strefa { get; set; }
             public Date DzienM { get; set; }
             public ElementPodzielnika ElemPodz { get; set; }
             public Pracownik Prac { get; set; }
+
+            // Łączna godzina zakończenia po ewentualnym scaleniu kilku zapisów strefy
+            // o tym samym typie/Projekcie/Tasku w jeden wiersz karty (patrz
+            // detailReportBand1_BeforePrint). Dla niescalonego wiersza to po prostu
+            // koniec pojedynczej strefy (OdGodziny + Czas).
+            public Time DoGodzinyLaczna { get; set; }
+
+            // Suma Czas wszystkich zapisów strefy scalonych w ten wiersz (dla
+            // niescalonego wiersza - Czas pojedynczej strefy). Używana do wyliczenia
+            // nadgodzin WŁASNYCH tego wiersza zamiast sumy dziennej z PracaWStrefie.
+            public Time CzasLaczny { get; set; }
+
+            // Suma StrefaPracy.CzasRozliczanyWyliczony zapisów scalonych w ten wiersz
+            // (dla niescalonego wiersza - wartość pojedynczej strefy). Dla stref
+            // "Rozliczenie nadgodzin (prac/firma)" to liczba odebranych nadgodzin,
+            // wyświetlana w kolumnie Nieobecność.
+            public Time CzasRozliczanyLaczny { get; set; }
+        }
+
+        [TranslateIgnore]
+        static string GetFeatureSymbol(StrefaPracy strefa, string nazwaCechy)
+        {
+            ElemSlownika elem = strefa.Features[nazwaCechy] as ElemSlownika;
+            return elem?.Symbol;
         }
 
         [DxBind(Name = "GroupHeader1")]

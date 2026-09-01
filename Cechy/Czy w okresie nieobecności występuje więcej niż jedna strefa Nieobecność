@@ -1,0 +1,15 @@
+public bool Feature_WiecejNizJednaStrefaNieobecnosciWOkresie {
+	get {
+		for (Date dt = Row.Okres.From; dt <= Row.Okres.To; dt++)
+		{
+			DzienPracy dzien = Row.Pracownik.DniPracy[dt] as DzienPracy;
+			if (dzien == null)
+				continue;
+
+			int liczbaStrefNieobecnosci = dzien.Strefy.Count(s => s.Definicja.Nazwa == "Nieobecność");
+			if (liczbaStrefNieobecnosci > 1)
+				return true;
+		}
+		return false;
+	}
+}

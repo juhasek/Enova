@@ -1,0 +1,105 @@
+public object GetInitValueInicjacja() {
+
+	Log log = new Log("Inicjacja Pozycji", false);
+	try
+	{
+		bool brakEdycjiDnia = true;
+		Pracownik pracownik = Row.ZrodloPlanu.GetPracownik();
+		KalkulatorPracy kp = new KalkulatorPracy(Row.ZrodloPlanu.GetPracownik());
+		kp.LoadOkres(Row.Dokument.Okres);
+
+		if (Row.AktualizacjeCzasu.Count > 0)
+		{
+			brakEdycjiDnia = false;
+		}
+
+		if (brakEdycjiDnia)
+		{
+			using (ITransaction t = Row.Session.Logout(true))
+			{
+				foreach (Date data in Row.Dokument.Okres)
+				{
+					var dzienPracy = Get(kp[data]);
+
+					if (dzienPracy is DzienPracyAktualizacja dp && dp.Pozycja == Row)
+						dzienPracy = dp;
+
+					var dzienakt = t.Session.AddRow(new DzienPracyAktualizacja(Row, data));
+
+					// Zapamiętujemy, czy dzień został skopiowany z istniejącego źródła
+					// (kalendarza pracownika albo wcześniejszej aktualizacji), czy dopiero
+					// przeliczony od zera przez PrzeliczDzieńPracyAktualizacja.
+					bool skopiowanoZeZrodla;
+					if (dzienPracy is DzienPracyAktualizacja da)
+					{
+						dzienakt.Copy(da);
+						skopiowanoZeZrodla = true;
+					}
+					else if (dzienPracy is Dzien d && d.Praca != FromTimes.Empty)
+					{
+						dzienakt.Copy(d);
+						skopiowanoZeZrodla = true;
+					}
+					else
+					{
+						Row.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja(dzienakt);
+						skopiowanoZeZrodla = false;
+					}
+
+					INieobecnosc nb = kp.Nieobecnosc(data);
+
+					// Poprawka 31.08.2026 - zgłoszenie klienta: strefa "Nieobecność" dublowała się,
+					// gdy nieobecność była już wcześniej wpisana w kalendarzu pracownika. W takim
+					// wypadku dzienakt.Copy(da)/Copy(d) wyżej kopiuje dzień razem z jego strefami,
+					// czyli razem z już istniejącą strefą "NB". Ręczne dokładanie strefy "NB" ma sens
+					// tylko wtedy, gdy dzień nie został skopiowany (czyli przeliczony od zera przez
+					// PrzeliczDzieńPracyAktualizacja, które nie zna jeszcze nieobecności) - stąd
+					// dodatkowy warunek !skopiowanoZeZrodla.
+					//
+					// Poprawka 31.08.2026 (2) - zgłoszenie klienta: dla dnia bez źródła strefa "NB"
+					// i tak dokładała się po kilka razy (np. 3x dla jednej nieobecności), bo pętla
+					// dodawała po jednym wierszu za każdą odrębną definicję strefy pracy spotkaną
+					// gdziekolwiek w całym okresie dokumentu (zmienna defStrefy), a nie jeden wiersz
+					// na nieobecność. Pracownik wypełnia ten dzień w gridzie po Projekt/Task ręcznie -
+					// inicjacja ma tylko przygotować jeden wiersz "Nieobecność" na dzień absencji, nie
+					// mnożyć go po liczbie niepowiązanych z tym dniem definicji stref.
+					if (nb != null && dzienakt != null && !skopiowanoZeZrodla)
+					{
+						StrefaPracyAktualizacja strefaPracy = new StrefaPracyAktualizacja(dzienakt);
+						KalendModule.GetInstance(Row).StrefyPracyAkt.AddRow(strefaPracy);
+						strefaPracy.Definicja = KalendModule.GetInstance(Row).DefinicjeStref.WgKodu["NB"].First();
+					}
+				}
+
+				t.Commit();
+			}
+		}
+	}
+	catch (Exception error)
+	{
+		log.WriteLine($"Błąd {error}");
+	}
+	finally
+	{
+		log.WriteLine("Koniec");
+	}
+
+	return true;
+}
+
+object Get(Dzien d) {
+	var dp = d.ŹródłoCzasu as DzienPracyAktualizacja;
+	return dp != null ? dp : (object)d;
+}
+
+public bool Feature_Inicjacja(bool value) {
+	// Tutaj umieść kod wywoływany przed ustawieniem wartości cechy
+	// Wartość value można zmieniać
+	return value;
+}
+
+// W kodzie możesz używać następujacych zmiennych:
+// Row: PozycjaAktualizacjiCzasu - Wiersz przeliczanej cechy
+// Table: PozAktCzasu - Tabela wiersza przeliczanej cechy
+// Module: KalendModule - Moduł, w którym znajduje się tabela
+// Session: Session - Obiekt sesji dający dostęp do wszystkich danych programu
