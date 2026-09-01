@@ -1,7 +1,7 @@
 public bool Feature_SprawdzenieNieobecnosci {
-	get {
-		bool jestNieobecnosc = Row.Pracownik.Nieobecnosci.Any(n => n.Okres.Contains(Row.Data));
-		bool jestCzasPracy = Row.Czas > Time.Zero;
-		return jestNieobecnosc && jestCzasPracy;
-	}
+    get {
+        bool jestNieobecnosc = Row.Pracownik.Nieobecnosci.Any(n => n.Okres.Contains(Row.Data));
+        bool jestCzasPracy = Row.Czas > Time.Zero;
+        return jestNieobecnosc && jestCzasPracy;
+    }
 }
