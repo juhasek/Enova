@@ -257,6 +257,9 @@ namespace SeopEnrollmentFileSnippet {
 
             Lista.DataSource = wynik;
 
+            DopasujSzerokosciKolumn(wynik);
+            UstawWysokoscWierszy();
+
 
             if (this.Report != null) {
 
@@ -270,6 +273,126 @@ namespace SeopEnrollmentFileSnippet {
             }
 
             log.WriteLine("=== KONIEC RAPORTU SEOP ===");
+        }
+
+        // =========================
+        // FORMATOWANIE ARKUSZA (bez EPPlus - natywnie przez DevExpress)
+        // =========================
+
+        // Stała wysokość wszystkich wierszy tabeli (jednostki raportu - 1/100 cala, ~18 = ok. 0,25 cm).
+        const float WysokoscWiersza = 18f;
+
+        const float MinSzerokoscKolumny = 40f;
+        const float MaxSzerokoscKolumny = 400f;
+        const float SzerokoscNaZnak = 6.5f;  // przybliżona szerokość znaku dla domyślnej czcionki raportu
+        const float MarginesKomorki = 10f;
+
+        // Pseudo-autofit: DevExpress mapuje szerokości kolumn w wyeksportowanym Excelu wprost
+        // z Weight komórek tabeli w layoucie raportu (nie ma odpowiednika EPPlus.AutoFitColumns).
+        // Dopasowujemy więc Weight każdej kolumny do długości najdłuższej wartości w tej kolumnie
+        // (dane z `wynik` dla komórek związanych bindowaniem [DataBindings["Text"]] + statyczny
+        // tekst komórek nagłówkowych), synchronizując tę samą wartość we wszystkich XRTable
+        // znalezionych w paśmie `Lista` (nagłówek i wiersz danych to zwykle osobne tabele -
+        // muszą mieć zsynchronizowane Weight per kolumna, inaczej siatka w Excelu się rozjedzie).
+        //
+        // UWAGA: nie da się tego zweryfikować bez podglądu rzeczywistego pliku .repx - jeśli
+        // layout raportu nie korzysta z XRTable (tylko z osobnych XRLabel na paśmie), metoda
+        // nie znajdzie żadnych komórek i nic nie zmieni; wtedy trzeba dopasować ją do
+        // rzeczywistej struktury kontrolek w projektancie wydruku.
+        private void DopasujSzerokosciKolumn(List<RaportAkcjeRow> wynik) {
+
+            if (wynik.Count == 0)
+                return;
+
+            var tabele = ZbierzKontrolki(Lista)
+                .OfType<DevExpress.XtraReports.UI.XRTable>()
+                .ToList();
+
+            if (tabele.Count == 0) {
+                log.WriteLine("DopasujSzerokosciKolumn: nie znaleziono XRTable w paśmie Lista - pomijam");
+                return;
+            }
+
+            int liczbaKolumn = tabele
+                .SelectMany(t => t.Rows.Cast<DevExpress.XtraReports.UI.XRTableRow>())
+                .Max(r => r.Cells.Count);
+
+            for (int indeksKolumny = 0; indeksKolumny < liczbaKolumn; indeksKolumny++) {
+
+                int maxDlugoscTresci = 0;
+
+                foreach (var tabela in tabele) {
+                    foreach (DevExpress.XtraReports.UI.XRTableRow wiersz in tabela.Rows) {
+
+                        if (indeksKolumny >= wiersz.Cells.Count)
+                            continue;
+
+                        var komorka = wiersz.Cells[indeksKolumny];
+                        string pole = komorka.DataBindings["Text"]?.DataMember;
+
+                        if (!string.IsNullOrEmpty(pole)) {
+
+                            var wlasciwosc = typeof(RaportAkcjeRow).GetProperty(pole);
+                            if (wlasciwosc != null) {
+                                int dl = wynik
+                                    .Select(w => (wlasciwosc.GetValue(w) as string)?.Length ?? 0)
+                                    .DefaultIfEmpty(0)
+                                    .Max();
+                                maxDlugoscTresci = Math.Max(maxDlugoscTresci, dl);
+                            }
+
+                        } else if (!string.IsNullOrEmpty(komorka.Text)) {
+                            maxDlugoscTresci = Math.Max(maxDlugoscTresci, komorka.Text.Length);
+                        }
+                    }
+                }
+
+                if (maxDlugoscTresci <= 0)
+                    continue;
+
+                float nowaSzerokosc = Math.Max(
+                    MinSzerokoscKolumny,
+                    Math.Min(MaxSzerokoscKolumny, maxDlugoscTresci * SzerokoscNaZnak + MarginesKomorki));
+
+                foreach (var tabela in tabele) {
+                    foreach (DevExpress.XtraReports.UI.XRTableRow wiersz in tabela.Rows) {
+                        if (indeksKolumny < wiersz.Cells.Count) {
+                            wiersz.Cells[indeksKolumny].Weight = nowaSzerokosc;
+                            wiersz.Cells[indeksKolumny].WidthF = nowaSzerokosc;
+                        }
+                    }
+                }
+
+                log.WriteLine($"Kolumna {indeksKolumny}: szerokość={nowaSzerokosc} (najdłuższa treść={maxDlugoscTresci} znaków)");
+            }
+        }
+
+        private void UstawWysokoscWierszy() {
+
+            foreach (var tabela in ZbierzKontrolki(Lista).OfType<DevExpress.XtraReports.UI.XRTable>())
+                foreach (DevExpress.XtraReports.UI.XRTableRow wiersz in tabela.Rows)
+                    wiersz.HeightF = WysokoscWiersza;
+        }
+
+        // Rekurencyjne zebranie wszystkich kontrolek pasma `Lista` (włącznie z jego własnymi
+        // podpasmami - nagłówek/detal - i zagnieżdżonymi kontenerami).
+        private IEnumerable<DevExpress.XtraReports.UI.XRControl> ZbierzKontrolki(
+            DevExpress.XtraReports.UI.DetailReportBand pasmoNadrzedne) {
+
+            foreach (DevExpress.XtraReports.UI.Band pasmo in pasmoNadrzedne.Bands)
+                foreach (DevExpress.XtraReports.UI.XRControl kontrolka in pasmo.Controls)
+                    foreach (var zagniezdzona in ZbierzKontrolkiRekurencyjnie(kontrolka))
+                        yield return zagniezdzona;
+        }
+
+        private IEnumerable<DevExpress.XtraReports.UI.XRControl> ZbierzKontrolkiRekurencyjnie(
+            DevExpress.XtraReports.UI.XRControl kontrolka) {
+
+            yield return kontrolka;
+
+            foreach (DevExpress.XtraReports.UI.XRControl dziecko in kontrolka.Controls)
+                foreach (var zagniezdzona in ZbierzKontrolkiRekurencyjnie(dziecko))
+                    yield return zagniezdzona;
         }
     }
 

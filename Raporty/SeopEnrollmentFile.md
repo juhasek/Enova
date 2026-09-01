@@ -85,7 +85,53 @@ edytorze skryptów Enova i zsynchronizowany z powrotem do repo. Zmiany:
 - `ResidentCountry` zapisywany na sztywno jako `"POL"` zamiast kodu kraju z adresu — świadoma
   decyzja biznesowa, spójna z `HostCountry = "POL"`.
 
-## 6. Znane ograniczenia / do potwierdzenia
+## 6. Formatowanie arkusza Excel: pseudo-autofit szerokości kolumn + wysokość wierszy
+
+**Potrzeba:** plik `.xlsx` ma mieć dopasowaną szerokość kolumn do treści oraz ustaloną
+wysokość wierszy.
+
+**Bez EPPlus** — sprawdziliśmy, że przy eksporcie z poziomu standardowego podglądu wydruku
+Enova DevExpress zapisuje plik samodzielnie i nie ma udokumentowanego zdarzenia dającego
+dostęp do gotowego pliku „po fakcie", więc post-processing biblioteką EPPlus by tu nie
+zadziałał (patrz historia commitów — podejście z EPPlus/Workerem zostało wycofane). Zamiast
+tego formatowanie jest robione **natywnie przez DevExpress**, w samym `Report_BeforePrint`,
+bo to on i tak generuje ten plik przy eksporcie.
+
+**Jak to działa (`DopasujSzerokosciKolumn`, `UstawWysokoscWierszy`):**
+
+1. Po ustawieniu `Lista.DataSource = wynik` kod rekurencyjnie zbiera wszystkie kontrolki
+   `XRTable`/`XRTableRow`/`XRTableCell` z pasma `Lista` (nagłówek i wiersz danych są zwykle
+   osobnymi tabelami/wierszami w layoucie).
+2. Dla każdej kolumny (indeks komórki) sprawdza, czy komórka jest zbindowana do właściwości
+   `RaportAkcjeRow` (`DataBindings["Text"].DataMember`) — jeśli tak, liczy długość najdłuższej
+   wartości tej właściwości w `wynik`; jeśli to statyczna komórka nagłówkowa, bierze długość
+   jej tekstu.
+3. Na tej podstawie liczy nową szerokość (`długość znaków × ok. 6,5 + margines`, przycięte do
+   sensownego zakresu 40–400) i ustawia ją na **wszystkich** komórkach tej kolumny, we
+   wszystkich znalezionych tabelach (żeby nagłówek i wiersz danych zostały wyrównane — inaczej
+   siatka kolumn w wyeksportowanym Excelu się rozjedzie).
+4. `UstawWysokoscWierszy` ustawia stałą wysokość (`WysokoscWiersza = 18`) na wszystkich
+   znalezionych `XRTableRow`.
+
+**Ograniczenia w porównaniu do EPPlus:** to przybliżenie (stała szerokość znaku dla domyślnej
+czcionki, a nie rzeczywisty pomiar renderowanego tekstu jak w `AutoFitColumns()`) — dla
+większości kolumn tekstowych powinno dać wynik „wystarczająco dobry", ale nie jest identyczne
+z prawdziwym auto-fit.
+
+**Do zweryfikowania na żywej aplikacji (nie da się potwierdzić bez podglądu rzeczywistego
+pliku `.repx`):**
+
+- Metoda zakłada, że layout raportu używa `XRTable`/`XRTableRow`/`XRTableCell` (stąd nazwa
+  wzorca `SzablonTabela6Kolumn` w repo dla podobnych raportów). Jeśli layout korzysta z
+  osobnych `XRLabel` na paśmie zamiast tabeli, `ZbierzKontrolki` nie znajdzie żadnych komórek
+  (log wypisze „nie znaleziono XRTable w paśmie Lista") i nic się nie zmieni — trzeba wtedy
+  dopasować metodę do rzeczywistej struktury kontrolek w projektancie wydruku.
+- `XRTableCell.Weight` i `WidthF` są ustawiane jednocześnie dla pewności (w zależności od
+  wersji DevExpress i trybu layoutu tabeli o realnej szerokości kolumny może decydować jedno
+  lub drugie) — warto to zweryfikować na jednym wygenerowanym pliku i w razie potrzeby usunąć
+  zbędne przypisanie.
+
+## 7. Znane ograniczenia / do potwierdzenia
 
 - Filtr „nowo przystępujący" opiera się na założeniu, że `UczestnictwoWAkcji.OkresOd` to
   rzeczywista data przystąpienia pracownika do danej edycji (a nie np. data
