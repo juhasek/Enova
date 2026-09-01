@@ -13,22 +13,15 @@ niedzielno-świątecznymi (ponad 8h w danym dniu wolnym).
 Wersja robocza/testowa (`_test` w nazwie właściwości) — do finalnej weryfikacji przed wdrożeniem
 produkcyjnym.
 
-## 2. Obsługa „czarnych dziur" (01.09.2026)
+## 2. Wykluczenie godzin „czarnej dziury" (01.09.2026)
 
-Cecha obsługuje tzw. „czarne dziury", czyli godziny przypadające po dobie niedzielno-świątecznej
+Cecha rozpoznaje tzw. „czarne dziury", czyli godziny przypadające po dobie niedzielno-świątecznej
 (od godz. 6:00 w niedzielę/święto) a przed dobą planowanego dnia roboczego, gdy dzień poprzedni był
-świąteczny (`TypDnia.Świąteczny`), a bieżący dzień ma niezerowy plan pracy. Logika przeniesiona
-analogicznie z cechy **„Nadgodziny okresowe"** (`Cechy/Nadgodziny okresowe`):
+świąteczny (`TypDnia.Świąteczny`), a bieżący dzień ma niezerowy plan pracy — ten sam warunek co w
+cesze **„Nadgodziny okresowe"** (`Cechy/Nadgodziny okresowe`).
 
-- gdy cały czas strefy mieści się w „czarnej dziurze" (między dobą niedzielną a początkiem pracy z
-  planu) — zwracany jest cały czas strefy;
-- gdy strefa zaczyna się przed dobą niedzielną, a kończy w „czarnej dziurze" — zwracana jest tylko
-  część od doby niedzielnej;
-- gdy strefa zaczyna się w „czarnej dziurze", a kończy po starcie planu — zwracana jest tylko część
-  do początku planu;
-- gdy strefa obejmuje całą „czarną dziurę" (zaczyna się przed dobą niedzielną i kończy po starcie
-  planu) — zwracana jest cała długość „czarnej dziury".
-
-Dopasowanie zwraca wynik od razu (`return`), z pominięciem standardowego liczenia nadgodzin 50% dla
-danego wiersza — jest to niezależny od strefy przypadek, tak samo jak w cesze „Nadgodziny
-okresowe".
+**Godziny „czarnej dziury" to nadgodziny okresowe, a nie nadgodziny 50%** — rozlicza je cecha
+„Nadgodziny okresowe". Dlatego ta cecha, wykrywszy że wiersz mieści się w „czarnej dziurze" (w
+całości lub części — niezależnie od wariantu nakładania się strefy z granicą doby/planu), zwraca dla
+niego `0`, zamiast liczyć te godziny jako 50%. Zapobiega to podwójnemu naliczeniu tych samych godzin
+przez obie cechy jednocześnie.
