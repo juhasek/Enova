@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Import wg rekordów (business="false") do tabeli DefElementow (Soneta.Place.DefinicjaElementu).
+  Zbudowany na podstawie data/props/Place/DefinicjaElementu.md (soneta-programming),
+  BEZ weryfikacji na żywej bazie (środowisko robocze nie ma dostępu do DLL/live-testu —
+  zob. pamięć project_no_buscall_sdk). Pola oznaczone TODO/UNVERIFIED wymagają potwierdzenia
+  próbnym importem na bazie testowej (dbmgr importxml) przed użyciem produkcyjnym.
+
+  GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
+  ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <DefinicjaElementu guid="c973afe6-a410-4cb8-9428-030ab2213957">
+    <Nazwa>Dodatek roczny</Nazwa>
+    <Skrot>Dod.roczny</Skrot>
+    <Blokada>False</Blokada>
+
+    <!-- Rodzaj wypłaty: Etat (por. Ustawienia/Ogólne "Rodzaj wypłaty") -->
+    <Zatrudnienie>Etat</Zatrudnienie>
+
+    <!-- POTWIERDZONE próbnym importem na bazie Al (2026-09-02): RodzajZrodla=Dodatek(6) trafia
+         poprawnie do kolumny; kompilacja algorytmów bazy przeszła bez błędu. -->
+    <RodzajZrodla>Dodatek</RodzajZrodla>
+
+    <GenerujZerowy>False</GenerujZerowy>
+
+    <!-- POTWIERDZONE na bazie Al: tabela DefListPlac, pole klucza to Symbol (nie Kod).
+         Standardowy, przenośny GUID listy "Lista płac-etaty" (LPE). -->
+    <DefinicjaListyPlac>00000000-0007-0001-0001-000000000000</DefinicjaListyPlac>
+
+    <OkresNaliczania>
+      <Typ>Jednorazowa</Typ>
+      <Naliczanie>PłatnaZDołu</Naliczanie>
+    </OkresNaliczania>
+
+    <Algorytm>
+      <Typ>EdytorAlgorytmu</Typ>
+      <Edytor>
+        <Tekst><![CDATA[
+public void Dodatek_Roczny_Param(
+    Soneta.Place.WypElementDodatek Element, WypSkladnik Składnik)
+{
+    CzasDni cd = Element.Pracownik.Czasy.Norma(Składnik.Okres);
+    Składnik.Czas = cd.Czas;
+    Składnik.Dni = cd.Dni;
+
+    DoubleCy kwotaWpisana = Element.DodHistoria.Podstawa;
+
+    FromTo rocznyOkres = new FromTo(new Date(2026, 1, 1), new Date(2026, 12, 31));
+
+    // Log warunków — widoczny na formularzu elementu, zakładka "Zapis obliczeń"
+    Element.ZapisObliczen.Add($"Dodatek roczny 2026 - warunki:");
+
+    // 1) Pełny rok kalendarzowy 2026 zatrudnienia (§3 ust.1b)
+    FromTo okresZatr = Element.PracHistoria.Etat.OkresZatrudnienia;
+    bool pelnyRok = okresZatr.From <= rocznyOkres.From
+        && (okresZatr.To == Date.Empty || okresZatr.To >= rocznyOkres.To);
+    Element.ZapisObliczen.Add($"- pełny rok zatrudnienia 2026: {pelnyRok} (okres zatrudnienia: {okresZatr})");
+
+    // 2) Zatrudnienie trwa na dzień wypłaty stycznia 2027 (§5 ust.7)
+    bool aktywnyNaWyplate = okresZatr.To == Date.Empty || okresZatr.To >= Składnik.Okres.To;
+    Element.ZapisObliczen.Add($"- zatrudniony na dzień wypłaty: {aktywnyNaWyplate}");
+
+    // 3) Frekwencja 100% w KAŻDYM z 12 miesięcy 2026 (§2 ust.3-4, §5 ust.5)
+    bool frekwencja = true;
+    Periods miesiace = Periods.New(rocznyOkres).BreakByMonth();
+    foreach (FromTo miesiac in miesiace)
+        foreach (Nieobecnosc n in Element.Pracownik.Nieobecnosci[miesiac])
+            if (!CzyDozwolonaNieobecnosc(n)) {
+                frekwencja = false;
+                Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {n.Definicja.Nazwa} ({n.Okres})");
+            }
+    Element.ZapisObliczen.Add($"- frekwencja 100% we wszystkich miesiącach: {frekwencja}");
+
+    Składnik.Podstawa1 = (pelnyRok && aktywnyNaWyplate && frekwencja) ? kwotaWpisana : DoubleCy.Zero;
+
+    Element.ZapisObliczen.Add($"- kwota wpisana operatorowi: {kwotaWpisana}");
+    Element.ZapisObliczen.Add($"=> wynik: {Składnik.Podstawa1}");
+}
+
+public Currency Dodatek_Roczny_Wylicz(
+    Soneta.Place.WypElementDodatek Element, WypSkladnik Składnik)
+{
+    return Składnik.Podstawa1;
+}
+
+private bool CzyDozwolonaNieobecnosc(Nieobecnosc n)
+{
+    // TODO: wpisz dokładne nazwy Definicji nieobecności z Twojego systemu
+    // (Ustawienia → Kadry i płace → Kadry → Nieobecności)
+    switch (n.Definicja.Nazwa)
+    {
+        case "TODO: nazwa definicji – urlop wypoczynkowy":
+            // urlop "na żądanie" WYKLUCZA dozwolenie (§2 ust.4a.i) — pole z API, nie TODO
+            return n.Urlop.Przyczyna != PrzyczynaUrlopu.NaŻądanie;
+
+        case "TODO: nazwa definicji – urlop okolicznościowy":
+        case "TODO: nazwa definicji – odbiór dnia za nadgodziny":
+        case "TODO: nazwa definicji – opieka nad dzieckiem art. 188 KP":
+        case "TODO: nazwa definicji – badania medycyny pracy":
+            return true;
+
+        default:
+            return false; // każda inna nieobecność łamie frekwencję
+    }
+}
+]]></Tekst>
+      </Edytor>
+    </Algorytm>
+
+    <Deklaracje>
+      <Spoleczne>
+        <Typ>Naliczać</Typ>
+      </Spoleczne>
+      <Zdrowotne>
+        <Typ>Naliczać</Typ>
+      </Zdrowotne>
+      <Zaliczka>
+        <Typ>NaliczaćWgSkaliPodatkowej</Typ>
+      </Zaliczka>
+      <!-- Standardowa pozycja PIT-11 dla dodatku ze stosunku pracy (potwierdzone w słowniku
+           PozycjePIT na bazie Al: Kod="PIT-11 1", "Wynagrodzenia ze stosunku: pracy...") -->
+      <PozycjaPIT>00000000-0007-0004-0021-000000000000</PozycjaPIT>
+      <!-- KodRSA celowo pominięty — dotyczy specjalnych kodów raportowania ZUS (np. zasiłki),
+           nie zwykłego opodatkowanego/ozusowanego dodatku pieniężnego. -->
+    </Deklaracje>
+
+    <Nieobecnosci>
+      <Urlop>
+        <Typ>NieWliczać</Typ>
+      </Urlop>
+      <Ekwiwalent>
+        <Typ>NieWliczać</Typ>
+      </Ekwiwalent>
+    </Nieobecnosci>
+  </DefinicjaElementu>
+</session>
