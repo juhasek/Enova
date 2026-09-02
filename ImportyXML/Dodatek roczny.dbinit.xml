@@ -2,9 +2,12 @@
 <!--
   Import wg rekordów (business="false") do tabeli DefElementow (Soneta.Place.DefinicjaElementu).
   Zbudowany na podstawie data/props/Place/DefinicjaElementu.md (soneta-programming),
-  BEZ weryfikacji na żywej bazie (środowisko robocze nie ma dostępu do DLL/live-testu —
-  zob. pamięć project_no_buscall_sdk). Pola oznaczone TODO/UNVERIFIED wymagają potwierdzenia
-  próbnym importem na bazie testowej (dbmgr importxml) przed użyciem produkcyjnym.
+  zweryfikowany próbnym importem na bazie Al (dbmgr importxml).
+
+  Aktualizacja 2026-09-02: konfiguracja zsynchronizowana z bazą Al po zmianach operatora
+  w GUI — GenerujZerowy=True, Korygowany=True (pozostałe pola bez zmian). Algorytm: okres
+  "rocznyOkres" pobierany dynamicznie z Element.DodHistoria.Okres (operator wskazuje okres
+  na dodatku w kartotece) zamiast zaszytego na sztywno roku 2026.
 
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
@@ -22,7 +25,13 @@
          poprawnie do kolumny; kompilacja algorytmów bazy przeszła bez błędu. -->
     <RodzajZrodla>Dodatek</RodzajZrodla>
 
-    <GenerujZerowy>False</GenerujZerowy>
+    <!-- ZMIANA konfiguracyjna operatora (baza Al, GUI, 2026-09-02): element ma się
+         pojawiać na wypłacie także z wynikiem 0 — czytelny ślad, że naliczenie
+         wykonano i dlaczego dało 0 (zakładka "Zapis obliczeń"). -->
+    <GenerujZerowy>True</GenerujZerowy>
+
+    <!-- ZMIANA konfiguracyjna operatora (baza Al, GUI): dodatek korygowany. -->
+    <Korygowany>True</Korygowany>
 
     <!-- POTWIERDZONE na bazie Al: tabela DefListPlac, pole klucza to Symbol (nie Kod).
          Standardowy, przenośny GUID listy "Lista płac-etaty" (LPE). -->
@@ -46,22 +55,32 @@ public void Dodatek_Roczny_Param(
 
     DoubleCy kwotaWpisana = Element.DodHistoria.Podstawa;
 
-    FromTo rocznyOkres = new FromTo(new Date(2026, 1, 1), new Date(2026, 12, 31));
+    // Okres, za jaki przysługuje dodatek — wskazuje operator w polu "Okres" dodatku
+    // (kartoteka pracownika → Etat → Dodatki). Element NIE jest przypisany do konkretnego roku.
+    FromTo rocznyOkres = Element.DodHistoria.Okres;
 
     // Log warunków — widoczny na formularzu elementu, zakładka "Zapis obliczeń"
-    Element.ZapisObliczen.Add($"Dodatek roczny 2026 - warunki:");
+    Element.ZapisObliczen.Add($"Dodatek roczny za okres {rocznyOkres} - warunki:");
 
-    // 1) Pełny rok kalendarzowy 2026 zatrudnienia (§3 ust.1b)
+    // Bramka 0) Operator musi wskazać okres — bez niego nie ma czego liczyć
+    if (rocznyOkres.From == Date.Empty || rocznyOkres.To == Date.Empty) {
+        Element.ZapisObliczen.Add("- BŁĄD: nie wskazano okresu dodatku (pole \"Okres\" w kartotece) — wynik wyzerowany");
+        Składnik.Podstawa1 = DoubleCy.Zero;
+        Element.ZapisObliczen.Add($"=> wynik: {Składnik.Podstawa1}");
+        return;
+    }
+
+    // 1) Zatrudnienie przez cały wskazany okres (§3 ust.1b)
     FromTo okresZatr = Element.PracHistoria.Etat.OkresZatrudnienia;
     bool pelnyRok = okresZatr.From <= rocznyOkres.From
         && (okresZatr.To == Date.Empty || okresZatr.To >= rocznyOkres.To);
-    Element.ZapisObliczen.Add($"- pełny rok zatrudnienia 2026: {pelnyRok} (okres zatrudnienia: {okresZatr})");
+    Element.ZapisObliczen.Add($"- zatrudnienie przez cały okres {rocznyOkres}: {pelnyRok} (okres zatrudnienia: {okresZatr})");
 
-    // 2) Zatrudnienie trwa na dzień wypłaty stycznia 2027 (§5 ust.7)
+    // 2) Zatrudnienie trwa na dzień wypłaty (§5 ust.7)
     bool aktywnyNaWyplate = okresZatr.To == Date.Empty || okresZatr.To >= Składnik.Okres.To;
     Element.ZapisObliczen.Add($"- zatrudniony na dzień wypłaty: {aktywnyNaWyplate}");
 
-    // 3) Frekwencja 100% w KAŻDYM z 12 miesięcy 2026 (§2 ust.3-4, §5 ust.5)
+    // 3) Frekwencja 100% w KAŻDYM miesiącu wskazanego okresu (§2 ust.3-4, §5 ust.5)
     bool frekwencja = true;
     Periods miesiace = Periods.New(rocznyOkres).BreakByMonth();
     foreach (FromTo miesiac in miesiace)
@@ -70,7 +89,7 @@ public void Dodatek_Roczny_Param(
                 frekwencja = false;
                 Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {n.Definicja.Nazwa} ({n.Okres})");
             }
-    Element.ZapisObliczen.Add($"- frekwencja 100% we wszystkich miesiącach: {frekwencja}");
+    Element.ZapisObliczen.Add($"- frekwencja 100% w całym okresie: {frekwencja}");
 
     Składnik.Podstawa1 = (pelnyRok && aktywnyNaWyplate && frekwencja) ? kwotaWpisana : DoubleCy.Zero;
 
