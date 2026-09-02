@@ -1,1 +1,80 @@
+public static string WeryfikujIloscDniWolnychWOkresieRozliczeniowym(KalkulatorPlanuBase kalkulator, Date data)
+{
+	if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+	{
+		return null;
+	}
 
+	Periods periods = pracownik.WyliczOkresRoliczeniowyNadgodzin(data).ToPeriods();
+
+	// Wymagana liczba dni wolnych w okresie = liczba dni kalendarzowych okresu minus liczba dni
+	// roboczych wynikająca z normy kodeksowej. KalkulatorKodeksowyPracownika.Norma zwraca CzasDni,
+	// który - obok godzin normy (Czas), użytych w Weryfikatorze normy okresu rozliczeniowego -
+	// niesie też liczbę dni roboczych normy (Dni).
+	// Pole Soneta.Kalend.CzasDni.Dni (int, tylko-odczyt) potwierdzone w dokumentacji API enova.
+	KalkulatorKodeksowyPracownika kalkulatorKodeksowyPracownika = new KalkulatorKodeksowyPracownika(pracownik);
+	CzasDni normaKodeksowa = CzasDni.Empty;
+	foreach (FromTo item in periods)
+	{
+		normaKodeksowa += kalkulatorKodeksowyPracownika.Norma(item);
+	}
+
+	// Dni z jawnym wpisem w planie są ostatecznie zdecydowane - liczymy wprost, ile z nich to
+	// dni wolne (brak godzin pracy).
+	// TODO: dzień z Czas == Time.Zero może też wynikać z nieobecności, a nie z celowego dnia
+	// wolnego - do zweryfikowania, czy w tym kontekście to rozróżnienie ma znaczenie.
+	var dniZJawnymWpisem = new System.Collections.Generic.HashSet<Date>();
+	int dniWolneZJawnymWpisem = 0;
+	foreach (FromTo item in periods)
+	{
+		foreach (DzienPlanu dzien in kalkulator.ZrodloPlanu.GetPlanDniPlanu(item))
+		{
+			dniZJawnymWpisem.Add(dzien.Data);
+			if (dzien.Czas == Time.Zero)
+				dniWolneZJawnymWpisem++;
+		}
+	}
+
+	// Dni bez jawnego wpisu przyjmują domyślny stan z definicji kalendarza:
+	// - domyślnie wolne (weekend, święto) - liczą się jako wolne na pewno, nie da się ich "zabrać",
+	// - domyślnie robocze - są elastyczne: mogą finalnie zostać zarówno dniem pracy (0 wolnych),
+	//   jak i dniem wolnym (+1), zależnie od tego, co jeszcze zaplanuje planista.
+	int dniKalendarzoweOkresu = 0;
+	int dniWolneDomyslneBezWpisu = 0;
+	int liczbaDniElastycznych = 0;
+	foreach (FromTo item in periods)
+	{
+		for (Date dt = item.From; dt <= item.To; dt++)
+		{
+			dniKalendarzoweOkresu++;
+
+			if (dniZJawnymWpisem.Contains(dt))
+				continue;
+
+			Periods jedenDzien = new FromTo(dt, dt).ToPeriods();
+			Time domyslnaWartoscDnia = kalkulator.Norma(jedenDzien).Czas;
+
+			if (domyslnaWartoscDnia <= Time.Zero)
+				dniWolneDomyslneBezWpisu++;
+			else
+				liczbaDniElastycznych++;
+		}
+	}
+
+	int wymaganaLiczbaDniWolnych = dniKalendarzoweOkresu - normaKodeksowa.Dni;
+
+	int minDniWolnych = dniWolneZJawnymWpisem + dniWolneDomyslneBezWpisu;
+	int maxDniWolnych = minDniWolnych + liczbaDniElastycznych;
+
+	if (minDniWolnych > wymaganaLiczbaDniWolnych)
+	{
+		return "Zaplanowano zbyt dużo dni wolnych ({0}) wobec wymaganej liczby ({1}) w okresie rozliczeniowym ({2}) - {3}"
+			.TranslateFormat(minDniWolnych, wymaganaLiczbaDniWolnych, periods, pracownik);
+	}
+	if (maxDniWolnych < wymaganaLiczbaDniWolnych)
+	{
+		return "Nie da się już osiągnąć wymaganej liczby dni wolnych ({0}) w okresie rozliczeniowym ({1}), brakuje ({2}) dni - {3}. Pozostało dni roboczych możliwych do zamiany na wolne: {4}"
+			.TranslateFormat(wymaganaLiczbaDniWolnych, periods, wymaganaLiczbaDniWolnych - maxDniWolnych, pracownik, liczbaDniElastycznych);
+	}
+	return null;
+}
