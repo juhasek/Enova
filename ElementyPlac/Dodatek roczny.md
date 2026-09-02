@@ -70,29 +70,37 @@ formularzu elementu, zakładka **Zapis obliczeń**: pełny rok (tak/nie + okres 
 aktywność na dzień wypłaty, frekwencja (tak/nie + lista łamiących nieobecności z nazwą
 i okresem), wpisana kwota, wynik końcowy.
 
-### ⚠️ Blokujące przed wdrożeniem: nazwy definicji nieobecności
+### Nazwy definicji nieobecności — zweryfikowane w bazie `Al`
 
-Metoda `CzyDozwolonaNieobecnosc` w kodzie zawiera **placeholdery `"TODO: nazwa definicji – ..."`**
-zamiast rzeczywistych nazw z Twojego systemu (Ustawienia → Kadry i płace → Kadry →
-Nieobecności). **Dopóki nie zostaną podmienione na prawdziwe nazwy, żadna nieobecność —
-nawet dozwolona regulaminem — nie dopasuje się do żadnego `case`, więc KAŻDA nieobecność
-w KAŻDYM miesiącu łamie frekwencję.** Efekt: dodatek nie należałby się praktycznie nikomu,
-kto miał choć jeden dzień nieobecności w 2026 roku, niezależnie od jej rodzaju.
+Wprost z tabeli `DefNieobecnosci` (61 definicji na bazie `Al`), pięć wyjątków z §2 ust.4:
 
-Do uzupełnienia (pięć wyjątków z §2 ust.4):
-- urlop wypoczynkowy planowany (**nie** na żądanie — rozróżnienie przez `Urlop.Przyczyna`,
-  pole już zaimplementowane, nie wymaga TODO),
-- urlop okolicznościowy,
-- odbiór dnia wolnego za nadgodziny,
-- zwolnienie art. 188 KP (opieka nad dzieckiem),
-- badania medycyny pracy.
+| Wyjątek regulaminowy | Definicja `Nazwa` w `DefNieobecnosci` |
+|---|---|
+| urlop wypoczynkowy planowany (nie na żądanie) | `Urlop wypoczynkowy` — rozróżnienie „na żądanie" przez pole `Urlop.Przyczyna` na konkretnym zapisie, **nie** osobna definicja |
+| urlop okolicznościowy | `Urlop okolicznościowy` |
+| zwolnienie art. 188 KP (opieka nad dzieckiem) | `Urlop opiekuńczy (art 188 kp, dni)` **oraz** `Urlop opiekuńczy (art 188 kp, godz.)` — dwa warianty, oba w kodzie |
+| badania medycyny pracy | `Badania lekarskie` |
+| odbiór dnia wolnego za nadgodziny | **brak dedykowanej definicji Nieobecność** w tym systemie — patrz niżej |
+
+**Ważne rozróżnienie:** `Urlop opiekuńczy (art 188 kp, ...)` **to nie to samo** co
+`Zwolnienie opieka (ZUS)` — to drugie jest płatnym z ZUS zasiłkiem opiekuńczym (art. 32-35
+ustawy zasiłkowej), inna podstawa prawna niż cytowany w regulaminie art. 188 KP. Kod celowo
+używa definicji „Urlop opiekuńczy", nie „Zwolnienie opieka".
+
+**Założenie do potwierdzenia:** „odbiór dnia wolnego za nadgodziny" (§2 ust.4a.iii) nie ma
+odpowiednika w `DefNieobecnosci` tej bazy — prawdopodobnie w tym systemie realizowany jest
+jako korekta harmonogramu/grafiku pracy (nie generuje rekordu `Nieobecność`), więc **nie
+pojawi się** w pętli po `Pracownik.Nieobecnosci` i nie złamie frekwencji — co jest zgodne
+z intencją regulaminu, ale nie zostało potwierdzone testem na żywym przypadku (TS-07 poniżej).
+Jeśli w Twoim systemie taki dzień JEST jednak rejestrowany jako `Nieobecność` pod inną nazwą,
+trzeba dopisać dla niej osobny `case`.
 
 ## 6. Scenariusze testowe
 
 Testy wymagają przeliczenia wypłaty na przykładowym pracowniku w GUI (element sam w sobie
 nie jest walidowany przez `dbmgr importxml`/`compile` — to potwierdzone empirycznie, patrz
-p. 7). **Scenariusze TS-04–TS-08 nie przejdą, dopóki nie uzupełnisz nazw nieobecności
-(p. 5, sekcja blokująca).**
+p. 7). Nazwy definicji nieobecności są już uzupełnione (p. 5) — **TS-07 (odbiór nadgodzin)
+weryfikuje założenie**, że taki dzień nie generuje rekordu `Nieobecność` w tym systemie.
 
 | ID | Scenariusz | Warunki wejściowe | Oczekiwany wynik |
 |---|---|---|---|
@@ -102,8 +110,8 @@ p. 7). **Scenariusze TS-04–TS-08 nie przejdą, dopóki nie uzupełnisz nazw ni
 | TS-04 | Urlop na żądanie | Jak TS-01, plus 1 dzień urlopu wypoczynkowego „na żądanie" | Dodatek = 0 (wyjątek §2 ust.4a.i wyklucza „na żądanie") |
 | TS-05 | Urlop planowy | Jak TS-01, plus urlop wypoczynkowy planowany (nie na żądanie) | Dodatek = kwota wpisana (dozwolony wyjątek) |
 | TS-06 | Urlop okolicznościowy | Jak TS-01, plus urlop okolicznościowy | Dodatek = kwota wpisana |
-| TS-07 | Odbiór nadgodzin | Jak TS-01, plus dzień wolny za nadgodziny | Dodatek = kwota wpisana |
-| TS-08 | Opieka / badania | Jak TS-01, plus zwolnienie art. 188 KP **albo** badania medycyny pracy | Dodatek = kwota wpisana |
+| TS-07 | Odbiór nadgodzin | Jak TS-01, plus dzień wolny za nadgodziny | Dodatek = kwota wpisana — **weryfikuje założenie z p. 5**: jeśli w Twoim systemie taki dzień jednak generuje rekord `Nieobecność`, test wykaże 0 zamiast kwoty (sygnał, że trzeba dopisać `case`) |
+| TS-08 | Opieka / badania | Jak TS-01, plus `Urlop opiekuńczy (art 188 kp, dni)` **albo** `(art 188 kp, godz.)` **albo** `Badania lekarskie` | Dodatek = kwota wpisana |
 | TS-09 | Niepełny rok zatrudnienia | Zatrudniony od marca 2026, 100% frekwencji w okresie zatrudnienia | Dodatek = 0 (brak pełnego roku kalendarzowego) |
 | TS-10 | Zwolnienie przed wypłatą | Rozwiązanie umowy w grudniu 2026, przed terminem wypłaty 01/2027 | Dodatek = 0, niezależnie od trybu/przyczyny zwolnienia |
 | TS-11 | Zwolnienie po wypłacie | Rozwiązanie umowy w lutym 2027 (po wypłacie 01/2027), reszta warunków spełniona | Dodatek = kwota wpisana |
@@ -122,9 +130,14 @@ Zweryfikowane próbnym importem (`dbmgr importxml`) na bazie testowej `Al`:
 - kod używa `Element.ZapisObliczen.Add(...)` (potwierdzone przez użytkownika jako
   działające na żywym systemie — dokumentacja skilla znała wcześniej tylko wzorzec `=`).
 
+Nazwy definicji nieobecności (p. 5) zweryfikowane wprost w tabeli `DefNieobecnosci` bazy `Al`
+(zapytanie SQL, 61 definicji) — kod algorytmu zaktualizowany i ponownie zaimportowany.
+
 **Niezweryfikowane / do zrobienia przed produkcją:**
 - import/kompilacja bazy (`dbmgr importxml`/`compile`) **nie waliduje poprawności kodu C#**
   algorytmu Edytora — potwierdzone eksperymentalnie (celowo zepsuty kod dał identyczny wynik
   sukcesu). Jedyna wiarygodna weryfikacja to realne przeliczenie wypłaty w GUI.
-- nazwy definicji nieobecności — patrz sekcja blokująca w p. 5.
+- założenie o „odbiorze dnia za nadgodziny" bez rekordu `Nieobecność` (p. 5) — wynika
+  z braku pasującej definicji w `DefNieobecnosci`, ale nie zostało potwierdzone realnym
+  przeliczeniem (TS-07).
 - scenariusze TS-01 do TS-16 nieprzeprowadzone na żywym systemie.

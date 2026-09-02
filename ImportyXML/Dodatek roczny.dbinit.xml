@@ -86,18 +86,20 @@ public Currency Dodatek_Roczny_Wylicz(
 
 private bool CzyDozwolonaNieobecnosc(Nieobecnosc n)
 {
-    // TODO: wpisz dokładne nazwy Definicji nieobecności z Twojego systemu
-    // (Ustawienia → Kadry i płace → Kadry → Nieobecności)
+    // Nazwy zweryfikowane wprost w tabeli DefNieobecnosci na bazie Al.
+    // Brak osobnej definicji "odbiór dnia za nadgodziny" (§2 ust.4a.iii) — w tym systemie
+    // realizowane jako korekta harmonogramu/grafiku, nie jako rekord Nieobecność, więc
+    // naturalnie nie pojawia się w tej pętli i nie łamie frekwencji.
     switch (n.Definicja.Nazwa)
     {
-        case "TODO: nazwa definicji – urlop wypoczynkowy":
-            // urlop "na żądanie" WYKLUCZA dozwolenie (§2 ust.4a.i) — pole z API, nie TODO
+        case "Urlop wypoczynkowy":
+            // urlop "na żądanie" WYKLUCZA dozwolenie (§2 ust.4a.i) — pole z API
             return n.Urlop.Przyczyna != PrzyczynaUrlopu.NaŻądanie;
 
-        case "TODO: nazwa definicji – urlop okolicznościowy":
-        case "TODO: nazwa definicji – odbiór dnia za nadgodziny":
-        case "TODO: nazwa definicji – opieka nad dzieckiem art. 188 KP":
-        case "TODO: nazwa definicji – badania medycyny pracy":
+        case "Urlop okolicznościowy":
+        case "Urlop opiekuńczy (art 188 kp, dni)":
+        case "Urlop opiekuńczy (art 188 kp, godz.)":
+        case "Badania lekarskie":
             return true;
 
         default:
