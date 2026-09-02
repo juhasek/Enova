@@ -32,6 +32,14 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
 - **Widoki/** — definicje/modyfikacje widoków (list, formularzy) enova365.
 - **Zadania/** — opisy/specyfikacje zadań wdrożeniowych, niekoniecznie
   powiązane 1:1 z pojedynczym artefaktem powyżej.
+- **ImportyXML/** — pliki XML importu danych/konfiguracji do enova365 wg
+  schematu `<session xmlns="http://www.soneta.pl/schema/business">`
+  (import wg rekordów lub przez logikę biznesową), np. `*.dbinit.xml`
+  definiujące rekordy zamiast ręcznego wpisywania w GUI. Pola oznaczone
+  w pliku jako TODO/UNVERIFIED wymagają potwierdzenia próbnym importem
+  (`dbmgr importxml`) na bazie testowej przed użyciem produkcyjnym —
+  środowisko robocze tego repo nie ma dostępu do DLL/live-testu, więc
+  takie pliki nie są tworzone jako w pełni zweryfikowane.
 
 ### Ważne: format plików
 
