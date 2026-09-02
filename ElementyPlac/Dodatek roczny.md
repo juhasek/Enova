@@ -34,7 +34,7 @@ Plik importu XML (definicja gotowa do wczytania przez `dbmgr importxml`):
 
 ## 3. Ścieżka konfiguracji
 
-`Narzędzia → Opcje → Kadry i płace → Płace → Elementy wynagrodzenia` (import: patrz [dbmgr.md](../../../.claude/skills/soneta-tools/references/dbmgr.md) w skillu `soneta-tools`, komenda `importxml`).
+`Narzędzia → Opcje → Kadry i płace → Płace → Elementy wynagrodzenia` (import definicji z pliku XML: komenda `dbmgr importxml` — szczegóły w skillu `soneta-tools`).
 
 ## 4. Ustawienia elementu
 
