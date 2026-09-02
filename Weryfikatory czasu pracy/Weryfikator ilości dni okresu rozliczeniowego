@@ -36,17 +36,19 @@ public static string WeryfikujIloscDniWolnychWOkresieRozliczeniowym(KalkulatorPl
 	}
 
 	// Dni bez jawnego wpisu przyjmują domyślny stan z definicji kalendarza:
-	// - domyślnie wolne (weekend, święto) - liczą się jako wolne na pewno, nie da się ich "zabrać",
-	// - domyślnie robocze - są elastyczne: mogą finalnie zostać zarówno dniem pracy (0 wolnych),
-	//   jak i dniem wolnym (+1), zależnie od tego, co jeszcze zaplanuje planista.
+	// - domyślnie wolne (weekend, święto) - liczą się jako wolne, dopóki planista jawnie ich nie zmieni,
+	// - domyślnie robocze - są elastyczne: mogą finalnie zostać zarówno dniem pracy, jak i dniem wolnym,
+	//   ale dopiero po jawnej zmianie planisty (bez zmiany zostają dniem pracy).
 	int dniKalendarzoweOkresu = 0;
 	int dniWolneDomyslneBezWpisu = 0;
 	int liczbaDniElastycznych = 0;
+	var miesiaceOkresu = new System.Collections.Generic.HashSet<int>();
 	foreach (FromTo item in periods)
 	{
 		for (Date dt = item.From; dt <= item.To; dt++)
 		{
 			dniKalendarzoweOkresu++;
+			miesiaceOkresu.Add(dt.Year * 12 + dt.Month);
 
 			if (dniZJawnymWpisem.Contains(dt))
 				continue;
@@ -63,18 +65,50 @@ public static string WeryfikujIloscDniWolnychWOkresieRozliczeniowym(KalkulatorPl
 
 	int wymaganaLiczbaDniWolnych = dniKalendarzoweOkresu - normaKodeksowa.Dni;
 
-	int minDniWolnych = dniWolneZJawnymWpisem + dniWolneDomyslneBezWpisu;
-	int maxDniWolnych = minDniWolnych + liczbaDniElastycznych;
+	// Dni wolne wynikające z planu w obecnym kształcie: jawnie oznaczone jako wolne + domyślnie
+	// wolne wg kalendarza. Dni domyślnie robocze bez jawnej zmiany NIE są tu liczone.
+	int dniWolneWPlanie = dniWolneZJawnymWpisem + dniWolneDomyslneBezWpisu;
+	// Maksimum dni wolnych osiągalne bez ruszania dni już jawnie wpisanych - wszystkie pozostałe
+	// elastyczne dni robocze zamienione na wolne.
+	int maksimumDniWolnych = dniWolneWPlanie + liczbaDniElastycznych;
 
-	if (minDniWolnych > wymaganaLiczbaDniWolnych)
+	bool okresWieloMiesieczny = miesiaceOkresu.Count > 1;
+
+	if (okresWieloMiesieczny)
 	{
-		return "Zaplanowano zbyt dużo dni wolnych ({0}) wobec wymaganej liczby ({1}) w okresie rozliczeniowym ({2}) - {3}"
-			.TranslateFormat(minDniWolnych, wymaganaLiczbaDniWolnych, periods, pracownik);
+		// Okres wielomiesięczny (równoważny): dopóki pozostałe elastyczne dni robocze pozwalają
+		// jeszcze dopiąć bilans dni wolnych, weryfikator nie przeszkadza - bilans dni wolnych i
+		// roboczych liczy się dla całego okresu, nie dla pojedynczego miesiąca. Błąd zgłaszany
+		// jest dopiero, gdy domknięcie normy jest już matematycznie niemożliwe:
+		// - nadmiar: same dni już jawnie oznaczone jako wolne przekraczają wymóg całego okresu,
+		// - niedobór: nawet zamiana wszystkich pozostałych dni roboczych na wolne nie wystarczy
+		//   (typowo: pierwsze miesiące przeplanowane pracą, planowany jest już ostatni miesiąc).
+		if (dniWolneZJawnymWpisem > wymaganaLiczbaDniWolnych)
+		{
+			return "Zaplanowano zbyt dużo dni wolnych ({0}) wobec wymaganej liczby ({1}) w okresie rozliczeniowym ({2}) - {3}. Nadmiaru nie da się już cofnąć bez zmiany dni jawnie oznaczonych jako wolne."
+				.TranslateFormat(dniWolneZJawnymWpisem, wymaganaLiczbaDniWolnych, periods, pracownik);
+		}
+		if (maksimumDniWolnych < wymaganaLiczbaDniWolnych)
+		{
+			return "Nie da się już osiągnąć wymaganej liczby dni wolnych ({0}) w okresie rozliczeniowym ({1}), brakuje ({2}) dni - {3}. Pozostało dni roboczych możliwych do zamiany na wolne: {4}."
+				.TranslateFormat(wymaganaLiczbaDniWolnych, periods, wymaganaLiczbaDniWolnych - maksimumDniWolnych, pracownik, liczbaDniElastycznych);
+		}
+		return null;
 	}
-	if (maxDniWolnych < wymaganaLiczbaDniWolnych)
+
+	// Okres jednomiesięczny: nie ma innego miesiąca do zbilansowania, więc liczy się plan
+	// w obecnym kształcie. Dni domyślnie robocze bez jawnej zmiany traktujemy jako dni pracy -
+	// błąd zgłaszany jest, gdy plan jak zapisany nie daje wymaganej liczby dni wolnych, nawet
+	// jeśli teoretycznie zostały jeszcze dni robocze możliwe do zamiany na wolne.
+	if (dniWolneWPlanie > wymaganaLiczbaDniWolnych)
 	{
-		return "Nie da się już osiągnąć wymaganej liczby dni wolnych ({0}) w okresie rozliczeniowym ({1}), brakuje ({2}) dni - {3}. Pozostało dni roboczych możliwych do zamiany na wolne: {4}"
-			.TranslateFormat(wymaganaLiczbaDniWolnych, periods, wymaganaLiczbaDniWolnych - maxDniWolnych, pracownik, liczbaDniElastycznych);
+		return "Zaplanowano zbyt dużo dni wolnych ({0}) wobec wymaganej liczby ({1}) w okresie rozliczeniowym ({2}) - {3}. Trzeba dodać dni pracy: {4}."
+			.TranslateFormat(dniWolneWPlanie, wymaganaLiczbaDniWolnych, periods, pracownik, dniWolneWPlanie - wymaganaLiczbaDniWolnych);
+	}
+	if (dniWolneWPlanie < wymaganaLiczbaDniWolnych)
+	{
+		return "Za mało dni wolnych ({0}) wobec wymaganej liczby ({1}) w okresie rozliczeniowym ({2}) - {3}. Trzeba jeszcze zamienić na wolne dni robocze: {4} (dostępnych dni roboczych bez jawnego wpisu: {5})."
+			.TranslateFormat(dniWolneWPlanie, wymaganaLiczbaDniWolnych, periods, pracownik, wymaganaLiczbaDniWolnych - dniWolneWPlanie, liczbaDniElastycznych);
 	}
 	return null;
 }
