@@ -9,23 +9,56 @@ DevExpress XtraReports, orientacja pozioma), zasilany snippetem
 Wydruk wywoływany jest z **Listy pracowników** (ew. **Pulpitu kierownika**)
 dla zaznaczonych pracowników. Jeśli zaznaczone są wiersze historii
 zatrudnienia (`PracHistoria`), snippet rozpoznaje pracownika, do którego
-należą. Jeden wiersz wydruku = jeden pracownik (deduplikacja), posortowane
-po „Nazwisko i Imię”.
+należą. Pracownicy sortowani po „Nazwisko i Imię”.
+
+## Parametr wydruku
+
+| Parametr | Pole | Domyślnie | Rola |
+|---|---|---|---|
+| Data posiedzenia komisji | `PrnParams.DataPosiedzenia` (`Date`) | dziś | Punkt odniesienia dla wszystkich okien czasowych i dla roku oświadczenia ZFŚS |
+
+Okna zapomóg liczone są **wstecz od daty posiedzenia** (krocząco, w miesiącach):
+
+- **„z 2 lat”**: `[data − 24 mies., data]`
+- **„z poprzednich 2 lat”**: `[data − 48 mies., (data − 24 mies.) − 1 dzień]`
+  – sięga 4 lata wstecz, styka się z oknem bieżącym bez nakładania.
+
+## Układ: master-detail, jeden wiersz = jedna zapomoga
+
+**Jeden wiersz wydruku = jedna wypłacona zapomoga.** Pracownik z kilkoma
+zapomogami zajmuje kilka kolejnych wierszy. Kolumny „poziomu pracownika”
+(Lp, Nr ewid., Nazwisko, Data urodzenia, Jednostka obsługująca, Dochód na
+członka rodziny) oraz obie sumy wypełniane są **tylko w pierwszym wierszu
+grupy** pracownika; w kolejnych wierszach te komórki są puste. Dwie listy
+zapomóg (okno bieżące / poprzednie) są wyrównane wg indeksu wiersza –
+dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
+nadmiarowych wierszach. Pracownik bez zapomóg = jeden wiersz z samymi
+kolumnami poziomu pracownika.
+
+Przykład ze wzoru papierowego (nr ewid. 82652, 2 wiersze detail):
+`Kwota zapomogi z 2 lat` = 3 000,00 = suma kolumny `Kwota` z obu wierszy
+(1 000 + 2 000); `Kwota zapomóg z poprzednich 2 lat` = 2 000,00 = suma
+kolumny `Kwota` (poprzednia) z obu wierszy (1 000 + 1 000).
 
 ## Kolumny
 
 | Nagłówek | Pole źródła | Zawartość |
 |---|---|---|
-| Lp. | `Lp` | Liczba porządkowa wiersza |
-| Nr ewid. | `NrEwid` | `Pracownik.Kod` |
-| Nazwisko i Imię | `NazwiskoImie` | `Pracownik.NazwiskoImię` |
-| Data urodzenia | `DataUrodzenia` | `Pracownik.Historia[Date.Today].Urodzony.Data` |
-| Jednostka obsługująca | `JednostkaObslugujaca` | Cecha „Jednostka obsługująca” z Wydziału bieżącego etatu pracownika. Cecha typu „element słownika” → `(ElemSlownika) Wydzial.Features["Jednostka obsługująca"]`, wyświetlane `.Nazwa` (fallback `"brak"`) |
-| Dochód na członka rodziny | `DochodNaCzlonkaRodziny` | Z aktualnego, zatwierdzonego wniosku ZFŚS pracownika (krotka `A1_ZFSS`, dodatek `AltOne.Skanska.Workflow`). Odwzorowuje worker `WniosekZFFSPracownikaWorker.GetProgDochodu`: wniosek pobierany przez `PracownikExt.GetAktualnyWniosekZFSS(pracownik, dziś, rok bieżący)`; dla `RodzajWskazywaniaDochodu == "Kwota"` → kwota dochodu na członka rodziny, w przeciwnym razie nazwa progu dochodowego (element słownika). Brak roli widoczności kwot u operatora → `(Brak praw do widoku)`. Puste = brak zatwierdzonego wniosku za rok bieżący |
-| Kwota zapomogi z 2 lat | `KwotaZapomogiZ2Lat` | Suma `WypElement.Wartosc` elementów wypłat pracownika, których nazwa (lub nazwa `Definicja`) zawiera „zapomog"/„zapomóg", wypłaconych w oknie `[dziś − 24 mies., dziś]` wg `Wyplata.Data`. Elementy stornowane pominięte. Puste = brak / suma 0 |
-| Data / Kwota (wypłata bieżąca) | `DataWyplaty` / `KwotaWyplaty` | **na razie puste** |
-| Kwota zapomóg z poprzednich 2 lat | `KwotaZapomogPoprzednich2Lat` | **na razie puste** |
-| Data / Kwota (wypłata poprzednia) | `DataWyplatyPoprzedniej` / `KwotaWyplatyPoprzedniej` | **na razie puste** |
+| Lp. | `Lp` | Liczba porządkowa – tylko w 1. wierszu grupy pracownika |
+| Nr ewid. | `NrEwid` | `Pracownik.Kod` – tylko 1. wiersz grupy |
+| Nazwisko i Imię | `NazwiskoImie` | `Pracownik.NazwiskoImię` – tylko 1. wiersz grupy |
+| Data urodzenia | `DataUrodzenia` | `Pracownik.Historia[Date.Today].Urodzony.Data` – tylko 1. wiersz grupy |
+| Jednostka obsługująca | `JednostkaObslugujaca` | Cecha „Jednostka obsługująca” z Wydziału bieżącego etatu pracownika. Cecha typu „element słownika” → `(ElemSlownika) Wydzial.Features["Jednostka obsługująca"]`, wyświetlane `.Nazwa` (fallback `"brak"`). Tylko 1. wiersz grupy |
+| Dochód na członka rodziny | `DochodNaCzlonkaRodziny` | Z aktualnego, zatwierdzonego wniosku ZFŚS pracownika (krotka `A1_ZFSS`, dodatek `AltOne.Skanska.Workflow`). Odwzorowuje worker `WniosekZFFSPracownikaWorker.GetProgDochodu`: wniosek przez `PracownikExt.GetAktualnyWniosekZFSS(pracownik, data posiedzenia, rok posiedzenia)`; dla `RodzajWskazywaniaDochodu == "Kwota"` → kwota dochodu na członka rodziny, w przeciwnym razie nazwa progu dochodowego (element słownika). Brak roli widoczności kwot u operatora → `(Brak praw do widoku)`. Puste = brak zatwierdzonego wniosku. Tylko 1. wiersz grupy |
+| Kwota zapomogi z 2 lat | `KwotaZapomogiZ2Lat` | Suma `WypElement.Wartosc` zapomóg z okna bieżącego (= suma kolumny `Kwota` wszystkich wierszy grupy). Puste = 0. Tylko 1. wiersz grupy |
+| Data / Kwota | `DataWyplaty` / `KwotaWyplaty` | i-ta zapomoga z okna bieżącego: `Wyplata.Data` / `WypElement.Wartosc` (`N2`). Puste, gdy w tym wierszu nie ma już zapomogi z tego okna |
+| Kwota zapomóg z poprzednich 2 lat | `KwotaZapomogPoprzednich2Lat` | Suma zapomóg z okna poprzedniego (= suma kolumny `Kwota` poprzednia wszystkich wierszy grupy). Puste = 0. Tylko 1. wiersz grupy |
+| Data / Kwota | `DataWyplatyPoprzedniej` / `KwotaWyplatyPoprzedniej` | i-ta zapomoga z okna poprzedniego. Puste, gdy w tym wierszu nie ma już zapomogi z tego okna |
+
+Zapomoga = element wypłaty (`WypElement`), którego nazwa (lub nazwa
+`Definicja`) zawiera „zapomog"/„zapomóg", niewystornowany
+(`RozliczenieStorna == false`), z datą wypłaty w oknie. Data pozycji =
+`Wyplata.Data`. Pozycje w oknie sortowane rosnąco po dacie.
 
 ## Zależność: dodatek AltOne.Skanska.Workflow
 
@@ -40,19 +73,21 @@ DLL w wersjach `2512.7.8` i `2604.4.4`, **niesprawdzona na żywej aplikacji**
 (repo nie ma dostępu do środowiska Skanska). Przed użyciem produkcyjnym:
 uruchomić wydruk na bazie Skanska dla kilku pracowników z i bez wniosku ZFŚS.
 
-Filtrowanie wniosku jest ustawione na stałe: stan na dzień dzisiejszy, rok
-oświadczenia = rok bieżący (`Date.Today.Year`) – tak jak domyślny widok
-wniosków ZFŚS. Jeśli komisja potrzebuje danych za wskazany rok, trzeba dodać
-parametr wydruku `RokOswiadczenia` (klasa `PrnParams` jest dziś pusta – wymaga
-też pola parametru w `.repx`).
+Rok oświadczenia = rok z „Daty posiedzenia komisji”; data graniczna wniosku
+(„nie później niż”) = data posiedzenia.
 
-## TODO
+## TODO / do weryfikacji na żywej bazie
 
-- **Pozostałe kolumny finansowe** (kwoty zapomóg poza „z 2 lat”, daty i
-  kwoty wypłat) – do uzupełnienia. Źródłem będą świadczenia socjalne
-  pracownika (`Soneta.Kadry.SwiadczSocjalne`: `Data` = data przyznania,
-  `Definicja`, `Rozliczenie.Kwota`, `Rozliczenie.Data`, `Rozliczenie.Okres`,
-  `Elementy`).
+- **Cały snippet niesprawdzony na środowisku Skanska** – kompilacja
+  zweryfikowana lokalnie (enova 2604.4.4 + `AltOne.Skanska.Workflow` +
+  DevExpress), ale bez uruchomienia. Sprawdzić:
+  - liczba wierszy grupy = `max(zapomogi w oknie bieżącym, w poprzednim)`,
+    puste kolumny poziomu pracownika w wierszach 2..N;
+  - sumy zgadzają się z sumą widocznych pozycji (jak we wzorze papierowym);
+  - `Data posiedzenia` wstecz o pół roku / rok – czy okna łapią właściwe wypłaty.
+- **Definicja „zapomogi”** – obecnie dopasowanie po nazwie elementu wypłaty
+  (`"zapomog"`). Potwierdzić, że wszystkie definicje zapomóg w bazie Skanska
+  mają „zapomog” w nazwie i że nie łapie fałszywych trafień.
 - **Cecha „Jednostka obsługująca”** na Wydziale jest typu **element
   słownika** (`Soneta.Ksiega.ElemSlownika`). Odczyt: nietypowany indeksator
   `Wydzial.Features["Jednostka obsługująca"]` → rzut na `ElemSlownika` →
@@ -65,7 +100,12 @@ też pola parametru w `.repx`).
 2. W „Kod źródłowy” wklej całą zawartość `Raporty/ZestawienieKomisjaSocjalnaSnippet`.
 3. Zapisz – Enova skompiluje kod i podepnie klasę
    `ZestawienieKomisjaSocjalnaSnippet` pod wydruk.
-4. Uruchom wydruk dla zaznaczonych świadczeń socjalnych i sprawdź wynik.
+4. Uruchom wydruk dla zaznaczonych pracowników; w oknie parametrów podaj
+   „Datę posiedzenia komisji” (domyślnie dziś) i sprawdź wynik.
+
+Zmiana nie wymaga modyfikacji `.repx` – pasmo `Detail` jest płaskie, a
+„wygaszanie” powtórzonych kolumn i wyrównanie dwóch list zapomóg realizuje
+snippet (puste stringi w wierszach 2..N grupy).
 
 `.repx` zawiera już w `ComponentStorage` komponenty `BusinessContext`,
 `BusinessSource` (`DataKind="Empty"`) i `BusinessSourceContext`
@@ -77,10 +117,12 @@ polami `[Lp]`, `[NrEwid]`, `[NazwiskoImie]`, `[DataUrodzenia]`,
 
 ## Odporność na błędy
 
-Kolumny liczone (Nr ewid., Nazwisko, Data urodzenia, Jednostka obsługująca,
-Dochód na członka rodziny, Kwota zapomogi z 2 lat) liczone są przez
-`Bezpiecznie(...)` – błąd dla pojedynczego wiersza daje `[BŁĄD: ...]` w tej
-komórce zamiast wywalenia wydruku. Cała
-`BeforePrint` jest w try/catch – błąd poza pętlą daje jeden wiersz „BŁĄD” z
-etapem i treścią wyjątku. Jeśli zobaczysz `[BŁĄD: ...]`, wklej treść –
-pozwoli poprawić logikę lub dane.
+- Poszczególne komórki poziomu pracownika liczone są przez `Bezpiecznie(...)`
+  – błąd w jednej daje `[BŁĄD: ...]` w tej komórce zamiast wywalenia wydruku.
+- Grupa **każdego pracownika** budowana jest w osobnym `try/catch` – błąd
+  (np. w pobraniu wypłat / wniosku ZFŚS) daje jeden wiersz `[BŁĄD: ...]` dla
+  tego pracownika, reszta zestawienia się drukuje.
+- Cała `BeforePrint` jest w `try/catch` – błąd poza pętlą daje jeden wiersz
+  „BŁĄD” z etapem i treścią wyjątku.
+
+Jeśli zobaczysz `[BŁĄD: ...]`, wklej treść – pozwoli poprawić logikę lub dane.

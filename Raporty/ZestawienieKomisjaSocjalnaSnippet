@@ -18,22 +18,35 @@ namespace x.x.Reports
     // Wydruk (ZestawienieKomisjaSocjalna.repx) wywoływany jest z listy
     // pracowników (ew. z Pulpitu kierownika) dla zaznaczonych pracowników.
     // Jeśli zaznaczone są wiersze historii zatrudnienia (PracHistoria),
-    // rozpoznajemy pracownika, do którego należą. Jeden wiersz wydruku =
-    // jeden pracownik, posortowane po "Nazwisko i Imię".
+    // rozpoznajemy pracownika, do którego należą. Pracownicy sortowani po
+    // "Nazwisko i Imię".
     //
-    // Wypełniane kolumny: Lp, NrEwid, NazwiskoImie, DataUrodzenia,
-    // JednostkaObslugujaca, DochodNaCzlonkaRodziny (z wniosku ZFŚS pracownika -
-    // dodatek AltOne.Skanska.Workflow, patrz PobierzDochodNaCzlonkaRodziny) oraz
-    // KwotaZapomogiZ2Lat (suma elementów wypłat z nazwą "zapomog(a)" wypłaconych
-    // w ostatnich 24 miesiącach do dziś).
-    // Pozostałe kolumny (Data/Kwota wypłat, "poprzednie 2 lata") celowo zostają
-    // puste - do uzupełnienia.
+    // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna wypłacona zapomoga.
+    // Dla pracownika z kilkoma zapomogami powstaje kilka wierszy. Kolumny
+    // "poziomu pracownika" (Lp, Nr ewid., Nazwisko, Data urodzenia, Jednostka
+    // obsługująca, Dochód na członka rodziny) oraz sumy (Kwota zapomogi z 2
+    // lat, Kwota zapomóg z poprzednich 2 lat) wypełniane są TYLKO w pierwszym
+    // wierszu grupy pracownika; w kolejnych wierszach te komórki są puste.
+    // Dwie listy zapomóg (okno bieżące / poprzednie) są wyrównane wierszami:
+    // dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
+    // nadmiarowych wierszach. Pracownik bez zapomóg = jeden wiersz z samymi
+    // kolumnami poziomu pracownika.
     //
-    // Każde pole liczone jest przez Bezpiecznie(...) - jeśli dla któregoś
-    // wiersza coś rzuci wyjątkiem, w tej jednej komórce pojawi się
-    // "[BŁĄD: ...]" zamiast wywalenia całego wydruku. Cała metoda BeforePrint
-    // jest dodatkowo opakowana w try/catch (jeden diagnostyczny wiersz "BŁĄD"
-    // z etapem i treścią wyjątku).
+    // OKNA CZASOWE liczone wstecz od parametru "Data posiedzenia komisji"
+    // (domyślnie dziś):
+    //   - "z 2 lat"            = [data − 24 mies., data]
+    //   - "z poprzednich 2 lat" = [data − 48 mies., dzień przed −24 mies.]
+    // Zapomoga = element wypłaty z nazwą zawierającą "zapomog"/"zapomóg"
+    // (data = data wypłaty, kwota = WypElement.Wartosc). Elementy stornowane
+    // pominięte.
+    //
+    // Dochód na członka rodziny pochodzi z wniosku ZFŚS pracownika (dodatek
+    // AltOne.Skanska.Workflow) - patrz PobierzDochodNaCzlonkaRodziny.
+    //
+    // Odporność na błędy: grupa każdego pracownika budowana jest w osobnym
+    // try/catch - błąd dla jednego pracownika daje jeden wiersz "[BŁĄD: ...]"
+    // zamiast wywalenia wydruku. Cała metoda BeforePrint jest dodatkowo
+    // opakowana w try/catch (jeden diagnostyczny wiersz "BŁĄD" z etapem).
     public class ZestawienieKomisjaSocjalnaSnippet : ReportSnippet
     {
         // Wzorowane na Raporty/OdbiciaRCP i Raporty/SzablonTabela6KolumnSnippet:
@@ -41,11 +54,25 @@ namespace x.x.Reports
         // co powoduje, że silnik Enova przed drukiem wstrzykuje do snippetu
         // działający Context (pars.Context). W tej instalacji
         // DxReportHelpers.GetContext(this) zwraca null - nie używamy go.
-        // Raport nie ma parametrów do wypełnienia przez użytkownika, więc
-        // klasa PrnParams jest celowo pusta - liczy się sama jej obecność.
         public class PrnParams : ContextBase
         {
-            public PrnParams(Context context) : base(context) { }
+            Date dataPosiedzenia;
+
+            public PrnParams(Context context) : base(context)
+            {
+                dataPosiedzenia = Date.Today;
+            }
+
+            [Caption("Data posiedzenia komisji")]
+            public Date DataPosiedzenia
+            {
+                get { return dataPosiedzenia; }
+                set
+                {
+                    dataPosiedzenia = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
         }
 
         PrnParams pars;
@@ -81,6 +108,12 @@ namespace x.x.Reports
                     return;
                 }
 
+                etap = "ustalenie okien czasowych";
+                Date dataOdniesienia = pars.DataPosiedzenia != Date.Empty ? pars.DataPosiedzenia : Date.Today;
+                Date odBiezace = dataOdniesienia.AddMonths(-24);
+                Date odPoprzednie = dataOdniesienia.AddMonths(-48);
+                Date doPoprzednie = odBiezace.AddDays(-1);
+
                 etap = "zbieranie pracowników z zaznaczenia";
                 var pracownicy = new List<Pracownik>();
                 foreach (Row row in rows)
@@ -101,20 +134,19 @@ namespace x.x.Reports
                 foreach (Pracownik pracownik in pracownicy)
                 {
                     Pracownik pr = pracownik;
-                    wiersze.Add(new Wiersz {
-                        Lp = (lp++).ToString(),
-                        NrEwid = Bezpiecznie(() => pr.Kod),
-                        NazwiskoImie = Bezpiecznie(() => pr.NazwiskoImię.ToString()),
-                        DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString()),
-                        JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)),
-                        DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr)),
-                        KwotaZapomogiZ2Lat = Bezpiecznie(() => FormatKwota(SumaZapomog(pr, Date.Today.AddMonths(-24), Date.Today))),
-                        DataWyplaty = "",
-                        KwotaWyplaty = "",
-                        KwotaZapomogPoprzednich2Lat = "",
-                        DataWyplatyPoprzedniej = "",
-                        KwotaWyplatyPoprzedniej = ""
-                    });
+                    try
+                    {
+                        DodajWierszePracownika(wiersze, ref lp, pr,
+                            dataOdniesienia, odBiezace, odPoprzednie, doPoprzednie);
+                    }
+                    catch (Exception ex)
+                    {
+                        Wiersz blad = NowyWiersz();
+                        blad.Lp = (lp++).ToString();
+                        blad.NrEwid = Bezpiecznie(() => pr.Kod);
+                        blad.NazwiskoImie = "[BŁĄD: " + ex.Message + "]";
+                        wiersze.Add(blad);
+                    }
                 }
 
                 etap = "ustawienie CustomDataSource";
@@ -134,6 +166,52 @@ namespace x.x.Reports
                         NazwiskoImie = opis
                     }
                 };
+            }
+        }
+
+        // Buduje grupę wierszy dla jednego pracownika (1..N wierszy).
+        static void DodajWierszePracownika(List<Wiersz> wiersze, ref int lp, Pracownik pr,
+            Date dataOdniesienia, Date odBiezace, Date odPoprzednie, Date doPoprzednie)
+        {
+            List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, dataOdniesienia);
+            List<ZapomogaPozycja> poprzednie = ZapomogiWOknie(pr, odPoprzednie, doPoprzednie);
+
+            decimal sumaBiezace = 0m;
+            foreach (ZapomogaPozycja z in biezace) sumaBiezace += z.Kwota;
+            decimal sumaPoprzednie = 0m;
+            foreach (ZapomogaPozycja z in poprzednie) sumaPoprzednie += z.Kwota;
+
+            int ile = biezace.Count > poprzednie.Count ? biezace.Count : poprzednie.Count;
+            if (ile < 1) ile = 1;
+
+            for (int i = 0; i < ile; i++)
+            {
+                Wiersz w = NowyWiersz();
+
+                if (i == 0)
+                {
+                    w.Lp = (lp++).ToString();
+                    w.NrEwid = Bezpiecznie(() => pr.Kod);
+                    w.NazwiskoImie = Bezpiecznie(() => pr.NazwiskoImię.ToString());
+                    w.DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString());
+                    w.JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr));
+                    w.DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr, dataOdniesienia));
+                    w.KwotaZapomogiZ2Lat = FormatKwota(sumaBiezace);
+                    w.KwotaZapomogPoprzednich2Lat = FormatKwota(sumaPoprzednie);
+                }
+
+                if (i < biezace.Count)
+                {
+                    w.DataWyplaty = biezace[i].Data.ToString();
+                    w.KwotaWyplaty = biezace[i].Kwota.ToString("N2");
+                }
+                if (i < poprzednie.Count)
+                {
+                    w.DataWyplatyPoprzedniej = poprzednie[i].Data.ToString();
+                    w.KwotaWyplatyPoprzedniej = poprzednie[i].Kwota.ToString("N2");
+                }
+
+                wiersze.Add(w);
             }
         }
 
@@ -180,16 +258,14 @@ namespace x.x.Reports
         // tylko na liście pracowników z parametrami wniosków ZFŚS (WnioskiZFSSParams).
         // Tutaj wołamy publiczne API dodatku bezpośrednio:
         //   - wniosek: PracownikExt.GetAktualnyWniosekZFSS(pracownik,
-        //     <wnioski nie później niż>, <rok oświadczenia>) - bierze ostatni
-        //     zatwierdzony wniosek A1_ZFSS z okresem od 1 stycznia danego roku;
+        //     <wnioski nie później niż = data posiedzenia>, <rok = rok posiedzenia>) -
+        //     bierze ostatni zatwierdzony wniosek A1_ZFSS z okresem od 1 stycznia;
         //   - RodzajWskazywaniaDochodu == "Kwota" -> kwota dochodu na członka
         //     rodziny; w przeciwnym razie nazwa progu dochodowego (element słownika);
         //   - brak roli widoczności kwot u operatora -> "(Brak praw do widoku)".
-        // Parametry filtrowania jak w domyślnym widoku wniosków ZFŚS: stan na
-        // dzień dzisiejszy, rok oświadczenia = rok bieżący.
-        static string PobierzDochodNaCzlonkaRodziny(Pracownik pracownik)
+        static string PobierzDochodNaCzlonkaRodziny(Pracownik pracownik, Date dataOdniesienia)
         {
-            A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, Date.Today, Date.Today.Year);
+            A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, dataOdniesienia, dataOdniesienia.Year);
             if (wniosek == null)
                 return "";
             if (!wniosek.CzyPrawaDoWidokuProgow())
@@ -199,23 +275,34 @@ namespace x.x.Reports
             return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
         }
 
-        // Suma elementów wypłat pracownika z nazwą zawierającą "zapomog(a)",
-        // wypłaconych w podanym oknie dat (wg daty wypłaty). Elementy
-        // wystornowane/stornujące pomijane (RozliczenieStorna).
-        static decimal SumaZapomog(Pracownik pracownik, Date od, Date doDaty)
+        // Lista pojedynczych zapomóg pracownika wypłaconych w oknie [od, doDaty]
+        // (wg daty wypłaty), posortowana rosnąco po dacie. Zapomoga = element
+        // wypłaty z nazwą (lub nazwą Definicji) zawierającą "zapomog(a)".
+        // Elementy wystornowane/stornujące pomijane (RozliczenieStorna).
+        static List<ZapomogaPozycja> ZapomogiWOknie(Pracownik pracownik, Date od, Date doDaty)
         {
-            decimal suma = 0m;
+            var lista = new List<ZapomogaPozycja>();
+            if (doDaty < od)
+                return lista;
+
             foreach (Wyplata w in pracownik.Wyplaty[(Wyplata x) => x.Data >= od && x.Data <= doDaty])
             {
-                foreach (WypElement e in w.Elementy)
+                foreach (WypElement el in w.Elementy)
                 {
-                    if (e.RozliczenieStorna)
+                    if (el.RozliczenieStorna)
                         continue;
-                    if (NazwaZapomoga(e.Nazwa) || (e.Definicja != null && NazwaZapomoga(e.Definicja.Nazwa)))
-                        suma += e.Wartosc;
+                    if (NazwaZapomoga(el.Nazwa) || (el.Definicja != null && NazwaZapomoga(el.Definicja.Nazwa)))
+                    {
+                        ZapomogaPozycja poz = new ZapomogaPozycja();
+                        poz.Data = w.Data;
+                        poz.Kwota = el.Wartosc;
+                        lista.Add(poz);
+                    }
                 }
             }
-            return suma;
+
+            lista.Sort((a, b) => a.Data > b.Data ? 1 : (a.Data < b.Data ? -1 : 0));
+            return lista;
         }
 
         static bool NazwaZapomoga(string nazwa)
@@ -229,6 +316,30 @@ namespace x.x.Reports
         static string FormatKwota(decimal kwota)
         {
             return kwota != 0m ? kwota.ToString("N2") : "";
+        }
+
+        static Wiersz NowyWiersz()
+        {
+            return new Wiersz {
+                Lp = "",
+                NrEwid = "",
+                NazwiskoImie = "",
+                DataUrodzenia = "",
+                JednostkaObslugujaca = "",
+                DochodNaCzlonkaRodziny = "",
+                KwotaZapomogiZ2Lat = "",
+                DataWyplaty = "",
+                KwotaWyplaty = "",
+                KwotaZapomogPoprzednich2Lat = "",
+                DataWyplatyPoprzedniej = "",
+                KwotaWyplatyPoprzedniej = ""
+            };
+        }
+
+        class ZapomogaPozycja
+        {
+            public Date Data;
+            public decimal Kwota;
         }
 
         public class Wiersz
