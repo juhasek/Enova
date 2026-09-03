@@ -12,7 +12,8 @@ Pracownicy sortowani po „Nazwisko i Imię”.
 **Dobór pracowników** zależy od parametru „Tylko pracownicy zaznaczeni na
 liście":
 
-- **domyślnie (odznaczone)** – raport **skanuje wszystkie wypłaty firmy**
+- **domyślnie (odznaczone)** – raport przegląda **elementy wypłat o definicji
+  „zapomoga"** (`WypElementy.WgDefinicja`, filtr serwerowy po `WypElement.Data`)
   w oknie `[1.1.(R-4), 31.12.(R-1)]` i bierze **każdego pracownika, który
   dostał zapomogę** – także **zwolnionych** i **spoza bieżącego filtra
   listy / okresu**. Zaznaczenie jest ignorowane. To odpowiedź na scenariusz:
@@ -74,8 +75,14 @@ kolumny `Kwota` (poprzednia) z obu wierszy (1 000 + 1 000).
 
 Zapomoga = element wypłaty (`WypElement`), którego nazwa (lub nazwa
 `Definicja`) zawiera „zapomog"/„zapomóg", niewystornowany
-(`RozliczenieStorna == false`), z datą wypłaty w oknie. Data pozycji =
-`Wyplata.Data`. Pozycje w oknie sortowane rosnąco po dacie.
+(`RozliczenieStorna == false`), z `WypElement.Data` w oknie. Pozycje w oknie
+sortowane rosnąco po dacie.
+
+**Wydajność:** raport nie iteruje wszystkich wypłat. Dobór pracowników
+(tryb domyślny) idzie przez `WypElementy.WgDefinicja[def]` dla definicji
+z „zapomog" w nazwie; wiersze pojedynczego pracownika – przez
+`WypElementy.WgPracownik[pracownik]`; oba z warunkiem serwerowym po
+`WypElement.Data`.
 
 ## Zależność: dodatek AltOne.Skanska.Workflow
 
@@ -102,17 +109,16 @@ Rok oświadczenia = rok z „Daty posiedzenia komisji”; data graniczna wniosku
     puste kolumny poziomu pracownika w wierszach 2..N;
   - sumy zgadzają się z sumą widocznych pozycji (jak we wzorze papierowym);
   - zmiana roku w „Dacie posiedzenia” przesuwa oba okna o rok kalendarzowy.
-- **Definicja „zapomogi”** – obecnie dopasowanie po nazwie elementu wypłaty
-  (`"zapomog"`). Potwierdzić, że wszystkie definicje zapomóg w bazie Skanska
-  mają „zapomog” w nazwie i że nie łapie fałszywych trafień.
-- **Wydajność skanu wypłat** (tryb domyślny) – `ZbierzPracownikowZapomogi`
-  iteruje wszystkie wypłaty firmy z 4 lat (`Wyplaty.WgData` z warunkiem po
-  dacie – filtr serwerowy) i dla każdej wchodzi w `Elementy`. Przy dużej
-  liczbie wypłat sprawdzić czas generowania; w razie potrzeby zawęzić po
-  definicjach elementów „zapomoga” lub cache’ować listę pracowników.
-- **`Wyplata.Pracownik`** rzutowany przez `as Pracownik` – wypłaty bez
-  pracownika (np. `WyplataInne` dla kontrahenta) są pomijane. Potwierdzić,
-  że zapomogi zawsze idą przez wypłatę pracownika.
+- **Definicja „zapomogi”** – dopasowanie po nazwie definicji elementu
+  (`DefinicjaElementu.Nazwa` zawiera `"zapomog"`) oraz po nazwie samego
+  elementu (`WypElement.Nazwa`). Potwierdzić, że wszystkie definicje zapomóg
+  w bazie Skanska mają „zapomog” w nazwie. Uwaga: dobór pracowników (tryb
+  domyślny) idzie **tylko po definicjach** – element z własną nazwą
+  „zapomoga”, ale definicją bez tego słowa, nie doda pracownika do raportu
+  (choć jego wiersze i tak by się nie pojawiły bez zapomogi wykrytej przez
+  definicję – spójne).
+- **`WypElement.Data`** – zakładamy, że to data wypłaty (jak `Wyplata.Data`).
+  Potwierdzić na danych.
 - **Cecha „Jednostka obsługująca”** na Wydziale jest typu **element
   słownika** (`Soneta.Ksiega.ElemSlownika`). Odczyt: nietypowany indeksator
   `Wydzial.Features["Jednostka obsługująca"]` → rzut na `ElemSlownika` →

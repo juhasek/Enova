@@ -19,10 +19,10 @@ namespace x.x.Reports
     // pracowników (ew. z Pulpitu kierownika).
     //
     // DOBÓR PRACOWNIKÓW (parametr "Tylko pracownicy zaznaczeni na liście"):
-    //   - false (domyślnie): raport SKANUJE wszystkie wypłaty firmy w oknie
-    //     [1.1.(R-4), 31.12.(R-1)] i bierze każdego pracownika, który dostał
-    //     zapomogę - także zwolnionych i spoza bieżącego filtra listy.
-    //     Zaznaczenie jest ignorowane.
+    //   - false (domyślnie): raport przegląda elementy wypłat o definicji
+    //     "zapomoga" (klucz WgDefinicja) z datą w oknie [1.1.(R-4), 31.12.(R-1)]
+    //     i bierze każdego pracownika, który dostał zapomogę - także zwolnionych
+    //     i spoza bieżącego filtra listy. Zaznaczenie jest ignorowane.
     //   - true: tylko pracownicy zaznaczeni na liście (wiersz historii
     //     zatrudnienia PracHistoria jest mapowany na pracownika).
     // Pracownicy sortowani po "Nazwisko i Imię".
@@ -320,58 +320,66 @@ namespace x.x.Reports
             return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
         }
 
-        // Skan wszystkich wypłat w firmie z datą w oknie [od, doDaty] i zebranie
-        // pracowników, którzy dostali choć jedną zapomogę. Filtr po dacie jest
-        // serwerowy (klucz WgData na polu Data). Łapie też pracowników zwolnionych
-        // / spoza bieżącego filtra listy pracowników.
+        // Definicje elementów wynagrodzenia, których nazwa zawiera "zapomog(a)".
+        // Zawężenie skanu wypłat do tych definicji - bez tego trzeba by iterować
+        // wszystkie wypłaty firmy z 4 lat.
+        static List<DefinicjaElementu> DefinicjeZapomog(Session session)
+        {
+            var lista = new List<DefinicjaElementu>();
+            foreach (DefinicjaElementu def in session.GetPlace().DefElementow)
+                if (NazwaZapomoga(def.Nazwa))
+                    lista.Add(def);
+            return lista;
+        }
+
+        // Zbiera pracowników, którzy dostali choć jedną (niewystornowaną) zapomogę
+        // w oknie [od, doDaty]. Iteruje tylko elementy wypłat o definicji "zapomoga"
+        // (klucz WgDefinicja) z filtrem serwerowym po dacie (WypElement.Data).
+        // Łapie też pracowników zwolnionych / spoza bieżącego filtra listy.
         static List<Pracownik> ZbierzPracownikowZapomogi(Session session, Date od, Date doDaty)
         {
             var pracownicy = new List<Pracownik>();
             if (doDaty < od)
                 return pracownicy;
 
-            foreach (Wyplata w in session.GetPlace().Wyplaty.WgData[(Wyplata x) => x.Data >= od && x.Data <= doDaty])
+            var wypElementy = session.GetPlace().WypElementy;
+            foreach (DefinicjaElementu def in DefinicjeZapomog(session))
             {
-                Pracownik p = w.Pracownik as Pracownik;
-                if (p == null || pracownicy.Contains(p))
-                    continue;
-                foreach (WypElement el in w.Elementy)
+                foreach (WypElement el in wypElementy.WgDefinicja[def][(WypElement x) => x.Data >= od && x.Data <= doDaty])
                 {
                     if (el.RozliczenieStorna)
                         continue;
-                    if (NazwaZapomoga(el.Nazwa) || (el.Definicja != null && NazwaZapomoga(el.Definicja.Nazwa)))
-                    {
+                    Pracownik p = el.Pracownik;
+                    if (p != null && !pracownicy.Contains(p))
                         pracownicy.Add(p);
-                        break;
-                    }
                 }
             }
             return pracownicy;
         }
 
         // Lista pojedynczych zapomóg pracownika wypłaconych w oknie [od, doDaty]
-        // (wg daty wypłaty), posortowana rosnąco po dacie. Zapomoga = element
-        // wypłaty z nazwą (lub nazwą Definicji) zawierającą "zapomog(a)".
-        // Elementy wystornowane/stornujące pomijane (RozliczenieStorna).
+        // (wg WypElement.Data = data wypłaty), posortowana rosnąco po dacie.
+        // Zapomoga = element wypłaty z nazwą (lub nazwą Definicji) zawierającą
+        // "zapomog(a)". Iterujemy tylko elementy wypłat tego pracownika w oknie
+        // (klucz WgPracownik + filtr serwerowy po dacie). Elementy stornowane
+        // pomijane (RozliczenieStorna).
         static List<ZapomogaPozycja> ZapomogiWOknie(Pracownik pracownik, Date od, Date doDaty)
         {
             var lista = new List<ZapomogaPozycja>();
             if (doDaty < od)
                 return lista;
 
-            foreach (Wyplata w in pracownik.Wyplaty[(Wyplata x) => x.Data >= od && x.Data <= doDaty])
+            SubTable<WypElement> elementyPracownika = pracownik.Session.GetPlace().WypElementy.WgPracownik[pracownik];
+            foreach (WypElement el in elementyPracownika[(WypElement x) => x.Data >= od && x.Data <= doDaty])
             {
-                foreach (WypElement el in w.Elementy)
+                if (el.RozliczenieStorna)
+                    continue;
+                if (NazwaZapomoga(el.Nazwa) || (el.Definicja != null && NazwaZapomoga(el.Definicja.Nazwa)))
                 {
-                    if (el.RozliczenieStorna)
-                        continue;
-                    if (NazwaZapomoga(el.Nazwa) || (el.Definicja != null && NazwaZapomoga(el.Definicja.Nazwa)))
-                    {
-                        ZapomogaPozycja poz = new ZapomogaPozycja();
-                        poz.Data = w.Data;
-                        poz.Kwota = el.Wartosc;
-                        lista.Add(poz);
-                    }
+                    ZapomogaPozycja poz = new ZapomogaPozycja();
+                    poz.Data = el.Data;
+                    poz.Kwota = el.Wartosc;
+                    lista.Add(poz);
                 }
             }
 
