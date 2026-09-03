@@ -18,8 +18,8 @@
     <PESEL>91032012301</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
     <Net><WidocznyWNet>False</WidocznyWNet></Net>
-    <Historia>
-      <PracHistoria id="PH1">
+    <Historia addnew="true">
+      <PracHistoria id="PH1" guid="b1000000-0000-0001-0000-000000000001">
         <Pracownik>P1</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Kowalska</Nazwisko>
@@ -66,11 +66,11 @@
           <Ubezpieczenia>
             <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
             <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
-            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
-            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
-            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
-            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
-            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
           </Ubezpieczenia>
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
@@ -142,8 +142,8 @@
     <PESEL>88071043214</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
     <Net><WidocznyWNet>False</WidocznyWNet></Net>
-    <Historia>
-      <PracHistoria id="PH2">
+    <Historia addnew="true">
+      <PracHistoria id="PH2" guid="b1000000-0000-0001-0000-000000000002">
         <Pracownik>P2</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Wiśniewski</Nazwisko>
@@ -190,11 +190,11 @@
           <Ubezpieczenia>
             <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
             <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
-            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
-            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
-            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
-            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
-            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
           </Ubezpieczenia>
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
@@ -266,8 +266,8 @@
     <PESEL>93110187608</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
     <Net><WidocznyWNet>False</WidocznyWNet></Net>
-    <Historia>
-      <PracHistoria id="PH3">
+    <Historia addnew="true">
+      <PracHistoria id="PH3" guid="b1000000-0000-0001-0000-000000000003">
         <Pracownik>P3</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Wójcik</Nazwisko>
@@ -314,11 +314,11 @@
           <Ubezpieczenia>
             <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
             <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
-            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
-            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
-            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
-            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
-            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
           </Ubezpieczenia>
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
@@ -390,8 +390,8 @@
     <PESEL>85021567817</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
     <Net><WidocznyWNet>False</WidocznyWNet></Net>
-    <Historia>
-      <PracHistoria id="PH4">
+    <Historia addnew="true">
+      <PracHistoria id="PH4" guid="b1000000-0000-0001-0000-000000000005">
         <Pracownik>P4</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Lewandowski</Nazwisko>
@@ -438,11 +438,11 @@
           <Ubezpieczenia>
             <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
             <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
-            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
-            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
-            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
-            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
-            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
           </Ubezpieczenia>
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
@@ -514,8 +514,8 @@
     <PESEL>95060734509</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
     <Net><WidocznyWNet>False</WidocznyWNet></Net>
-    <Historia>
-      <PracHistoria id="PH5">
+    <Historia addnew="true">
+      <PracHistoria id="PH5" guid="b1000000-0000-0001-0000-000000000009">
         <Pracownik>P5</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Zielińska</Nazwisko>
@@ -562,11 +562,11 @@
           <Ubezpieczenia>
             <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
             <ObowiazkoweOd>2026-03-01</ObowiazkoweOd>
-            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
-            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
-            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
-            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
-            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-03-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-03-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-03-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-03-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-03-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
           </Ubezpieczenia>
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>

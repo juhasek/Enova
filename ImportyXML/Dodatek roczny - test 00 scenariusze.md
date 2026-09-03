@@ -32,10 +32,19 @@ nie tworzy sam wierszy `PracHistoria2` ani `Adresy`. Bez nich kartoteka w GUI rz
 a pól adresowych nie da się edytować. Dlatego plik 01 jawnie zawiera — wzorem danych demo
 enova (`<instalacja serwera>/Demo/100.Kadry.gold.xml`, pracownik 006):
 
-- `<Historia><PracHistoria>` z back-referencją `<Pracownik>P1</Pracownik>` po `id` lokalnym,
+- `<Historia addnew="true"><PracHistoria guid="…">` z back-referencją `<Pracownik>P1</Pracownik>` po `id` lokalnym
+  (guid + `addnew` = idempotencja: ponowny import aktualizuje, nie duplikuje),
 - `<Dodatkowe_historii><PracHistoria2><Host>PH1</Host> …Obywatelstwo, StanRodzinny, Wykształcenie, Dokument, PFRON…`,
 - `<Adresy><AdresExt><Host>PH1</Host><Typ>Zameldowania|Zamieszkania|Korespondencyjny</Typ><Adres>…`
   (`Typ` to **enum**, nie liczba).
+
+### Ubezpieczenia — zawsze zaznaczone społeczne i zdrowotne
+
+Każde ubezpieczenie (`Emerytalne`, `Rentowe`, `Chorobowe`, `Wypadkowe`, `Zdrowotne`) musi mieć
+komplet: `<Typ>Obowiazkowe</Typ>` **oraz jawnie** `<Od>{data zatrudnienia}</Od>` i `<Do>(max)</Do>`
+(`Zdrowotne` dodatkowo `<Skladka>0.00</Skladka>`). Import wg rekordów **nie wylicza** daty `Od`
+z `Ubezpieczenia.ObowiazkoweOd` (to robi dopiero logika biznesowa) — bez jawnego `<Od>` ubezpieczenie
+zapisuje się z datą `1900-01-01` i w GUI figuruje jako niezaznaczone.
 
 `business="true"` w `dbmgr importxml` **nie działa** (`Property set method not found`).
 
