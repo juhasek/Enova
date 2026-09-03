@@ -15,13 +15,16 @@ należą. Pracownicy sortowani po „Nazwisko i Imię”.
 
 | Parametr | Pole | Domyślnie | Rola |
 |---|---|---|---|
-| Data posiedzenia komisji | `PrnParams.DataPosiedzenia` (`Date`) | dziś | Punkt odniesienia dla wszystkich okien czasowych i dla roku oświadczenia ZFŚS |
+| Data posiedzenia komisji | `PrnParams.DataPosiedzenia` (`Date`) | dziś | Wyznacza rok odniesienia `R` (= rok tej daty) oraz służy jako data graniczna wniosku ZFŚS |
 
-Okna zapomóg liczone są **wstecz od daty posiedzenia** (krocząco, w miesiącach):
+Okna zapomóg to **całe lata kalendarzowe**, rok `R` (rok daty posiedzenia)
+jest **pominięty**:
 
-- **„z 2 lat”**: `[data − 24 mies., data]`
-- **„z poprzednich 2 lat”**: `[data − 48 mies., (data − 24 mies.) − 1 dzień]`
-  – sięga 4 lata wstecz, styka się z oknem bieżącym bez nakładania.
+- **„z 2 lat”**: lata `R-2` i `R-1` → `[1.1.(R-2), 31.12.(R-1)]`
+- **„z poprzednich 2 lat”**: lata `R-4` i `R-3` → `[1.1.(R-4), 31.12.(R-3)]`
+
+Przykład: `R = 2026` → „z 2 lat” = 2024 + 2025; „z poprzednich 2 lat” =
+2022 + 2023.
 
 ## Układ: master-detail, jeden wiersz = jedna zapomoga
 
@@ -84,7 +87,7 @@ Rok oświadczenia = rok z „Daty posiedzenia komisji”; data graniczna wniosku
   - liczba wierszy grupy = `max(zapomogi w oknie bieżącym, w poprzednim)`,
     puste kolumny poziomu pracownika w wierszach 2..N;
   - sumy zgadzają się z sumą widocznych pozycji (jak we wzorze papierowym);
-  - `Data posiedzenia` wstecz o pół roku / rok – czy okna łapią właściwe wypłaty.
+  - zmiana roku w „Dacie posiedzenia” przesuwa oba okna o rok kalendarzowy.
 - **Definicja „zapomogi”** – obecnie dopasowanie po nazwie elementu wypłaty
   (`"zapomog"`). Potwierdzić, że wszystkie definicje zapomóg w bazie Skanska
   mają „zapomog” w nazwie i że nie łapie fałszywych trafień.

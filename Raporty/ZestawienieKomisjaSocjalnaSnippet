@@ -32,10 +32,11 @@ namespace x.x.Reports
     // nadmiarowych wierszach. Pracownik bez zapomóg = jeden wiersz z samymi
     // kolumnami poziomu pracownika.
     //
-    // OKNA CZASOWE liczone wstecz od parametru "Data posiedzenia komisji"
-    // (domyślnie dziś):
-    //   - "z 2 lat"            = [data − 24 mies., data]
-    //   - "z poprzednich 2 lat" = [data − 48 mies., dzień przed −24 mies.]
+    // OKNA CZASOWE to całe LATA KALENDARZOWE liczone od roku parametru
+    // "Data posiedzenia komisji" (rok R = rok tej daty; domyślnie rok bieżący).
+    // Rok R jest pominięty w obu oknach:
+    //   - "z 2 lat"            = lata R-2 i R-1  ([1.1.(R-2), 31.12.(R-1)])
+    //   - "z poprzednich 2 lat" = lata R-4 i R-3 ([1.1.(R-4), 31.12.(R-3)])
     // Zapomoga = element wypłaty z nazwą zawierającą "zapomog"/"zapomóg"
     // (data = data wypłaty, kwota = WypElement.Wartosc). Elementy stornowane
     // pominięte.
@@ -110,9 +111,12 @@ namespace x.x.Reports
 
                 etap = "ustalenie okien czasowych";
                 Date dataOdniesienia = pars.DataPosiedzenia != Date.Empty ? pars.DataPosiedzenia : Date.Today;
-                Date odBiezace = dataOdniesienia.AddMonths(-24);
-                Date odPoprzednie = dataOdniesienia.AddMonths(-48);
-                Date doPoprzednie = odBiezace.AddDays(-1);
+                int rok = dataOdniesienia.Year;
+                // Okna to całe lata kalendarzowe; rok R = rok daty posiedzenia jest pominięty.
+                Date odBiezace = new Date(rok - 2, 1, 1);        // lata R-2, R-1
+                Date doBiezace = new Date(rok - 1, 12, 31);
+                Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3
+                Date doPoprzednie = new Date(rok - 3, 12, 31);
 
                 etap = "zbieranie pracowników z zaznaczenia";
                 var pracownicy = new List<Pracownik>();
@@ -136,8 +140,8 @@ namespace x.x.Reports
                     Pracownik pr = pracownik;
                     try
                     {
-                        DodajWierszePracownika(wiersze, ref lp, pr,
-                            dataOdniesienia, odBiezace, odPoprzednie, doPoprzednie);
+                        DodajWierszePracownika(wiersze, ref lp, pr, dataOdniesienia,
+                            odBiezace, doBiezace, odPoprzednie, doPoprzednie);
                     }
                     catch (Exception ex)
                     {
@@ -171,9 +175,9 @@ namespace x.x.Reports
 
         // Buduje grupę wierszy dla jednego pracownika (1..N wierszy).
         static void DodajWierszePracownika(List<Wiersz> wiersze, ref int lp, Pracownik pr,
-            Date dataOdniesienia, Date odBiezace, Date odPoprzednie, Date doPoprzednie)
+            Date dataOdniesienia, Date odBiezace, Date doBiezace, Date odPoprzednie, Date doPoprzednie)
         {
-            List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, dataOdniesienia);
+            List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, doBiezace);
             List<ZapomogaPozycja> poprzednie = ZapomogiWOknie(pr, odPoprzednie, doPoprzednie);
 
             decimal sumaBiezace = 0m;
