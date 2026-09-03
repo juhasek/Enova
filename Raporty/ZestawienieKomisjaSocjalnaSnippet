@@ -29,8 +29,8 @@ namespace x.x.Reports
     // wierszu grupy pracownika; w kolejnych wierszach te komórki są puste.
     // Dwie listy zapomóg (okno bieżące / poprzednie) są wyrównane wierszami:
     // dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
-    // nadmiarowych wierszach. Pracownik bez zapomóg = jeden wiersz z samymi
-    // kolumnami poziomu pracownika.
+    // nadmiarowych wierszach. Pracownik BEZ ŻADNEJ zapomogi w obu oknach jest
+    // pomijany (nie trafia na wydruk, nie zużywa numeru Lp).
     //
     // OKNA CZASOWE to całe LATA KALENDARZOWE liczone od roku parametru
     // "Data posiedzenia komisji" (rok R = rok tej daty; domyślnie rok bieżący).
@@ -180,13 +180,17 @@ namespace x.x.Reports
             List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, doBiezace);
             List<ZapomogaPozycja> poprzednie = ZapomogiWOknie(pr, odPoprzednie, doPoprzednie);
 
+            // Pracownik bez żadnej zapomogi w obu oknach - pomijamy (bez wiersza,
+            // bez zużycia numeru Lp).
+            if (biezace.Count == 0 && poprzednie.Count == 0)
+                return;
+
             decimal sumaBiezace = 0m;
             foreach (ZapomogaPozycja z in biezace) sumaBiezace += z.Kwota;
             decimal sumaPoprzednie = 0m;
             foreach (ZapomogaPozycja z in poprzednie) sumaPoprzednie += z.Kwota;
 
             int ile = biezace.Count > poprzednie.Count ? biezace.Count : poprzednie.Count;
-            if (ile < 1) ile = 1;
 
             for (int i = 0; i < ile; i++)
             {

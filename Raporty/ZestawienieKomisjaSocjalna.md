@@ -35,8 +35,9 @@ członka rodziny) oraz obie sumy wypełniane są **tylko w pierwszym wierszu
 grupy** pracownika; w kolejnych wierszach te komórki są puste. Dwie listy
 zapomóg (okno bieżące / poprzednie) są wyrównane wg indeksu wiersza –
 dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
-nadmiarowych wierszach. Pracownik bez zapomóg = jeden wiersz z samymi
-kolumnami poziomu pracownika.
+nadmiarowych wierszach. **Pracownik bez żadnej zapomogi w obu oknach jest
+pomijany** – nie trafia na wydruk i nie zużywa numeru `Lp` (numeracja
+pozostaje ciągła dla osób z zapomogami).
 
 Przykład ze wzoru papierowego (nr ewid. 82652, 2 wiersze detail):
 `Kwota zapomogi z 2 lat` = 3 000,00 = suma kolumny `Kwota` z obu wierszy
