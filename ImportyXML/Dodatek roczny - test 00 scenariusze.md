@@ -23,6 +23,31 @@ Wszystkie pliki mają stałe GUID-y i są **idempotentne**.
 | `Dodatek roczny - test 01 pracownicy.xml` | 5 **kompletnych** pracowników etatowych, `Kod` = numer scenariusza (`TS-01`, `TS-02`, `TS-03`, `TS-05`, `TS-09`). |
 | `Dodatek roczny - test 02 nieobecnosci.xml` | Nieobecności łamiące / niełamiące frekwencję (TS-02, TS-03, TS-05). |
 | `Dodatek roczny - test 03 dodatek w kartotece.xml` | Element „Dodatek roczny" w kartotece całej piątki: Okres `2026-01-01...2026-12-31`, Podstawa `1500,00 PLN`. |
+| `Dodatek roczny - test 04 podwyzka od 2026-05.xml` | Podwyżka od 2026-05-01 (+10%) dla całej piątki — **aktualizacja historyczna kartoteki**, patrz niżej. |
+
+## Aktualizacja historyczna (podwyżka „od dnia")
+
+Plik 04 pokazuje wzorzec zmiany warunków **od wskazanej daty** (nie nadpisania bieżącego zapisu):
+
+```xml
+<Pracownik where="Kod=TS-01">
+  <Historia addnew="true">
+    <PracHistoria date="2026-05-01">
+      <Etat><Zaszeregowanie><Stawka>6,600.00 PLN</Stawka></Zaszeregowanie></Etat>
+    </PracHistoria>
+  </Historia>
+</Pracownik>
+```
+
+- `date="2026-05-01"` → silnik **tnie okres**: klonuje zapis obowiązujący na tę datę
+  (z całym `PracHistoria2` i adresami), w klonie nadpisuje **tylko** podane pole (`Stawka`),
+  a poprzedni zapis obowiązuje do 2026-04-30. Okres zatrudnienia (`Etat.Okres`) bez zmian.
+- `<Historia addnew="true">` — chroni pozostałe zapisy historii przed skasowaniem.
+- **Nie jest idempotentny** — ponowny import rzuca `DateDuplicateException` („nie da się
+  aktualizować dwa razy tego samego dnia"). Import jednorazowy; ponowne wczytanie → najpierw
+  usuń nowy zapis albo zmień datę.
+- Efekt w GUI: zakładka „Historia zapisów" pracownika — nowy wiersz „Ważny od = 1.05.2026"
+  z nową stawką.
 
 ## Dlaczego pracownik musi być „kompletny"
 
