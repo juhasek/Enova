@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  5 pracownikow etatowych do bazy Claude, pod scenariusze testowe "Dodatek roczny":
+    Kod 2 Kowalska Anna       - TS-01 pelne uprawnienie   (caly 2026)
+    Kod 3 Wisniewski Piotr    - TS-02 nieusprawiedliwiona  (caly 2026)
+    Kod 4 Wojcik Katarzyna    - TS-03 choroba L4           (caly 2026)
+    Kod 5 Lewandowski Marek   - TS-05 urlop planowy        (caly 2026)
+    Kod 6 Zielinska Agnieszka - TS-09 niepelny rok         (od 2026-03-01)
+  Import WEDLUG REKORDOW. Wzorzec: examples/import-pracownik-etatowy.xml
+  (zweryfikowany na bazie Claude 2026-09-02, pracownik Kod 1 Nowak Jan).
+
+  Referencje standardowe (potwierdzone w bazie Claude):
+    Wydzial "Glowny wydzial firmy"        00000000-0005-0001-0001-000000000000
+    Kalendarz "Standard"                  00000000-0006-0003-0001-000000000000
+    Def. elementu "Wynagr. zasadnicze"    00000000-0007-0002-0002-000000000000
+    Tytul ubezpieczenia 0110 (pracownik)  00000000-0005-0002-0110-000000000000
+-->
+<session fromto="(wszystko)">
+
+  <Pracownik id="Prac_2" guid="a1000000-0000-0000-0000-000000000021"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Typ>Pracownik</Typ>
+    <Kod>2</Kod>
+    <Nazwisko>Kowalska</Nazwisko>
+    <Imie>Anna</Imie>
+    <PESEL>91032012301</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Historia addnew="true">
+      <PracHistoria id="PH_2" guid="a1000000-0000-0000-0000-000000000022">
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>Kowalska</Nazwisko>
+        <Imie>Anna</Imie>
+        <PESEL>91032012301</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <Plec>K</Plec>
+        <Urodzony><Data>1991-03-20</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+        </Podatki>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="Prac_3" guid="a1000000-0000-0000-0000-000000000031"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Typ>Pracownik</Typ>
+    <Kod>3</Kod>
+    <Nazwisko>Wiśniewski</Nazwisko>
+    <Imie>Piotr</Imie>
+    <PESEL>88071043214</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Historia addnew="true">
+      <PracHistoria id="PH_3" guid="a1000000-0000-0000-0000-000000000032">
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>Wiśniewski</Nazwisko>
+        <Imie>Piotr</Imie>
+        <PESEL>88071043214</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <Plec>M</Plec>
+        <Urodzony><Data>1988-07-10</Data><Miejsce>Kraków</Miejsce></Urodzony>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+        </Podatki>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,500.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="Prac_4" guid="a1000000-0000-0000-0000-000000000041"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Typ>Pracownik</Typ>
+    <Kod>4</Kod>
+    <Nazwisko>Wójcik</Nazwisko>
+    <Imie>Katarzyna</Imie>
+    <PESEL>93110187608</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Historia addnew="true">
+      <PracHistoria id="PH_4" guid="a1000000-0000-0000-0000-000000000042">
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>Wójcik</Nazwisko>
+        <Imie>Katarzyna</Imie>
+        <PESEL>93110187608</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <Plec>K</Plec>
+        <Urodzony><Data>1993-11-01</Data><Miejsce>Gdańsk</Miejsce></Urodzony>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+        </Podatki>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>5,800.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="Prac_5" guid="a1000000-0000-0000-0000-000000000051"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Typ>Pracownik</Typ>
+    <Kod>5</Kod>
+    <Nazwisko>Lewandowski</Nazwisko>
+    <Imie>Marek</Imie>
+    <PESEL>85021567817</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Historia addnew="true">
+      <PracHistoria id="PH_5" guid="a1000000-0000-0000-0000-000000000052">
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>Lewandowski</Nazwisko>
+        <Imie>Marek</Imie>
+        <PESEL>85021567817</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <Plec>M</Plec>
+        <Urodzony><Data>1985-02-15</Data><Miejsce>Poznań</Miejsce></Urodzony>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+        </Podatki>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>7,200.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="Prac_6" guid="a1000000-0000-0000-0000-000000000061"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Typ>Pracownik</Typ>
+    <Kod>6</Kod>
+    <Nazwisko>Zielińska</Nazwisko>
+    <Imie>Agnieszka</Imie>
+    <PESEL>95060734509</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Historia addnew="true">
+      <PracHistoria id="PH_6" guid="a1000000-0000-0000-0000-000000000062">
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>Zielińska</Nazwisko>
+        <Imie>Agnieszka</Imie>
+        <PESEL>95060734509</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <Plec>K</Plec>
+        <Urodzony><Data>1995-06-07</Data><Miejsce>Wrocław</Miejsce></Urodzony>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+        </Podatki>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-03-01</DataZawarcia>
+          <DataRozpPracy>2026-03-01</DataRozpPracy>
+          <Okres>2026-03-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>5,500.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-03-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Przyczyna>NieDotyczy</Przyczyna></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+</session>

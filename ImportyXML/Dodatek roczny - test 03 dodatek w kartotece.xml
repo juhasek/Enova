@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Element "Dodatek roczny" (guid c973afe6-..., ID 262) w kartotece 5 pracownikow bazy Claude.
+  Okres dodatku = caly 2026 (pole "Okres" -> algorytm bierze z DodHistoria.Okres).
+  Kwota (Podstawa) = 1500,00 PLN (regulaminowa). Import wg rekordow, guid staly => idempotentne.
+  Oczekiwane wyniki naliczenia wyplaty 01/2027 (do potwierdzenia w GUI):
+    Kod 2 Kowalska    TS-01  -> 1500  (caly rok, brak nieobecnosci)
+    Kod 3 Wisniewski  TS-02  -> 0     (nieob. nieusprawiedliwiona 11.05.2026)
+    Kod 4 Wojcik      TS-03  -> 0     (zwolnienie chorobowe 14-18.09.2026)
+    Kod 5 Lewandowski TS-05  -> 1500  (tylko urlop wypoczynkowy planowy - dozwolony)
+    Kod 6 Zielinska   TS-09  -> 0     (zatrudniona od 1.03.2026 - niepelny rok)
+-->
+<session fromto="(wszystko)">
+
+  <Pracownik where="Kod=2">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000002d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000002d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=3">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000003d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000003d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=4">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000004d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000004d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=5">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000005d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000005d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=6">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000006d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000006d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+</session>

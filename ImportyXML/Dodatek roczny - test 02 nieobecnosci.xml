@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Nieobecnosci pod scenariusze "Dodatek roczny" (baza Claude), import wg rekordow.
+  Algorytm Dodatku czyta tylko: Definicja.Nazwa, Okres, Urlop.Przyczyna.
+    Kod 3 Wisniewski  - Nieobec.nieusprawiedliwiona 1 dzien  -> lamie frekwencje (TS-02 -> 0)
+    Kod 4 Wojcik      - Zwolnienie chorobowe 5 dni           -> lamie frekwencje (TS-03 -> 0)
+    Kod 5 Lewandowski - Urlop wypoczynkowy planowy 10 dni    -> dozwolony      (TS-05 -> 1500)
+  Linkowanie do pracownika: <Pracownik where="Kod=N"> + kolekcja Nieobecnosci (Zrodlo=Pracownik).
+  Selektor TypZrodla=Pracownik (podtyp NieobecnoscPracownika) - element obowiazkowy mimo class.
+  Guid staly => idempotentne.
+-->
+<session fromto="(wszystko)">
+
+  <Pracownik where="Kod=3">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000003a1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0002-000000000000</Definicja>
+        <Okres>2026-05-11...2026-05-11</Okres>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=4">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000004a1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-09-14...2026-09-18</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=5">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000005a1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0028-000000000000</Definicja>
+        <Okres>2026-06-08...2026-06-19</Okres>
+        <Urlop><Przyczyna>Planowy</Przyczyna></Urlop>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+</session>
