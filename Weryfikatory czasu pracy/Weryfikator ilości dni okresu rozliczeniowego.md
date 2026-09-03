@@ -29,13 +29,9 @@ Weryfikator jest zarejestrowany na zapisie **całego kalendarza**, a nie pojedyn
 
 ### Horyzont edycji
 
-Weryfikator wyznacza **najwcześniejszy miesiąc, który wciąż można modyfikować**:
-
-- jeśli ustawiona jest **cecha globalna `BlokadaOdDnia`** (ta sama, której używa weryfikator
-  „Blokada modyfikacji czasu pracy wstecz") — horyzont liczony jest tak samo jak tam (dzień progu
-  w bieżącym miesiącu decyduje, czy otwarty jest jeszcze miesiąc poprzedni),
-- jeśli cecha nie jest ustawiona — przyjmowany jest **1. dzień bieżącego miesiąca** (miesiące
-  minione i tak są zwykle domknięte naliczonymi wypłatami).
+Za **najwcześniejszy miesiąc, który wciąż można modyfikować**, weryfikator przyjmuje **bieżący
+miesiąc** — horyzontem jest jego **1. dzień** (`Date.Today` → `new Date(rok, miesiąc, 1)`).
+Miesiące minione i tak są zwykle domknięte naliczonymi wypłatami.
 
 Miesiące przed horyzontem są „zamknięte": ich dni roboczych bez jawnego wpisu nie da się już
 zamienić na wolne, więc weryfikator nie wlicza ich do zapasu elastyczności.
@@ -134,11 +130,12 @@ robocze repo nie ma dostępu do DLL/live-testu. Kolumnę należy uzupełnić po 
   dni zmienionych, czy dla całego widocznego miesiąca, wpływa na podział dni na „jawne" vs
   „elastyczne". W trybie ścisłym nie zmienia to wyniku scenariuszy 5.1 / 5.5, ale w trybie
   tolerancyjnym może. Do potwierdzenia w GUI.
-- **Wyznaczanie horyzontu edycji.** Horyzont opiera się na cesze globalnej `BlokadaOdDnia` lub —
-  gdy jej brak — na 1. dniu bieżącego miesiąca (`Date.Today`). To heurystyka „miniony miesiąc jest
-  domknięty", nie odczyt faktycznego stanu (np. czy istnieje naliczona, niebuforowa wypłata za dany
-  miesiąc). Jeśli potrzebna jest twardsza reguła, sygnałem powinno być istnienie wypłaty
-  (`pracownik.Wyplaty` z `Bufor == false`) obejmującej miesiąc — do rozważenia.
+- **Wyznaczanie horyzontu edycji.** Horyzont to **1. dzień bieżącego miesiąca** (`Date.Today`). To
+  heurystyka „miniony miesiąc jest domknięty", nie odczyt faktycznego stanu (np. czy istnieje
+  naliczona, niebuforowa wypłata za dany miesiąc). Jeśli potrzebna jest twardsza reguła, sygnałem
+  powinno być istnienie wypłaty (`pracownik.Wyplaty` z `Bufor == false`) obejmującej miesiąc — do
+  rozważenia. Wcześniejsza wersja próbowała czytać cechę globalną `BlokadaOdDnia` (jak weryfikator
+  „Blokada modyfikacji czasu pracy wstecz"), ale w tym wdrożeniu ta cecha nie istnieje.
 - **Znaczenie parametru `data`.** Rozróżnienie trybu ścisły/tolerancyjny opiera się na `Date.Today`
   i miesiącach okresu, nie na `data` przekazanym do weryfikatora — dzięki temu działa niezależnie
   od tego, czy `data` to edytowany dzień, czy początek okresu. Gdyby przyjąć, że `data` to zawsze

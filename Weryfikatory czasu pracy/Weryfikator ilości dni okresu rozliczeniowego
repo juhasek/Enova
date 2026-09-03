@@ -39,28 +39,11 @@ public static string WeryfikujIloscDniWolnychWOkresieRozliczeniowym(KalkulatorPl
 	// - domyślnie wolne (weekend, święto) - liczą się jako wolne, dopóki planista jawnie ich nie zmieni,
 	// - domyślnie robocze - są elastyczne: mogą finalnie zostać zarówno dniem pracy, jak i dniem wolnym,
 	//   ale dopiero po jawnej zmianie planisty (bez zmiany zostają dniem pracy).
-	// Horyzont edycji planu: pierwszy dzień najwcześniejszego miesiąca, który wciąż można modyfikować.
-	// Zgodnie z konwencją repo wyznacza go cecha globalna "BlokadaOdDnia" (ta sama, której używa
-	// weryfikator "Blokada modyfikacji czasu pracy wstecz"). Gdy cecha nie jest ustawiona, przyjmujemy
-	// 1. dzień bieżącego miesiąca - miesiące minione i tak są zwykle domknięte naliczonymi wypłatami.
+	// Horyzont edycji planu: 1. dzień bieżącego miesiąca. Miesiące minione traktujemy jako zamknięte
+	// (zwykle domknięte naliczonymi wypłatami) - ich dni roboczych bez jawnego wpisu nie da się już
+	// zamienić na wolne, więc nie wnoszą elastyczności, której planista mógłby jeszcze użyć.
 	Date dzisiaj = Date.Today;
 	Date horyzontEdycji = new Date(dzisiaj.Year, dzisiaj.Month, 1);
-	object wartoscBlokady = pracownik.Session.Global.Features["BlokadaOdDnia"];
-	if (wartoscBlokady != null && (int)wartoscBlokady >= 1)
-	{
-		int prog = (int)wartoscBlokady;
-		int dniBiezacegoMiesiaca = System.DateTime.DaysInMonth(dzisiaj.Year, dzisiaj.Month);
-		if (prog > dniBiezacegoMiesiaca)
-			prog = dniBiezacegoMiesiaca;
-		int rokH = dzisiaj.Year;
-		int miesiacH = dzisiaj.Month;
-		if (dzisiaj.Day < prog)
-		{
-			miesiacH--;
-			if (miesiacH == 0) { miesiacH = 12; rokH--; }
-		}
-		horyzontEdycji = new Date(rokH, miesiacH, 1);
-	}
 	int miesiacHoryzontu = horyzontEdycji.Year * 12 + horyzontEdycji.Month;
 
 	int dniKalendarzoweOkresu = 0;
