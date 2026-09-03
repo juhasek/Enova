@@ -6,16 +6,29 @@ DevExpress XtraReports, orientacja pozioma), zasilany snippetem
 
 ## Kontekst uruchomienia
 
-Wydruk wywoływany jest z **Listy pracowników** (ew. **Pulpitu kierownika**)
-dla zaznaczonych pracowników. Jeśli zaznaczone są wiersze historii
-zatrudnienia (`PracHistoria`), snippet rozpoznaje pracownika, do którego
-należą. Pracownicy sortowani po „Nazwisko i Imię”.
+Wydruk uruchamiany jest z **Listy pracowników** (ew. **Pulpitu kierownika**).
+Pracownicy sortowani po „Nazwisko i Imię”.
 
-## Parametr wydruku
+**Dobór pracowników** zależy od parametru „Tylko pracownicy zaznaczeni na
+liście":
+
+- **domyślnie (odznaczone)** – raport **skanuje wszystkie wypłaty firmy**
+  w oknie `[1.1.(R-4), 31.12.(R-1)]` i bierze **każdego pracownika, który
+  dostał zapomogę** – także **zwolnionych** i **spoza bieżącego filtra
+  listy / okresu**. Zaznaczenie jest ignorowane. To odpowiedź na scenariusz:
+  „lista ma okres wrzesień, a na raporcie mają być też osoby zwolnione
+  w styczniu, które dostały zapomogę".
+- **zaznaczone** – klasycznie: tylko pracownicy zaznaczeni na liście
+  (wiersz historii `PracHistoria` mapowany na pracownika).
+
+W obu trybach pracownik bez zapomogi w oknach nie trafia na wydruk.
+
+## Parametry wydruku
 
 | Parametr | Pole | Domyślnie | Rola |
 |---|---|---|---|
 | Data posiedzenia komisji | `PrnParams.DataPosiedzenia` (`Date`) | dziś | Wyznacza rok odniesienia `R` (= rok tej daty) oraz służy jako data graniczna wniosku ZFŚS |
+| Tylko pracownicy zaznaczeni na liście | `PrnParams.TylkoZaznaczeni` (`bool`) | `false` | `false` = skan wszystkich wypłat; `true` = tylko zaznaczeni |
 
 Okna zapomóg to **całe lata kalendarzowe**, rok `R` (rok daty posiedzenia)
 jest **pominięty**:
@@ -92,6 +105,14 @@ Rok oświadczenia = rok z „Daty posiedzenia komisji”; data graniczna wniosku
 - **Definicja „zapomogi”** – obecnie dopasowanie po nazwie elementu wypłaty
   (`"zapomog"`). Potwierdzić, że wszystkie definicje zapomóg w bazie Skanska
   mają „zapomog” w nazwie i że nie łapie fałszywych trafień.
+- **Wydajność skanu wypłat** (tryb domyślny) – `ZbierzPracownikowZapomogi`
+  iteruje wszystkie wypłaty firmy z 4 lat (`Wyplaty.WgData` z warunkiem po
+  dacie – filtr serwerowy) i dla każdej wchodzi w `Elementy`. Przy dużej
+  liczbie wypłat sprawdzić czas generowania; w razie potrzeby zawęzić po
+  definicjach elementów „zapomoga” lub cache’ować listę pracowników.
+- **`Wyplata.Pracownik`** rzutowany przez `as Pracownik` – wypłaty bez
+  pracownika (np. `WyplataInne` dla kontrahenta) są pomijane. Potwierdzić,
+  że zapomogi zawsze idą przez wypłatę pracownika.
 - **Cecha „Jednostka obsługująca”** na Wydziale jest typu **element
   słownika** (`Soneta.Ksiega.ElemSlownika`). Odczyt: nietypowany indeksator
   `Wydzial.Features["Jednostka obsługująca"]` → rzut na `ElemSlownika` →
@@ -104,8 +125,10 @@ Rok oświadczenia = rok z „Daty posiedzenia komisji”; data graniczna wniosku
 2. W „Kod źródłowy” wklej całą zawartość `Raporty/ZestawienieKomisjaSocjalnaSnippet`.
 3. Zapisz – Enova skompiluje kod i podepnie klasę
    `ZestawienieKomisjaSocjalnaSnippet` pod wydruk.
-4. Uruchom wydruk dla zaznaczonych pracowników; w oknie parametrów podaj
-   „Datę posiedzenia komisji” (domyślnie dziś) i sprawdź wynik.
+4. Uruchom wydruk z Listy pracowników; w oknie parametrów podaj „Datę
+   posiedzenia komisji” (domyślnie dziś). „Tylko pracownicy zaznaczeni na
+   liście” zostaw odznaczone, aby raport sam znalazł wszystkich z zapomogą
+   (także zwolnionych).
 
 Zmiana nie wymaga modyfikacji `.repx` – pasmo `Detail` jest płaskie, a
 „wygaszanie” powtórzonych kolumn i wyrównanie dwóch list zapomóg realizuje

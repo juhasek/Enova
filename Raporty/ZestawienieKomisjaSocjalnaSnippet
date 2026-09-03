@@ -15,11 +15,17 @@ namespace x.x.Reports
 {
     // Zestawienie na posiedzenie Komisji Socjalnej.
     //
-    // Wydruk (ZestawienieKomisjaSocjalna.repx) wywoływany jest z listy
-    // pracowników (ew. z Pulpitu kierownika) dla zaznaczonych pracowników.
-    // Jeśli zaznaczone są wiersze historii zatrudnienia (PracHistoria),
-    // rozpoznajemy pracownika, do którego należą. Pracownicy sortowani po
-    // "Nazwisko i Imię".
+    // Wydruk (ZestawienieKomisjaSocjalna.repx) uruchamiany jest z listy
+    // pracowników (ew. z Pulpitu kierownika).
+    //
+    // DOBÓR PRACOWNIKÓW (parametr "Tylko pracownicy zaznaczeni na liście"):
+    //   - false (domyślnie): raport SKANUJE wszystkie wypłaty firmy w oknie
+    //     [1.1.(R-4), 31.12.(R-1)] i bierze każdego pracownika, który dostał
+    //     zapomogę - także zwolnionych i spoza bieżącego filtra listy.
+    //     Zaznaczenie jest ignorowane.
+    //   - true: tylko pracownicy zaznaczeni na liście (wiersz historii
+    //     zatrudnienia PracHistoria jest mapowany na pracownika).
+    // Pracownicy sortowani po "Nazwisko i Imię".
     //
     // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna wypłacona zapomoga.
     // Dla pracownika z kilkoma zapomogami powstaje kilka wierszy. Kolumny
@@ -58,10 +64,12 @@ namespace x.x.Reports
         public class PrnParams : ContextBase
         {
             Date dataPosiedzenia;
+            bool tylkoZaznaczeni;
 
             public PrnParams(Context context) : base(context)
             {
                 dataPosiedzenia = Date.Today;
+                tylkoZaznaczeni = false;
             }
 
             [Caption("Data posiedzenia komisji")]
@@ -71,6 +79,21 @@ namespace x.x.Reports
                 set
                 {
                     dataPosiedzenia = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+
+            // Domyślnie (false) raport skanuje WSZYSTKIE wypłaty w oknie i bierze
+            // każdego pracownika, który miał zapomogę - także zwolnionych, spoza
+            // bieżącego filtra listy. Zaznaczenie na liście jest wtedy ignorowane.
+            // true = klasyczne zachowanie: tylko pracownicy zaznaczeni na liście.
+            [Caption("Tylko pracownicy zaznaczeni na liście")]
+            public bool TylkoZaznaczeni
+            {
+                get { return tylkoZaznaczeni; }
+                set
+                {
+                    tylkoZaznaczeni = value;
                     OnChanged(EventArgs.Empty);
                 }
             }
@@ -100,10 +123,7 @@ namespace x.x.Reports
 
                 etap = "pobranie kontekstu";
                 Context dc = pars.Context;
-
-                etap = "pobranie zaznaczenia (Row[])";
-                Row[] rows = dc != null ? dc[typeof(Row[])] as Row[] : null;
-                if (rows == null)
+                if (dc == null)
                 {
                     DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
                     return;
@@ -118,15 +138,32 @@ namespace x.x.Reports
                 Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3
                 Date doPoprzednie = new Date(rok - 3, 12, 31);
 
-                etap = "zbieranie pracowników z zaznaczenia";
+                etap = "zbieranie pracowników";
                 var pracownicy = new List<Pracownik>();
-                foreach (Row row in rows)
+                if (pars.TylkoZaznaczeni)
                 {
-                    Pracownik p = row as Pracownik;
-                    if (p == null && row is PracHistoria)
-                        p = ((PracHistoria) row).Pracownik;
-                    if (p != null && !pracownicy.Contains(p))
-                        pracownicy.Add(p);
+                    // Klasycznie: tylko pracownicy zaznaczeni na liście.
+                    Row[] rows = dc[typeof(Row[])] as Row[];
+                    if (rows == null)
+                    {
+                        DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                        return;
+                    }
+                    foreach (Row row in rows)
+                    {
+                        Pracownik p = row as Pracownik;
+                        if (p == null && row is PracHistoria)
+                            p = ((PracHistoria) row).Pracownik;
+                        if (p != null && !pracownicy.Contains(p))
+                            pracownicy.Add(p);
+                    }
+                }
+                else
+                {
+                    // Domyślnie: skan wszystkich wypłat w oknie [1.1.(R-4), 31.12.(R-1)]
+                    // (= suma obu okien) i zebranie każdego pracownika z zapomogą -
+                    // niezależnie od zaznaczenia i filtra listy (łapie też zwolnionych).
+                    pracownicy = ZbierzPracownikowZapomogi(dc.Session, odPoprzednie, doBiezace);
                 }
 
                 etap = "sortowanie listy pracowników";
@@ -281,6 +318,35 @@ namespace x.x.Reports
             if (wniosek._RodzajWskazywaniaDochodu == "Kwota")
                 return wniosek._KwotaDochoduNaCzlonkaRodziny.ToString();
             return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
+        }
+
+        // Skan wszystkich wypłat w firmie z datą w oknie [od, doDaty] i zebranie
+        // pracowników, którzy dostali choć jedną zapomogę. Filtr po dacie jest
+        // serwerowy (klucz WgData na polu Data). Łapie też pracowników zwolnionych
+        // / spoza bieżącego filtra listy pracowników.
+        static List<Pracownik> ZbierzPracownikowZapomogi(Session session, Date od, Date doDaty)
+        {
+            var pracownicy = new List<Pracownik>();
+            if (doDaty < od)
+                return pracownicy;
+
+            foreach (Wyplata w in session.GetPlace().Wyplaty.WgData[(Wyplata x) => x.Data >= od && x.Data <= doDaty])
+            {
+                Pracownik p = w.Pracownik as Pracownik;
+                if (p == null || pracownicy.Contains(p))
+                    continue;
+                foreach (WypElement el in w.Elementy)
+                {
+                    if (el.RozliczenieStorna)
+                        continue;
+                    if (NazwaZapomoga(el.Nazwa) || (el.Definicja != null && NazwaZapomoga(el.Definicja.Nazwa)))
+                    {
+                        pracownicy.Add(p);
+                        break;
+                    }
+                }
+            }
+            return pracownicy;
         }
 
         // Lista pojedynczych zapomóg pracownika wypłaconych w oknie [od, doDaty]
