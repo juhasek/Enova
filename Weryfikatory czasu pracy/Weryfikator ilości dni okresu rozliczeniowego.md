@@ -74,6 +74,22 @@ niemożliwe**:
 - **niedobór** — nawet zamiana **wszystkich** elastycznych dni roboczych (z otwartych miesięcy) na
   wolne nie wystarczy do osiągnięcia wymaganej liczby.
 
+### Ta sama zmiana, różny wynik zależnie od bieżącej daty
+
+O trybie decyduje **bieżąca data zapisu**, nie sama zmiana planu. Przykład: okres
+lipiec–wrzesień (3-miesięczny), planista zabiera 2 soboty w lipcu i nigdzie ich nie
+oddaje.
+
+| Kiedy zapisuje plan | Tryb | Wynik |
+|---|---|---|
+| w lipcu (miesiąc 1) | tolerancyjny | brak błędu — sierpień/wrzesień mogą odrobić bilans |
+| w sierpniu (miesiąc 2) | tolerancyjny | brak błędu — wrzesień może odrobić bilans |
+| we wrześniu (miesiąc 3) | ścisły — wrzesień to ostatni otwarty miesiąc okresu | **błąd „Za mało dni wolnych", brakuje 2** |
+
+Z upływem czasu miesiące „zamykają się" (horyzont edycji przesuwa się na 1. dzień
+bieżącego miesiąca) i w końcu w okresie nie ma już miesiąca późniejszego niż bieżący —
+wtedy bilansu nie ma gdzie odłożyć i włącza się tryb ścisły.
+
 ## 3. Kiedy się uruchamia
 
 Przy zapisie kalendarza (planu pracy) pracownika. Weryfikator działa tylko wtedy, gdy źródłem
