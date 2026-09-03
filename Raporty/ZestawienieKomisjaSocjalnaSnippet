@@ -8,6 +8,8 @@ using Soneta.Kadry;
 using Soneta.Ksiega;
 using Soneta.Place;
 using Soneta.Types;
+using AltOne.Skanska.Workflow.Extensions;
+using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples;
 
 namespace x.x.Reports
 {
@@ -20,10 +22,12 @@ namespace x.x.Reports
     // jeden pracownik, posortowane po "Nazwisko i Imię".
     //
     // Wypełniane kolumny: Lp, NrEwid, NazwiskoImie, DataUrodzenia,
-    // JednostkaObslugujaca oraz KwotaZapomogiZ2Lat (suma elementów wypłat z
-    // nazwą "zapomog(a)" wypłaconych w ostatnich 24 miesiącach do dziś).
-    // Pozostałe kolumny (dochód na członka rodziny, Data/Kwota wypłat,
-    // "poprzednie 2 lata") celowo zostają puste - do uzupełnienia.
+    // JednostkaObslugujaca, DochodNaCzlonkaRodziny (z wniosku ZFŚS pracownika -
+    // dodatek AltOne.Skanska.Workflow, patrz PobierzDochodNaCzlonkaRodziny) oraz
+    // KwotaZapomogiZ2Lat (suma elementów wypłat z nazwą "zapomog(a)" wypłaconych
+    // w ostatnich 24 miesiącach do dziś).
+    // Pozostałe kolumny (Data/Kwota wypłat, "poprzednie 2 lata") celowo zostają
+    // puste - do uzupełnienia.
     //
     // Każde pole liczone jest przez Bezpiecznie(...) - jeśli dla któregoś
     // wiersza coś rzuci wyjątkiem, w tej jednej komórce pojawi się
@@ -103,7 +107,7 @@ namespace x.x.Reports
                         NazwiskoImie = Bezpiecznie(() => pr.NazwiskoImię.ToString()),
                         DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString()),
                         JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)),
-                        DochodNaCzlonkaRodziny = "",
+                        DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr)),
                         KwotaZapomogiZ2Lat = Bezpiecznie(() => FormatKwota(SumaZapomog(pr, Date.Today.AddMonths(-24), Date.Today))),
                         DataWyplaty = "",
                         KwotaWyplaty = "",
@@ -164,6 +168,35 @@ namespace x.x.Reports
 
             ElemSlownika elem = (ElemSlownika) wydzial.Features["Jednostka obsługująca"];
             return elem != null ? elem.Nazwa : "brak";
+        }
+
+        // Dochód na członka rodziny z aktualnego, zatwierdzonego wniosku ZFŚS
+        // pracownika (krotka "A1_ZFSS" z dodatku AltOne.Skanska.Workflow).
+        //
+        // Odwzorowuje worker
+        // AltOne.Skanska.Workflow.Workers.Wyliczane.WniosekZFFSPracownikaWorker
+        // (property GetProgDochodu), którego w wydruku nie da się zbindować przez
+        // {Workers.WniosekZFFSPracownika.GetProgDochodu} - to bindowanie działa
+        // tylko na liście pracowników z parametrami wniosków ZFŚS (WnioskiZFSSParams).
+        // Tutaj wołamy publiczne API dodatku bezpośrednio:
+        //   - wniosek: PracownikExt.GetAktualnyWniosekZFSS(pracownik,
+        //     <wnioski nie później niż>, <rok oświadczenia>) - bierze ostatni
+        //     zatwierdzony wniosek A1_ZFSS z okresem od 1 stycznia danego roku;
+        //   - RodzajWskazywaniaDochodu == "Kwota" -> kwota dochodu na członka
+        //     rodziny; w przeciwnym razie nazwa progu dochodowego (element słownika);
+        //   - brak roli widoczności kwot u operatora -> "(Brak praw do widoku)".
+        // Parametry filtrowania jak w domyślnym widoku wniosków ZFŚS: stan na
+        // dzień dzisiejszy, rok oświadczenia = rok bieżący.
+        static string PobierzDochodNaCzlonkaRodziny(Pracownik pracownik)
+        {
+            A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, Date.Today, Date.Today.Year);
+            if (wniosek == null)
+                return "";
+            if (!wniosek.CzyPrawaDoWidokuProgow())
+                return "(Brak praw do widoku)";
+            if (wniosek._RodzajWskazywaniaDochodu == "Kwota")
+                return wniosek._KwotaDochoduNaCzlonkaRodziny.ToString();
+            return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
         }
 
         // Suma elementów wypłat pracownika z nazwą zawierającą "zapomog(a)",
