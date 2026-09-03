@@ -1,46 +1,48 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  5 pracownikow etatowych do bazy Claude, pod scenariusze testowe "Dodatek roczny":
-    Kod 2 Kowalska Anna       - TS-01 pelne uprawnienie   (caly 2026)
-    Kod 3 Wisniewski Piotr    - TS-02 nieusprawiedliwiona  (caly 2026)
-    Kod 4 Wojcik Katarzyna    - TS-03 choroba L4           (caly 2026)
-    Kod 5 Lewandowski Marek   - TS-05 urlop planowy        (caly 2026)
-    Kod 6 Zielinska Agnieszka - TS-09 niepelny rok         (od 2026-03-01)
-  Import WEDLUG REKORDOW. Wzorzec: examples/import-pracownik-etatowy.xml
-  (zweryfikowany na bazie Claude 2026-09-02, pracownik Kod 1 Nowak Jan).
-
-  Referencje standardowe (potwierdzone w bazie Claude):
-    Wydzial "Glowny wydzial firmy"        00000000-0005-0001-0001-000000000000
-    Kalendarz "Standard"                  00000000-0006-0003-0001-000000000000
-    Def. elementu "Wynagr. zasadnicze"    00000000-0007-0002-0002-000000000000
-    Tytul ubezpieczenia 0110 (pracownik)  00000000-0005-0002-0110-000000000000
+  5 kompletnych pracownikow etatowych do bazy Claude pod scenariusze testowe "Dodatek roczny".
+  Kod pracownika = numer scenariusza (TS-01, TS-02, TS-03, TS-05, TS-09).
+  Struktura wg Demo/100.Kadry.gold.xml (pracownik 006): Dodatkowe_historii/PracHistoria2 + Adresy/AdresExt,
+  dzieki czemu kartoteka otwiera sie w GUI bez bledow. Import WEDLUG REKORDOW.
+  Guidy Pracownika stale (b1000000-0000-0000-0000-0000000000NN) => idempotentne.
 -->
 <session fromto="(wszystko)">
-
-  <Pracownik id="Prac_2" guid="a1000000-0000-0000-0000-000000000021"
+  <Pracownik id="P1" guid="b1000000-0000-0000-0000-000000000001"
              class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
     <Typ>Pracownik</Typ>
-    <Kod>2</Kod>
+    <Kod>TS-01</Kod>
     <Nazwisko>Kowalska</Nazwisko>
     <Imie>Anna</Imie>
     <PESEL>91032012301</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
-    <Historia addnew="true">
-      <PracHistoria id="PH_2" guid="a1000000-0000-0000-0000-000000000022">
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia>
+      <PracHistoria id="PH1">
+        <Pracownik>P1</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Kowalska</Nazwisko>
         <Imie>Anna</Imie>
+        <Urodzony><Data>1991-03-20</Data><Miejsce>Warszawa</Miejsce></Urodzony>
         <PESEL>91032012301</PESEL>
         <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
         <Plec>K</Plec>
-        <Urodzony><Data>1991-03-20</Data><Miejsce>Warszawa</Miejsce></Urodzony>
         <Podatki>
           <TypProgow>Standardowe</TypProgow>
           <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
           <KosztyMnoznik>1.00</KosztyMnoznik>
           <UlgaMnoznik>1.00</UlgaMnoznik>
           <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
         </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
         <Etat>
           <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
           <DataZawarcia>2026-01-01</DataZawarcia>
@@ -48,9 +50,12 @@
           <Okres>2026-01-01...</Okres>
           <Podstawa>UmowyOPrace</Podstawa>
           <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
           <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
           <TypStawki>Dowolna</TypStawki>
           <Zaszeregowanie>
             <Wymiar>1/1</Wymiar>
@@ -70,35 +75,98 @@
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
         <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
-        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH1_2">
+            <Host>PH1</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH1_AZAM">
+            <Host>PH1</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Marszałkowska</Ulica>
+              <NrDomu>1</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH1_AZAMIESZK">
+            <Host>PH1</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH1_AKOR">
+            <Host>PH1</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
       </PracHistoria>
     </Historia>
   </Pracownik>
 
-  <Pracownik id="Prac_3" guid="a1000000-0000-0000-0000-000000000031"
+  <Pracownik id="P2" guid="b1000000-0000-0000-0000-000000000002"
              class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
     <Typ>Pracownik</Typ>
-    <Kod>3</Kod>
+    <Kod>TS-02</Kod>
     <Nazwisko>Wiśniewski</Nazwisko>
     <Imie>Piotr</Imie>
     <PESEL>88071043214</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
-    <Historia addnew="true">
-      <PracHistoria id="PH_3" guid="a1000000-0000-0000-0000-000000000032">
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia>
+      <PracHistoria id="PH2">
+        <Pracownik>P2</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Wiśniewski</Nazwisko>
         <Imie>Piotr</Imie>
+        <Urodzony><Data>1988-07-10</Data><Miejsce>Kraków</Miejsce></Urodzony>
         <PESEL>88071043214</PESEL>
         <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
         <Plec>M</Plec>
-        <Urodzony><Data>1988-07-10</Data><Miejsce>Kraków</Miejsce></Urodzony>
         <Podatki>
           <TypProgow>Standardowe</TypProgow>
           <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
           <KosztyMnoznik>1.00</KosztyMnoznik>
           <UlgaMnoznik>1.00</UlgaMnoznik>
           <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
         </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
         <Etat>
           <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
           <DataZawarcia>2026-01-01</DataZawarcia>
@@ -106,9 +174,12 @@
           <Okres>2026-01-01...</Okres>
           <Podstawa>UmowyOPrace</Podstawa>
           <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
           <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
           <TypStawki>Dowolna</TypStawki>
           <Zaszeregowanie>
             <Wymiar>1/1</Wymiar>
@@ -128,35 +199,98 @@
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
         <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
-        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH2_2">
+            <Host>PH2</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH2_AZAM">
+            <Host>PH2</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Kraków</Miejscowosc>
+              <Wojewodztwo>małopolskie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Floriańska</Ulica>
+              <NrDomu>12</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH2_AZAMIESZK">
+            <Host>PH2</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH2_AKOR">
+            <Host>PH2</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
       </PracHistoria>
     </Historia>
   </Pracownik>
 
-  <Pracownik id="Prac_4" guid="a1000000-0000-0000-0000-000000000041"
+  <Pracownik id="P3" guid="b1000000-0000-0000-0000-000000000003"
              class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
     <Typ>Pracownik</Typ>
-    <Kod>4</Kod>
+    <Kod>TS-03</Kod>
     <Nazwisko>Wójcik</Nazwisko>
     <Imie>Katarzyna</Imie>
     <PESEL>93110187608</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
-    <Historia addnew="true">
-      <PracHistoria id="PH_4" guid="a1000000-0000-0000-0000-000000000042">
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia>
+      <PracHistoria id="PH3">
+        <Pracownik>P3</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Wójcik</Nazwisko>
         <Imie>Katarzyna</Imie>
+        <Urodzony><Data>1993-11-01</Data><Miejsce>Gdańsk</Miejsce></Urodzony>
         <PESEL>93110187608</PESEL>
         <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
         <Plec>K</Plec>
-        <Urodzony><Data>1993-11-01</Data><Miejsce>Gdańsk</Miejsce></Urodzony>
         <Podatki>
           <TypProgow>Standardowe</TypProgow>
           <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
           <KosztyMnoznik>1.00</KosztyMnoznik>
           <UlgaMnoznik>1.00</UlgaMnoznik>
           <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
         </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
         <Etat>
           <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
           <DataZawarcia>2026-01-01</DataZawarcia>
@@ -164,9 +298,12 @@
           <Okres>2026-01-01...</Okres>
           <Podstawa>UmowyOPrace</Podstawa>
           <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
           <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
           <TypStawki>Dowolna</TypStawki>
           <Zaszeregowanie>
             <Wymiar>1/1</Wymiar>
@@ -186,35 +323,98 @@
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
         <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
-        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH3_2">
+            <Host>PH3</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH3_AZAM">
+            <Host>PH3</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Gdańsk</Miejscowosc>
+              <Wojewodztwo>pomorskie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Długa</Ulica>
+              <NrDomu>5</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH3_AZAMIESZK">
+            <Host>PH3</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH3_AKOR">
+            <Host>PH3</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
       </PracHistoria>
     </Historia>
   </Pracownik>
 
-  <Pracownik id="Prac_5" guid="a1000000-0000-0000-0000-000000000051"
+  <Pracownik id="P4" guid="b1000000-0000-0000-0000-000000000005"
              class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
     <Typ>Pracownik</Typ>
-    <Kod>5</Kod>
+    <Kod>TS-05</Kod>
     <Nazwisko>Lewandowski</Nazwisko>
     <Imie>Marek</Imie>
     <PESEL>85021567817</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
-    <Historia addnew="true">
-      <PracHistoria id="PH_5" guid="a1000000-0000-0000-0000-000000000052">
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia>
+      <PracHistoria id="PH4">
+        <Pracownik>P4</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Lewandowski</Nazwisko>
         <Imie>Marek</Imie>
+        <Urodzony><Data>1985-02-15</Data><Miejsce>Poznań</Miejsce></Urodzony>
         <PESEL>85021567817</PESEL>
         <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
         <Plec>M</Plec>
-        <Urodzony><Data>1985-02-15</Data><Miejsce>Poznań</Miejsce></Urodzony>
         <Podatki>
           <TypProgow>Standardowe</TypProgow>
           <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
           <KosztyMnoznik>1.00</KosztyMnoznik>
           <UlgaMnoznik>1.00</UlgaMnoznik>
           <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
         </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
         <Etat>
           <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
           <DataZawarcia>2026-01-01</DataZawarcia>
@@ -222,9 +422,12 @@
           <Okres>2026-01-01...</Okres>
           <Podstawa>UmowyOPrace</Podstawa>
           <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
           <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
           <TypStawki>Dowolna</TypStawki>
           <Zaszeregowanie>
             <Wymiar>1/1</Wymiar>
@@ -244,35 +447,98 @@
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
         <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
-        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH4_2">
+            <Host>PH4</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH4_AZAM">
+            <Host>PH4</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Poznań</Miejscowosc>
+              <Wojewodztwo>wielkopolskie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Półwiejska</Ulica>
+              <NrDomu>20</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH4_AZAMIESZK">
+            <Host>PH4</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH4_AKOR">
+            <Host>PH4</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
       </PracHistoria>
     </Historia>
   </Pracownik>
 
-  <Pracownik id="Prac_6" guid="a1000000-0000-0000-0000-000000000061"
+  <Pracownik id="P5" guid="b1000000-0000-0000-0000-000000000009"
              class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
     <Typ>Pracownik</Typ>
-    <Kod>6</Kod>
+    <Kod>TS-09</Kod>
     <Nazwisko>Zielińska</Nazwisko>
     <Imie>Agnieszka</Imie>
     <PESEL>95060734509</PESEL>
     <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
-    <Historia addnew="true">
-      <PracHistoria id="PH_6" guid="a1000000-0000-0000-0000-000000000062">
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia>
+      <PracHistoria id="PH5">
+        <Pracownik>P5</Pracownik>
         <Aktualnosc>(wszystko)</Aktualnosc>
         <Nazwisko>Zielińska</Nazwisko>
         <Imie>Agnieszka</Imie>
+        <Urodzony><Data>1995-06-07</Data><Miejsce>Wrocław</Miejsce></Urodzony>
         <PESEL>95060734509</PESEL>
         <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
         <Plec>K</Plec>
-        <Urodzony><Data>1995-06-07</Data><Miejsce>Wrocław</Miejsce></Urodzony>
         <Podatki>
           <TypProgow>Standardowe</TypProgow>
           <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
           <KosztyMnoznik>1.00</KosztyMnoznik>
           <UlgaMnoznik>1.00</UlgaMnoznik>
           <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
         </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-03-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
         <Etat>
           <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
           <DataZawarcia>2026-03-01</DataZawarcia>
@@ -280,9 +546,12 @@
           <Okres>2026-03-01...</Okres>
           <Podstawa>UmowyOPrace</Podstawa>
           <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
           <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
           <TypStawki>Dowolna</TypStawki>
           <Zaszeregowanie>
             <Wymiar>1/1</Wymiar>
@@ -302,9 +571,59 @@
           <PracownikZwolniony>False</PracownikZwolniony>
         </Etat>
         <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
-        <GUS><GlowneMiejscePracy>True</GlowneMiejscePracy></GUS>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH5_2">
+            <Host>PH5</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH5_AZAM">
+            <Host>PH5</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Wrocław</Miejscowosc>
+              <Wojewodztwo>dolnośląskie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Świdnicka</Ulica>
+              <NrDomu>8</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH5_AZAMIESZK">
+            <Host>PH5</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH5_AKOR">
+            <Host>PH5</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
       </PracHistoria>
     </Historia>
   </Pracownik>
-
 </session>

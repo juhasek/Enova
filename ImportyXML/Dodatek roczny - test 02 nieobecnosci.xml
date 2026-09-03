@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   Nieobecnosci pod scenariusze "Dodatek roczny" (baza Claude), import wg rekordow.
-  Algorytm Dodatku czyta tylko: Definicja.Nazwa, Okres, Urlop.Przyczyna.
-    Kod 3 Wisniewski  - Nieobec.nieusprawiedliwiona 1 dzien  -> lamie frekwencje (TS-02 -> 0)
-    Kod 4 Wojcik      - Zwolnienie chorobowe 5 dni           -> lamie frekwencje (TS-03 -> 0)
-    Kod 5 Lewandowski - Urlop wypoczynkowy planowy 10 dni    -> dozwolony      (TS-05 -> 1500)
-  Linkowanie do pracownika: <Pracownik where="Kod=N"> + kolekcja Nieobecnosci (Zrodlo=Pracownik).
-  Selektor TypZrodla=Pracownik (podtyp NieobecnoscPracownika) - element obowiazkowy mimo class.
-  Guid staly => idempotentne.
+  Kod pracownika = numer scenariusza.
+    TS-02 Wisniewski  - Nieob.nieusprawiedliwiona 1 dzien  -> lamie frekwencje -> 0
+    TS-03 Wojcik      - Zwolnienie chorobowe 5 dni          -> lamie frekwencje -> 0
+    TS-05 Lewandowski - Urlop wypoczynkowy planowy 10 dni   -> dozwolony        -> 1500
+  Selektor TypZrodla=Pracownik obowiazkowy; guid staly => idempotentne.
 -->
 <session fromto="(wszystko)">
 
-  <Pracownik where="Kod=3">
+  <Pracownik where="Kod=TS-02">
     <Nieobecnosci addnew="true">
       <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
-                   guid="a1000000-0000-0000-0000-0000000003a1">
+                   guid="a1000000-0000-0000-0000-0000000002a1">
         <TypZrodla>Pracownik</TypZrodla>
         <Definicja>00000000-0006-0005-0002-000000000000</Definicja>
         <Okres>2026-05-11...2026-05-11</Okres>
@@ -22,10 +20,10 @@
     </Nieobecnosci>
   </Pracownik>
 
-  <Pracownik where="Kod=4">
+  <Pracownik where="Kod=TS-03">
     <Nieobecnosci addnew="true">
       <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
-                   guid="a1000000-0000-0000-0000-0000000004a1">
+                   guid="a1000000-0000-0000-0000-0000000003a1">
         <TypZrodla>Pracownik</TypZrodla>
         <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
         <Okres>2026-09-14...2026-09-18</Okres>
@@ -37,7 +35,7 @@
     </Nieobecnosci>
   </Pracownik>
 
-  <Pracownik where="Kod=5">
+  <Pracownik where="Kod=TS-05">
     <Nieobecnosci addnew="true">
       <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
                    guid="a1000000-0000-0000-0000-0000000005a1">
