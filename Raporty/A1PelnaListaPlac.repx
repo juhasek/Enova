@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1" Name="ElementyWyplat" DisplayName="Zestawienie wypłat wg elementów" SnapGridSize="25" ReportUnit="TenthsOfAMillimeter" Margins="198, 198, 200, 200" PaperKind="A4" PageWidth="2100" PageHeight="2970" Version="24.1" DataSource="#Ref-12" Dpi="254" Font="Calibri, 9pt">
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1" Name="A1PelnaListaPlac" DisplayName="A1 - Pełna lista płac (wg elementów)" SnapGridSize="25" ReportUnit="TenthsOfAMillimeter" Margins="198, 198, 200, 200" PaperKind="A4" PageWidth="2100" PageHeight="2970" Version="24.1" DataSource="#Ref-12" Dpi="254" Font="Calibri, 9pt">
   <Bands>
     <Item1 Ref="2" ControlType="TopMarginBand" Name="TopMarginBand" HeightF="200" Dpi="254" />
     <Item2 Ref="3" ControlType="ReportHeaderBand" Name="ReportHeader" HeightF="120" Dpi="254">

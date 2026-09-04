@@ -33,7 +33,7 @@ namespace x.x.Reports
     //
     // Cała metoda BeforePrint jest opakowana w try/catch z etykietą etapu - błąd trafia
     // do tabeli danych jako pojedynczy wiersz diagnostyczny zamiast wywalać wydruk.
-    public class ElementyWyplatSnippet : ReportSnippet
+    public class A1PelnaListaPlacSnippet : ReportSnippet
     {
         public class PrnParams : ContextBase
         {

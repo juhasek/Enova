@@ -1,4 +1,4 @@
-# Zestawienie wypłat wg elementów (Płace / Listy płac)
+# A1PelnaListaPlac — pełna lista płac wg elementów (Płace / Listy płac)
 
 **Status: NIEPRZETESTOWANE na żywej aplikacji** — środowisko robocze tego repo nie ma
 dostępu do `buscall`/GUI enova (zob. pamięć „Środowisko lokalne”), więc plik wymaga
@@ -9,9 +9,25 @@ kontraktem modułu Place (`~/.claude/skills/soneta-programming`), a mechanizm
 zaznaczenia/`CustomDataSource` jest 1:1 wzorowany na już potwierdzonym w tym repo
 `Raporty/SzablonTabela6Kolumn` (status: działa).
 
-Wzorzec wydruku Enova (`Raporty/ElementyWyplat.repx`) zasilany snippetem
-`Raporty/ElementyWyplatSnippet`, uruchamiany z poziomu **Płace → Listy płac** na
-zaznaczonej pozycji (lub kilku pozycjach) listy płac.
+Wzorzec wydruku Enova (`Raporty/A1PelnaListaPlac.repx`) zasilany snippetem
+`Raporty/A1PelnaListaPlacSnippet` (klasa `A1PelnaListaPlacSnippet`), uruchamiany z
+poziomu **Płace → Listy płac** na zaznaczonej pozycji (lub kilku pozycjach) listy płac.
+
+## Stan w bazie `Claude` (na dziś)
+
+Kod snippetu jest już wstawiony do tabeli `SystemFiles` w bazie `Claude`
+(`Name='A1PelnaListaPlac'`, `RuntimeInfoIdentifier='x.x.Reports.A1PelnaListaPlacSnippet'`)
+— wstawiony bezpośrednio SQL-em, zweryfikowany na poziomie punktów kodowych Unicode
+(zob. pamięć „SystemFiles przez SQL”). **To NIE wystarcza, żeby wydruk pojawił się w
+GUI enova** — w przeciwieństwie do `A1NaglowekListaSnippet` (który nadpisuje kod
+**istniejącego, fabrycznie zarejestrowanego** wydruku „nagłówek - lista”), ten wydruk
+jest **całkiem nowy** i nie ma jeszcze żadnego zarejestrowanego layoutu `.repx`, do
+którego mógłby się „przypiąć” kod z `SystemFiles`. Nie znalazłem w schemacie SQL tabeli
+przechowującej samodzielny nowy layout `.repx` — musi zostać zaimportowany przez
+projektanta wydruków w GUI enova (sekcja „Jak wgrać” niżej). Dopiero po imporcie
+`.repx` z `ComponentStorage/ReportSnippetComponent/SnippetTypeName` wskazującym na
+`x.x.Reports.A1PelnaListaPlacSnippet,x.x.Reports` wydruk powinien znaleźć i skompilować
+kod już czekający w `SystemFiles`.
 
 ## Co pokazuje
 
@@ -98,15 +114,18 @@ KOMUNIKAT=...` w tabeli danych.
 
 ## Jak wgrać
 
-1. Enova → Narzędzia → Opcje → Systemowe → Wydruki → **Zaimportuj** `ElementyWyplat.repx`
+1. Enova → Narzędzia → Opcje → Systemowe → Wydruki → **Zaimportuj** `A1PelnaListaPlac.repx`
    (albo dodaj jako nowy wzorzec przypięty do listy „Listy płac”, jeśli import pliku nie
    jest dostępny w tej wersji — zależnie od trybu rejestracji wydruków w tej instalacji).
 2. W oknie edycji wydruku znajdź „Kod źródłowy” i wklej tam całą zawartość pliku
-   `Raporty/ElementyWyplatSnippet`.
+   `Raporty/A1PelnaListaPlacSnippet` (kod w `SystemFiles` w bazie `Claude` już czeka pod
+   identyfikatorem `x.x.Reports.A1PelnaListaPlacSnippet` — ale to GUI/import decyduje,
+   czy go znajdzie i użyje, czy nadpisze własnym zapisem; wklejenie ręczne jest pewniejsze
+   i zgodne ze sprawdzonym przepisem z `SzablonTabela6Kolumn`).
 3. Zapisz — Enova skompiluje snippet i podepnie go pod wydruk (analogicznie do
    `Raporty/SzablonTabela6Kolumn` — zob. tamten `.md`, sekcja „Jak podpiąć snippet”).
 4. Z listy „Płace → Listy płac” zaznacz jedną lub kilka pozycji i uruchom wydruk
-   „Zestawienie wypłat wg elementów”. Powinno pojawić się okno parametrów (puste,
+   „A1 - Pełna lista płac (wg elementów)”. Powinno pojawić się okno parametrów (puste,
    tylko do zatwierdzenia) — to potwierdza, że `Context` został poprawnie wstrzyknięty.
 5. Sprawdź: kolumny Kod/Imię i Nazwisko/Wydział, kolumny elementów dopasowane do
    rzeczywistych dodatków/składników na wypłatach, `0,00` tam gdzie pracownik danego
