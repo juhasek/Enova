@@ -156,6 +156,15 @@ potwierdzona ponownym eksportem. Do sprawdzenia po wklejeniu: czy strona faktycz
 poszerza (np. w podglądzie wydruku widać szeroką stronę zamiast A4 portret) i czy Excel
 po eksporcie pokazuje jedną spójną, czytelną tabelę zamiast rozjechanych wąskich kolumn.
 
+**Poprawka 2026-09-05 (2) — błędy kompilacji przy pierwszym wklejeniu:**
+- `Report.Margins.Left`/`.Right` zwraca w tej instalacji `float`, nie `int` — rzutowanie
+  jawne `(int)` przy przypisaniu do lokalnych zmiennych `lewy`/`prawy`.
+- `Report.PaperKind` w tej wersji DevExpress to `DevExpress.Drawing.Printing.DXPaperKind`
+  (własny typ DevExpress, cross-platform), **nie** `System.Drawing.Printing.PaperKind` —
+  użyto `DevExpress.Drawing.Printing.DXPaperKind.Custom`. Sygnał, że ta instalacja korzysta
+  z nowszego/cross-platform DevExpress Reporting — warto to mieć na uwadze przy pisaniu
+  kolejnych snippetów odwołujących się do ustawień strony/drukarki.
+
 ## Jak to jest zbudowane (dlaczego nie ma statycznej tabeli w .repx)
 
 Liczba i nazwy kolumn nie są znane w momencie projektowania wydruku, więc `.repx` zawiera

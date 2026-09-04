@@ -558,13 +558,13 @@ namespace x.x.Reports
         {
             if (this.Report == null) return;
 
-            int lewy = this.Report.Margins.Left;
-            int prawy = this.Report.Margins.Right;
+            int lewy = (int)this.Report.Margins.Left;
+            int prawy = (int)this.Report.Margins.Right;
             int potrzebnaSzerokosc = (int)Math.Ceiling(sumaSzerokosciKolumn) + lewy + prawy;
 
             if (potrzebnaSzerokosc > this.Report.PageWidth)
             {
-                this.Report.PaperKind = System.Drawing.Printing.PaperKind.Custom;
+                this.Report.PaperKind = DevExpress.Drawing.Printing.DXPaperKind.Custom;
                 this.Report.PageWidth = potrzebnaSzerokosc;
             }
         }
