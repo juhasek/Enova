@@ -12,27 +12,21 @@ using Soneta.Types;
 
 namespace x.x.Reports
 {
-    // Wydruk z poziomu Płace/Listy płac (zaznaczenie jednej lub wielu pozycji ListaPlac).
-    // Kolumny Kod / Imię i Nazwisko / Wydział są na stałe; kolumny elementów budowane są
-    // dynamicznie na podstawie definicji elementów (WypElement.Definicja) znalezionych
-    // na wypłatach (Wyplata.Elementy) wchodzących w skład zaznaczonych list płac.
-    // Brak elementu danego rodzaju na konkretnej wypłacie -> 0,00 w tej kolumnie.
-    // Jeden wiersz wydruku = jedna Wyplata (przy kilku wypłatach tego samego pracownika
-    // na liście - np. etat + inne - powstaje kilka wierszy).
+    // Wydruk z poziomu Płace/Listy płac (zaznaczenie jednej lub wielu pozycji ListaPlac),
+    // docelowo eksportowany do Excela. Kolumny Kod / Imię i Nazwisko / Wydział są na stałe;
+    // kolumny elementów budowane są dynamicznie na podstawie definicji elementów
+    // (WypElement.Definicja) znalezionych na wypłatach (Wyplata.Elementy) wchodzących
+    // w skład zaznaczonych list płac. Brak elementu danego rodzaju na konkretnej wypłacie
+    // -> 0,00 w tej kolumnie. Jeden wiersz wydruku = jedna Wyplata (przy kilku wypłatach
+    // tego samego pracownika na liście - np. etat + inne - powstaje kilka wierszy).
     //
-    // Po kolumnach elementów dochodzi 6 STAŁYCH kolumn podsumowania - Składki ZUS
-    // (pracownik/pracodawca), PPK (pracownik/pracodawca), Zaliczka na PIT, Kwota do wypłaty.
-    // To NIE są elementy (WypElement) - ZUS/PPK/PIT są naliczane w strukturze
-    // WypElement.Podatki KAŻDEGO składnika wypłaty (sumowane tu po wszystkich składnikach,
-    // osobno część Prac i część Firma), a kwota do wypłaty to wprost pole Wyplata.Wartosc
-    // (nie suma elementów) - stąd liczone inaczej niż kolumny dynamiczne.
-    //
-    // Eksport do Excela: żeby liczby trafiły do arkusza jako prawdziwe wartości liczbowe
-    // (nie tekst) i zachowały formatowanie (2 miejsca po przecinku, wyrównanie, pogrubienie
-    // nagłówków, obramowania), ustawiamy Report.ExportOptions.Xlsx.TextExportMode = Value
-    // oraz TextFormatString na komórkach liczbowych - TODO/UNVERIFIED, do potwierdzenia po
-    // wklejeniu w projektancie (nazwa właściwości/enuma może się różnić między wersjami
-    // DevExpress w tej instalacji).
+    // Po kolumnach elementów dochodzi 17 STAŁYCH kolumn podsumowania - szczegółowy
+    // rozkład składek ZUS (5 rodzajów x pracownik/pracodawca), narzuty pracodawcy
+    // (Fundusz Pracy, FGŚP, FEP), PPK (pracownik/pracodawca), Zaliczka na PIT, Kwota do
+    // wypłaty. To NIE są elementy (WypElement) - są naliczane w strukturze
+    // WypElement.Podatki KAŻDEGO składnika wypłaty (sumowane tu po wszystkich
+    // składnikach), a kwota do wypłaty to wprost pole Wyplata.Wartosc (nie suma
+    // elementów) - stąd liczone inaczej niż kolumny dynamiczne.
     //
     // Zamiast statycznej tabeli z .repx cała tabela (nagłówek kolumn + wiersze danych)
     // jest budowana w kodzie na dwóch pustych kontrolkach XRTable (tabelaNaglowek w
@@ -44,6 +38,24 @@ namespace x.x.Reports
     // CustomDataSource na komponencie Empty (DxReportHelpers.GetDataSourceEmpty)
     // wymusza dokładnie jedno odpalenie DetailBand (w którym budujemy całą tabelę na
     // raz, a nie wiersz po wierszu).
+    //
+    // EKSPORT DO EXCELA Z AUTO-DOPASOWANIEM KOLUMN/WIERSZY - BEZ EPPlus.
+    // W tym repo EPPlus był już wypróbowany (Raporty/SeopEnrollmentFileWorker, wycofany -
+    // zob. Raporty/SeopEnrollmentFile.md p.6 i historia commitów): standardowy eksport
+    // z podglądu wydruku Enova (DevExpress) sam zapisuje plik i nie daje zdarzenia z
+    // dostępem do gotowego pliku "po fakcie", więc post-processing biblioteką EPPlus by
+    // tu nie zadziałał. Zamiast tego, tak jak w już potwierdzonym SeopEnrollmentFile,
+    // dopasowanie robimy NATYWNIE przez DevExpress w Report_BeforePrint:
+    // - DopasujSzerokosciKolumn liczy dla każdej kolumny (po indeksie komórki, wspólnym
+    //   dla tabelaNaglowek i tabelaDane) długość najdłuższego tekstu (nagłówek + wszystkie
+    //   wiersze danych) i ustawia Weight/WidthF wszystkich komórek tej kolumny w obu
+    //   tabelach na tę samą wartość (inaczej siatka kolumn w Excelu się rozjedzie),
+    // - UstawWysokoscWierszy ustawia stałą wysokość (HeightF) wszystkich wierszy,
+    // - Report.ExportOptions.Xlsx.{ExportMode, RawDataMode, TextExportMode} - te same
+    //   ustawienia co w SeopEnrollmentFile - każą eksporterowi zapisać wartości liczbowe
+    //   komórek jako prawdziwe liczby Excela (nie tekst), zachowując format (TextFormatString).
+    // To przybliżenie (stała szerokość znaku, nie realny pomiar renderowanego tekstu jak w
+    // EPPlus.AutoFitColumns()) - "wystarczająco dobre", ale nie identyczne z prawdziwym autofit.
     //
     // Cała metoda BeforePrint jest opakowana w try/catch z etykietą etapu - błąd trafia
     // do tabeli danych jako pojedynczy wiersz diagnostyczny zamiast wywalać wydruk.
@@ -67,11 +79,21 @@ namespace x.x.Reports
         [DxBind] private readonly XRTable tabelaDane;
         [DxBind] private readonly XRLabel lblPodtytul;
 
+        // Wagi startowe (proporcje przed auto-dopasowaniem - DopasujSzerokosciKolumn
+        // i tak nadpisze je realną szerokością liczoną z długości tekstu).
         const float WagaKod = 0.7f;
         const float WagaNazwisko = 2.2f;
         const float WagaWydzial = 1.4f;
         const float WagaElementu = 1.1f;
         const float WagaPodsumowania = 1.3f;
+        const int LiczbaKolumnPodsumowania = 17;
+
+        // Stałe pseudo-autofit - wzorowane 1:1 na Raporty/SeopEnrollmentFile.
+        const float WysokoscWiersza = 18f;
+        const float MinSzerokoscKolumny = 40f;
+        const float MaxSzerokoscKolumny = 400f;
+        const float SzerokoscNaZnak = 6.5f;
+        const float MarginesKomorki = 10f;
 
         [DxBind(Name = "Report")]
         private void Report_BeforePrint(object sender, CancelEventArgs e)
@@ -80,13 +102,17 @@ namespace x.x.Reports
             try
             {
                 etap = "ustawienie opcji eksportu do Excela";
-                // TODO/UNVERIFIED: TextExportMode.Value każe eksporterowi zapisać wartości
-                // liczbowe (obecnie tekst w komórkach) jako prawdziwe liczby Excela zamiast
-                // zwykłego tekstu - inaczej "kwota do wypłaty" itp. wyeksportuje się jako
-                // napis i straci formatowanie liczbowe (nie da się np. zsumować w Excelu).
-                XtraReport report = sender as XtraReport;
-                if (report != null)
-                    report.ExportOptions.Xlsx.TextExportMode = TextExportMode.Value;
+                // TODO/UNVERIFIED (wzorowane na SeopEnrollmentFile, tam już wykorzystane -
+                // ale nie potwierdzone jeszcze na tym konkretnym wydruku): każe eksporterowi
+                // zapisać wartości liczbowe komórek jako prawdziwe liczby Excela (nie tekst),
+                // inaczej "kwota do wypłaty" itp. wyeksportuje się jako napis bez możliwości
+                // sumowania/formatowania liczbowego w Excelu.
+                if (this.Report != null)
+                {
+                    this.Report.ExportOptions.Xlsx.ExportMode = XlsxExportMode.SingleFilePageByPage;
+                    this.Report.ExportOptions.Xlsx.RawDataMode = false;
+                    this.Report.ExportOptions.Xlsx.TextExportMode = TextExportMode.Value;
+                }
 
                 etap = "sprawdzenie trybu (designer)";
                 if (pars == null)
@@ -119,6 +145,10 @@ namespace x.x.Reports
 
                 etap = "renderowanie wierszy danych";
                 BudujDane(kolumny, wiersze);
+
+                etap = "dopasowanie szerokosci kolumn i wysokosci wierszy";
+                DopasujSzerokosciKolumn();
+                UstawWysokoscWierszy();
 
                 etap = "podtytul";
                 if (lblPodtytul != null)
@@ -206,12 +236,26 @@ namespace x.x.Reports
             public string NazwiskoImie;
             public string Wydzial;
             public decimal[] Wartosci;
+
             // Podsumowania nie są odrębnymi "elementami" (WypElement) tylko wartościami
             // wyliczanymi ze struktury WypElement.Podatki każdego składnika wypłaty
             // (a KwotaDoWyplaty wprost z pola Wyplata.Wartosc) - stąd stałe kolumny,
-            // nie kolejna kolumna dynamiczna.
-            public decimal SkladkiZUSPracownik;
-            public decimal SkladkiZUSPracodawca;
+            // nie kolejna kolumna dynamiczna. Każda składka ZUS rozbita na część
+            // pracownika (Prac) i pracodawcy (Firma); narzuty FP/FGŚP/FEP są w całości
+            // po stronie pracodawcy (brak odpowiednika po stronie pracownika).
+            public decimal EmerytalnaPracownik;
+            public decimal EmerytalnaPracodawca;
+            public decimal RentowaPracownik;
+            public decimal RentowaPracodawca;
+            public decimal ChorobowaPracownik;
+            public decimal ChorobowaPracodawca;
+            public decimal WypadkowaPracownik;
+            public decimal WypadkowaPracodawca;
+            public decimal ZdrowotnaPracownik;
+            public decimal ZdrowotnaPracodawca;
+            public decimal FunduszPracy;
+            public decimal FGSP;
+            public decimal FEP;
             public decimal PPKPracownik;
             public decimal PPKPracodawca;
             public decimal Podatek;
@@ -243,14 +287,23 @@ namespace x.x.Reports
                             wiersz.Wartosci[idx] += el.Wartosc;
                     }
 
-                    // Skladki ZUS, podatek i PPK nie sa osobnymi elementami (WypElement) -
-                    // sa naliczane w strukturze WypElement.Podatki KAZDEGO skladnika wyplaty
-                    // (osobno czesc pracownika "Prac" i czesc pracodawcy "Firma"), wiec
-                    // sumujemy je tutaj po wszystkich skladnikach, kazda strone osobno.
-                    wiersz.SkladkiZUSPracownik += el.Podatki.Emerytalna.Prac + el.Podatki.Rentowa.Prac
-                        + el.Podatki.Chorobowa.Prac + el.Podatki.Wypadkowa.Prac + el.Podatki.Zdrowotna.Prac;
-                    wiersz.SkladkiZUSPracodawca += el.Podatki.Emerytalna.Firma + el.Podatki.Rentowa.Firma
-                        + el.Podatki.Chorobowa.Firma + el.Podatki.Wypadkowa.Firma + el.Podatki.Zdrowotna.Firma;
+                    // Skladki ZUS, narzuty (FP/FGSP/FEP), PPK i podatek nie sa osobnymi
+                    // elementami (WypElement) - sa naliczane w strukturze
+                    // WypElement.Podatki KAZDEGO skladnika wyplaty, wiec sumujemy je
+                    // tutaj po wszystkich skladnikach, kazdy rodzaj i kazda strone osobno.
+                    wiersz.EmerytalnaPracownik += el.Podatki.Emerytalna.Prac;
+                    wiersz.EmerytalnaPracodawca += el.Podatki.Emerytalna.Firma;
+                    wiersz.RentowaPracownik += el.Podatki.Rentowa.Prac;
+                    wiersz.RentowaPracodawca += el.Podatki.Rentowa.Firma;
+                    wiersz.ChorobowaPracownik += el.Podatki.Chorobowa.Prac;
+                    wiersz.ChorobowaPracodawca += el.Podatki.Chorobowa.Firma;
+                    wiersz.WypadkowaPracownik += el.Podatki.Wypadkowa.Prac;
+                    wiersz.WypadkowaPracodawca += el.Podatki.Wypadkowa.Firma;
+                    wiersz.ZdrowotnaPracownik += el.Podatki.Zdrowotna.Prac;
+                    wiersz.ZdrowotnaPracodawca += el.Podatki.Zdrowotna.Firma;
+                    wiersz.FunduszPracy += el.Podatki.FP.Skladka;
+                    wiersz.FGSP += el.Podatki.FGSP.Skladka;
+                    wiersz.FEP += el.Podatki.FEP.Skladka;
                     wiersz.Podatek += el.Podatki.ZalFIS;
                     wiersz.PPKPracownik += el.Podatki.PPK.Pracownika;
                     wiersz.PPKPracodawca += el.Podatki.PPK.Pracodawcy;
@@ -307,8 +360,19 @@ namespace x.x.Reports
             foreach (DefinicjaElementu def in kolumny)
                 wiersz.Cells.Add(NowaKomorka(NazwaKolumny(def), WagaElementu, true, true));
 
-            wiersz.Cells.Add(NowaKomorka("Składki ZUS (pracownik)", WagaPodsumowania, true, true));
-            wiersz.Cells.Add(NowaKomorka("Składki ZUS (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Emerytalna (pracownik)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Emerytalna (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Rentowa (pracownik)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Rentowa (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Chorobowa (pracownik)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Chorobowa (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Wypadkowa (pracownik)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Wypadkowa (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Zdrowotna (pracownik)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Zdrowotna (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Fundusz Pracy", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("FGŚP", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("FEP", WagaPodsumowania, true, true));
             wiersz.Cells.Add(NowaKomorka("PPK (pracownik)", WagaPodsumowania, true, true));
             wiersz.Cells.Add(NowaKomorka("PPK (pracodawca)", WagaPodsumowania, true, true));
             wiersz.Cells.Add(NowaKomorka("Zaliczka na PIT", WagaPodsumowania, true, true));
@@ -329,7 +393,8 @@ namespace x.x.Reports
                 XRTableCell cInfo = NowaKomorka(
                     "Brak wypłat do wydrukowania - sprawdź zaznaczenie listy/list płac.",
                     1, false, false);
-                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu) + (6 * WagaPodsumowania);
+                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu)
+                    + (LiczbaKolumnPodsumowania * WagaPodsumowania);
                 pusty.Cells.Add(cInfo);
                 tabelaDane.Rows.Add(pusty);
                 return;
@@ -345,8 +410,19 @@ namespace x.x.Reports
                 for (int i = 0; i < kolumny.Count; i++)
                     wiersz.Cells.Add(NowaKomorkaLiczba(w.Wartosci[i], WagaElementu));
 
-                wiersz.Cells.Add(NowaKomorkaLiczba(w.SkladkiZUSPracownik, WagaPodsumowania));
-                wiersz.Cells.Add(NowaKomorkaLiczba(w.SkladkiZUSPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.EmerytalnaPracownik, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.EmerytalnaPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.RentowaPracownik, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.RentowaPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.ChorobowaPracownik, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.ChorobowaPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.WypadkowaPracownik, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.WypadkowaPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.ZdrowotnaPracownik, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.ZdrowotnaPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.FunduszPracy, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.FGSP, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.FEP, WagaPodsumowania));
                 wiersz.Cells.Add(NowaKomorkaLiczba(w.PPKPracownik, WagaPodsumowania));
                 wiersz.Cells.Add(NowaKomorkaLiczba(w.PPKPracodawca, WagaPodsumowania));
                 wiersz.Cells.Add(NowaKomorkaLiczba(w.Podatek, WagaPodsumowania));
@@ -395,6 +471,59 @@ namespace x.x.Reports
             XRTableCell komorka = NowaKomorka(wartosc.ToString("N2"), waga, false, true);
             komorka.TextFormatString = "{0:N2}";
             return komorka;
+        }
+
+        // Pseudo-autofit BEZ EPPlus (patrz komentarz nad klasą) - wzorowane na
+        // Raporty/SeopEnrollmentFile.DopasujSzerokosciKolumn, uproszczone: tutaj (w
+        // odróżnieniu od SEOP) sami budujemy każdą komórkę w kodzie, więc nie trzeba
+        // odczytywać ExpressionBindings - po prostu porównujemy długość Text komórek
+        // nagłówka i danych po tym samym indeksie kolumny (obie tabele mają zawsze
+        // identyczną liczbę kolumn, bo budowane są tym samym `kolumny`+17 podsumowań).
+        void DopasujSzerokosciKolumn()
+        {
+            if (tabelaNaglowek == null || tabelaNaglowek.Rows.Count == 0) return;
+
+            XRTableRow naglowekWiersz = tabelaNaglowek.Rows[0];
+            int liczbaKolumn = naglowekWiersz.Cells.Count;
+
+            for (int i = 0; i < liczbaKolumn; i++)
+            {
+                int maxDlugosc = naglowekWiersz.Cells[i].Text?.Length ?? 0;
+
+                if (tabelaDane != null)
+                {
+                    foreach (XRTableRow wiersz in tabelaDane.Rows)
+                    {
+                        if (i >= wiersz.Cells.Count) continue;
+                        int dl = wiersz.Cells[i].Text?.Length ?? 0;
+                        if (dl > maxDlugosc) maxDlugosc = dl;
+                    }
+                }
+
+                float szerokosc = Math.Max(MinSzerokoscKolumny,
+                    Math.Min(MaxSzerokoscKolumny, maxDlugosc * SzerokoscNaZnak + MarginesKomorki));
+
+                naglowekWiersz.Cells[i].Weight = szerokosc;
+                naglowekWiersz.Cells[i].WidthF = szerokosc;
+
+                if (tabelaDane != null)
+                {
+                    foreach (XRTableRow wiersz in tabelaDane.Rows)
+                    {
+                        if (i >= wiersz.Cells.Count) continue;
+                        wiersz.Cells[i].Weight = szerokosc;
+                        wiersz.Cells[i].WidthF = szerokosc;
+                    }
+                }
+            }
+        }
+
+        void UstawWysokoscWierszy()
+        {
+            if (tabelaNaglowek != null)
+                foreach (XRTableRow w in tabelaNaglowek.Rows) w.HeightF = WysokoscWiersza;
+            if (tabelaDane != null)
+                foreach (XRTableRow w in tabelaDane.Rows) w.HeightF = WysokoscWiersza;
         }
     }
 }

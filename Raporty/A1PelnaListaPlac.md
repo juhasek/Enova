@@ -1,12 +1,13 @@
 # A1PelnaListaPlac — pełna lista płac wg elementów (Płace / Listy płac)
 
 **Status: DZIAŁA na bazie testowej `Claude`** (potwierdzone przez użytkownika, 2026-09-05) —
-kolumny Kod/Imię i Nazwisko/Wydział + kolumny dynamiczne elementów oraz kolumny podsumowania
-(Składki ZUS pracownik/pracodawca, PPK pracownik/pracodawca, Zaliczka na PIT, Kwota do
-wypłaty) generują się poprawnie po ręcznym wklejeniu kodu w „Kod źródłowy” projektanta
-wydruków i zapisaniu (patrz „Jak wgrać”). **NIEPRZETESTOWANE:** eksport do Excela z
-zachowaniem formatowania liczb jako wartości (nie tekstu) — `TextExportMode.Value` i
-`TextFormatString` (patrz niżej) są nową, jeszcze niepotwierdzoną na żywo zmianą.
+wersja z 6 kolumnami podsumowania (Składki ZUS pracownik/pracodawca, PPK pracownik/pracodawca,
+Zaliczka na PIT, Kwota do wypłaty) generuje się poprawnie po ręcznym wklejeniu kodu w
+„Kod źródłowy” projektanta wydruków i zapisaniu (patrz „Jak wgrać”). **NIEPRZETESTOWANE
+od 2026-09-05:** rozbicie ZUS na 5 szczegółowych rodzajów składek (17 kolumn podsumowania
+łącznie, patrz niżej) oraz pseudo-autofit szerokości kolumn/wysokości wierszy przy
+eksporcie do Excela (`TextExportMode.Value`, `TextFormatString`, `DopasujSzerokosciKolumn`,
+`UstawWysokoscWierszy`) — nowa, jeszcze niepotwierdzona na żywo zmiana.
 
 Wzorzec wydruku Enova (`Raporty/A1PelnaListaPlac.repx`) zasilany snippetem
 `Raporty/A1PelnaListaPlacSnippet` (klasa `A1PelnaListaPlacSnippet`), uruchamiany z
@@ -38,8 +39,14 @@ Jeden wiersz = jedna wypłata (`Wyplata`) wchodząca w skład zaznaczonej listy/
 | Imię i Nazwisko | `Wyplata.Pracownik.NazwiskoImię` |
 | Wydział | `Pracownik.Historia[Wyplata.Data].Etat.Wydzial.Nazwa` |
 | *(dynamicznie, po jednej na każdy rodzaj elementu)* | suma `WypElement.Wartosc` dla danej `WypElement.Definicja` na tej wypłacie |
-| Składki ZUS (pracownik) | suma `WypElement.Podatki.{Emerytalna,Rentowa,Chorobowa,Wypadkowa,Zdrowotna}.Prac` po wszystkich składnikach wypłaty |
-| Składki ZUS (pracodawca) | suma `WypElement.Podatki.{Emerytalna,Rentowa,Chorobowa,Wypadkowa,Zdrowotna}.Firma` po wszystkich składnikach wypłaty |
+| Emerytalna (pracownik) / (pracodawca) | suma `WypElement.Podatki.Emerytalna.Prac` / `.Firma` |
+| Rentowa (pracownik) / (pracodawca) | suma `WypElement.Podatki.Rentowa.Prac` / `.Firma` |
+| Chorobowa (pracownik) / (pracodawca) | suma `WypElement.Podatki.Chorobowa.Prac` / `.Firma` (w Polsce `.Firma` zwykle 0 — chorobowe w całości po stronie pracownika) |
+| Wypadkowa (pracownik) / (pracodawca) | suma `WypElement.Podatki.Wypadkowa.Prac` / `.Firma` (w Polsce `.Prac` zwykle 0 — wypadkowe w całości po stronie pracodawcy) |
+| Zdrowotna (pracownik) / (pracodawca) | suma `WypElement.Podatki.Zdrowotna.Prac` / `.Firma` (w Polsce `.Firma` zwykle 0 — zdrowotna w całości po stronie pracownika) |
+| Fundusz Pracy | suma `WypElement.Podatki.FP.Skladka` (w całości pracodawca) |
+| FGŚP | suma `WypElement.Podatki.FGSP.Skladka` (w całości pracodawca) |
+| FEP | suma `WypElement.Podatki.FEP.Skladka` (w całości pracodawca) |
 | PPK (pracownik) | suma `WypElement.Podatki.PPK.Pracownika` po wszystkich składnikach wypłaty |
 | PPK (pracodawca) | suma `WypElement.Podatki.PPK.Pracodawcy` po wszystkich składnikach wypłaty |
 | Zaliczka na PIT | suma `WypElement.Podatki.ZalFIS` po wszystkich składnikach wypłaty |
@@ -55,40 +62,67 @@ Elementy wystornowane/stornujące (`WypElement.RozliczenieStorna == true`) są p
 liczeniu sum i przy wykrywaniu kolumn — inaczej wartość pierwotna i jej storno liczyłyby
 się podwójnie.
 
-**Sześć ostatnich kolumn (Składki ZUS pracownik/pracodawca, PPK pracownik/pracodawca,
-Zaliczka na PIT, Kwota do wypłaty) są STAŁE, nie dynamiczne** — w przeciwieństwie do
-kolumn elementów, ZUS/PPK/PIT **nie są odrębnymi `WypElement`** tylko wartościami
+**Siedemnaście ostatnich kolumn są STAŁE, nie dynamiczne** — w przeciwieństwie do kolumn
+elementów, ZUS/narzuty/PPK/PIT **nie są odrębnymi `WypElement`** tylko wartościami
 zaszytymi w strukturze `WypElement.Podatki` **każdego** składnika wypłaty (osobno część
-pracownika `Prac`/`Pracownika` i część pracodawcy `Firma`/`Pracodawcy`), więc snippet
-sumuje je po wszystkich składnikach zamiast wykrywać jako osobną kolumnę per definicja.
-„Kwota do wypłaty” to z kolei wprost pole `Wyplata.Wartosc` (jedna wartość na wypłatę,
-nie suma elementów).
+pracownika `Prac`/`Pracownika` i część pracodawcy `Firma`/`Pracodawcy`; FP/FGŚP/FEP mają
+tylko stronę pracodawcy), więc snippet sumuje je po wszystkich składnikach zamiast
+wykrywać jako osobną kolumnę per definicja. „Kwota do wypłaty” to z kolei wprost pole
+`Wyplata.Wartosc` (jedna wartość na wypłatę, nie suma elementów).
 
-## Eksport do Excela z zachowaniem formatowania
+## Eksport do Excela z auto-dopasowaniem kolumn/wierszy — bez EPPlus
 
-Raport ma trafiać docelowo do Excela (eksport z GUI enova) — żeby liczby (kolumny
-elementów i sześć kolumn podsumowania) trafiły do arkusza jako **prawdziwe wartości
-liczbowe** (nie tekst — inaczej nie da się ich zsumować/sformatować w Excelu), snippet:
+Raport ma trafiać docelowo do Excela (eksport z GUI enova), z kolumnami i wierszami od
+razu dopasowanymi do treści.
 
-- w `Report_BeforePrint` ustawia `((XtraReport)sender).ExportOptions.Xlsx.TextExportMode
-  = TextExportMode.Value` — mówi eksporterowi DevExpress, żeby sparsował tekst komórki
-  z powrotem na liczbę i zapisał ją jako natywną wartość Excela, a nie ciąg znaków;
+**Dlaczego nie EPPlus:** w tym repo EPPlus był już wypróbowany dla dokładnie tego samego
+problemu (auto-fit przy eksporcie do Excela) w `Raporty/SeopEnrollmentFileWorker` i
+**wycofany** — zob. `Raporty/SeopEnrollmentFile.md` p.6 oraz historia commitów (`05e0824`
+dodanie, `5ac1a17` wycofanie). Powód: standardowy eksport z podglądu wydruku Enova
+(DevExpress) sam zapisuje plik `.xlsx` i nie ma udokumentowanego zdarzenia dającego dostęp
+do gotowego pliku „po fakcie” — post-processing biblioteką EPPlus (`AutoFitColumns()`) by
+tu nie zadziałał. Dodatkowo snippety w tym repo to kod wklejany do wbudowanego edytora
+Enova (nie skompilowany projekt `.csproj` z NuGetem), więc `using OfficeOpenXml;`
+wymagałoby, żeby DLL EPPlus był już referencjonowany przez samą instalację enova — nie ma
+na to potwierdzenia w tej instalacji.
+
+**Rozwiązanie — natywnie przez DevExpress w `Report_BeforePrint`** (ten sam wzorzec co
+finalna, zachowana wersja `Raporty/SeopEnrollmentFile`):
+
+- `DopasujSzerokosciKolumn()` — dla każdej kolumny (po indeksie komórki, wspólnym dla
+  `tabelaNaglowek` i `tabelaDane`) liczy długość najdłuższego tekstu (nagłówek + wszystkie
+  wiersze danych) i ustawia `Weight`/`WidthF` **wszystkich** komórek tej kolumny w obu
+  tabelach na tę samą wartość (`długość znaków × 6,5 + margines 10`, przycięte do 40–400) —
+  inaczej siatka kolumn nagłówka i danych rozjedzie się w wyeksportowanym Excelu. Prostsze
+  niż w SEOP, bo tu **sami budujemy każdą komórkę w kodzie** (nie trzeba odczytywać
+  `ExpressionBindings` przez refleksję — po prostu porównujemy `.Text.Length`).
+- `UstawWysokoscWierszy()` — ustawia stałą wysokość (`HeightF = 18`) wszystkich wierszy
+  obu tabel.
+- `Report.ExportOptions.Xlsx.{ExportMode, RawDataMode, TextExportMode}` — te same 3
+  ustawienia co w `SeopEnrollmentFile`: `ExportMode = SingleFilePageByPage`,
+  `RawDataMode = false`, `TextExportMode = Value` — każą eksporterowi zapisać wartości
+  liczbowe komórek jako prawdziwe liczby Excela (nie tekst), a nie tylko wygenerować plik
+  z wyglądem identycznym jak podgląd.
 - każda komórka liczbowa (`NowaKomorkaLiczba`) ma dodatkowo ustawiony
   `TextFormatString = "{0:N2}"`, żeby Excel zachował format „2 miejsca po przecinku”.
 
 Pogrubienie nagłówków, obramowania komórek i wyrównanie do prawej (`TextAlignment`) to
-standardowe właściwości `XRTableCell`, które DevExpress **eksportuje do Excela bez
-dodatkowego kodu** — nie wymagały zmian.
+standardowe właściwości `XRTableCell`, które DevExpress eksportuje do Excela bez
+dodatkowego kodu.
 
-**TODO/UNVERIFIED:** cała ta sekcja nie została potwierdzona rzeczywistym eksportem do
-`.xlsx` w tej instalacji — nazwa właściwości (`ExportOptions.Xlsx.TextExportMode`) i enum
-(`TextExportMode.Value`) pochodzą ze standardowego, udokumentowanego API DevExpress
-XtraReports, ale mogą się różnić w zależności od wersji DevExpress użytej w tej
-instalacji enova. Po wklejeniu kodu w projektancie sprawdź najpierw, czy się w ogóle
-kompiluje (błąd kompilacji pojawi się od razu w oknie „Kod źródłowy”), a potem wyeksportuj
-wydruk do Excela i zweryfikuj: (a) liczby są wyrównane do prawej i traktowane jako liczby
-(np. `=SUMA(...)` na kolumnie działa), (b) widoczne są 2 miejsca po przecinku, (c)
-nagłówki są pogrubione, (d) obramowania komórek są zachowane.
+**Ograniczenie względem EPPlus:** to przybliżenie (stała szerokość znaku dla domyślnej
+czcionki, nie realny pomiar renderowanego tekstu jak w `AutoFitColumns()`) — powinno dać
+wynik „wystarczająco dobry”, ale nie jest identyczne z prawdziwym auto-fit (zob. też
+ograniczenie opisane w `SeopEnrollmentFile.md`).
+
+**TODO/UNVERIFIED:** cała ta sekcja (oraz `this.Report` jako sposób dostępu do raportu w
+`Report_BeforePrint`) jest wzorowana na kodzie z `SeopEnrollmentFile`, ale nie została
+potwierdzona rzeczywistym eksportem do `.xlsx` **tego konkretnego wydruku**. Po wklejeniu
+kodu w projektancie sprawdź najpierw, czy się w ogóle kompiluje, a potem wyeksportuj
+wydruk do Excela i zweryfikuj: (a) szerokości kolumn i wysokości wierszy są sensownie
+dopasowane do treści, (b) liczby są traktowane jako liczby (np. `=SUMA(...)` na kolumnie
+działa), (c) widoczne są 2 miejsca po przecinku, (d) nagłówki są pogrubione, (e)
+obramowania komórek są zachowane.
 
 ## Jak to jest zbudowane (dlaczego nie ma statycznej tabeli w .repx)
 
@@ -151,15 +185,22 @@ KOMUNIKAT=...` w tabeli danych.
    `WypElement` (a nie per `Definicja`).
 5. **Storno** (`RozliczenieStorna`) — potwierdzić na przykładzie z realną korektą wypłaty,
    że pomijanie wystornowanych/stornujących elementów daje poprawną (nie podwójną) sumę.
-6. **Kolumny Składki ZUS (prac./pracod.) / PPK (prac./pracod.) / Zaliczka na PIT / Kwota
-   do wypłaty** — potwierdzić na realnie naliczonej wypłacie (nie tylko dodanej do
-   kartoteki, ale przeliczonej listą płac), że sumy z `WypElement.Podatki.*` zgadzają się
-   z paskiem wypłaty w GUI, osobno dla części pracownika i pracodawcy.
-7. **Eksport do Excela** (`TextExportMode.Value` + `TextFormatString`) — potwierdzić
-   kompilację kodu w projektancie, a potem że wyeksportowany `.xlsx` ma liczby jako
-   wartości liczbowe (nie tekst) z zachowanym formatem, oraz że pogrubienie/obramowania/
-   wyrównanie przenoszą się poprawnie — patrz sekcja „Eksport do Excela z zachowaniem
-   formatowania” wyżej.
+6. **17 kolumn podsumowania** (Emerytalna/Rentowa/Chorobowa/Wypadkowa/Zdrowotna ×
+   pracownik/pracodawca, Fundusz Pracy, FGŚP, FEP, PPK pracownik/pracodawca, Zaliczka na
+   PIT, Kwota do wypłaty) — potwierdzić na realnie naliczonej wypłacie (nie tylko dodanej
+   do kartoteki, ale przeliczonej listą płac), że sumy z `WypElement.Podatki.*` zgadzają
+   się z paskiem wypłaty w GUI, w tym że kolumny „zerowe po jednej stronie” (np.
+   Chorobowa pracodawca, Wypadkowa pracownik, Zdrowotna pracodawca) faktycznie wychodzą
+   0,00 zgodnie z założeniem opisanym w tabeli kolumn wyżej.
+7. **Eksport do Excela z auto-dopasowaniem** (`DopasujSzerokosciKolumn`,
+   `UstawWysokoscWierszy`, `TextExportMode.Value`, `TextFormatString`, `this.Report`) —
+   potwierdzić kompilację kodu w projektancie (compileruje bez błędu — `this.Report` musi
+   być poprawną właściwością bazy `ReportSnippet`), a potem że wyeksportowany `.xlsx` ma
+   kolumny/wiersze sensownie dopasowane do treści i liczby jako wartości liczbowe (nie
+   tekst) z zachowanym formatem — patrz sekcja „Eksport do Excela z auto-dopasowaniem
+   kolumn/wierszy — bez EPPlus” wyżej. Przy 17+ kolumnach podsumowania i kolumnach
+   elementów tabela będzie szeroka — w Excelu to nieistotne (brak ograniczenia szerokości
+   strony), ale sam podgląd wydruku w Enova może wymagać przewijania w poziomie.
 
 ## Jak wgrać
 
