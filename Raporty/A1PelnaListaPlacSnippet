@@ -13,12 +13,18 @@ using Soneta.Types;
 namespace x.x.Reports
 {
     // Wydruk z poziomu Płace/Listy płac (zaznaczenie jednej lub wielu pozycji ListaPlac).
-    // Kolumny Kod / Imię i Nazwisko / Wydział są na stałe; reszta kolumn budowana jest
+    // Kolumny Kod / Imię i Nazwisko / Wydział są na stałe; kolumny elementów budowane są
     // dynamicznie na podstawie definicji elementów (WypElement.Definicja) znalezionych
     // na wypłatach (Wyplata.Elementy) wchodzących w skład zaznaczonych list płac.
     // Brak elementu danego rodzaju na konkretnej wypłacie -> 0,00 w tej kolumnie.
     // Jeden wiersz wydruku = jedna Wyplata (przy kilku wypłatach tego samego pracownika
     // na liście - np. etat + inne - powstaje kilka wierszy).
+    //
+    // Po kolumnach elementów dochodzą 4 STAŁE kolumny podsumowania - Składki ZUS (prac.),
+    // Podatek (zaliczka PIT), PPK (prac.), Kwota do wypłaty. To NIE są elementy (WypElement) -
+    // ZUS/podatek/PPK są naliczane w strukturze WypElement.Podatki KAŻDEGO składnika wypłaty
+    // (sumowane tu po wszystkich składnikach), a kwota do wypłaty to wprost pole Wyplata.Wartosc
+    // (nie suma elementów) - stąd liczone inaczej niż kolumny dynamiczne.
     //
     // Zamiast statycznej tabeli z .repx cała tabela (nagłówek kolumn + wiersze danych)
     // jest budowana w kodzie na dwóch pustych kontrolkach XRTable (tabelaNaglowek w
@@ -57,6 +63,7 @@ namespace x.x.Reports
         const float WagaNazwisko = 2.2f;
         const float WagaWydzial = 1.4f;
         const float WagaElementu = 1.1f;
+        const float WagaPodsumowania = 1.3f;
 
         [DxBind(Name = "Report")]
         private void Report_BeforePrint(object sender, CancelEventArgs e)
@@ -182,6 +189,14 @@ namespace x.x.Reports
             public string NazwiskoImie;
             public string Wydzial;
             public decimal[] Wartosci;
+            // Podsumowania nie są odrębnymi "elementami" (WypElement) tylko wartościami
+            // wyliczanymi ze struktury WypElement.Podatki każdego składnika wypłaty
+            // (a KwotaDoWyplaty wprost z pola Wyplata.Wartosc) - stąd stałe kolumny,
+            // nie kolejna kolumna dynamiczna.
+            public decimal SkladkiZUS;
+            public decimal Podatek;
+            public decimal PPK;
+            public decimal KwotaDoWyplaty;
         }
 
         static List<WierszWyplaty> BudujWiersze(List<Wyplata> wyplaty, List<DefinicjaElementu> kolumny)
@@ -202,11 +217,26 @@ namespace x.x.Reports
                     if (el.RozliczenieStorna) continue;
 
                     DefinicjaElementu def = el.Definicja;
-                    if (def == null) continue;
-                    int idx = kolumny.IndexOf(def);
-                    if (idx >= 0)
-                        wiersz.Wartosci[idx] += el.Wartosc;
+                    if (def != null)
+                    {
+                        int idx = kolumny.IndexOf(def);
+                        if (idx >= 0)
+                            wiersz.Wartosci[idx] += el.Wartosc;
+                    }
+
+                    // Skladki ZUS, podatek i PPK nie sa osobnymi elementami (WypElement) -
+                    // sa naliczane w strukturze WypElement.Podatki KAZDEGO skladnika wyplaty
+                    // (czesc pracownika), wiec sumujemy je tutaj po wszystkich skladnikach.
+                    wiersz.SkladkiZUS += el.Podatki.Emerytalna.Prac + el.Podatki.Rentowa.Prac
+                        + el.Podatki.Chorobowa.Prac + el.Podatki.Wypadkowa.Prac + el.Podatki.Zdrowotna.Prac;
+                    wiersz.Podatek += el.Podatki.ZalFIS;
+                    wiersz.PPK += el.Podatki.PPK.Pracownika;
                 }
+
+                // Kwota do wyplaty (netto) to pole calej Wyplaty (Wyplata.Wartosc), NIE suma
+                // elementow - stad liczone raz na wiersz, poza petla po Elementy.
+                wiersz.KwotaDoWyplaty = BezpiecznieDecimal(() => w.Wartosc.Value);
+
                 wiersze.Add(wiersz);
             }
             wiersze.Sort((a, b) => string.Compare(a.NazwiskoImie ?? "", b.NazwiskoImie ?? "", StringComparison.CurrentCulture));
@@ -235,6 +265,12 @@ namespace x.x.Reports
             catch (Exception ex) { return "[BŁĄD: " + ex.Message + "]"; }
         }
 
+        static decimal BezpiecznieDecimal(Func<decimal> policz)
+        {
+            try { return policz(); }
+            catch { return 0m; }
+        }
+
         void BudujNaglowek(List<DefinicjaElementu> kolumny)
         {
             if (tabelaNaglowek == null) return;
@@ -247,6 +283,11 @@ namespace x.x.Reports
             wiersz.Cells.Add(NowaKomorka("Wydział", WagaWydzial, true, false));
             foreach (DefinicjaElementu def in kolumny)
                 wiersz.Cells.Add(NowaKomorka(NazwaKolumny(def), WagaElementu, true, true));
+
+            wiersz.Cells.Add(NowaKomorka("Składki ZUS (prac.)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Podatek (zaliczka PIT)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("PPK (prac.)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Kwota do wypłaty", WagaPodsumowania, true, true));
 
             tabelaNaglowek.Rows.Add(wiersz);
         }
@@ -263,7 +304,7 @@ namespace x.x.Reports
                 XRTableCell cInfo = NowaKomorka(
                     "Brak wypłat do wydrukowania - sprawdź zaznaczenie listy/list płac.",
                     1, false, false);
-                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu);
+                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu) + (4 * WagaPodsumowania);
                 pusty.Cells.Add(cInfo);
                 tabelaDane.Rows.Add(pusty);
                 return;
@@ -278,6 +319,12 @@ namespace x.x.Reports
                 wiersz.Cells.Add(NowaKomorka(w.Wydzial, WagaWydzial, false, false));
                 for (int i = 0; i < kolumny.Count; i++)
                     wiersz.Cells.Add(NowaKomorka(w.Wartosci[i].ToString("N2"), WagaElementu, false, true));
+
+                wiersz.Cells.Add(NowaKomorka(w.SkladkiZUS.ToString("N2"), WagaPodsumowania, false, true));
+                wiersz.Cells.Add(NowaKomorka(w.Podatek.ToString("N2"), WagaPodsumowania, false, true));
+                wiersz.Cells.Add(NowaKomorka(w.PPK.ToString("N2"), WagaPodsumowania, false, true));
+                wiersz.Cells.Add(NowaKomorka(w.KwotaDoWyplaty.ToString("N2"), WagaPodsumowania, false, true));
+
                 tabelaDane.Rows.Add(wiersz);
             }
         }

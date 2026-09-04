@@ -39,6 +39,10 @@ Jeden wiersz = jedna wypłata (`Wyplata`) wchodząca w skład zaznaczonej listy/
 | Imię i Nazwisko | `Wyplata.Pracownik.NazwiskoImię` |
 | Wydział | `Pracownik.Historia[Wyplata.Data].Etat.Wydzial.Nazwa` |
 | *(dynamicznie, po jednej na każdy rodzaj elementu)* | suma `WypElement.Wartosc` dla danej `WypElement.Definicja` na tej wypłacie |
+| Składki ZUS (prac.) | suma `WypElement.Podatki.{Emerytalna,Rentowa,Chorobowa,Wypadkowa,Zdrowotna}.Prac` po wszystkich składnikach wypłaty |
+| Podatek (zaliczka PIT) | suma `WypElement.Podatki.ZalFIS` po wszystkich składnikach wypłaty |
+| PPK (prac.) | suma `WypElement.Podatki.PPK.Pracownika` po wszystkich składnikach wypłaty |
+| Kwota do wypłaty | `Wyplata.Wartosc` (kwota netto — pole całej wypłaty, NIE suma elementów) |
 
 Kolumny elementów **nie są zaszyte na stałe** — snippet przegląda wszystkie wypłaty ze
 wszystkich zaznaczonych list płac, zbiera unikalny zbiór `DefinicjaElementu` występujących
@@ -49,6 +53,18 @@ z wartością `0,00` u tego, który jej nie ma.
 Elementy wystornowane/stornujące (`WypElement.RozliczenieStorna == true`) są pomijane przy
 liczeniu sum i przy wykrywaniu kolumn — inaczej wartość pierwotna i jej storno liczyłyby
 się podwójnie.
+
+**Cztery ostatnie kolumny (Składki ZUS / Podatek / PPK / Kwota do wypłaty) są STAŁE, nie
+dynamiczne** — w przeciwieństwie do kolumn elementów, ZUS/podatek/PPK **nie są odrębnymi
+`WypElement`** tylko wartościami zaszytymi w strukturze `WypElement.Podatki` **każdego**
+składnika wypłaty (część pracownika), więc snippet sumuje je po wszystkich składnikach
+zamiast wykrywać jako osobną kolumnę per definicja. „Kwota do wypłaty” to z kolei wprost
+pole `Wyplata.Wartosc` (jedna wartość na wypłatę, nie suma elementów).
+
+**Do potwierdzenia w GUI:** czy „Składki ZUS (prac.)” ma pokazywać tylko część pracownika
+(obecne działanie) czy też osobno część pracodawcy (`.Firma`) — obecnie pominięta, bo nie
+wpływa na kwotę do wypłaty pracownika; podobnie PPK pokazuje tylko `Pracownika`, nie
+`Pracodawcy`.
 
 ## Jak to jest zbudowane (dlaczego nie ma statycznej tabeli w .repx)
 
@@ -111,6 +127,11 @@ KOMUNIKAT=...` w tabeli danych.
    `WypElement` (a nie per `Definicja`).
 5. **Storno** (`RozliczenieStorna`) — potwierdzić na przykładzie z realną korektą wypłaty,
    że pomijanie wystornowanych/stornujących elementów daje poprawną (nie podwójną) sumę.
+6. **Kolumny Składki ZUS / Podatek / PPK / Kwota do wypłaty** — potwierdzić na realnie
+   naliczonej wypłacie (nie tylko dodanej do kartoteki, ale przeliczonej listą płac), że
+   sumy z `WypElement.Podatki.*` zgadzają się z paskiem wypłaty w GUI; potwierdzić, czy
+   pokazywać tylko część pracownika (`Prac`/`Pracownika`) czy też pracodawcy (`Firma`/
+   `Pracodawcy`) dla ZUS i PPK.
 
 ## Jak wgrać
 
