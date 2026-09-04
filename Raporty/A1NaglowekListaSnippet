@@ -1,34 +1,47 @@
+using System;
 using System.ComponentModel;
+using System.Linq;
 using DevExpress.XtraReports.UI;
-using Soneta.Core;      // OddzialFirmy, IPieczątkaFirmy
-using Soneta.Kadry;     // Pracownik, PracHistoria, Wydzial, Etat
-using Soneta.Tools;     // TranslateFormat
-using Soneta.Types;     // Date
+using Soneta.Business;      // Row
+using Soneta.Core;          // OddzialFirmy, IPieczątkaFirmy
+using Soneta.Kadry;         // Pracownik, PracHistoria, Wydzial, Etat
+using Soneta.Place;         // Wyplata
+using Soneta.Tools;         // TranslateFormat, XtraReportHelper
+using Soneta.Types;         // Date
 
 namespace Soneta.Business.UI.DxReports {
 
     // Wzorzec użytkownika "nagłówek - lista" (A1NaglowekListaSnippet) — modyfikacja
     // standardowego Soneta.Business.UI.DxReports.NaglowekListaSnippet.
     //
-    // CEL ZMIANY: na listach kadrowych pieczątka w nagłówku ma pochodzić z ODDZIAŁU
-    // PRACOWNIKA z bieżącego wiersza wydruku (wg jego wydziału), a nie z Firmy głównej
-    // ani z oddziału operatora. Standardowy ReportTools.GetHeaderData tego nie robi,
-    // bo Pracownik/PracHistoria nie implementują IElementStrukturyFirmy/IOddzialProvider,
-    // więc DxReportService.GetDepartmentFromDataContext zwraca dla nich null.
+    // CEL: pieczątka w nagłówku ma pochodzić z ODDZIAŁU PRACOWNIKA z bieżącego
+    // rekordu wydruku (wg jego wydziału), a nie z Firmy głównej (pusta w
+    // wielooddziałowym wdrożeniu) ani z oddziału operatora.
     //
-    // JAK: w Report_DataSourceRowChanged bierzemy bieżący rekord (Report.DataAdapter),
-    // z niego wydział (PracHistoria.Etat.Wydzial), z wydziału oddział
-    // (Wydzial.WyliczOddzial() — idzie w górę drzewa wydziałów aż do przypiętego
-    // oddziału), a z oddziału pieczątkę (OddzialFirmy.GetPieczątka(data) — sama wchodzi
-    // po oddziale NADRZĘDNYM, gdy bieżący oddział nie ma własnego numeru licencji, więc
-    // dostajemy pieczątkę z oddziału, który tę licencję nosi).
+    // Standardowy ReportTools.GetHeaderData tego nie robi: DxReportService
+    // .GetDepartmentFromDataContext rozpoznaje tylko IOddziałNagłówkaDokumentuInfo
+    // / IDokumentKsiegowalny / IElementStrukturyFirmy / IOddzialProvider, a
+    // Pracownik / PracHistoria / Wyplata żadnego z nich nie implementują.
     //
-    // Zmiana jest ADDYTYWNA: gdy rekordu nie da się zmapować na pracownika/wydział/oddział
-    // (np. lista niekadrowa), nagłówek zostaje wypełniony standardowo z GetHeaderData.
+    // JAK: nagłówek jest DataKind="Context" (Report.DataAdapter == null,
+    // GetCurrentRow() zwraca Context), więc bieżący rekord bierzemy z listy
+    // danych raportu-rodzica: DxReportHelpers.GetDataSourceList<Row>(rc.Report)
+    // pod indeksem e.CurrentRow. Z rekordu:
+    //   Wyplata     -> Wyplata.PracHistoria (= Pracownik[data wypłaty])
+    //   Pracownik   -> Pracownik.Last
+    //   PracHistoria-> wprost
+    // dalej: PracHistoria.Etat.Wydzial -> Wydzial.WyliczOddzial() (w górę drzewa
+    // wydziałów) -> OddzialFirmy.GetPieczątka(data). GetPieczątka SAMA schodzi po
+    // Nadrzednym, gdy NumerLicencji == "" — więc dostajemy pieczątkę z oddziału,
+    // który nosi licencję (pracownik -> oddział podrzędny bez licencji -> oddział
+    // nadrzędny z licencją).
     //
-    // UWAGA (baza demo): na bazie z licencją demonstracyjną GetPieczątka zawsze zwraca
-    // "* DEMO * <nazwa oddziału>" — to normalne, potwierdza tylko, który oddział został
-    // wyliczony. Realny test wymaga bazy z licencją klienta.
+    // Zmiana ADDYTYWNA: gdy rekordu nie da się zmapować (lista niekadrowa) albo
+    // pieczątka wyjdzie pusta / GetPieczątka rzuci wyjątek — zostają wartości
+    // standardowe z GetHeaderData.
+    //
+    // UWAGA (baza demo): GetPieczątka przy licencji demonstracyjnej zwraca
+    // "* DEMO * <oddział>". Realny wynik tylko na bazie z licencją klienta.
     public class NaglowekListaSnippet : ReportSnippet {
 
         [DxBind]
@@ -50,54 +63,24 @@ namespace Soneta.Business.UI.DxReports {
 
         private HeaderData headerData;
 
-        // Jednorazowy odczyt danych firmy + wypełnienie nagłówka wartościami
-        // standardowymi (fallback dla wydruków, które nie iterują po wierszach
-        // albo których wiersza nie da się zmapować na pracownika).
         [DxBind]
         private void Report_BeforePrint(object sender, CancelEventArgs e) {
-            if (headerData != null)
-                return;
-
-            headerData = ReportTools.GetHeaderData(Context);
-            WypelnijZHeaderData();
+            Odswiez(-1);
         }
 
-        // Odpala się na każdą zmianę rekordu danych (raz na pracownika). Najpierw
-        // wartości standardowe, potem próba nadpisania pieczątką oddziału pracownika.
         [DxBind]
         private void Report_DataSourceRowChanged(object sender, DataSourceRowEventArgs e) {
-            if (headerData == null)
+            Odswiez(e.CurrentRow);
+        }
+
+        // Idempotentne: najpierw wartości standardowe, potem próba nadpisania
+        // pieczątką oddziału pracownika z rekordu o indeksie idxHint.
+        private void Odswiez(int idxHint) {
+            if (headerData == null && Context != null)
                 headerData = ReportTools.GetHeaderData(Context);
 
             WypelnijZHeaderData();
-
-            PracHistoria ph = PobierzHistorie(Report.DataAdapter ?? GetCurrentRow());
-            if (ph == null || ph.Etat == null)
-                return;
-
-            Wydzial wydzial = ph.Etat.Wydzial;
-            if (wydzial == null)
-                return;
-
-            // Oddział wyliczony z wydziału pracownika (w górę drzewa wydziałów).
-            OddzialFirmy oddzial = wydzial.WyliczOddzial();
-            if (oddzial == null)
-                return;
-
-            // GetPieczątka sam schodzi do oddziału nadrzędnego, który nosi licencję.
-            IPieczątkaFirmy p;
-            try {
-                p = oddzial.GetPieczątka(Date.Today);   // dla wersji "na datę" można podać ph.Do
-            } catch {
-                return;   // np. licencja oddziału nadrzędnego niewczytana/niezgodna — zostaje pieczątka standardowa
-            }
-            if (p == null || string.IsNullOrEmpty(p.Nazwa))
-                return;
-
-            label_CompanyName.Text = p.NazwaFormatowana;
-            label_ShortCompanyName.Text = p.NazwaSkrócona;
-            label_Adress.Text = p.Adres.Linia1 + System.Environment.NewLine + p.Adres.Linia2;
-            label_tin.Text = "NIP: {0}".TranslateFormat(p.NIP);
+            UstawZOddzialuPracownika(idxHint);
         }
 
         private void WypelnijZHeaderData() {
@@ -106,7 +89,7 @@ namespace Soneta.Business.UI.DxReports {
 
             label_CompanyName.Text = headerData.CompanyName;
             label_ShortCompanyName.Text = headerData.ShortCompanyName;
-            label_Adress.Text = headerData.AddressLine1 + System.Environment.NewLine + headerData.AddressLine2;
+            label_Adress.Text = headerData.AddressLine1 + Environment.NewLine + headerData.AddressLine2;
             label_tin.Text = "NIP: {0}".TranslateFormat(headerData.CompanyTIN);
 
             if (!string.IsNullOrEmpty(headerData.AccountingOfficeName)) {
@@ -117,12 +100,81 @@ namespace Soneta.Business.UI.DxReports {
             }
         }
 
+        private void UstawZOddzialuPracownika(int idxHint) {
+            Row biezacy = PobierzBiezacyWiersz(idxHint);
+            if (biezacy == null)
+                return;
+
+            PracHistoria ph = PobierzHistorie(biezacy);
+            if (ph == null || ph.Etat == null)
+                return;
+
+            Wydzial wydzial = ph.Etat.Wydzial;
+            if (wydzial == null)
+                return;
+
+            OddzialFirmy oddzial = wydzial.WyliczOddzial();
+            if (oddzial == null)
+                return;
+
+            Date data = biezacy is Wyplata wyp ? BezpiecznaData(wyp) : Date.Today;
+
+            IPieczątkaFirmy p;
+            try {
+                p = oddzial.GetPieczątka(data);
+            } catch {
+                return;   // licencja oddziału nadrzędnego niezgodna/niewczytana — zostaje pieczątka standardowa
+            }
+            if (p == null || string.IsNullOrEmpty(p.Nazwa))
+                return;
+
+            label_CompanyName.Text = p.NazwaFormatowana;
+            label_ShortCompanyName.Text = p.NazwaSkrócona;
+            label_Adress.Text = p.Adres.Linia1 + Environment.NewLine + p.Adres.Linia2;
+            label_tin.Text = "NIP: {0}".TranslateFormat(p.NIP);
+        }
+
+        // Bieżący rekord raportu-rodzica (nagłówek jest DataKind="Context",
+        // więc nie ma własnego DataAdapter).
+        private Row PobierzBiezacyWiersz(int idxHint) {
+            ReportContext rc;
+            if (!Context.Get<ReportContext>(out rc) || rc.Report == null)
+                return null;
+
+            var rows = DxReportHelpers.GetDataSourceList<Row>(rc.Report)?.ToList();
+            if (rows == null || rows.Count == 0)
+                return null;
+
+            int i = idxHint;
+            if (i < 0 || i >= rows.Count) i = rc.CurrentDataSourceIndex;
+            if (i < 0 || i >= rows.Count) i = rc.Report.CurrentRowIndex;
+            if (i < 0 || i >= rows.Count) i = 0;
+            return rows[i];
+        }
+
         private static PracHistoria PobierzHistorie(object row) {
             if (row is Pracownik prac)
-                return prac.Last;                 // ostatni zapis historii zatrudnienia
+                return prac.Last;
             if (row is PracHistoria ph)
                 return ph;
+            if (row is Wyplata wyp) {
+                PracHistoria h = null;
+                try { h = wyp.PracHistoria; } catch { }
+                if (h == null && wyp.Pracownik != null) {
+                    try { h = wyp.Pracownik[wyp.Data]; } catch { }
+                }
+                return h;
+            }
             return null;
+        }
+
+        private static Date BezpiecznaData(Wyplata wyp) {
+            try {
+                Date d = wyp.Data;
+                return d == Date.Empty ? Date.Today : d;
+            } catch {
+                return Date.Today;
+            }
         }
 
         [DxBind]
