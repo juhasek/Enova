@@ -6,7 +6,7 @@ using Soneta.Business;
 using Soneta.Business.UI;
 using Soneta.Place;
 using Soneta.Types;
-using OfficeOpenXml;
+using DevExpress.Spreadsheet;
 
 [assembly: Worker<A1PelnaListaPlacWorker, ListaPlac>]
 
@@ -15,37 +15,50 @@ namespace x.x.Reports
     // Worker dokłada do listy "Płace -> Listy płac" pozycję w menu Czynności generującą
     // .xlsx PROGRAMOWO przez IReportService (ten sam wzorzec .repx +
     // A1PelnaListaPlacSnippet co zwykły wydruk), a następnie doformatowującą GOTOWE bajty
-    // pliku biblioteką EPPlus - prawdziwy auto-fit szerokości kolumn
-    // (AutoFitColumns() mierzy realnie renderowany tekst, nie przybliżeniem jak
-    // pseudo-autofit w samym snippecie: DopasujSzerokosciKolumn/DopasujSzerokoscStrony)
-    // oraz stała wysokość wierszy.
+    // pliku biblioteką DevExpress.Spreadsheet - prawdziwy auto-fit szerokości kolumn
+    // (mierzy realnie renderowany tekst, nie przybliżeniem jak pseudo-autofit w samym
+    // snippecie: DopasujSzerokosciKolumn/DopasujSzerokoscStrony).
+    //
+    // DLACZEGO DevExpress.Spreadsheet, NIE EPPlus: użytkownik poprosił o EPPlus, ale
+    // przeszukanie folderu z bibliotekami tego serwera enova
+    // (C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard\, 442 pliki DLL - stąd
+    // proces ładuje wszystkie swoje referencje) NIE znalazło EPPlus/OfficeOpenXml. Ręczne
+    // dołożenie nowej DLL do folderu współdzielonego serwera (obsługującego też inne bazy,
+    // nie tylko `Claude`) to ryzykowna, trudna do odwrócenia zmiana infrastruktury
+    // (prawdopodobnie wymaga restartu usługi enova) - świadomie tego NIE zrobiono bez
+    // wyraźnej zgody. Za to w TYM SAMYM folderze już leży
+    // `DevExpress.Spreadsheet.v24.1.Core.dll` (obok już używanego
+    // `DevExpress.XtraReports.v24.1.dll`) - biblioteka tego samego dostawcy do
+    // tworzenia/edycji plików Excel, funkcjonalnie odpowiadająca EPPlus
+    // (Workbook/Worksheet, AutoFitColumns/AutoFitRows) - i nie wymaga niczego dokładać.
     //
     // Różnica względem zwykłego eksportu z podglądu wydruku: tam DevExpress sam zapisuje
     // plik na dysk i nie ma zdarzenia z dostępem do gotowych bajtów "po fakcie" (dlatego
-    // EPPlus był wcześniej wycofany dla Raporty/SeopEnrollmentFile - zob. ten .md p.6).
-    // TUTAJ generujemy plik przez IReportService.GenerateReport(...) WPROST, dostajemy
-    // Stream z surowymi bajtami .xlsx i możemy je swobodnie post-processować przed
-    // oddaniem operatorowi do pobrania - dokładnie wzorem (przywróconym tu z historii
-    // commitów) `Raporty/SeopEnrollmentFileWorker` (dodany 05e0824, wycofany 5ac1a17 -
-    // wycofany bez podanego technicznego powodu w commicie, nie dlatego że EPPlus tam
-    // nie działał).
+    // podejście z post-processingiem było wcześniej wycofane dla Raporty/SeopEnrollmentFile,
+    // tam z EPPlus - zob. ten .md p.6). TUTAJ generujemy plik przez
+    // IReportService.GenerateReport(...) WPROST, dostajemy Stream z surowymi bajtami .xlsx
+    // i możemy je swobodnie post-processować przed oddaniem operatorowi do pobrania -
+    // architektura wzorem (przywróconym tu z historii commitów, ale z inną biblioteką
+    // formatującą) `Raporty/SeopEnrollmentFileWorker` (dodany 05e0824, wycofany 5ac1a17 -
+    // wycofany bez podanego technicznego powodu w commicie).
     //
     // TODO/UNVERIFIED - sprawdzić PRZED czymkolwiek innym, w tej kolejności:
-    // 1. Czy biblioteka EPPlus (namespace OfficeOpenXml) jest w ogóle dostępna w tej
-    //    instalacji enova - NIE znaleziono pliku EPPlus.dll/OfficeOpenXml.dll pod
-    //    C:\enovaServer ani ~/Downloads (przeszukane z tego repo). Jeśli po wklejeniu tego
-    //    pliku edytor rzuci błąd typu "nie znaleziono typu lub przestrzeni nazw
-    //    OfficeOpenXml" / "Could not load file or assembly" - oznacza to, że ta biblioteka
-    //    nie jest zarejestrowana w instalacji i całe to podejście jest niewykonalne bez
-    //    dodania referencji (a snippety wklejane w edytorze skryptów NIE MOGĄ dodawać
-    //    własnych referencji NuGet - zob. CLAUDE.md / pamięć project-srodowisko-lokalne).
-    // 2. GDZIE w GUI enova wkleja się kod klasy Worker (z atrybutem [assembly: Worker<...>])
+    // 1. Czy `DevExpress.Spreadsheet` faktycznie jest referencjonowany przez kompilator
+    //    kodu snippetów (nie tylko obecny na dysku obok innych DLL) - wysoce prawdopodobne
+    //    (ten sam dostawca, ten sam folder co już działający DevExpress.XtraReports), ale
+    //    niepotwierdzone. Jeśli edytor rzuci błąd "nie znaleziono typu lub przestrzeni nazw
+    //    DevExpress.Spreadsheet" - biblioteka mimo obecności na dysku nie jest jednak
+    //    referencjonowana przez ten konkretny kompilator.
+    // 2. Dokładne nazwy metod `Worksheet.AutoFitColumns()`/`AutoFitRows()` (bezparametrowe
+    //    warianty = cały użyty zakres) - zgodne z ogólną wiedzą o API DevExpress
+    //    Spreadsheet, ale nie zweryfikowane na wersji v24.1 konkretnie w tej instalacji.
+    // 3. GDZIE w GUI enova wkleja się kod klasy Worker (z atrybutem [assembly: Worker<...>])
     //    - w odróżnieniu od kodu snippetu wydruku (wklejanego w "Kod źródłowy" KONKRETNEGO
     //    wzorca .repx), Worker to rozszerzenie GLOBALNE dodatku. W tym repo nie mamy
     //    jeszcze potwierdzonego przykładu takiej rejestracji przez GUI (brak wcześniejszego
     //    Workera w repo) - prawdopodobnie osobne miejsce typu "Kod źródłowy dodatku" /
     //    "Rozszerzenia" w Narzędzia -> Opcje, ale wymaga potwierdzenia w GUI.
-    // 3. Czy `DataType = typeof(ListaPlac[])` + jawne `context.Set(zaznaczoneWiersze)`
+    // 4. Czy `DataType = typeof(ListaPlac[])` + jawne `context.Set(zaznaczoneWiersze)`
     //    (Row[]) faktycznie trafia do `A1PelnaListaPlacSnippet.Report_BeforePrint` jako
     //    `Context[typeof(Row[])]` - w SEOP-owym pierwowzorze ten mechanizm (przez
     //    `ReportResult.Rows`) był oznaczony jako niepotwierdzony; tu dodatkowo
@@ -59,7 +72,7 @@ namespace x.x.Reports
         public bool IsVisibleGenerujXlsx() => ZaznaczoneListyPlac?.Length > 0;
         public bool IsEnabledGenerujXlsx() => ZaznaczoneListyPlac?.Length > 0;
 
-        [Action("Generuj pełną listę płac (xlsx, auto-fit EPPlus)")]
+        [Action("Generuj pełną listę płac (xlsx, auto-fit)")]
         public object GenerujXlsx()
         {
             var session = ZaznaczoneListyPlac[0].Session;
@@ -98,26 +111,30 @@ namespace x.x.Reports
             return new NamedStream(nazwaPliku, () => new MemoryStream(sformatowanyXlsx));
         }
 
-        // Doformatowanie gotowego pliku wygenerowanego przez DevExpress: prawdziwy
-        // auto-fit szerokosci kolumn (EPPlus mierzy realnie renderowany tekst zamiast
-        // przyblizenia "dlugosc znaku x stala" jak w pseudo-autofit snippetu) oraz stala
-        // wysokosc wierszy.
+        // Doformatowanie gotowego pliku wygenerowanego przez DevExpress XtraReports:
+        // prawdziwy auto-fit szerokosci kolumn i wysokosci wierszy przez
+        // DevExpress.Spreadsheet (mierzy realnie renderowany tekst zamiast przyblizenia
+        // "dlugosc znaku x stala" jak w pseudo-autofit samego snippetu wydruku).
         private static byte[] SformatujExcel(byte[] surowyXlsx)
         {
-            using (var pakiet = new ExcelPackage(new MemoryStream(surowyXlsx)))
+            using (var workbook = new Workbook())
             {
-                var arkusz = pakiet.Workbook.Worksheets[0];
+                using (var wejscie = new MemoryStream(surowyXlsx))
+                    workbook.LoadDocument(wejscie, DocumentFormat.Xlsx);
 
-                if (arkusz.Dimension != null)
+                Worksheet arkusz = workbook.Worksheets[0];
+
+                // TODO/UNVERIFIED: warianty bezparametrowe = caly uzyty zakres arkusza
+                // (zgodnie z ogolna wiedza o API DevExpress Spreadsheet, niezweryfikowane
+                // na tej konkretnej wersji v24.1).
+                arkusz.AutoFitColumns();
+                arkusz.AutoFitRows();
+
+                using (var wyjscie = new MemoryStream())
                 {
-                    arkusz.Cells[arkusz.Dimension.Address].AutoFitColumns();
-
-                    const double wysokoscWiersza = 18;
-                    for (int wiersz = arkusz.Dimension.Start.Row; wiersz <= arkusz.Dimension.End.Row; wiersz++)
-                        arkusz.Row(wiersz).Height = wysokoscWiersza;
+                    workbook.SaveDocument(wyjscie, DocumentFormat.Xlsx);
+                    return wyjscie.ToArray();
                 }
-
-                return pakiet.GetAsByteArray();
             }
         }
     }
