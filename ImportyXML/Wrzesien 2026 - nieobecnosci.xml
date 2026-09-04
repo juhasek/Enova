@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Dodatkowe nieobecnosci we wrzesniu 2026 dla pracownikow bazy Claude (Kod = numer scenariusza
+  "Dodatek roczny", patrz Dodatek roczny - test 00 scenariusze.md). Import wg rekordow, guidy
+  stale => idempotentne.
+
+  TS-03 (Wojcik) ma juz nieobecnosc we wrzesniu (Zwolnienie chorobowe 14-18.09, plik
+  "Dodatek roczny - test 02 nieobecnosci.xml") - tutaj pominieta, zeby nie dublowac okresu.
+
+  Dla TS-01 i TS-05 (scenariusze z oczekiwanym pelnym dodatkiem 1500) uzyto WYLACZNIE typow
+  z listy dozwolonych wyjatkow regulaminu (Dodatek roczny.md p.5), zeby nie zmienic
+  udokumentowanego wyniku scenariusza:
+    TS-01 Kowalska      - Urlop wypoczynkowy planowy 7-11.09.2026   -> dozwolony -> bez zmian (1500)
+    TS-02 Wisniewski     - Urlop wypoczynkowy planowy 21-22.09.2026  -> juz i tak 0 (nieusprawiedliwiona z maja)
+    TS-05 Lewandowski    - Urlop okolicznosciowy 28.09.2026          -> dozwolony -> bez zmian (1500)
+    TS-09 Zielinska      - Zwolnienie chorobowe 8-10.09.2026         -> juz i tak 0 (niepelny rok)
+-->
+<session fromto="(wszystko)">
+
+  <Pracownik where="Kod=TS-01">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000001b1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0028-000000000000</Definicja>
+        <Okres>2026-09-07...2026-09-11</Okres>
+        <Urlop><Przyczyna>Planowy</Przyczyna></Urlop>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-02">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000002b1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0028-000000000000</Definicja>
+        <Okres>2026-09-21...2026-09-22</Okres>
+        <Urlop><Przyczyna>Planowy</Przyczyna></Urlop>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-05">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000005b1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0011-000000000000</Definicja>
+        <Okres>2026-09-28...2026-09-28</Okres>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-09">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000009b1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-09-08...2026-09-10</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J00</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+</session>
