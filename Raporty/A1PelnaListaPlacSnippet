@@ -57,6 +57,14 @@ namespace x.x.Reports
     // To przybliżenie (stała szerokość znaku, nie realny pomiar renderowanego tekstu jak w
     // EPPlus.AutoFitColumns()) - "wystarczająco dobre", ale nie identyczne z prawdziwym autofit.
     //
+    // WAŻNE (naprawione po zrzucie z Excela pokazującym kolumny wąskie jak 1 znak): Weight
+    // komórki to tylko PROPORCJA w obrębie szerokości WIERSZA/TABELI/STRONY - ustawienie
+    // dużych Weight/WidthF na komórkach nic nie daje, jeśli strona .repx jest zaprojektowana
+    // wąsko (oryginalnie A4 portret na 3 stałe kolumny). DopasujSzerokosciKolumn dlatego
+    // dodatkowo poszerza samą tabelę i KAŻDY jej wiersz (WidthF) do sumy szerokości kolumn,
+    // a DopasujSzerokoscStrony poszerza stronę raportu (Report.PaperKind/PageWidth), gdy
+    // suma kolumn przekracza dotychczasową szerokość strony.
+    //
     // Cała metoda BeforePrint jest opakowana w try/catch z etykietą etapu - błąd trafia
     // do tabeli danych jako pojedynczy wiersz diagnostyczny zamiast wywalać wydruk.
     public class A1PelnaListaPlacSnippet : ReportSnippet
@@ -485,6 +493,7 @@ namespace x.x.Reports
 
             XRTableRow naglowekWiersz = tabelaNaglowek.Rows[0];
             int liczbaKolumn = naglowekWiersz.Cells.Count;
+            float sumaSzerokosci = 0f;
 
             for (int i = 0; i < liczbaKolumn; i++)
             {
@@ -502,6 +511,7 @@ namespace x.x.Reports
 
                 float szerokosc = Math.Max(MinSzerokoscKolumny,
                     Math.Min(MaxSzerokoscKolumny, maxDlugosc * SzerokoscNaZnak + MarginesKomorki));
+                sumaSzerokosci += szerokosc;
 
                 naglowekWiersz.Cells[i].Weight = szerokosc;
                 naglowekWiersz.Cells[i].WidthF = szerokosc;
@@ -515,6 +525,47 @@ namespace x.x.Reports
                         wiersz.Cells[i].WidthF = szerokosc;
                     }
                 }
+            }
+
+            // KLUCZOWE: Weight komórki to tylko PROPORCJA w obrębie szerokości wiersza/tabeli
+            // (rzeczywista renderowana szerokość = Weight / SumaWag * WidthF wiersza) - same
+            // absolutne wartości Weight/WidthF na komórkach NIC nie dają, jeśli wiersz/tabela/
+            // strona zostały zaprojektowane wąsko (np. A4 portret na 3 kolumny): silnik i tak
+            // ściśnie wszystko z powrotem do tamtej wąskiej szerokości (efekt: kolumny wąskie
+            // jak jeden znak, tekst łamie się litera po literze - potwierdzone zrzutem z Excela).
+            // Trzeba więc też jawnie poszerzyć tabelę, KAŻDY jej wiersz i samą stronę raportu.
+            naglowekWiersz.WidthF = sumaSzerokosci;
+            tabelaNaglowek.WidthF = sumaSzerokosci;
+            if (tabelaDane != null)
+            {
+                tabelaDane.WidthF = sumaSzerokosci;
+                foreach (XRTableRow wiersz in tabelaDane.Rows)
+                    wiersz.WidthF = sumaSzerokosci;
+            }
+
+            DopasujSzerokoscStrony(sumaSzerokosci);
+        }
+
+        // Strona wydruku A1PelnaListaPlac.repx jest zaprojektowana wąsko (A4 portret, na
+        // 3 stałe kolumny) - przy kilkunastu-kilkudziesięciu kolumnach (elementy + 17 kolumn
+        // podsumowania) trzeba ją jawnie poszerzyć, inaczej Band/Page z powrotem ścisną tabelę
+        // (patrz komentarz w DopasujSzerokosciKolumn). Jednostki raportu = 1/100 cala, ta sama
+        // skala co WidthF/HeightF (potwierdzone w Raporty/SeopEnrollmentFile).
+        // TODO/UNVERIFIED: zmiana PaperKind/PageWidth z poziomu kodu Report_BeforePrint -
+        // brak w tym repo wcześniejszego precedensu na tę konkretną operację (SeopEnrollmentFile
+        // nie musiał zmieniać rozmiaru strony, bo jego tabela mieściła się w istniejącym layoucie).
+        void DopasujSzerokoscStrony(float sumaSzerokosciKolumn)
+        {
+            if (this.Report == null) return;
+
+            int lewy = this.Report.Margins.Left;
+            int prawy = this.Report.Margins.Right;
+            int potrzebnaSzerokosc = (int)Math.Ceiling(sumaSzerokosciKolumn) + lewy + prawy;
+
+            if (potrzebnaSzerokosc > this.Report.PageWidth)
+            {
+                this.Report.PaperKind = System.Drawing.Printing.PaperKind.Custom;
+                this.Report.PageWidth = potrzebnaSzerokosc;
             }
         }
 

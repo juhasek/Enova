@@ -124,6 +124,38 @@ dopasowane do treści, (b) liczby są traktowane jako liczby (np. `=SUMA(...)` n
 działa), (c) widoczne są 2 miejsca po przecinku, (d) nagłówki są pogrubione, (e)
 obramowania komórek są zachowane.
 
+### Poprawka 2026-09-05: kolumny wąskie jak 1 znak (usterka znaleziona zrzutem z Excela)
+
+**Objaw:** po pierwszym wgraniu i eksporcie do Excela wszystkie kolumny wyszły
+ekstremalnie wąskie — nagłówki typu „Wynagrodzenie zasadnicze miesięczne” łamały się
+litera po literze w pionie, a arkusz rozjechał się na dziesiątki wąskich kolumn Excela
+(`BD`, `BK`, `KM`, `OF`, `Q`...) zamiast jednej czytelnej tabeli.
+
+**Przyczyna:** `XRTableCell.Weight`/`WidthF` to tylko **proporcja w obrębie szerokości
+wiersza/tabeli** — rzeczywista renderowana szerokość komórki = `Weight / SumaWag ×
+WidthF wiersza`. Strona `A1PelnaListaPlac.repx` była zaprojektowana wąsko (A4 portret,
+myślana pierwotnie na 3 stałe kolumny — zob. p.2 „Do weryfikacji” niżej, ostrzeżenie
+sprzed rozbudowy). Mimo ustawienia dużych `Weight`/`WidthF` na 20+ kolumnach, silnik
+DevExpress i tak ściskał wszystko z powrotem do tej wąskiej pierwotnej szerokości
+wiersza/tabeli/strony — stąd kolumny wąskie jak pojedynczy znak.
+
+**Poprawka** (`DopasujSzerokosciKolumn`, nowa metoda `DopasujSzerokoscStrony`):
+
+1. Po obliczeniu szerokości każdej kolumny sumowana jest **suma wszystkich kolumn**
+   (`sumaSzerokosci`), a następnie jawnie ustawiana jako `WidthF` na: obu tabelach
+   (`tabelaNaglowek`, `tabelaDane`) i **każdym** ich wierszu (`XRTableRow.WidthF`) —
+   nie tylko na komórkach.
+2. Jeśli `sumaSzerokosci` (+ marginesy strony) przekracza dotychczasową szerokość
+   strony (`Report.PageWidth`), strona jest poszerzana: `Report.PaperKind =
+   PaperKind.Custom`, `Report.PageWidth = sumaSzerokosci + marginesy`.
+
+**TODO/UNVERIFIED:** ta konkretna poprawka (zmiana rozmiaru strony z poziomu kodu w
+`Report_BeforePrint`) nie ma jeszcze precedensu w tym repo (SeopEnrollmentFile nie musiał
+tego robić — jego 32 kolumny mieściły się w istniejącym layoucie) i nie została
+potwierdzona ponownym eksportem. Do sprawdzenia po wklejeniu: czy strona faktycznie się
+poszerza (np. w podglądzie wydruku widać szeroką stronę zamiast A4 portret) i czy Excel
+po eksporcie pokazuje jedną spójną, czytelną tabelę zamiast rozjechanych wąskich kolumn.
+
 ## Jak to jest zbudowane (dlaczego nie ma statycznej tabeli w .repx)
 
 Liczba i nazwy kolumn nie są znane w momencie projektowania wydruku, więc `.repx` zawiera
