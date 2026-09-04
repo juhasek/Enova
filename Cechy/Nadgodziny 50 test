@@ -1,0 +1,142 @@
+public decimal Feature_Nadgodziny_50_test {
+    get {
+
+				if(Row.Definicja == null)
+					return 0;
+
+        Time poraNocnaOd = KalendModule.GetInstance(Row).Config.Nocne.Od;
+				Time poraNocnaDo = KalendModule.GetInstance(Row).Config.Nocne.Do;
+
+				Time doGodzinyDzien = Row.Dzien.Praca.DoGodziny;
+				Time odGodzinyDzien = Row.Dzien.Praca.OdGodziny;
+
+
+
+				//zabezpieczenie braku godzin od i do 16012024
+				if (doGodzinyDzien == Time.Empty || odGodzinyDzien ==Time.Empty)
+				{
+
+					return (decimal)0;
+				}
+
+
+
+				Time doGodziny = Row.OdGodziny + Row.Czas;
+				Time odGodziny = Row.OdGodziny;
+				Time CzasPracy = Row.Czas;
+
+				string strefa1 = "Praca poza normą";
+
+				//Time sobota = new Time(8,0);
+				Time praca = Time.Zero;
+				Time plan = Time.Zero;
+				Time dobaNiedziela = new Time(6,0); //(Time)KalendModule.GetInstance(Row).Config.PoczątekDobyPracWNdIŚwiętaOddział;
+
+				KalkulatorPracy kalkpracy = Row.Dzien.Pracownik.Czasy.KalkPracy;
+				KalkulatorPlanu kalkplanu = Row.Dzien.Pracownik.Czasy.KalkPlanu;
+
+				//Time dobowe50 = kalkpracy.Pracownik.Czasy.Nadgodziny(new FromTo(Row.Dzien.Data,Row.Dzien.Data)).N50;
+
+				Dzien dzienPracy = kalkpracy[Row.Dzien.Data];
+				Dzien dzienPlanu = kalkplanu[Row.Dzien.Data];
+				Dzien dzienPracyPoprzedni = kalkpracy[Row.Dzien.Data.AddDays(-1)];
+				praca = dzienPracy.Czas;
+				plan = dzienPlanu.Czas;
+				Time czasTemp = new Time(8,0);// * Row.Dzien.Pracownik.Last.Etat.Wymiar;
+
+			  Time norma = new Time(8,0); // Row.Dzien.Pracownik[Row.Dzien.Data].Etat.Zaszeregowanie.Wymiar < Fraction.One ? new Time(8,0) : kalkplanu[Row.Dzien.Data].Czas;
+				//Time norma = kalkplanu[Row.Dzien.Data].Czas;
+			  Time suma = (dzienPracy != null && dzienPracy.NieobecnośćCałyDzień) ? norma : Time.Zero;
+			  Time nad50 = Time.Zero;
+				Time dzien = Dzien.DoGodziny(dzienPracy);
+				Time roznica = dzien - doGodzinyDzien;
+
+
+			  foreach(StrefaPracy st in Row.Dzien.Strefy.OrderBy(s => s.OdGodziny))
+				{
+
+					if (Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Pracy && !st.Definicja.Nazwa.Contains("Praca zdalna N")){
+					 suma += st.Czas;
+
+			     if(st == Row)
+				   {
+						 if(suma > norma)
+						 {
+							  if(suma - st.Czas > norma)
+							  {
+									nad50 =  Nadgodziny50Dp(st.OdGodziny, st.OdGodziny + st.Czas, st.Czas);
+								}
+							  else
+							 {
+								 nad50 = Nadgodziny50Dp(st.OdGodziny, st.OdGodziny + st.Czas, suma - norma);
+							 }
+						 }
+						 else
+						 	nad50 =  Time.Zero;// st.Czas;
+						 break;
+					 }
+					}
+
+					if (Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Wolny && !st.Definicja.Nazwa.Contains("Praca zdalna N") && !dzienPracy.Definicja.NadgodzinySW){
+						suma += st.Czas;
+						if(st == Row)
+						{
+							if(suma > czasTemp)
+							{
+								if(suma - st.Czas > czasTemp)
+								{
+									nad50 = Nadgodziny50Dp(st.OdGodziny, st.OdGodziny + st.Czas, st.Czas);
+								}
+								else
+								  nad50 = Nadgodziny50Dp(st.OdGodziny, st.OdGodziny + st.Czas,  suma - czasTemp);
+							}
+							else
+								nad50 = Time.Zero;
+						}
+					}
+
+					//godziny "czarnej dziury" (po dobie w niedzielę/święto a przed dobą poniedziałkową) to nadgodziny
+					//okresowe (patrz cecha "Nadgodziny okresowe"), a nie nadgodziny 50 - ta cecha ma ich nie liczyć,
+					//żeby nie dublować nadgodzin między dwiema cechami
+					if(dzienPracyPoprzedni.Definicja.Typ == TypDnia.Świąteczny && dzienPlanu.Czas != Time.Zero)
+					{
+						if(odGodziny >= dobaNiedziela && doGodziny <= dzienPlanu.OdGodziny)
+							return 0;
+						if(odGodziny < dobaNiedziela && doGodziny <= dzienPlanu.OdGodziny)
+							return 0;
+						if(odGodziny >= dobaNiedziela && odGodziny <= dzienPlanu.OdGodziny && doGodziny > dzienPlanu.OdGodziny)
+							return 0;
+						if(odGodziny < dobaNiedziela && doGodziny > dzienPlanu.OdGodziny)
+							return 0;
+					}
+
+					/*if(Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Wolny && praca > czasTemp && !dzienPracy.Definicja.NadgodzinySW){
+						if(odGodziny >= (odGodzinyDzien + czasTemp + roznica) && odGodziny <= poraNocnaOd && doGodziny <=poraNocnaOd)
+							return (decimal)(CzasPracy.TotalHours);
+						else if(odGodziny >= (odGodzinyDzien + czasTemp + roznica) && odGodziny <= poraNocnaOd && doGodziny >=poraNocnaOd && doGodziny <= poraNocnaDo)
+							return (decimal)(poraNocnaOd.TotalHours - odGodziny.TotalHours);
+						else if(odGodziny >= (odGodzinyDzien + czasTemp + roznica) && odGodziny <= poraNocnaOd && doGodziny >=poraNocnaOd && doGodziny >= poraNocnaDo)
+							return (decimal)(doGodziny.TotalHours - poraNocnaDo.TotalHours) + (decimal)(poraNocnaOd.TotalHours - odGodziny.TotalHours);
+						else if(odGodziny <= (odGodzinyDzien + czasTemp + roznica) && doGodziny > (odGodzinyDzien + czasTemp + roznica) && doGodziny <=poraNocnaOd)
+							return (decimal)(doGodziny.TotalHours - (odGodzinyDzien + czasTemp + roznica).TotalHours);
+						else if(odGodziny < (odGodzinyDzien + czasTemp + roznica) && doGodziny > (odGodzinyDzien + czasTemp + roznica) && doGodziny >=poraNocnaOd && doGodziny > poraNocnaDo){
+							//if(CzasPracy < czasTemp)
+								//return (decimal)(poraNocnaOd.TotalHours - (odGodzinyDzien + czasTemp).TotalHours) + (decimal)(doGodziny.TotalHours - poraNocnaDo.TotalHours); //zakomentowane 15.04.2024
+							return (decimal)(doGodziny.TotalHours - poraNocnaDo.TotalHours);
+						}
+						else if(odGodziny < (odGodzinyDzien + czasTemp + roznica) && doGodziny > (odGodzinyDzien + czasTemp + roznica) && doGodziny <=poraNocnaDo){
+							if((odGodzinyDzien + czasTemp + roznica) <= poraNocnaOd)
+								return (decimal)(poraNocnaOd.TotalHours -(odGodzinyDzien + czasTemp + roznica).TotalHours );
+							return 0;
+						}
+						else if(odGodziny > (odGodzinyDzien + czasTemp + roznica) && odGodziny >= poraNocnaDo)
+							return (decimal)(doGodziny.TotalHours - odGodziny.TotalHours);
+						return 0;
+					}
+					if(dzienPracy.Definicja.Typ == TypDnia.Świąteczny){
+						nad50 = Time.Zero;
+					}*/
+				}
+       	return (decimal)nad50.TotalHours;
+		}
+}

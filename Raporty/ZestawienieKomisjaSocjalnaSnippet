@@ -1,0 +1,443 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.Ksiega;
+using Soneta.Place;
+using Soneta.Types;
+using AltOne.Skanska.Workflow.Extensions;
+using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples;
+
+namespace x.x.Reports
+{
+    // Zestawienie na posiedzenie Komisji Socjalnej.
+    //
+    // Wydruk (ZestawienieKomisjaSocjalna.repx) uruchamiany jest z listy
+    // pracowników (ew. z Pulpitu kierownika).
+    //
+    // DOBÓR PRACOWNIKÓW (parametr "Tylko pracownicy zaznaczeni na liście"):
+    //   - false (domyślnie): raport przegląda elementy wypłat o definicji
+    //     "zapomoga" (klucz WgDefinicja) z datą w oknie [1.1.(R-4), 31.12.(R-1)]
+    //     i bierze każdego pracownika, który dostał zapomogę - także zwolnionych
+    //     i spoza bieżącego filtra listy. Zaznaczenie jest ignorowane.
+    //   - true: tylko pracownicy zaznaczeni na liście (wiersz historii
+    //     zatrudnienia PracHistoria jest mapowany na pracownika).
+    // Pracownicy sortowani po "Nazwisko i Imię".
+    //
+    // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna wypłacona zapomoga.
+    // Dla pracownika z kilkoma zapomogami powstaje kilka wierszy. Kolumny
+    // "poziomu pracownika" (Lp, Nr ewid., Nazwisko, Data urodzenia, Jednostka
+    // obsługująca, Dochód na członka rodziny) oraz sumy (Kwota zapomogi z 2
+    // lat, Kwota zapomóg z poprzednich 2 lat) wypełniane są TYLKO w pierwszym
+    // wierszu grupy pracownika; w kolejnych wierszach te komórki są puste.
+    // Dwie listy zapomóg (okno bieżące / poprzednie) są wyrównane wierszami:
+    // dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
+    // nadmiarowych wierszach. Pracownik BEZ ŻADNEJ zapomogi w obu oknach jest
+    // pomijany (nie trafia na wydruk, nie zużywa numeru Lp).
+    //
+    // OKNA CZASOWE to całe LATA KALENDARZOWE liczone od roku parametru
+    // "Data posiedzenia komisji" (rok R = rok tej daty; domyślnie rok bieżący).
+    // Rok R jest pominięty w obu oknach:
+    //   - "z 2 lat"            = lata R-2 i R-1  ([1.1.(R-2), 31.12.(R-1)])
+    //   - "z poprzednich 2 lat" = lata R-4 i R-3 ([1.1.(R-4), 31.12.(R-3)])
+    // Zapomoga = element wypłaty z nazwą zawierającą "zapomog"/"zapomóg"
+    // (data = data wypłaty, kwota = WypElement.Wartosc). Elementy stornowane
+    // pominięte.
+    //
+    // Dochód na członka rodziny pochodzi z wniosku ZFŚS pracownika (dodatek
+    // AltOne.Skanska.Workflow) - patrz PobierzDochodNaCzlonkaRodziny.
+    //
+    // Odporność na błędy: grupa każdego pracownika budowana jest w osobnym
+    // try/catch - błąd dla jednego pracownika daje jeden wiersz "[BŁĄD: ...]"
+    // zamiast wywalenia wydruku. Cała metoda BeforePrint jest dodatkowo
+    // opakowana w try/catch (jeden diagnostyczny wiersz "BŁĄD" z etapem).
+    public class ZestawienieKomisjaSocjalnaSnippet : ReportSnippet
+    {
+        // Wzorowane na Raporty/OdbiciaRCP i Raporty/SzablonTabela6KolumnSnippet:
+        // obecność właściwości oznaczonej [Context(Required = true)] jest tym,
+        // co powoduje, że silnik Enova przed drukiem wstrzykuje do snippetu
+        // działający Context (pars.Context). W tej instalacji
+        // DxReportHelpers.GetContext(this) zwraca null - nie używamy go.
+        public class PrnParams : ContextBase
+        {
+            Date dataPosiedzenia;
+            bool tylkoZaznaczeni;
+
+            public PrnParams(Context context) : base(context)
+            {
+                dataPosiedzenia = Date.Today;
+                tylkoZaznaczeni = false;
+            }
+
+            [Caption("Data posiedzenia komisji")]
+            public Date DataPosiedzenia
+            {
+                get { return dataPosiedzenia; }
+                set
+                {
+                    dataPosiedzenia = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+
+            // Domyślnie (false) raport skanuje WSZYSTKIE wypłaty w oknie i bierze
+            // każdego pracownika, który miał zapomogę - także zwolnionych, spoza
+            // bieżącego filtra listy. Zaznaczenie na liście jest wtedy ignorowane.
+            // true = klasyczne zachowanie: tylko pracownicy zaznaczeni na liście.
+            [Caption("Tylko pracownicy zaznaczeni na liście")]
+            public bool TylkoZaznaczeni
+            {
+                get { return tylkoZaznaczeni; }
+                set
+                {
+                    tylkoZaznaczeni = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        PrnParams pars;
+
+        [Context(Required = true)]
+        public PrnParams Params
+        {
+            get { return pars; }
+            set { pars = value; }
+        }
+
+        [DxBind(Name = "Report")]
+        private void ZestawienieKomisjaSocjalna_BeforePrint(object sender, CancelEventArgs e)
+        {
+            string etap = "start";
+            try
+            {
+                etap = "sprawdzenie trybu (designer)";
+                if (pars == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
+
+                etap = "pobranie kontekstu";
+                Context dc = pars.Context;
+                if (dc == null)
+                {
+                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    return;
+                }
+
+                etap = "ustalenie okien czasowych";
+                Date dataOdniesienia = pars.DataPosiedzenia != Date.Empty ? pars.DataPosiedzenia : Date.Today;
+                int rok = dataOdniesienia.Year;
+                // Okna to całe lata kalendarzowe; rok R = rok daty posiedzenia jest pominięty.
+                Date odBiezace = new Date(rok - 2, 1, 1);        // lata R-2, R-1
+                Date doBiezace = new Date(rok - 1, 12, 31);
+                Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3
+                Date doPoprzednie = new Date(rok - 3, 12, 31);
+
+                etap = "zbieranie pracowników";
+                var pracownicy = new List<Pracownik>();
+                if (pars.TylkoZaznaczeni)
+                {
+                    // Klasycznie: tylko pracownicy zaznaczeni na liście.
+                    Row[] rows = dc[typeof(Row[])] as Row[];
+                    if (rows == null)
+                    {
+                        DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                        return;
+                    }
+                    foreach (Row row in rows)
+                    {
+                        Pracownik p = row as Pracownik;
+                        if (p == null && row is PracHistoria)
+                            p = ((PracHistoria) row).Pracownik;
+                        if (p != null && !pracownicy.Contains(p))
+                            pracownicy.Add(p);
+                    }
+                }
+                else
+                {
+                    // Domyślnie: skan wszystkich wypłat w oknie [1.1.(R-4), 31.12.(R-1)]
+                    // (= suma obu okien) i zebranie każdego pracownika z zapomogą -
+                    // niezależnie od zaznaczenia i filtra listy (łapie też zwolnionych).
+                    pracownicy = ZbierzPracownikowZapomogi(dc.Session, odPoprzednie, doBiezace);
+                }
+
+                etap = "sortowanie listy pracowników";
+                pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
+
+                etap = "budowanie wierszy";
+                var wiersze = new List<Wiersz>();
+                int lp = 1;
+                foreach (Pracownik pracownik in pracownicy)
+                {
+                    Pracownik pr = pracownik;
+                    try
+                    {
+                        DodajWierszePracownika(wiersze, ref lp, pr, dataOdniesienia,
+                            odBiezace, doBiezace, odPoprzednie, doPoprzednie);
+                    }
+                    catch (Exception ex)
+                    {
+                        Wiersz blad = NowyWiersz();
+                        blad.Lp = (lp++).ToString();
+                        blad.NrEwid = Bezpiecznie(() => pr.Kod);
+                        blad.NazwiskoImie = "[BŁĄD: " + ex.Message + "]";
+                        wiersze.Add(blad);
+                    }
+                }
+
+                etap = "ustawienie CustomDataSource";
+                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+            }
+            catch (Exception ex)
+            {
+                var ds = DxReportHelpers.GetDataSourceEmpty(this);
+                if (ds == null)
+                    return;
+                string opis = "ETAP=" + (etap ?? "(null)")
+                    + " | TYP=" + ex.GetType().FullName
+                    + " | KOMUNIKAT=" + ex.Message;
+                ds.CustomDataSource = new List<Wiersz> {
+                    new Wiersz {
+                        Lp = "BŁĄD",
+                        NazwiskoImie = opis
+                    }
+                };
+            }
+        }
+
+        // Buduje grupę wierszy dla jednego pracownika (1..N wierszy).
+        static void DodajWierszePracownika(List<Wiersz> wiersze, ref int lp, Pracownik pr,
+            Date dataOdniesienia, Date odBiezace, Date doBiezace, Date odPoprzednie, Date doPoprzednie)
+        {
+            List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, doBiezace);
+            List<ZapomogaPozycja> poprzednie = ZapomogiWOknie(pr, odPoprzednie, doPoprzednie);
+
+            // Pracownik bez żadnej zapomogi w obu oknach - pomijamy (bez wiersza,
+            // bez zużycia numeru Lp).
+            if (biezace.Count == 0 && poprzednie.Count == 0)
+                return;
+
+            decimal sumaBiezace = 0m;
+            foreach (ZapomogaPozycja z in biezace) sumaBiezace += z.Kwota;
+            decimal sumaPoprzednie = 0m;
+            foreach (ZapomogaPozycja z in poprzednie) sumaPoprzednie += z.Kwota;
+
+            int ile = biezace.Count > poprzednie.Count ? biezace.Count : poprzednie.Count;
+
+            for (int i = 0; i < ile; i++)
+            {
+                Wiersz w = NowyWiersz();
+
+                if (i == 0)
+                {
+                    w.Lp = (lp++).ToString();
+                    w.NrEwid = Bezpiecznie(() => pr.Kod);
+                    w.NazwiskoImie = Bezpiecznie(() => pr.NazwiskoImię.ToString());
+                    w.DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString());
+                    w.JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr));
+                    w.DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr, dataOdniesienia));
+                    w.KwotaZapomogiZ2Lat = FormatKwota(sumaBiezace);
+                    w.KwotaZapomogPoprzednich2Lat = FormatKwota(sumaPoprzednie);
+                }
+
+                if (i < biezace.Count)
+                {
+                    w.DataWyplaty = biezace[i].Data.ToString();
+                    w.KwotaWyplaty = biezace[i].Kwota.ToString("N2");
+                }
+                if (i < poprzednie.Count)
+                {
+                    w.DataWyplatyPoprzedniej = poprzednie[i].Data.ToString();
+                    w.KwotaWyplatyPoprzedniej = poprzednie[i].Kwota.ToString("N2");
+                }
+
+                wiersze.Add(w);
+            }
+        }
+
+        static string Bezpiecznie(Func<string> policz)
+        {
+            try
+            {
+                return policz() ?? "";
+            }
+            catch (Exception ex)
+            {
+                return "[BŁĄD: " + ex.Message + "]";
+            }
+        }
+
+        // Cecha "Jednostka obsługująca" z Wydziału bieżącego etatu pracownika.
+        // Cecha jest typu "element słownika" - jej wartością jest rekord
+        // Soneta.Ksiega.ElemSlownika. Czytamy ją nietypowanym indeksatorem
+        // Features["..."], rzutujemy na ElemSlownika i bierzemy .Nazwa.
+        // Nazwa cechy to dokładnie "Jednostka obsługująca" (ze spacją).
+        static string PobierzJednostkeObslugujaca(Pracownik pracownik)
+        {
+            PracHistoria biezaca = null;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(new FromTo(Date.Today, Date.Today)))
+                biezaca = ph;
+            if (biezaca == null)
+                biezaca = pracownik.Historia[Date.Today];
+
+            var wydzial = biezaca != null && biezaca.Etat != null ? biezaca.Etat.Wydzial : null;
+            if (wydzial == null)
+                return "";
+
+            ElemSlownika elem = (ElemSlownika) wydzial.Features["Jednostka obsługująca"];
+            return elem != null ? elem.Nazwa : "brak";
+        }
+
+        // Dochód na członka rodziny z aktualnego, zatwierdzonego wniosku ZFŚS
+        // pracownika (krotka "A1_ZFSS" z dodatku AltOne.Skanska.Workflow).
+        //
+        // Odwzorowuje worker
+        // AltOne.Skanska.Workflow.Workers.Wyliczane.WniosekZFFSPracownikaWorker
+        // (property GetProgDochodu), którego w wydruku nie da się zbindować przez
+        // {Workers.WniosekZFFSPracownika.GetProgDochodu} - to bindowanie działa
+        // tylko na liście pracowników z parametrami wniosków ZFŚS (WnioskiZFSSParams).
+        // Tutaj wołamy publiczne API dodatku bezpośrednio:
+        //   - wniosek: PracownikExt.GetAktualnyWniosekZFSS(pracownik,
+        //     <wnioski nie później niż = data posiedzenia>, <rok = rok posiedzenia>) -
+        //     bierze ostatni zatwierdzony wniosek A1_ZFSS z okresem od 1 stycznia;
+        //   - RodzajWskazywaniaDochodu == "Kwota" -> kwota dochodu na członka
+        //     rodziny; w przeciwnym razie nazwa progu dochodowego (element słownika);
+        //   - brak roli widoczności kwot u operatora -> "(Brak praw do widoku)".
+        static string PobierzDochodNaCzlonkaRodziny(Pracownik pracownik, Date dataOdniesienia)
+        {
+            A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, dataOdniesienia, dataOdniesienia.Year);
+            if (wniosek == null)
+                return "";
+            if (!wniosek.CzyPrawaDoWidokuProgow())
+                return "(Brak praw do widoku)";
+            if (wniosek._RodzajWskazywaniaDochodu == "Kwota")
+                return wniosek._KwotaDochoduNaCzlonkaRodziny.ToString();
+            return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
+        }
+
+        // Definicje elementów wynagrodzenia, których nazwa zawiera "zapomog(a)".
+        // Zawężenie skanu wypłat do tych definicji - bez tego trzeba by iterować
+        // wszystkie wypłaty firmy z 4 lat.
+        static List<DefinicjaElementu> DefinicjeZapomog(Session session)
+        {
+            var lista = new List<DefinicjaElementu>();
+            foreach (DefinicjaElementu def in session.GetPlace().DefElementow)
+                if (NazwaZapomoga(def.Nazwa))
+                    lista.Add(def);
+            return lista;
+        }
+
+        // Zbiera pracowników, którzy dostali choć jedną (niewystornowaną) zapomogę
+        // w oknie [od, doDaty]. Iteruje tylko elementy wypłat o definicji "zapomoga"
+        // (klucz WgDefinicja) z filtrem serwerowym po dacie (WypElement.Data).
+        // Łapie też pracowników zwolnionych / spoza bieżącego filtra listy.
+        static List<Pracownik> ZbierzPracownikowZapomogi(Session session, Date od, Date doDaty)
+        {
+            var pracownicy = new List<Pracownik>();
+            if (doDaty < od)
+                return pracownicy;
+
+            var wypElementy = session.GetPlace().WypElementy;
+            foreach (DefinicjaElementu def in DefinicjeZapomog(session))
+            {
+                foreach (WypElement el in wypElementy.WgDefinicja[def][(WypElement x) => x.Data >= od && x.Data <= doDaty])
+                {
+                    if (el.RozliczenieStorna)
+                        continue;
+                    Pracownik p = el.Pracownik;
+                    if (p != null && !pracownicy.Contains(p))
+                        pracownicy.Add(p);
+                }
+            }
+            return pracownicy;
+        }
+
+        // Lista pojedynczych zapomóg pracownika wypłaconych w oknie [od, doDaty]
+        // (wg WypElement.Data = data wypłaty), posortowana rosnąco po dacie.
+        // Zapomoga = element wypłaty z nazwą (lub nazwą Definicji) zawierającą
+        // "zapomog(a)". Iterujemy tylko elementy wypłat tego pracownika w oknie
+        // (klucz WgPracownik + filtr serwerowy po dacie). Elementy stornowane
+        // pomijane (RozliczenieStorna).
+        static List<ZapomogaPozycja> ZapomogiWOknie(Pracownik pracownik, Date od, Date doDaty)
+        {
+            var lista = new List<ZapomogaPozycja>();
+            if (doDaty < od)
+                return lista;
+
+            SubTable<WypElement> elementyPracownika = pracownik.Session.GetPlace().WypElementy.WgPracownik[pracownik];
+            foreach (WypElement el in elementyPracownika[(WypElement x) => x.Data >= od && x.Data <= doDaty])
+            {
+                if (el.RozliczenieStorna)
+                    continue;
+                if (NazwaZapomoga(el.Nazwa) || (el.Definicja != null && NazwaZapomoga(el.Definicja.Nazwa)))
+                {
+                    ZapomogaPozycja poz = new ZapomogaPozycja();
+                    poz.Data = el.Data;
+                    poz.Kwota = el.Wartosc;
+                    lista.Add(poz);
+                }
+            }
+
+            lista.Sort((a, b) => a.Data > b.Data ? 1 : (a.Data < b.Data ? -1 : 0));
+            return lista;
+        }
+
+        static bool NazwaZapomoga(string nazwa)
+        {
+            if (string.IsNullOrEmpty(nazwa))
+                return false;
+            string n = nazwa.ToLowerInvariant();
+            return n.Contains("zapomog") || n.Contains("zapomóg");
+        }
+
+        static string FormatKwota(decimal kwota)
+        {
+            return kwota != 0m ? kwota.ToString("N2") : "";
+        }
+
+        static Wiersz NowyWiersz()
+        {
+            return new Wiersz {
+                Lp = "",
+                NrEwid = "",
+                NazwiskoImie = "",
+                DataUrodzenia = "",
+                JednostkaObslugujaca = "",
+                DochodNaCzlonkaRodziny = "",
+                KwotaZapomogiZ2Lat = "",
+                DataWyplaty = "",
+                KwotaWyplaty = "",
+                KwotaZapomogPoprzednich2Lat = "",
+                DataWyplatyPoprzedniej = "",
+                KwotaWyplatyPoprzedniej = ""
+            };
+        }
+
+        class ZapomogaPozycja
+        {
+            public Date Data;
+            public decimal Kwota;
+        }
+
+        public class Wiersz
+        {
+            public string Lp { get; set; }
+            public string NrEwid { get; set; }
+            public string NazwiskoImie { get; set; }
+            public string DataUrodzenia { get; set; }
+            public string JednostkaObslugujaca { get; set; }
+            public string DochodNaCzlonkaRodziny { get; set; }
+            public string KwotaZapomogiZ2Lat { get; set; }
+            public string DataWyplaty { get; set; }
+            public string KwotaWyplaty { get; set; }
+            public string KwotaZapomogPoprzednich2Lat { get; set; }
+            public string DataWyplatyPoprzedniej { get; set; }
+            public string KwotaWyplatyPoprzedniej { get; set; }
+        }
+    }
+}

@@ -66,3 +66,180 @@ się dzień z nadgodzinami, wartość zostanie poprawnie nadpisana; jeśli nie �
 zostanie poprawne zero zamiast wyniku poprzedniego pracownika.
 
 Przy okazji poprawiono formatowanie/wcięcia całego pliku na standardowe dla C#.
+
+## 4. Poprawka: błędne godziny „od–do” przy kilku strefach w jednym dniu
+
+**Objaw:** gdy w danym dniu pracownik miał więcej niż jedną strefę (np. „Praca
+w normie” 7:00–15:00 i „Praca poza normą” 15:00–18:00 jako nadgodziny), raport
+drukował dla obu wierszy tego samego dnia identyczne godziny „Godz. pracy
+od/do” — pełny zakres całego dnia (np. 7:00–18:00) zamiast osobnego przedziału
+dla każdej strefy. W efekcie karta pokazywała dwa (lub więcej) pozornie
+zdublowane wiersze dla tej samej daty, a nadgodziny w kolumnie były trudne do
+zweryfikowania względem godzin „od–do”.
+
+**Przyczyna:** w `Grid1ListaWiersz_BeforePrint`, w gałęzi obsługującej wiersz
+z przypisaną strefą (`linia.Strefa != null`), kolumny `colOd`/`colDo` były
+liczone z `dzień.OdGodziny` / `Dzien.DoGodziny(dzień)` — czyli z
+zagregowanego, wspólnego dla całego dnia obiektu `Dzien`, a nie z przedziału
+konkretnej strefy (`linia.Strefa`) reprezentowanej przez dany wiersz.
+Obliczenie pory nocnej (`PoliczPoreNocna`) tuż niżej już poprawnie używało
+`linia.Strefa.OdGodziny`/`linia.Strefa.Czas` — tylko godziny „od–do” tego nie
+robiły.
+
+**Poprawka:** `colOd.Text` ustawiane jest teraz na `linia.Strefa.OdGodziny`, a
+`colDo.Text` na `linia.Strefa.OdGodziny + linia.Strefa.Czas` — czyli
+rzeczywisty przedział czasowy strefy danego wiersza. Dzięki temu dzień z
+kilkoma strefami drukuje kilka wierszy z rozłącznymi przedziałami godzin (np.
+7:00–15:00, 15:00–16:00, 16:00–18:00) zamiast powtarzania godzin całego dnia
+w każdym wierszu.
+
+## 5. Scalanie wielu zapisów tej samej strefy z tym samym Projektem/Taskiem
+
+**Objaw:** dla dnia z kilkoma osobnymi zapisami strefy tego samego typu (np.
+dwa zapisy „Praca poza normą” o różnych godzinach — 15:00–16:00 i
+16:00–18:00), ale z tymi samymi wartościami cech **Projekt** i **Task**, karta
+drukowała osobny wiersz dla każdego zapisu. Wizualnie wyglądało to jak
+zdublowane wiersze tego samego dnia, a kolumna nadgodzin (licząca się jako
+suma dla całego dnia — patrz `PracaWStrefie`) była dodatkowo powielana przy
+każdym takim wierszu, co zawyżało odczyt.
+
+**Przyczyna:** budowanie listy wierszy (`linie`) w
+`detailReportBand1_BeforePrint` tworzyło jeden obiekt `Linia` na każdy
+pojedynczy rekord strefy z `dzienPracy.Strefy`, bez sprawdzania, czy kolejny
+zapis tego samego dnia nie jest w istocie kontynuacją poprzedniego (ten sam
+typ strefy, ten sam Projekt, ten sam Task, inne tylko godziny).
+
+**Poprawka:** przy budowaniu `linie`, zapisy strefy danego dnia są sortowane
+po godzinie rozpoczęcia; jeśli kolejny zapis ma ten sam typ strefy
+(`Definicja.Nazwa`) oraz te same wartości cech **Projekt** i **Task** co
+poprzednio dodany wiersz tego dnia, nie tworzy się dla niego nowy wiersz —
+zamiast tego rozszerza się godzinę zakończenia poprzedniego wiersza
+(`Linia.DoGodzinyLaczna`, nowe pole, domyślnie `OdGodziny + Czas` pojedynczej
+strefy, dla scalonych wierszy — maksimum z dotychczasowego i nowego końca).
+Kolumny „Godz. pracy od/do” oraz obliczenie pory nocnej
+(`PoliczPoreNocna`) korzystają teraz z `Linia.DoGodzinyLaczna` zamiast
+liczyć koniec bezpośrednio z pojedynczej strefy. Zapisy o innym typie strefy
+(np. „Praca w normie”) albo innym Projekcie/Tasku nadal drukują się jako
+osobne wiersze — scalane są wyłącznie zapisy identyczne pod względem typu
+strefy i Projektu/Tasku.
+
+## 6. Poprawka: nadgodziny liczone z sumy dnia zamiast z własnego wiersza
+
+**Objaw:** gdy dzień miał kilka odrębnych zapisów nadgodzin (np. strefa
+„Praca poza normą” w dwóch kawałkach: 1h i 2h), kolumna „Nadgodziny” nie
+pokazywała 1h przy pierwszym i 2h przy drugim zapisie — pokazywała 3h przy
+obu. Ponieważ wartość ta jest też dodawana do akumulatora `nadlicz`
+(a stąd do sumy miesięcznej `RazemNad`), dzienny wynik doliczał się do sumy
+tyle razy, ile było takich wierszy tego dnia — zawyżając miesięczne
+nadgodziny.
+
+**Przyczyna:** wartość wpisywana do `colNadlicz.Text`/`nadlicz` pochodziła z
+`pracaPozaNorma = PracaWStrefie(dzień, ..."Praca poza normą"..., false)` —
+funkcji sumującej czas strefy „Praca poza normą” dla **całego dnia**
+(obiekt `Dzien`), a nie tylko dla zapisu/wiersza, który akurat jest
+drukowany. Każdy wiersz z zapisem nadgodzin tego dnia dostawał więc tę samą,
+dzienną sumę zamiast swojej własnej wartości.
+
+**Poprawka:** kolumna „Nadgodziny” oraz akumulator `nadlicz` korzystają
+teraz z `linia.CzasLaczny` — czasu należącego wyłącznie do danego wiersza
+(sumy Czas zapisów scalonych w ten wiersz zgodnie z poprawką z punktu 5, a
+dla niescalonego wiersza po prostu Czas jego pojedynczej strefy). Dzięki
+temu: (a) różne, niescalone zapisy nadgodzin tego samego dnia poprawnie
+pokazują swoje własne wartości (1h i 2h) zamiast powielonej sumy dnia (3h),
+(b) zapisy scalone w jeden wiersz (bo ten sam typ strefy i ten sam
+Projekt/Task) poprawnie pokazują sumę tylko swoich godzin, oraz (c)
+`nadlicz`/`RazemNad` nie jest już wielokrotnie zawyżane przez powtórne
+doliczanie tej samej dziennej sumy przy każdym wierszu nadgodzin danego dnia.
+Nieużywane już po tej zmianie wyliczenie `pracaPozaNorma` (dzienna suma przez
+`PracaWStrefie`) zostało usunięte.
+
+## 7. Poprawka: dzień z nietypową nazwą strefy pracy zdalnej znikał z raportu
+
+**Objaw:** pracownik, który zamiast „Praca w normie” miał danego dnia strefę
+pracy zdalnej o nazwie spoza zamkniętej listy (np. „Praca zdalna
+uprzywilejowana”), w ogóle nie miał wydrukowanego tego dnia w karcie — wiersz
+całkowicie znikał z raportu.
+
+**Przyczyna:** budowanie listy wierszy (`linie`) w `detailReportBand1_BeforePrint`
+filtrowało zapisy strefy danego dnia przez `strefyraportu.Contains(s.Definicja.Nazwa)`
+— porównanie z zamkniętą listą dokładnych nazw stref. Lista wymieniała tylko
+trzy konkretne warianty pracy zdalnej („Praca zdalna”, „Praca zdalna
+regulaminowa”, „Praca zdalna okazjonalna”). Podobnie flaga „Praca zdalna”
+(kolumna `pracazdalna`) sprawdzana była przez `strefyPracyZdalnej.Contains(...)`
+— osobną, też zamkniętą listę tych samych trzech nazw. Gdy w danych pojawiał
+się jakikolwiek inny wariant nazwy (np. dopisany później „Praca zdalna
+uprzywilejowana”), żaden z zapisów strefy tego dnia nie przechodził filtra —
+a ponieważ `dzienPracy.Strefy.Any` było prawdą (strefa jednak istniała), kod
+nie wchodził też w gałąź dodającą pusty wiersz dnia bez strefy. Dzień znikał
+całkowicie.
+
+**Poprawka:** rozpoznawanie strefy pracy zdalnej nie opiera się już o
+zamkniętą listę nazw, tylko o nową metodę `JestStrefaZdalna(nazwa)`, która
+uznaje strefę za zdalną, gdy jej nazwa zawiera (bez rozróżniania wielkości
+liter) słowo „zdalna”. Filtr budujący `linie` oraz flaga kolumny „Praca
+zdalna” korzystają teraz z tej metody zamiast z tablic
+`strefyPracyZdalnej`/wpisów „Praca zdalna…” w `strefyraportu` (tablica
+`strefyPracyZdalnej` została usunięta jako zbędna, a jej trzy wpisy wykreślone
+z `strefyraportu`). Dzięki temu każdy przyszły wariant nazwy strefy pracy
+zdalnej (np. „Praca zdalna uprzywilejowana”) jest automatycznie rozpoznawany
+bez konieczności edycji kodu raportu.
+
+## 8. Poprawka: dni po zwolnieniu pokazywały Harmonogram/Nieobecność z ostatniego dnia zatrudnienia
+
+**Objaw:** dla pracownika zwolnionego w trakcie miesiąca (np. 27.08, z
+nieobecnością wpisaną do 27.08 włącznie) karta poprawnie drukowała cały
+miesiąc (do 31.08), ale dni PO zwolnieniu (28–31.08) pokazywały
+„Harmonogram” (mimo że pracownik nie miał już planu pracy) oraz
+„Nieobecność” w kolumnie nieobecności — mimo że nie powinny pokazywać
+żadnych danych.
+
+**Przyczyna:** `Grid1ListaWiersz_BeforePrint` już zawierało warunek
+`if (!okresy_zatrudnienia.Contains(data)) return;`, który poprawnie pomijał
+dalsze przetwarzanie dnia spoza okresu zatrudnienia. Problem w tym, że sam
+`return` niczego nie czyścił — a komórki tabeli (`Harmonogram`, `colOd`,
+`colDo`, `colNocne`, `colNieob`, `pracazdalna`, `DodatekBryg`, `DaneProj`,
+`DaneAC`, `tableCellSC`) są tymi samymi obiektami UI, używanymi ponownie dla
+każdego kolejnego wiersza karty (ten sam mechanizm, który wcześniej powodował
+błąd z kolumną `RazemNad` — patrz punkt 1–2). Dla dnia spoza okresu
+zatrudnienia komórki po prostu zachowywały tekst wydrukowany dla
+OSTATNIEGO dnia, w którym pracownik był jeszcze zatrudniony (tu: 27.08,
+który akurat miał zaewidencjonowaną nieobecność) — stąd dni 28–31.08
+pokazywały ten sam harmonogram i tę samą nieobecność co 27.08.
+
+**Poprawka:** przed `return` dla dnia spoza okresu zatrudnienia jawnie
+czyszczone są teraz wszystkie te komórki (`Harmonogram.Text = colOd.Text =
+colDo.Text = colNocne.Text = colNieob.Text = pracazdalna.Text =
+DodatekBryg.Text = DaneProj.Text = DaneAC.Text = tableCellSC.Text = ""`).
+Numer/data dnia (`colDM`) nadal się drukuje (dzień jest widoczny w karcie
+jako pusty wiersz), ale bez żadnych danych o pracy czy nieobecności
+przeniesionych z poprzedniego dnia.
+
+## 9. Nowa funkcja: informacja o odbiorze nadgodzin w kolumnie Nieobecność
+
+**Potrzeba:** odbiór nadgodzin (czas wolny udzielany w zamian za wcześniej
+wypracowane nadgodziny) zapisywany jest w kalendarzu na strefie „Rozliczenie
+nadgodzin (prac)” lub „Rozliczenie nadgodzin (firma)”. Karta nie pokazywała
+tej informacji — dzień z taką strefą (o ile nie miał żadnej innej strefy z
+`strefyraportu`) w ogóle nie pojawiał się w raporcie (ten sam mechanizm, co
+opisany w punkcie 7 dla strefy pracy zdalnej).
+
+**Zmiana:**
+- Dodano `JestStrefaOdbioruNadgodzin(nazwa)` — rozpoznaje obie nazwy strefy
+  („Rozliczenie nadgodzin (prac)”/„(firma)”) po wspólnym fragmencie
+  „Rozliczenie nadgodzin”, tym samym mechanizmem co rozpoznawanie pracy
+  zdalnej (punkt 7).
+- Filtr budujący wiersze dnia (`detailReportBand1_BeforePrint`) uwzględnia
+  teraz też tę strefę, więc dzień z odbiorem nadgodzin poprawnie pojawia się
+  w karcie, nawet jeśli to jedyna strefa tego dnia.
+- Dodano do `Linia` pole `CzasRozliczanyLaczny` — sumę
+  `StrefaPracy.CzasRozliczanyWyliczony` zapisów scalonych w dany wiersz
+  (analogicznie do `CzasLaczny`/`DoGodzinyLaczna` z punktu 5), żeby liczba
+  odebranych nadgodzin była WŁASNA dla wiersza, a nie dzienną sumą (unikamy w
+  ten sposób błędu opisanego w punkcie 6 — dzienna suma powielana na kilku
+  wierszach).
+- W `Grid1ListaWiersz_BeforePrint`, dla wiersza reprezentującego strefę
+  odbioru nadgodzin, do kolumny „Nieobecność” dopisywany jest tekst „Odbiór
+  nadgodzin” wraz z liczbą odebranych godzin (`linia.CzasRozliczanyLaczny`).
+  Jeśli w kolumnie było już coś wpisane (rzadki przypadek zbiegu z realną
+  nieobecnością tego samego dnia), nowy wpis jest dopisywany po przecinku, a
+  nie nadpisuje istniejącej treści.
