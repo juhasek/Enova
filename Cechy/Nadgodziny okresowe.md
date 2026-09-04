@@ -53,10 +53,61 @@ Zweryfikowano logiem produkcyjnym: dla soboty 17.10.2026 (4h pracy poza normą, 
 `NadgodzinySW=False`) nowy warunek poprawnie zwraca `4h`; dla niedzieli 25.10.2026
 (`Świąteczny`/„Niedziela", `NadgodzinySW=True`) nadal poprawnie zwraca `0h`.
 
-## 4. Do potwierdzenia przed wdrożeniem
+## 4. Trzeci zgłoszony błąd i poprawka (04.09.2026) — wiele stref „Praca poza normą" w jednym dniu
+
+**Zgłoszenie klienta:** w zwykłym dniu roboczym zaplanowanym w grafiku na mniej niż 8 h
+(np. 3 h) cecha „Nadgodziny okresowe" wykazuje **tę samą wartość `norma − plan`
+(np. 5 h) na każdej strefie** typu „Praca poza normą" / „Praca poza normą awaria".
+Przykład (dzień 2026-09-21, grafik 3 h):
+
+| Strefa | Czas | Okresowe (błędnie) | Okresowe (poprawnie) |
+|---|---|---|---|
+| Praca w normie 8:00–11:00 | 3:00 | 0 | 0 |
+| Praca poza normą awaria 12:00–19:00 | 7:00 | 5,00 | 5,00 |
+| Praca poza normą 19:00–20:00 | 1:00 | 5,00 | 0,00 |
+| Praca poza normą 20:00–21:00 | 1:00 | 5,00 | 0,00 |
+
+Suma nadgodzin okresowych w dniu rosła więc z 5 h do 15 h.
+
+**Przyczyna:** gałąź `else` (zwykły dzień roboczy pełnoetatowca) robiła bezwarunkowe
+`return (decimal)(norma - plan).TotalHours` już na **pierwszej iteracji** pętli po
+strefach — nie patrzyła, czy iterowana strefa to `Row`, nie sumowała godzin
+rozliczonych już w poprzednich strefach „poza normą" ani nie uwzględniała realnego
+czasu bieżącej strefy. Ponieważ `praca` (czas przepracowany w dobie) i `plan` są
+stałymi dnia, warunek `praca > plan && plan < norma` był spełniony dla każdej strefy,
+więc każda strefa „poza normą" dostawała pełne `norma − plan`.
+
+**Poprawka:** gałąź `else` liczy teraz nadgodziny okresowe analogicznie do gałęzi dnia
+wolnego — akumuluje czas stref po kolei chronologicznie (`sumaDoby`) i dla strefy
+równej `Row` zwraca tylko tę część jej godzin, która mieści się w **dobowym oknie
+nadgodzin okresowych `(plan, norma]`**:
+
+```
+przedStrefa = sumaDoby - st.Czas            // czas pracy w dobie przed bieżącą strefą
+dolna = clamp(przedStrefa, plan, norma)
+gorna = clamp(sumaDoby,    plan, norma)
+wynik = max(0, gorna - dolna)
+```
+
+Godziny do wysokości `plan` nie są okresowe (to praca w normie), godziny powyżej
+`norma` (8 h/dobę) to nadgodziny dobowe 50 %/100 %, a przedział pomiędzy nimi to
+nadgodziny okresowe — rozdzielony pomiędzy kolejne strefy „poza normą" wg kolejności
+godzin. Gdy `plan >= norma` (dzień zaplanowany na pełne 8 h) lub `praca <= plan`,
+cecha zwraca `0`.
+
+Blok obsługi „czarnych dziur" (poniedziałek po dobie niedzielno-świątecznej) w gałęzi
+`else` pozostaje — jak dotąd — nieaktywny: po znalezieniu strefy `Row` następuje
+`return`, a dla pozostałych stref `continue`. Zmiana zachowania tego fragmentu nie
+była przedmiotem zgłoszenia.
+
+## 5. Do potwierdzenia przed wdrożeniem
 
 - Kod cechy „Nadgodziny NSW", która ma faktycznie rozliczać pracę „poza normą" w święto/dzień
   wolny objęty NSW, nie jest jeszcze dodany do repozytorium — do uzupełnienia, gdy będzie dostępny.
-- Reszta pliku (gałąź dla zwykłego dnia roboczego, obsługa „czarnych dziur" wokół doby
-  niedzielno-świątecznej, martwe zmienne `licznik`/`roznica`, duży blok zakomentowanego starego
-  kodu) pozostała bez zmian — nie była przedmiotem tych zgłoszeń.
+- Poprawkę z pkt 4 (wiele stref „poza normą") zweryfikowano dotąd tylko analitycznie na
+  przykładzie ze zgłoszenia (grafik 3 h, strefy 7 h + 1 h + 1 h → 5 h + 0 h + 0 h) — do
+  potwierdzenia na żywej bazie klienta, w tym dla etatu niepełnego i dla dnia z pracą
+  w normie krótszą niż `plan`.
+- Reszta pliku (obsługa „czarnych dziur" wokół doby niedzielno-świątecznej — nadal
+  nieaktywna w gałęzi dnia roboczego, martwe zmienne `licznik`/`roznica`, duży blok
+  zakomentowanego starego kodu) pozostała bez zmian — nie była przedmiotem tych zgłoszeń.

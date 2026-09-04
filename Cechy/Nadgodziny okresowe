@@ -47,6 +47,11 @@ public decimal Feature_Nadgodziny_okresowe {
                 if (dzienPracy.Definicja.Typ == TypDnia.Świąteczny)
                     return 0;
 
+                // Akumulator czasu pracy stref w kolejności chronologicznej - używany
+                // przez gałąź "else" (zwykły dzień roboczy) do prawidłowego rozliczenia
+                // wielu stref "Praca poza normą" w jednym dniu (poprawka 04.09.2026).
+                Time sumaDoby = Time.Zero;
+
                 foreach(StrefaPracy st in Row.Dzien.Strefy.OrderBy(s => s.OdGodziny))
                 {
                     // Poprawka 27.08.2026 - warunek zawierał sztywne dopasowanie nazwy dnia
@@ -83,8 +88,29 @@ public decimal Feature_Nadgodziny_okresowe {
                     {
                         if(Row.Dzien.Pracownik[Row.Dzien.Data].Etat.Zaszeregowanie.Wymiar == Fraction.One)
                             norma = new Time(8,0);
-                        if(praca > plan && plan < norma)
-                            return (decimal)(norma - plan).TotalHours;
+
+                        // Poprawka 04.09.2026 - zgłoszenie klienta: przy kilku strefach
+                        // "Praca poza normą"/"...awaria" w jednym dniu każda kolejna strefa
+                        // wykazywała pełne (norma - plan) godzin nadgodzin okresowych.
+                        // Poprzedni kod robił bezwarunkowy "return (norma - plan)" już na
+                        // pierwszej iteracji pętli, nie sumując godzin rozliczonych w
+                        // poprzednich strefach ani nie patrząc na realny czas bieżącej
+                        // strefy. Teraz akumulujemy czas stref po kolei (jak w gałęzi dnia
+                        // wolnego) i dla strefy == Row zwracamy tylko tę część jej godzin,
+                        // która mieści się w dobowym oknie nadgodzin okresowych (plan, norma].
+                        sumaDoby += st.Czas;
+                        if(st == Row)
+                        {
+                            if(praca > plan && plan < norma)
+                            {
+                                Time przedStrefa = sumaDoby - st.Czas;
+                                Time dolna = przedStrefa < plan ? plan : (przedStrefa < norma ? przedStrefa : norma);
+                                Time gorna = sumaDoby < plan ? plan : (sumaDoby < norma ? sumaDoby : norma);
+                                return gorna > dolna ? (decimal)(gorna - dolna).TotalHours : (decimal)0;
+                            }
+                            return 0;
+                        }
+                        continue;
                     }
                     //obsługa tzn "czarnych dziur" czyli godzin przypadających po dobie w niedziele a przed dobą poniedziałkową
                     //if(dzienPracy.Definicja.Typ == TypDnia.Pracy && dzienPracy.Data.DayOfWeek == DayOfWeek.Monday)
