@@ -20,11 +20,19 @@ namespace x.x.Reports
     // Jeden wiersz wydruku = jedna Wyplata (przy kilku wypłatach tego samego pracownika
     // na liście - np. etat + inne - powstaje kilka wierszy).
     //
-    // Po kolumnach elementów dochodzą 4 STAŁE kolumny podsumowania - Składki ZUS (prac.),
-    // Podatek (zaliczka PIT), PPK (prac.), Kwota do wypłaty. To NIE są elementy (WypElement) -
-    // ZUS/podatek/PPK są naliczane w strukturze WypElement.Podatki KAŻDEGO składnika wypłaty
-    // (sumowane tu po wszystkich składnikach), a kwota do wypłaty to wprost pole Wyplata.Wartosc
+    // Po kolumnach elementów dochodzi 6 STAŁYCH kolumn podsumowania - Składki ZUS
+    // (pracownik/pracodawca), PPK (pracownik/pracodawca), Zaliczka na PIT, Kwota do wypłaty.
+    // To NIE są elementy (WypElement) - ZUS/PPK/PIT są naliczane w strukturze
+    // WypElement.Podatki KAŻDEGO składnika wypłaty (sumowane tu po wszystkich składnikach,
+    // osobno część Prac i część Firma), a kwota do wypłaty to wprost pole Wyplata.Wartosc
     // (nie suma elementów) - stąd liczone inaczej niż kolumny dynamiczne.
+    //
+    // Eksport do Excela: żeby liczby trafiły do arkusza jako prawdziwe wartości liczbowe
+    // (nie tekst) i zachowały formatowanie (2 miejsca po przecinku, wyrównanie, pogrubienie
+    // nagłówków, obramowania), ustawiamy Report.ExportOptions.Xlsx.TextExportMode = Value
+    // oraz TextFormatString na komórkach liczbowych - TODO/UNVERIFIED, do potwierdzenia po
+    // wklejeniu w projektancie (nazwa właściwości/enuma może się różnić między wersjami
+    // DevExpress w tej instalacji).
     //
     // Zamiast statycznej tabeli z .repx cała tabela (nagłówek kolumn + wiersze danych)
     // jest budowana w kodzie na dwóch pustych kontrolkach XRTable (tabelaNaglowek w
@@ -71,6 +79,15 @@ namespace x.x.Reports
             string etap = "start";
             try
             {
+                etap = "ustawienie opcji eksportu do Excela";
+                // TODO/UNVERIFIED: TextExportMode.Value każe eksporterowi zapisać wartości
+                // liczbowe (obecnie tekst w komórkach) jako prawdziwe liczby Excela zamiast
+                // zwykłego tekstu - inaczej "kwota do wypłaty" itp. wyeksportuje się jako
+                // napis i straci formatowanie liczbowe (nie da się np. zsumować w Excelu).
+                XtraReport report = sender as XtraReport;
+                if (report != null)
+                    report.ExportOptions.Xlsx.TextExportMode = TextExportMode.Value;
+
                 etap = "sprawdzenie trybu (designer)";
                 if (pars == null)
                 {
@@ -193,9 +210,11 @@ namespace x.x.Reports
             // wyliczanymi ze struktury WypElement.Podatki każdego składnika wypłaty
             // (a KwotaDoWyplaty wprost z pola Wyplata.Wartosc) - stąd stałe kolumny,
             // nie kolejna kolumna dynamiczna.
-            public decimal SkladkiZUS;
+            public decimal SkladkiZUSPracownik;
+            public decimal SkladkiZUSPracodawca;
+            public decimal PPKPracownik;
+            public decimal PPKPracodawca;
             public decimal Podatek;
-            public decimal PPK;
             public decimal KwotaDoWyplaty;
         }
 
@@ -226,11 +245,15 @@ namespace x.x.Reports
 
                     // Skladki ZUS, podatek i PPK nie sa osobnymi elementami (WypElement) -
                     // sa naliczane w strukturze WypElement.Podatki KAZDEGO skladnika wyplaty
-                    // (czesc pracownika), wiec sumujemy je tutaj po wszystkich skladnikach.
-                    wiersz.SkladkiZUS += el.Podatki.Emerytalna.Prac + el.Podatki.Rentowa.Prac
+                    // (osobno czesc pracownika "Prac" i czesc pracodawcy "Firma"), wiec
+                    // sumujemy je tutaj po wszystkich skladnikach, kazda strone osobno.
+                    wiersz.SkladkiZUSPracownik += el.Podatki.Emerytalna.Prac + el.Podatki.Rentowa.Prac
                         + el.Podatki.Chorobowa.Prac + el.Podatki.Wypadkowa.Prac + el.Podatki.Zdrowotna.Prac;
+                    wiersz.SkladkiZUSPracodawca += el.Podatki.Emerytalna.Firma + el.Podatki.Rentowa.Firma
+                        + el.Podatki.Chorobowa.Firma + el.Podatki.Wypadkowa.Firma + el.Podatki.Zdrowotna.Firma;
                     wiersz.Podatek += el.Podatki.ZalFIS;
-                    wiersz.PPK += el.Podatki.PPK.Pracownika;
+                    wiersz.PPKPracownik += el.Podatki.PPK.Pracownika;
+                    wiersz.PPKPracodawca += el.Podatki.PPK.Pracodawcy;
                 }
 
                 // Kwota do wyplaty (netto) to pole calej Wyplaty (Wyplata.Wartosc), NIE suma
@@ -284,9 +307,11 @@ namespace x.x.Reports
             foreach (DefinicjaElementu def in kolumny)
                 wiersz.Cells.Add(NowaKomorka(NazwaKolumny(def), WagaElementu, true, true));
 
-            wiersz.Cells.Add(NowaKomorka("Składki ZUS (prac.)", WagaPodsumowania, true, true));
-            wiersz.Cells.Add(NowaKomorka("Podatek (zaliczka PIT)", WagaPodsumowania, true, true));
-            wiersz.Cells.Add(NowaKomorka("PPK (prac.)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Składki ZUS (pracownik)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Składki ZUS (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("PPK (pracownik)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("PPK (pracodawca)", WagaPodsumowania, true, true));
+            wiersz.Cells.Add(NowaKomorka("Zaliczka na PIT", WagaPodsumowania, true, true));
             wiersz.Cells.Add(NowaKomorka("Kwota do wypłaty", WagaPodsumowania, true, true));
 
             tabelaNaglowek.Rows.Add(wiersz);
@@ -304,7 +329,7 @@ namespace x.x.Reports
                 XRTableCell cInfo = NowaKomorka(
                     "Brak wypłat do wydrukowania - sprawdź zaznaczenie listy/list płac.",
                     1, false, false);
-                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu) + (4 * WagaPodsumowania);
+                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu) + (6 * WagaPodsumowania);
                 pusty.Cells.Add(cInfo);
                 tabelaDane.Rows.Add(pusty);
                 return;
@@ -318,12 +343,14 @@ namespace x.x.Reports
                 wiersz.Cells.Add(NowaKomorka(w.NazwiskoImie, WagaNazwisko, false, false));
                 wiersz.Cells.Add(NowaKomorka(w.Wydzial, WagaWydzial, false, false));
                 for (int i = 0; i < kolumny.Count; i++)
-                    wiersz.Cells.Add(NowaKomorka(w.Wartosci[i].ToString("N2"), WagaElementu, false, true));
+                    wiersz.Cells.Add(NowaKomorkaLiczba(w.Wartosci[i], WagaElementu));
 
-                wiersz.Cells.Add(NowaKomorka(w.SkladkiZUS.ToString("N2"), WagaPodsumowania, false, true));
-                wiersz.Cells.Add(NowaKomorka(w.Podatek.ToString("N2"), WagaPodsumowania, false, true));
-                wiersz.Cells.Add(NowaKomorka(w.PPK.ToString("N2"), WagaPodsumowania, false, true));
-                wiersz.Cells.Add(NowaKomorka(w.KwotaDoWyplaty.ToString("N2"), WagaPodsumowania, false, true));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.SkladkiZUSPracownik, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.SkladkiZUSPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.PPKPracownik, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.PPKPracodawca, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.Podatek, WagaPodsumowania));
+                wiersz.Cells.Add(NowaKomorkaLiczba(w.KwotaDoWyplaty, WagaPodsumowania));
 
                 tabelaDane.Rows.Add(wiersz);
             }
@@ -356,6 +383,17 @@ namespace x.x.Reports
             komorka.TextAlignment = liczba ? TextAlignment.MiddleRight : TextAlignment.MiddleLeft;
             komorka.Borders = BorderSide.All;
             komorka.Font = new Font("Calibri", 9f, naglowek ? FontStyle.Bold : FontStyle.Regular);
+            return komorka;
+        }
+
+        // Komórka z liczbą (wiersz danych, nie nagłówek) - oprócz sformatowanego tekstu
+        // ustawia TextFormatString, żeby przy eksporcie do Excela (TextExportMode.Value,
+        // patrz Report_BeforePrint) wartość trafiła jako prawdziwa liczba z formatem
+        // "2 miejsca po przecinku", a nie jako zwykły tekst.
+        static XRTableCell NowaKomorkaLiczba(decimal wartosc, float waga)
+        {
+            XRTableCell komorka = NowaKomorka(wartosc.ToString("N2"), waga, false, true);
+            komorka.TextFormatString = "{0:N2}";
             return komorka;
         }
     }

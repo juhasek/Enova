@@ -1,13 +1,12 @@
 # A1PelnaListaPlac — pełna lista płac wg elementów (Płace / Listy płac)
 
-**Status: NIEPRZETESTOWANE na żywej aplikacji** — środowisko robocze tego repo nie ma
-dostępu do `buscall`/GUI enova (zob. pamięć „Środowisko lokalne”), więc plik wymaga
-próbnego wgrania i wydruku na bazie testowej przed użyciem produkcyjnym. Kod API (pola
-`ListaPlac.Wyplaty`, `Wyplata.Elementy`, `WypElement.Definicja/Wartosc/RozliczenieStorna`,
-`Pracownik.Historia[data].Etat.Wydzial`) jest zgodny z udokumentowanym publicznym
-kontraktem modułu Place (`~/.claude/skills/soneta-programming`), a mechanizm
-zaznaczenia/`CustomDataSource` jest 1:1 wzorowany na już potwierdzonym w tym repo
-`Raporty/SzablonTabela6Kolumn` (status: działa).
+**Status: DZIAŁA na bazie testowej `Claude`** (potwierdzone przez użytkownika, 2026-09-05) —
+kolumny Kod/Imię i Nazwisko/Wydział + kolumny dynamiczne elementów oraz kolumny podsumowania
+(Składki ZUS pracownik/pracodawca, PPK pracownik/pracodawca, Zaliczka na PIT, Kwota do
+wypłaty) generują się poprawnie po ręcznym wklejeniu kodu w „Kod źródłowy” projektanta
+wydruków i zapisaniu (patrz „Jak wgrać”). **NIEPRZETESTOWANE:** eksport do Excela z
+zachowaniem formatowania liczb jako wartości (nie tekstu) — `TextExportMode.Value` i
+`TextFormatString` (patrz niżej) są nową, jeszcze niepotwierdzoną na żywo zmianą.
 
 Wzorzec wydruku Enova (`Raporty/A1PelnaListaPlac.repx`) zasilany snippetem
 `Raporty/A1PelnaListaPlacSnippet` (klasa `A1PelnaListaPlacSnippet`), uruchamiany z
@@ -39,9 +38,11 @@ Jeden wiersz = jedna wypłata (`Wyplata`) wchodząca w skład zaznaczonej listy/
 | Imię i Nazwisko | `Wyplata.Pracownik.NazwiskoImię` |
 | Wydział | `Pracownik.Historia[Wyplata.Data].Etat.Wydzial.Nazwa` |
 | *(dynamicznie, po jednej na każdy rodzaj elementu)* | suma `WypElement.Wartosc` dla danej `WypElement.Definicja` na tej wypłacie |
-| Składki ZUS (prac.) | suma `WypElement.Podatki.{Emerytalna,Rentowa,Chorobowa,Wypadkowa,Zdrowotna}.Prac` po wszystkich składnikach wypłaty |
-| Podatek (zaliczka PIT) | suma `WypElement.Podatki.ZalFIS` po wszystkich składnikach wypłaty |
-| PPK (prac.) | suma `WypElement.Podatki.PPK.Pracownika` po wszystkich składnikach wypłaty |
+| Składki ZUS (pracownik) | suma `WypElement.Podatki.{Emerytalna,Rentowa,Chorobowa,Wypadkowa,Zdrowotna}.Prac` po wszystkich składnikach wypłaty |
+| Składki ZUS (pracodawca) | suma `WypElement.Podatki.{Emerytalna,Rentowa,Chorobowa,Wypadkowa,Zdrowotna}.Firma` po wszystkich składnikach wypłaty |
+| PPK (pracownik) | suma `WypElement.Podatki.PPK.Pracownika` po wszystkich składnikach wypłaty |
+| PPK (pracodawca) | suma `WypElement.Podatki.PPK.Pracodawcy` po wszystkich składnikach wypłaty |
+| Zaliczka na PIT | suma `WypElement.Podatki.ZalFIS` po wszystkich składnikach wypłaty |
 | Kwota do wypłaty | `Wyplata.Wartosc` (kwota netto — pole całej wypłaty, NIE suma elementów) |
 
 Kolumny elementów **nie są zaszyte na stałe** — snippet przegląda wszystkie wypłaty ze
@@ -54,17 +55,40 @@ Elementy wystornowane/stornujące (`WypElement.RozliczenieStorna == true`) są p
 liczeniu sum i przy wykrywaniu kolumn — inaczej wartość pierwotna i jej storno liczyłyby
 się podwójnie.
 
-**Cztery ostatnie kolumny (Składki ZUS / Podatek / PPK / Kwota do wypłaty) są STAŁE, nie
-dynamiczne** — w przeciwieństwie do kolumn elementów, ZUS/podatek/PPK **nie są odrębnymi
-`WypElement`** tylko wartościami zaszytymi w strukturze `WypElement.Podatki` **każdego**
-składnika wypłaty (część pracownika), więc snippet sumuje je po wszystkich składnikach
-zamiast wykrywać jako osobną kolumnę per definicja. „Kwota do wypłaty” to z kolei wprost
-pole `Wyplata.Wartosc` (jedna wartość na wypłatę, nie suma elementów).
+**Sześć ostatnich kolumn (Składki ZUS pracownik/pracodawca, PPK pracownik/pracodawca,
+Zaliczka na PIT, Kwota do wypłaty) są STAŁE, nie dynamiczne** — w przeciwieństwie do
+kolumn elementów, ZUS/PPK/PIT **nie są odrębnymi `WypElement`** tylko wartościami
+zaszytymi w strukturze `WypElement.Podatki` **każdego** składnika wypłaty (osobno część
+pracownika `Prac`/`Pracownika` i część pracodawcy `Firma`/`Pracodawcy`), więc snippet
+sumuje je po wszystkich składnikach zamiast wykrywać jako osobną kolumnę per definicja.
+„Kwota do wypłaty” to z kolei wprost pole `Wyplata.Wartosc` (jedna wartość na wypłatę,
+nie suma elementów).
 
-**Do potwierdzenia w GUI:** czy „Składki ZUS (prac.)” ma pokazywać tylko część pracownika
-(obecne działanie) czy też osobno część pracodawcy (`.Firma`) — obecnie pominięta, bo nie
-wpływa na kwotę do wypłaty pracownika; podobnie PPK pokazuje tylko `Pracownika`, nie
-`Pracodawcy`.
+## Eksport do Excela z zachowaniem formatowania
+
+Raport ma trafiać docelowo do Excela (eksport z GUI enova) — żeby liczby (kolumny
+elementów i sześć kolumn podsumowania) trafiły do arkusza jako **prawdziwe wartości
+liczbowe** (nie tekst — inaczej nie da się ich zsumować/sformatować w Excelu), snippet:
+
+- w `Report_BeforePrint` ustawia `((XtraReport)sender).ExportOptions.Xlsx.TextExportMode
+  = TextExportMode.Value` — mówi eksporterowi DevExpress, żeby sparsował tekst komórki
+  z powrotem na liczbę i zapisał ją jako natywną wartość Excela, a nie ciąg znaków;
+- każda komórka liczbowa (`NowaKomorkaLiczba`) ma dodatkowo ustawiony
+  `TextFormatString = "{0:N2}"`, żeby Excel zachował format „2 miejsca po przecinku”.
+
+Pogrubienie nagłówków, obramowania komórek i wyrównanie do prawej (`TextAlignment`) to
+standardowe właściwości `XRTableCell`, które DevExpress **eksportuje do Excela bez
+dodatkowego kodu** — nie wymagały zmian.
+
+**TODO/UNVERIFIED:** cała ta sekcja nie została potwierdzona rzeczywistym eksportem do
+`.xlsx` w tej instalacji — nazwa właściwości (`ExportOptions.Xlsx.TextExportMode`) i enum
+(`TextExportMode.Value`) pochodzą ze standardowego, udokumentowanego API DevExpress
+XtraReports, ale mogą się różnić w zależności od wersji DevExpress użytej w tej
+instalacji enova. Po wklejeniu kodu w projektancie sprawdź najpierw, czy się w ogóle
+kompiluje (błąd kompilacji pojawi się od razu w oknie „Kod źródłowy”), a potem wyeksportuj
+wydruk do Excela i zweryfikuj: (a) liczby są wyrównane do prawej i traktowane jako liczby
+(np. `=SUMA(...)` na kolumnie działa), (b) widoczne są 2 miejsca po przecinku, (c)
+nagłówki są pogrubione, (d) obramowania komórek są zachowane.
 
 ## Jak to jest zbudowane (dlaczego nie ma statycznej tabeli w .repx)
 
@@ -127,11 +151,15 @@ KOMUNIKAT=...` w tabeli danych.
    `WypElement` (a nie per `Definicja`).
 5. **Storno** (`RozliczenieStorna`) — potwierdzić na przykładzie z realną korektą wypłaty,
    że pomijanie wystornowanych/stornujących elementów daje poprawną (nie podwójną) sumę.
-6. **Kolumny Składki ZUS / Podatek / PPK / Kwota do wypłaty** — potwierdzić na realnie
-   naliczonej wypłacie (nie tylko dodanej do kartoteki, ale przeliczonej listą płac), że
-   sumy z `WypElement.Podatki.*` zgadzają się z paskiem wypłaty w GUI; potwierdzić, czy
-   pokazywać tylko część pracownika (`Prac`/`Pracownika`) czy też pracodawcy (`Firma`/
-   `Pracodawcy`) dla ZUS i PPK.
+6. **Kolumny Składki ZUS (prac./pracod.) / PPK (prac./pracod.) / Zaliczka na PIT / Kwota
+   do wypłaty** — potwierdzić na realnie naliczonej wypłacie (nie tylko dodanej do
+   kartoteki, ale przeliczonej listą płac), że sumy z `WypElement.Podatki.*` zgadzają się
+   z paskiem wypłaty w GUI, osobno dla części pracownika i pracodawcy.
+7. **Eksport do Excela** (`TextExportMode.Value` + `TextFormatString`) — potwierdzić
+   kompilację kodu w projektancie, a potem że wyeksportowany `.xlsx` ma liczby jako
+   wartości liczbowe (nie tekst) z zachowanym formatem, oraz że pogrubienie/obramowania/
+   wyrównanie przenoszą się poprawnie — patrz sekcja „Eksport do Excela z zachowaniem
+   formatowania” wyżej.
 
 ## Jak wgrać
 
