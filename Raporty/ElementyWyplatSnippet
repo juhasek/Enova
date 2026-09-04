@@ -1,0 +1,315 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using DevExpress.XtraPrinting;
+using DevExpress.XtraReports.UI;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.Place;
+using Soneta.Types;
+
+namespace x.x.Reports
+{
+    // Wydruk z poziomu Płace/Listy płac (zaznaczenie jednej lub wielu pozycji ListaPlac).
+    // Kolumny Kod / Imię i Nazwisko / Wydział są na stałe; reszta kolumn budowana jest
+    // dynamicznie na podstawie definicji elementów (WypElement.Definicja) znalezionych
+    // na wypłatach (Wyplata.Elementy) wchodzących w skład zaznaczonych list płac.
+    // Brak elementu danego rodzaju na konkretnej wypłacie -> 0,00 w tej kolumnie.
+    // Jeden wiersz wydruku = jedna Wyplata (przy kilku wypłatach tego samego pracownika
+    // na liście - np. etat + inne - powstaje kilka wierszy).
+    //
+    // Zamiast statycznej tabeli z .repx cała tabela (nagłówek kolumn + wiersze danych)
+    // jest budowana w kodzie na dwóch pustych kontrolkach XRTable (tabelaNaglowek w
+    // PageHeaderBand, tabelaDane w DetailBand) - liczba i nazwy kolumn nie są znane
+    // w momencie projektowania wydruku.
+    //
+    // Wzorowane na Raporty/SzablonTabela6KolumnSnippet: [Context(Required = true)]
+    // wymusza wstrzyknięcie działającego Context (PrnParams), a jedno-elementowy
+    // CustomDataSource na komponencie Empty (DxReportHelpers.GetDataSourceEmpty)
+    // wymusza dokładnie jedno odpalenie DetailBand (w którym budujemy całą tabelę na
+    // raz, a nie wiersz po wierszu).
+    //
+    // Cała metoda BeforePrint jest opakowana w try/catch z etykietą etapu - błąd trafia
+    // do tabeli danych jako pojedynczy wiersz diagnostyczny zamiast wywalać wydruk.
+    public class ElementyWyplatSnippet : ReportSnippet
+    {
+        public class PrnParams : ContextBase
+        {
+            public PrnParams(Context context) : base(context) { }
+        }
+
+        PrnParams pars;
+
+        [Context(Required = true)]
+        public PrnParams Params
+        {
+            get { return pars; }
+            set { pars = value; }
+        }
+
+        [DxBind] private readonly XRTable tabelaNaglowek;
+        [DxBind] private readonly XRTable tabelaDane;
+        [DxBind] private readonly XRLabel lblPodtytul;
+
+        const float WagaKod = 0.7f;
+        const float WagaNazwisko = 2.2f;
+        const float WagaWydzial = 1.4f;
+        const float WagaElementu = 1.1f;
+
+        [DxBind(Name = "Report")]
+        private void Report_BeforePrint(object sender, CancelEventArgs e)
+        {
+            string etap = "start";
+            try
+            {
+                etap = "sprawdzenie trybu (designer)";
+                if (pars == null)
+                {
+                    UstawJedenPustyRekord();
+                    return;
+                }
+
+                etap = "pobranie kontekstu i zaznaczenia";
+                Context dc = pars.Context;
+                Row[] zaznaczone = dc?[typeof(Row[])] as Row[];
+
+                etap = "zbieranie list plac z zaznaczenia";
+                List<ListaPlac> listy = ZbierzListyPlac(zaznaczone, dc);
+
+                etap = "zbieranie wyplat z list plac";
+                var wyplaty = new List<Wyplata>();
+                foreach (ListaPlac lp in listy)
+                    foreach (Wyplata w in lp.Wyplaty)
+                        wyplaty.Add(w);
+
+                etap = "wyznaczanie kolumn dynamicznych";
+                List<DefinicjaElementu> kolumny = WyznaczKolumny(wyplaty);
+
+                etap = "budowanie wierszy danych";
+                List<WierszWyplaty> wiersze = BudujWiersze(wyplaty, kolumny);
+
+                etap = "renderowanie naglowka kolumn";
+                BudujNaglowek(kolumny);
+
+                etap = "renderowanie wierszy danych";
+                BudujDane(kolumny, wiersze);
+
+                etap = "podtytul";
+                if (lblPodtytul != null)
+                    lblPodtytul.Text = "Listy płac: " + listy.Count + ", wypłaty: " + wyplaty.Count
+                        + ", elementy (kolumny): " + kolumny.Count;
+
+                UstawJedenPustyRekord();
+            }
+            catch (Exception ex)
+            {
+                BudujBlad(etap, ex);
+                UstawJedenPustyRekord();
+            }
+        }
+
+        void UstawJedenPustyRekord()
+        {
+            var ds = DxReportHelpers.GetDataSourceEmpty(this);
+            if (ds != null)
+                ds.CustomDataSource = new List<object> { new object() };
+        }
+
+        static List<ListaPlac> ZbierzListyPlac(Row[] zaznaczone, Context dc)
+        {
+            var wynik = new List<ListaPlac>();
+            if (zaznaczone != null)
+            {
+                foreach (Row wiersz in zaznaczone)
+                {
+                    ListaPlac lp = wiersz as ListaPlac;
+                    if (lp == null)
+                    {
+                        Wyplata w = wiersz as Wyplata;
+                        if (w != null)
+                        {
+                            object lpObj = w.ListaPlac;
+                            lp = lpObj as ListaPlac;
+                        }
+                    }
+                    if (lp != null && !wynik.Contains(lp))
+                        wynik.Add(lp);
+                }
+            }
+            // Fallback: raport uruchomiony z poziomu otwartej pojedynczej listy płac
+            // (nie z zaznaczenia w gridzie) - TODO/UNVERIFIED, do potwierdzenia w GUI.
+            if (wynik.Count == 0 && dc != null)
+            {
+                ListaPlac biezaca = dc[typeof(ListaPlac)] as ListaPlac;
+                if (biezaca != null)
+                    wynik.Add(biezaca);
+            }
+            return wynik;
+        }
+
+        static List<DefinicjaElementu> WyznaczKolumny(List<Wyplata> wyplaty)
+        {
+            var kolumny = new List<DefinicjaElementu>();
+            foreach (Wyplata w in wyplaty)
+            {
+                foreach (WypElement el in w.Elementy)
+                {
+                    // Pomijamy elementy wystornowane/stornujące - inaczej wartość
+                    // pierwotna i jej storno policzyłyby się podwójnie.
+                    if (el.RozliczenieStorna) continue;
+
+                    DefinicjaElementu def = el.Definicja;
+                    if (def != null && !kolumny.Contains(def))
+                        kolumny.Add(def);
+                }
+            }
+            kolumny.Sort((a, b) => string.Compare(NazwaKolumny(a), NazwaKolumny(b), StringComparison.CurrentCulture));
+            return kolumny;
+        }
+
+        static string NazwaKolumny(DefinicjaElementu def)
+        {
+            if (def == null) return "";
+            string nazwa = def.Nazwa;
+            return string.IsNullOrEmpty(nazwa) ? (def.Kod ?? "") : nazwa;
+        }
+
+        class WierszWyplaty
+        {
+            public string Kod;
+            public string NazwiskoImie;
+            public string Wydzial;
+            public decimal[] Wartosci;
+        }
+
+        static List<WierszWyplaty> BudujWiersze(List<Wyplata> wyplaty, List<DefinicjaElementu> kolumny)
+        {
+            var wiersze = new List<WierszWyplaty>();
+            foreach (Wyplata w in wyplaty)
+            {
+                Pracownik pr = PobierzPracownika(w);
+
+                var wiersz = new WierszWyplaty();
+                wiersz.Kod = Bezpiecznie(() => pr?.Kod);
+                wiersz.NazwiskoImie = Bezpiecznie(() => pr?.NazwiskoImię);
+                wiersz.Wydzial = Bezpiecznie(() => PobierzWydzial(pr, w));
+
+                wiersz.Wartosci = new decimal[kolumny.Count];
+                foreach (WypElement el in w.Elementy)
+                {
+                    if (el.RozliczenieStorna) continue;
+
+                    DefinicjaElementu def = el.Definicja;
+                    if (def == null) continue;
+                    int idx = kolumny.IndexOf(def);
+                    if (idx >= 0)
+                        wiersz.Wartosci[idx] += el.Wartosc;
+                }
+                wiersze.Add(wiersz);
+            }
+            wiersze.Sort((a, b) => string.Compare(a.NazwiskoImie ?? "", b.NazwiskoImie ?? "", StringComparison.CurrentCulture));
+            return wiersze;
+        }
+
+        static Pracownik PobierzPracownika(Wyplata w)
+        {
+            object p = w.Pracownik;
+            return p as Pracownik;
+        }
+
+        static string PobierzWydzial(Pracownik pr, Wyplata w)
+        {
+            if (pr == null) return "";
+            Date data = w.Data;
+            if (data == Date.Empty) data = Date.Today;
+            PracHistoria ph = pr.Historia[data];
+            Wydzial wydz = ph?.Etat?.Wydzial;
+            return wydz?.Nazwa ?? "";
+        }
+
+        static string Bezpiecznie(Func<string> policz)
+        {
+            try { return policz() ?? ""; }
+            catch (Exception ex) { return "[BŁĄD: " + ex.Message + "]"; }
+        }
+
+        void BudujNaglowek(List<DefinicjaElementu> kolumny)
+        {
+            if (tabelaNaglowek == null) return;
+            tabelaNaglowek.Rows.Clear();
+
+            XRTableRow wiersz = new XRTableRow();
+            wiersz.Weight = 1;
+            wiersz.Cells.Add(NowaKomorka("Kod", WagaKod, true, false));
+            wiersz.Cells.Add(NowaKomorka("Imię i Nazwisko", WagaNazwisko, true, false));
+            wiersz.Cells.Add(NowaKomorka("Wydział", WagaWydzial, true, false));
+            foreach (DefinicjaElementu def in kolumny)
+                wiersz.Cells.Add(NowaKomorka(NazwaKolumny(def), WagaElementu, true, true));
+
+            tabelaNaglowek.Rows.Add(wiersz);
+        }
+
+        void BudujDane(List<DefinicjaElementu> kolumny, List<WierszWyplaty> wiersze)
+        {
+            if (tabelaDane == null) return;
+            tabelaDane.Rows.Clear();
+
+            if (wiersze.Count == 0)
+            {
+                XRTableRow pusty = new XRTableRow();
+                pusty.Weight = 1;
+                XRTableCell cInfo = NowaKomorka(
+                    "Brak wypłat do wydrukowania - sprawdź zaznaczenie listy/list płac.",
+                    1, false, false);
+                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu);
+                pusty.Cells.Add(cInfo);
+                tabelaDane.Rows.Add(pusty);
+                return;
+            }
+
+            foreach (WierszWyplaty w in wiersze)
+            {
+                XRTableRow wiersz = new XRTableRow();
+                wiersz.Weight = 1;
+                wiersz.Cells.Add(NowaKomorka(w.Kod, WagaKod, false, false));
+                wiersz.Cells.Add(NowaKomorka(w.NazwiskoImie, WagaNazwisko, false, false));
+                wiersz.Cells.Add(NowaKomorka(w.Wydzial, WagaWydzial, false, false));
+                for (int i = 0; i < kolumny.Count; i++)
+                    wiersz.Cells.Add(NowaKomorka(w.Wartosci[i].ToString("N2"), WagaElementu, false, true));
+                tabelaDane.Rows.Add(wiersz);
+            }
+        }
+
+        void BudujBlad(string etap, Exception ex)
+        {
+            if (tabelaNaglowek != null)
+                tabelaNaglowek.Rows.Clear();
+
+            if (tabelaDane != null)
+            {
+                tabelaDane.Rows.Clear();
+                XRTableRow wiersz = new XRTableRow();
+                wiersz.Weight = 1;
+                string opis = "BŁĄD | ETAP=" + (etap ?? "(null)")
+                    + " | TYP=" + ex.GetType().FullName
+                    + " | KOMUNIKAT=" + ex.Message;
+                XRTableCell cInfo = NowaKomorka(opis, 1, false, false);
+                wiersz.Cells.Add(cInfo);
+                tabelaDane.Rows.Add(wiersz);
+            }
+        }
+
+        static XRTableCell NowaKomorka(string tekst, float waga, bool naglowek, bool liczba)
+        {
+            XRTableCell komorka = new XRTableCell();
+            komorka.Text = tekst ?? "";
+            komorka.Weight = waga;
+            komorka.TextAlignment = liczba ? TextAlignment.MiddleRight : TextAlignment.MiddleLeft;
+            komorka.Borders = BorderSide.All;
+            komorka.Font = new Font("Calibri", 9f, naglowek ? FontStyle.Bold : FontStyle.Regular);
+            return komorka;
+        }
+    }
+}
