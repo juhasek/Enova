@@ -264,30 +264,22 @@ serwera (np. dograniem brakującej biblioteki), bez zapisu tutaj.
 znajdzie się w hoście Pulpitu WWW, obecność tego snippetu/raportu w bazie
 **psuje inne, działające dotąd raporty wywoływane z tego Pulpitu** — to nie
 jest tylko „ten raport nie działa”, tylko realna regresja funkcji, które
-wcześniej działały. Do rozważenia:
-1. **Potwierdzenie przyczyny** (zalecane przed dalszymi krokami): tymczasowo
-   usunąć/dezaktywować snippet `ZestawienieKomisjaSocjalna` (lub cały wzorzec
-   wydruku) w Enova i sprawdzić, czy ten inny raport od razu znów działa z
-   Pulpitu WWW. Jeśli tak — teoria „wspólna paczka kompilacji” jest
-   potwierdzona.
-2. **Do czasu naprawy hosta** (dodanie brakującej `DevExpress.DataAccess.v24.1.dll`
-   do Pulpitu WWW) rozważyć, czy nie lepiej trzymać ten raport
-   niewgrany/wyłączony w produkcji — skoro jego samo wgranie blokuje inny,
-   używany raport, a wgranie samego kodu (bez wywołania) już powoduje
-   regresję.
-3. Docelowa naprawa pozostaje ta sama: dodać brakującą bibliotekę do hosta
-   Pulpitu WWW (patrz niżej) — to jedyny sposób, by ten raport (z
-   `BusinessDataSource` w `.repx`) mógł w ogóle współistnieć z innymi w tym
-   środowisku.
+wcześniej działały.
 
-**Doprecyzowanie hostingu:** skoro Pulpit działa jako aplikacja
-przeglądarkowa (nie moduł klienta desktopowego), proces kompilujący snippet
-to najpewniej osobna aplikacja/site w IIS (albo Kestrel) obsługująca Pulpity
-WWW — z własnym folderem `bin`/`wwwroot` i własnym app poolem, fizycznie
-oddzielona od instalacji klienta desktopowego, mimo że łączy się z tą samą
-bazą enova. To w jej folderze `bin` (a nie w folderze klienta) trzeba szukać
-`DevExpress.DataAccess.v24.1.dll` i po ewentualnym dodaniu — zrestartować
-tamten app pool/serwis (nie sam klient desktopowy).
+**ROZWIĄZANE (użytkownik, 2026-09-07):** po wgraniu wersji snippetu z
+`UstawDaneRaportu` (refleksja zamiast statycznego `.CustomDataSource` na
+`BusinessDataSource`) błąd zniknął — potwierdzone na żywo, tamten inny
+raport znów działa z Pulpitu WWW. To ostatecznie potwierdza „Próbę nr 2”
+opisaną wyżej: `CS0012` pochodził z odwołania do właściwości
+`CustomDataSource` w treści **naszego** snippetu (a nie z automatycznie
+generowanego kodu wiążącego `ComponentStorage` tego `.repx`) — ominięcie go
+w kodzie źródłowym wystarczyło, **bez** żadnej zmiany po stronie serwera/hosta
+Pulpitu WWW i bez dodawania `DevExpress.DataAccess.v24.1.dll`. Ten sam wzorzec
+(`UstawDaneRaportu` przez refleksję zamiast bezpośredniego
+`DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = ...`) warto mieć
+na uwadze przy innych raportach z tym samym `BusinessDataSource` w `.repx`
+(np. `Raporty/SzablonTabela6Kolumn`), gdyby też miały być kiedyś wywoływane z
+Pulpitu WWW w tej instalacji.
 
 ## Jak podpiąć snippet w Enova
 
