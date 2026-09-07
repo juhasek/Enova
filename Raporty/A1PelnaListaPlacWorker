@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 using Soneta.Business;
 using Soneta.Business.UI;
+using Soneta.Kadry;
 using Soneta.Place;
 using Soneta.Types;
 using DevExpress.Spreadsheet;
@@ -12,148 +14,253 @@ using DevExpress.Spreadsheet;
 
 namespace x.x.Reports
 {
-    // Czynnosc "Pelna lista plac -> XLSX (auto-fit)" na liscie Place -> Listy plac.
-    // Dziala na ZAZNACZONYCH pozycjach listy plac. W odroznieniu od zwyklego wydruku
-    // (A1PelnaListaPlacSnippet eksportowanego recznie z podgladu):
+    // Czynnosc "Pelna lista plac -> XLSX" na liscie Place -> Listy plac, dzialajaca na
+    // ZAZNACZONYCH pozycjach. Buduje plik .xlsx OD ZERA biblioteka DevExpress.Spreadsheet -
+    // czysta siatka komorek, wiec NIE MA problemu z rozjezdzaniem sie kolumn, ktory
+    // wystepowal przy eksporcie wydruku A1PelnaListaPlacSnippet z podgladu (tam XRTable ->
+    // Excel tworzy pofragmentowana siatke i scalone komorki, a pseudo-autofit tego nie
+    // naprawia - potwierdzone zrzutem 2026-09-07: kolumny szerokie na 1 znak).
     //
-    //   1. generuje plik .xlsx PROGRAMOWO przez IReportService.GenerateReport(...),
-    //      uzywajac TEGO SAMEGO wzorca A1PelnaListaPlac.repx i tego samego snippetu
-    //      (cala logika kolumn/wierszy - dynamiczne elementy + 17 kolumn ZUS/PPK/PIT -
-    //      jest w 100% ponownie wykorzystana),
-    //   2. otwiera surowe bajty .xlsx jako DevExpress.Spreadsheet.Workbook i robi
-    //      PRAWDZIWY auto-fit (Columns.AutoFit / Rows.AutoFit - mierzy realnie
-    //      renderowany tekst, nie przyblizeniem "dlugosc znaku x stala" jak
-    //      pseudo-autofit w samym snippecie),
-    //   3. zwraca gotowy plik jako NamedStream - operator dostaje go do pobrania.
+    // Logika danych (kolumny dynamiczne per definicja elementu + 17 stalych kolumn
+    // ZUS/PPK/PIT, pomijanie storna, wydzial historyczny wg daty wyplaty) jest przeniesiona
+    // z A1PelnaListaPlacSnippet 1:1 - ten sam kontrakt kolumn, inny tylko silnik zapisu.
     //
     // ---------------------------------------------------------------------------
-    // ZWERYFIKOWANE NA DLL-ach serwera (C:\enovaServer\2512.5.6\...\, enova 2512.5.6),
-    // dekompilacja ilspycmd - 2026-09-07:
+    // ZWERYFIKOWANE NA DLL-ach serwera (enova 2512.5.6, ilspycmd, 2026-09-07):
+    //  - DevExpress.Spreadsheet: klasa Workbook (public ctor, SaveDocument(Stream,
+    //    DocumentFormat)) -> DevExpress.Docs.v24.1.dll; Worksheet/Cell/CellRange/Column/
+    //    Formatting (Cell : CellRange : Formatting - Font/Alignment/Borders/NumberFormat
+    //    bezposrednio na komorce), WorksheetCollection.ActiveWorksheet, Columns.AutoFit,
+    //    Column.WidthInCharacters, Worksheet.FreezeRows, SheetAutoFilter.Apply,
+    //    IRangeProvider.FromLTRB -> DevExpress.Spreadsheet.v24.1.Core.dll. Oba pliki sa
+    //    w folderze serwera obok uzywanego DevExpress.XtraReports.
+    //  - CellValue ma implicit operator z decimal / string / DateTime.
+    //  - Borders.SetAllBorders(System.Drawing.Color, BorderLineStyle).
     //
-    //  - IReportService (Soneta.Business.UI): Stream GenerateReport(ReportResult),
-    //    Type[] GetParameterTypes(string templateFileName, Context). Rejestrowany jako
-    //    [Service(typeof(IReportService), typeof(ReportServiceImpl), ServiceScope.Session)]
-    //    -> session.GetRequiredService<IReportService>() dziala.
-    //  - ReportFormats (Soneta.Business.UI) MA wartosc XLSX (obok XLS/CSV/DOCX/PDF...).
-    //    DxReportGenerator.BuildReport: ReportFormats.XLSX -> Report.ExportToXlsx(stream).
-    //  - GetParameterTypes zwraca dokladnie typy property [Context(Required = true)]
-    //    z klas ReportSnippet w tym .repx (DxQueryParameters.Analyse) - czyli
-    //    { typeof(A1PelnaListaPlacSnippet.PrnParams) }. Bez wstawienia instancji tego
-    //    typu do kontekstu ReportServiceImpl.Generate zwraca QueryContextInformation /
-    //    GenerateReport rzuca "Problem z przygotowaniem raportu", a snippet i tak
-    //    wszedlby w galaz "designer" (pars == null) i zwrocil pusta tabele.
-    //    Dlatego ponizej: petla po GetParameterTypes -> Activator.CreateInstance(t, ctx).
-    //  - ReportResult.CheckConsistency(reportService: true) RZUCA, gdy ustawiony jest
-    //    OutputHandler -> przy wywolaniu przez IReportService NIE wolno go ustawiac;
-    //    post-processing robimy po odebraniu strumienia.
-    //  - DevExpress.Spreadsheet: klasa konkretna Workbook (public ctor, LoadDocument/
-    //    SaveDocument(Stream, DocumentFormat)) jest w DevExpress.Docs.v24.1.dll;
-    //    ColumnCollection.AutoFit(int first, int last) i RowCollection.AutoFit(int, int)
-    //    oraz Worksheet.GetUsedRange() -> CellRange (LeftColumnIndex/RightColumnIndex/
-    //    TopRowIndex/BottomRowIndex) sa w DevExpress.Spreadsheet.v24.1.Core.dll.
-    //    Oba pliki leza w folderze serwera obok uzywanego DevExpress.XtraReports.
-    //
-    // DO POTWIERDZENIA NA ZYWEJ BAZIE (patrz A1PelnaListaPlacWorker.md, sekcja
-    // "Do sprawdzenia w tej kolejnosci"):
-    //  A. Czy kompilator "Projektow w bazie" (RuntimeProjects / CodeFiles) referencjonuje
-    //     DevExpress.Spreadsheet + DevExpress.Docs (blad "nie znaleziono typu
-    //     DevExpress.Spreadsheet" = nie referencjonuje -> patrz .md, wariant awaryjny).
-    //  B. NazwaWzorca / TemplateFileSource - "A1PelnaListaPlac.repx" + AspxSource.Storage
-    //     musi trafic we wzorzec zarejestrowany w Projektancie wydrukow. Jesli
-    //     GenerateReport nie znajdzie wzorca - sprobowac samej nazwy bez ".repx",
-    //     albo AspxSource.Local.
-    //  C. Czy Context[typeof(Row[])] faktycznie dociera do snippetu (wynikowy .xlsx ma
-    //     dane zaznaczonych list plac, nie pusta tabele).
+    // DO POTWIERDZENIA NA ZYWEJ BAZIE:
+    //  1. Czy kompilator "Projektow w bazie" (RuntimeProjects/CodeFiles - patrz
+    //     A1PelnaListaPlacWorker.md, "Jak wgrac") referencjonuje DevExpress.Docs +
+    //     DevExpress.Spreadsheet. Blad "nie znaleziono typu DevExpress.Spreadsheet" ->
+    //     wariant awaryjny w .md.
+    //  2. Nazwy pol Wyplata/WypElement/Podatki - przeniesione z dzialajacego snippetu,
+    //     ale runtime-project moze miec inny zestaw referencji niz edytor "Kod zrodlowy"
+    //     wydruku.
+    //  3. Czy [Context] ListaPlac[] faktycznie dostaje zaznaczenie z listy "Listy plac".
     public class A1PelnaListaPlacWorker
     {
         [Context]
-        public Context Context { get; set; }
-
-        [Context]
         public ListaPlac[] ZaznaczoneListyPlac { get; set; }
 
-        public bool IsVisibleGenerujXlsx() => ZaznaczoneListyPlac?.Length > 0;
-        public bool IsEnabledGenerujXlsx() => ZaznaczoneListyPlac?.Length > 0;
+        public bool IsVisibleGenerujXlsx() => ZaznaczoneListyPlac != null && ZaznaczoneListyPlac.Length > 0;
+        public bool IsEnabledGenerujXlsx() => ZaznaczoneListyPlac != null && ZaznaczoneListyPlac.Length > 0;
 
-        // Nazwa wzorca zarejestrowanego w Projektancie wydrukow (patrz punkt B wyzej).
-        const string NazwaWzorca = "A1PelnaListaPlac.repx";
+        const int LiczbaKolumnTekst = 3;        // Kod, Imie i Nazwisko, Wydzial
+        const double MaxSzerokoscZnaki = 42;
+        const double MinSzerokoscLiczbaZnaki = 12;
 
-        [Action("Pełna lista płac → XLSX (auto-fit)")]
+        [Action("Pełna lista płac → XLSX")]
         public object GenerujXlsx()
         {
-            var session = ZaznaczoneListyPlac[0].Session;
-            var raporty = session.GetRequiredService<IReportService>();
+            // 1. Zebranie wszystkich wyplat z zaznaczonych list plac.
+            var wyplaty = new List<Wyplata>();
+            foreach (ListaPlac lp in ZaznaczoneListyPlac)
+                foreach (Wyplata w in lp.Wyplaty)
+                    wyplaty.Add(w);
 
-            // Wlasny kontekst tego wywolania - nie zasmiecamy kontekstu UI.
-            var ctx = (Context ?? Soneta.Business.Context.Empty).Clone(session);
-
-            // Zaznaczenie jako Row[] - dokladnie to czyta A1PelnaListaPlacSnippet
-            // (dc?[typeof(Row[])] as Row[]). Context.Set kluczuje po value.GetType(),
-            // wiec tablica musi miec runtime-typ Row[] (stad Cast<Row>().ToArray()).
-            Row[] zaznaczone = ZaznaczoneListyPlac.Cast<Row>().ToArray();
-            ctx.Set(zaznaczone);
-
-            // WYMAGANE parametry wydruku (snippet: [Context(Required = true)] PrnParams).
-            // Bez tego generacja zwroci null / zazada parametrow (patrz komentarz u gory).
-            foreach (Type t in raporty.GetParameterTypes(NazwaWzorca, ctx))
-            {
-                if (ctx[t, false] == null)
-                    ctx.Set(Activator.CreateInstance(t, ctx));
-            }
-
-            var rr = new ReportResult
-            {
-                TemplateFileName = NazwaWzorca,
-                TemplateFileSource = AspxSource.Storage,
-                DataType = typeof(ListaPlac[]),
-                Rows = ZaznaczoneListyPlac,
-                Context = ctx,
-                OutputFormat = ReportFormats.XLSX,
-                AskForParameters = false,
-            };
-
-            byte[] surowyXlsx;
-            using (Stream strumien = raporty.GenerateReport(rr))
-            {
-                if (strumien == null)
-                    return "Nie udało się wygenerować wydruku XLSX (brak strumienia z IReportService).";
-                using (var bufor = new MemoryStream())
+            // 2. Kolumny dynamiczne - unikalne definicje elementow (bez storna), alfabetycznie.
+            var defs = new List<DefinicjaElementu>();
+            foreach (Wyplata w in wyplaty)
+                foreach (WypElement el in w.Elementy)
                 {
-                    strumien.CopyTo(bufor);
-                    surowyXlsx = bufor.ToArray();
+                    if (el.RozliczenieStorna) continue;
+                    DefinicjaElementu d = el.Definicja;
+                    if (d != null && !defs.Contains(d)) defs.Add(d);
                 }
+            defs.Sort((a, b) => string.Compare(NazwaDef(a), NazwaDef(b), StringComparison.CurrentCulture));
+
+            // 3. Naglowki: 3 kolumny tekstowe + kolumny elementow + 17 stalych kolumn.
+            var naglowki = new List<string> { "Kod", "Imię i Nazwisko", "Wydział" };
+            foreach (DefinicjaElementu d in defs) naglowki.Add(NazwaDef(d));
+            naglowki.AddRange(new[]
+            {
+                "Emerytalna (pracownik)", "Emerytalna (pracodawca)",
+                "Rentowa (pracownik)", "Rentowa (pracodawca)",
+                "Chorobowa (pracownik)", "Chorobowa (pracodawca)",
+                "Wypadkowa (pracownik)", "Wypadkowa (pracodawca)",
+                "Zdrowotna (pracownik)", "Zdrowotna (pracodawca)",
+                "Fundusz Pracy", "FGŚP", "FEP",
+                "PPK (pracownik)", "PPK (pracodawca)",
+                "Zaliczka na PIT", "Kwota do wypłaty",
+            });
+            int nKol = naglowki.Count;
+
+            // 4. Wiersze danych.
+            var wiersze = new List<object[]>();
+            foreach (Wyplata w in wyplaty)
+            {
+                Pracownik pr = w.Pracownik as Pracownik;
+                var row = new object[nKol];
+                row[0] = Txt(() => pr != null ? pr.Kod : "");
+                row[1] = Txt(() => pr != null ? pr.NazwiskoImię : "");
+                row[2] = Txt(() => Wydzial(pr, w));
+
+                var wart = new decimal[defs.Count];
+                decimal emP = 0, emF = 0, reP = 0, reF = 0, chP = 0, chF = 0, wyP = 0, wyF = 0,
+                        zdP = 0, zdF = 0, fp = 0, fgsp = 0, fep = 0, ppkP = 0, ppkF = 0, pit = 0;
+
+                foreach (WypElement el in w.Elementy)
+                {
+                    if (el.RozliczenieStorna) continue;
+                    DefinicjaElementu d = el.Definicja;
+                    if (d != null)
+                    {
+                        int i = defs.IndexOf(d);
+                        if (i >= 0) wart[i] += el.Wartosc;
+                    }
+                    emP += el.Podatki.Emerytalna.Prac; emF += el.Podatki.Emerytalna.Firma;
+                    reP += el.Podatki.Rentowa.Prac; reF += el.Podatki.Rentowa.Firma;
+                    chP += el.Podatki.Chorobowa.Prac; chF += el.Podatki.Chorobowa.Firma;
+                    wyP += el.Podatki.Wypadkowa.Prac; wyF += el.Podatki.Wypadkowa.Firma;
+                    zdP += el.Podatki.Zdrowotna.Prac; zdF += el.Podatki.Zdrowotna.Firma;
+                    fp += el.Podatki.FP.Skladka;
+                    fgsp += el.Podatki.FGSP.Skladka;
+                    fep += el.Podatki.FEP.Skladka;
+                    pit += el.Podatki.ZalFIS;
+                    ppkP += el.Podatki.PPK.Pracownika;
+                    ppkF += el.Podatki.PPK.Pracodawcy;
+                }
+
+                int c = LiczbaKolumnTekst;
+                for (int i = 0; i < defs.Count; i++) row[c++] = wart[i];
+                row[c++] = emP; row[c++] = emF;
+                row[c++] = reP; row[c++] = reF;
+                row[c++] = chP; row[c++] = chF;
+                row[c++] = wyP; row[c++] = wyF;
+                row[c++] = zdP; row[c++] = zdF;
+                row[c++] = fp; row[c++] = fgsp; row[c++] = fep;
+                row[c++] = ppkP; row[c++] = ppkF;
+                row[c++] = pit;
+                row[c++] = Dec(() => w.Wartosc.Value);   // kwota netto = pole calej wyplaty
+
+                wiersze.Add(row);
             }
+            wiersze.Sort((a, b) => string.Compare((string)(a[1] ?? ""), (string)(b[1] ?? ""), StringComparison.CurrentCulture));
 
-            byte[] wynik = DopasujSzerokosci(surowyXlsx);
+            // 5. Zapis do .xlsx z czysta siatka + prawdziwy auto-fit.
+            byte[] plik = Buduj(naglowki, wiersze);
 
-            string nazwaPliku = "A1_Pelna_Lista_Plac_" + Date.Today.ToString("yyyyMMdd") + ".xlsx";
-            return new NamedStream(nazwaPliku, () => new MemoryStream(wynik));
+            string nazwa = "A1_Pelna_Lista_Plac_" + Date.Today.ToString("yyyyMMdd") + ".xlsx";
+            return new NamedStream(nazwa, () => new MemoryStream(plik));
         }
 
-        // Prawdziwy auto-fit: otwiera gotowy .xlsx z XtraReports i mierzy realnie
-        // renderowany tekst (DevExpress.Spreadsheet), zamiast przyblizenia w snippecie.
-        static byte[] DopasujSzerokosci(byte[] surowyXlsx)
+        static byte[] Buduj(List<string> naglowki, List<object[]> wiersze)
         {
-            using (var workbook = new Workbook())
+            int nKol = naglowki.Count;
+            using (var wb = new Workbook())
             {
-                using (var wejscie = new MemoryStream(surowyXlsx))
-                    workbook.LoadDocument(wejscie, DocumentFormat.Xlsx);
+                Worksheet ws = wb.Worksheets.ActiveWorksheet;
+                ws.Name = "Lista płac";
 
-                foreach (Worksheet arkusz in workbook.Worksheets)
+                Color obram = Color.FromArgb(0xBF, 0xBF, 0xBF);
+                Color tloNaglowka = Color.FromArgb(0xE6, 0xE6, 0xE6);
+
+                // Tytul (wiersz 0).
+                Cell tyt = ws[0, 0];
+                tyt.Value = "Zestawienie wypłat wg elementów";
+                tyt.Font.Bold = true;
+                tyt.Font.Size = 14;
+
+                // Naglowek kolumn (wiersz 2).
+                const int rNag = 2;
+                for (int c = 0; c < nKol; c++)
                 {
-                    CellRange uzyty = arkusz.GetUsedRange();
-                    if (uzyty == null) continue;
+                    Cell k = ws[rNag, c];
+                    k.Value = naglowki[c];
+                    k.Font.Bold = true;
+                    k.Alignment.WrapText = true;
+                    k.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
+                    k.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
+                    k.FillColor = tloNaglowka;
+                    k.Borders.SetAllBorders(obram, BorderLineStyle.Thin);
+                }
+                ws.Rows[rNag].Height = 42;
 
-                    arkusz.Columns.AutoFit(uzyty.LeftColumnIndex, uzyty.RightColumnIndex);
-                    arkusz.Rows.AutoFit(uzyty.TopRowIndex, uzyty.BottomRowIndex);
+                // Dane (od wiersza 3).
+                for (int i = 0; i < wiersze.Count; i++)
+                {
+                    int r = rNag + 1 + i;
+                    object[] src = wiersze[i];
+                    for (int c = 0; c < nKol; c++)
+                    {
+                        Cell cell = ws[r, c];
+                        if (c < LiczbaKolumnTekst)
+                        {
+                            cell.Value = (src[c] as string) ?? "";
+                            cell.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Left;
+                        }
+                        else
+                        {
+                            cell.Value = (src[c] is decimal) ? (decimal)src[c] : 0m;
+                            cell.NumberFormat = "#,##0.00";
+                            cell.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Right;
+                        }
+                        cell.Borders.SetAllBorders(obram, BorderLineStyle.Thin);
+                    }
                 }
 
-                using (var wyjscie = new MemoryStream())
+                int rOstatni = rNag + wiersze.Count;   // 0-based indeks ostatniego wiersza danych
+
+                // Blokada naglowka + autofiltr.
+                ws.FreezeRows(rNag + 1);
+                try { ws.AutoFilter.Apply(ws.Range.FromLTRB(0, rNag, nKol - 1, rOstatni)); }
+                catch { /* autofiltr to udogodnienie - brak nie jest bledem */ }
+
+                // Prawdziwy auto-fit + ograniczenie skrajnych szerokosci.
+                ws.Columns.AutoFit(0, nKol - 1);
+                for (int c = 0; c < nKol; c++)
                 {
-                    workbook.SaveDocument(wyjscie, DocumentFormat.Xlsx);
-                    return wyjscie.ToArray();
+                    Column col = ws.Columns[c];
+                    if (col.WidthInCharacters > MaxSzerokoscZnaki)
+                        col.WidthInCharacters = MaxSzerokoscZnaki;
+                    if (c >= LiczbaKolumnTekst && col.WidthInCharacters < MinSzerokoscLiczbaZnaki)
+                        col.WidthInCharacters = MinSzerokoscLiczbaZnaki;
+                }
+
+                using (var ms = new MemoryStream())
+                {
+                    wb.SaveDocument(ms, DocumentFormat.Xlsx);
+                    return ms.ToArray();
                 }
             }
+        }
+
+        static string NazwaDef(DefinicjaElementu d)
+        {
+            if (d == null) return "";
+            string n = d.Nazwa;
+            return string.IsNullOrEmpty(n) ? (d.Kod ?? "") : n;
+        }
+
+        static string Wydzial(Pracownik pr, Wyplata w)
+        {
+            if (pr == null) return "";
+            Date data = w.Data;
+            if (data == Date.Empty) data = Date.Today;
+            PracHistoria ph = pr.Historia[data];
+            Wydzial wydz = ph != null && ph.Etat != null ? ph.Etat.Wydzial : null;
+            return wydz != null ? (wydz.Nazwa ?? "") : "";
+        }
+
+        static string Txt(Func<string> f)
+        {
+            try { return f() ?? ""; }
+            catch (Exception ex) { return "[BŁĄD: " + ex.Message + "]"; }
+        }
+
+        static decimal Dec(Func<decimal> f)
+        {
+            try { return f(); }
+            catch { return 0m; }
         }
     }
 }
