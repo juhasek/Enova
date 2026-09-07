@@ -1,5 +1,18 @@
 # A1PelnaListaPlacWorker — pełna lista płac prosto do XLSX
 
+> **STATUS 2026-09-07: PORZUCONE w tym wdrożeniu.** Globalny worker
+> (`[assembly: Worker<…>]`) nie da się zarejestrować jako czynność w menu przez
+> kod w bazie (RuntimeProjects/CodeFiles/SystemFile): runtime-assembly ładowane
+> `Assembly.Load(bajty)` → brak `Location` → `AssemblyAttributes` go pomija; do tego
+> kompilator wycina `DevExpress.*` dla projektów innych niż wbudowany
+> `Soneta.Runtime.Reports`. Kod niżej pozostaje jako **gotowa treść dla
+> skompilowanego dodatku `.csproj`** (`dotnet new soneta-addon` → DLL do folderu
+> serwera → restart) — to jedyna droga do prawdziwego „jednego kliknięcia".
+> Ścieżka realnie użyta zamiast tego: jedna tabela w `A1PelnaListaPlacSnippet` +
+> ręczny eksport z podglądu (patrz `A1PelnaListaPlac.md`). Szczegóły blokerów:
+> [[reference_raport_xlsx_programowo]].
+
+
 **Cel (życzenie użytkownika):** raport listy płac ma **od razu generować się do
 Excela z prawidłowym formatowaniem** — bez ręcznego eksportu z podglądu wydruku,
 bez rozjeżdżających się / jednoznakowych kolumn.

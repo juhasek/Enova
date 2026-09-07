@@ -1,13 +1,24 @@
 # A1PelnaListaPlac — pełna lista płac wg elementów (Płace / Listy płac)
 
-**Status: DZIAŁA na bazie testowej `Claude`** (potwierdzone przez użytkownika, 2026-09-05) —
-wersja z 6 kolumnami podsumowania (Składki ZUS pracownik/pracodawca, PPK pracownik/pracodawca,
-Zaliczka na PIT, Kwota do wypłaty) generuje się poprawnie po ręcznym wklejeniu kodu w
-„Kod źródłowy” projektanta wydruków i zapisaniu (patrz „Jak wgrać”). **NIEPRZETESTOWANE
-od 2026-09-05:** rozbicie ZUS na 5 szczegółowych rodzajów składek (17 kolumn podsumowania
-łącznie, patrz niżej) oraz pseudo-autofit szerokości kolumn/wysokości wierszy przy
-eksporcie do Excela (`TextExportMode.Value`, `TextFormatString`, `DopasujSzerokosciKolumn`,
-`UstawWysokoscWierszy`) — nowa, jeszcze niepotwierdzona na żywo zmiana.
+**Status: DZIAŁA na bazie testowej `Claude`** (potwierdzone przez użytkownika, 2026-09-05).
+
+**Zmiana 2026-09-07 — JEDNA TABELA (do potwierdzenia na żywo).** Wcześniejszy eksport do
+Excela wychodził nieczytelny: kolumny wąskie na 1 znak, arkusz rozbity na dziesiątki
+wąskich kolumn (`B D F I J L…`), nagłówki łamane litera po literze (zrzut od użytkownika).
+Przyczyna: **dwie osobne `XRTable`** — nagłówek kolumn w `PageHeaderBand` + dane w
+`DetailBand` — których krawędzie komórek nie trafiały w ten sam raster; DevExpress przy
+eksporcie do xlsx budował z tego pofragmentowaną siatkę i scalone komórki. Pseudo-autofit
+(`Weight`/`WidthF` + poszerzanie strony) tego nie naprawiał.
+**Teraz:** cała zawartość (wiersz nagłówka + wszystkie wiersze danych) to **jedna
+`XRTable`** (`tabelaDane` w `DetailBand`); `tabelaNaglowek` z `.repx` jest w kodzie
+ukrywana (`Visible=false` + `GetBand().Visible=false`/`HeightF=0`) — `.repx` bez zmian.
+Wspólny raster kolumn → eksport do Excela daje jedną spójną tabelę. Do potwierdzenia:
+ponowny eksport do xlsx i sprawdzenie, że kolumny są dopasowane i liczby sumowalne
+(`=SUMA(...)`).
+
+Kod snippetu wgrany do `SystemFiles` w bazie `Claude` (`ID 4`) — SQL-em, polskie znaki
+potwierdzone punktami kodowymi. Po podmianie: „Wymuś rekompilację kodu" nie jest konieczne
+dla snippetu wydruku (kompiluje się przy pierwszym uruchomieniu), ale nie zaszkodzi.
 
 Wzorzec wydruku Enova (`Raporty/A1PelnaListaPlac.repx`) zasilany snippetem
 `Raporty/A1PelnaListaPlacSnippet` (klasa `A1PelnaListaPlacSnippet`), uruchamiany z
