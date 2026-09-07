@@ -67,44 +67,62 @@ jednej komórce tekstowej, nie wywala całości.
 - Pola `Wyplata` / `WypElement` / `Podatki` — potwierdzone w `data/props/Place/*`
   skilla soneta-programming i zgodne z **działającym** `A1PelnaListaPlacSnippet`.
 
-## Jak wgrać — Projekt kodu w bazie
+## Jak wgrać — SystemFile typu „Snippet" (NIE własne Rozwiązanie)
 
-Worker to **rozszerzenie globalne** (`[assembly: Worker<…>]`) — kompilowane przez
-mechanizm „kodu w bazie": tabele `RuntimeProjects` (projekty) + `CodeFiles` (pliki
-źródłowe). W bazie `Claude` mechanizm jest **aktywny** — są gotowe projekty
-użytkownika `Soneta.Runtime.Database.KadryPlace` (ID 13),
-`Soneta.Runtime.Database.Handel` itd. (kolumna `Solution = 2` → „kod encji
-użytkownika").
+Worker to **rozszerzenie globalne** (`[assembly: Worker<…>]`). Kluczowe ustalenie
+z dekompilacji `BusinessCompilerRoslyn` (2026-09-07): **kompilator wycina
+referencje `DevExpress.*` dla każdego projektu poza wbudowanym
+`Soneta.Runtime.Reports`** (filtr `project.Guid == BusinessModule.ReportsBusinessGuid
+|| !FullName.StartsWith("DevExpress.")`). Własne „Rozwiązanie"/projekt (np.
+`A1.Testy`) **nie skompiluje** `using DevExpress.Spreadsheet`.
 
-1. Enova → **Narzędzia → Opcje → Ogólne → Programista** — obsługa projektów w
-   bazie ma być włączona (w `Claude` już są w niej pliki).
-2. W edytorze projektów w bazie otwórz projekt użytkownika dla kadr/płac
-   (`Soneta.Runtime.Database.KadryPlace`).
-3. Dodaj plik `A1PelnaListaPlacWorker.cs`, wklej całą zawartość
-   `Raporty/A1PelnaListaPlacWorker` z repo.
-4. Zapisz / przelicz projekt — enova skompiluje.
-5. Zrestartuj usługę enova (rozszerzenia globalne ładują się przy starcie) →
-   **Płace → Listy płac** → zaznacz 1+ pozycji → Czynności → „Pełna lista płac →
-   XLSX".
+Za to **każdy `SystemFile` domyślnie kompiluje się do projektu
+`Soneta.Runtime.Reports`** (`BusinessModule.GetDefaultProject`: `row is SystemFile
+→ ReportsBusinessGuid`) — tam DevExpress JEST. Dlatego worker wchodzi jako
+`SystemFile` typu **`Snippet`** (`SystemFileTypes.Snippet` = 2, „kod C#" — nie
+`DxSnippet`=1 „wydruk").
+
+**Zrobione 2026-09-07:** wiersz wstawiony SQL-em do `SystemFiles` w bazie `Claude`
+(`ID 5`, `FileType=2`, `Name='A1PelnaListaPlacWorker'`,
+`RuntimeInfoIdentifier='x.x.Reports.A1PelnaListaPlacWorker'`, `Code` = zawartość
+`Raporty/A1PelnaListaPlacWorker`, polskie znaki potwierdzone punktami kodowymi).
+Przepis: [[reference_systemfiles_sql_insert]].
+
+**Pozostało (po stronie użytkownika, na żywej enovie):**
+1. **Narzędzia → Opcje → Systemowe → Kompilator → „Wymuś rekompilację kodu"**.
+2. Restart usług enova (rozszerzenia globalne `[assembly: Worker]` ładują się przy
+   starcie procesu).
+3. **Płace → Listy płac** → zaznacz 1+ pozycji → Czynności →
+   **„Pełna lista płac → XLSX"**.
+
+Aktualizacja kodu w przyszłości: podmień `Code` w `SystemFiles.ID=5` (SQL wg
+przepisu) albo wklej nową treść w edytorze snippetu w GUI; potem znów „Wymuś
+rekompilację" + restart.
+
+Wycofanie: `DELETE FROM SystemFiles WHERE Name='A1PelnaListaPlacWorker'` +
+rekompilacja + restart.
 
 ## Do potwierdzenia na żywej bazie (w tej kolejności)
 
-1. **Kompilacja** — czy projekt w bazie widzi `DevExpress.Docs` /
-   `DevExpress.Spreadsheet` oraz pola `Wyplata`/`WypElement`. Błąd „nie znaleziono
-   typu `DevExpress.Spreadsheet`" → wariant awaryjny (niżej).
-2. **Zaznaczenie** — czy `[Context] ListaPlac[]` dostaje zaznaczone pozycje z
-   listy „Listy płac" (na 1 i na kilku pozycjach).
-3. **Zgodność liczb** — sumy `WypElement.Podatki.*` w kolumnach ZUS/PPK/PIT
-   zgadzają się z paskiem wypłaty (na realnie przeliczonej liście, nie tylko
-   dodanej do kartoteki).
-4. **Czytelność** — kolumny dopasowane do treści, liczby sumowalne w Excelu
+1. **Kompilacja** — czy `SystemFile` „Snippet" w projekcie `Soneta.Runtime.Reports`
+   widzi `DevExpress.Docs`/`DevExpress.Spreadsheet` oraz pola `Wyplata`/`WypElement`.
+   Błąd kompilacji pojawi się przy „Wymuś rekompilację" / pierwszym użyciu.
+2. **Rejestracja czynności** — czy `[assembly: Worker<…>]` z runtime-`SystemFile`
+   faktycznie dokłada pozycję do menu Czynności listy „Listy płac" (workery z kodu
+   w bazie są wspierane, ale to pierwszy taki w tym wdrożeniu).
+3. **Zaznaczenie** — czy `[Context] ListaPlac[]` dostaje zaznaczone pozycje.
+4. **Zgodność liczb** — sumy `WypElement.Podatki.*` w kolumnach ZUS/PPK/PIT
+   zgadzają się z paskiem wypłaty (na realnie przeliczonej liście).
+5. **Czytelność** — kolumny dopasowane do treści, liczby sumowalne w Excelu
    (`=SUMA(...)` działa), nagłówek zablokowany, autofiltr aktywny.
 
 ## Wariant awaryjny
 
-- **Nie kompiluje się `DevExpress.Spreadsheet`** w projekcie w bazie → zostaje sam
-  `A1PelnaListaPlacSnippet` + ręczny eksport z podglądu (mniej czytelny — patrz
-  „Dlaczego nowe podejście"), albo skompilowany dodatek `.csproj`
+- **Nie kompiluje się `DevExpress.Spreadsheet` nawet jako `SystemFile`** (mimo że
+  trafia do projektu `Soneta.Runtime.Reports`) → skompilowany dodatek `.csproj`
   (`dotnet new soneta-addon`, DLL do folderu serwera, restart) hostujący ten sam
-  kod workera — wymaga osobnej zgody.
-- **Brak edytora projektów w bazie w tej licencji** → jw. (dodatek `.csproj`).
+  kod — wymaga osobnej zgody.
+- **`[assembly: Worker]` z runtime-`SystemFile` nie rejestruje czynności** →
+  jw. (dodatek `.csproj`).
+- W ostateczności: zostaje sam `A1PelnaListaPlacSnippet` + ręczny eksport z
+  podglądu (mniej czytelny — patrz „Dlaczego całkiem nowe podejście").
