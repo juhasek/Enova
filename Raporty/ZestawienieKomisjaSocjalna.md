@@ -198,6 +198,45 @@ repo):
   przypadkowe powielenie/pozostałość po kopiowaniu wydruku, warto to
   rozdzielić niezależnie od naprawy samego hosta.
 
+**Kolejne doprecyzowanie (użytkownik, 2026-09-07):** ten inny raport
+działał z Pulpitu WWW **bez problemu, dopóki nie wgrano snippetu
+`ZestawienieKomisjaSocjalna`**. To zmienia obraz sprawy — sam akt wgrania
+naszego snippetu (nie jego wywołanie!) jest tym, co zaczęło psuć inny,
+wcześniej działający raport. To silnie sugeruje, że w tej instalacji Enova
+kod źródłowy wydruków (wszystkie snippety/„systemowe pliki dodatkowe”) jest
+w kliencie Pulpitu WWW **kompilowany razem, jako jedna wspólna jednostka
+kompilacji** (typowy mechanizm Soneta dla „kodu w bazie” / rozszerzeń
+modułu) — a nie osobno, per raport. Dopóki żaden snippet w tej wspólnej
+paczce nie wymagał `DevExpress.DataAccess.v24.1`, paczka kompilowała się
+poprawnie w tym hoście (mimo braku tej biblioteki — po prostu nie była
+potrzebna). Nasz `.repx` ma w `ComponentStorage` komponenty
+`BusinessDataSource` (dziedziczące po `DataComponentBase`) — ich dodanie do
+wspólnej paczki wymusza rozwiązanie tego typu przy kompilacji **całej
+paczki**, a skoro kompilacja jest prawdopodobnie „wszystko albo nic”, błąd w
+naszym raporcie **wywala kompilację całej paczki**, więc przestają działać
+też inne, niepowiązane raporty które akurat są w tej samej paczce — łącznie
+z tym „innym raportem”, którego kod nigdy nie dotykał `DataComponentBase`.
+
+**Wniosek praktyczny:** dopóki `DevExpress.DataAccess.v24.1.dll` nie
+znajdzie się w hoście Pulpitu WWW, obecność tego snippetu/raportu w bazie
+**psuje inne, działające dotąd raporty wywoływane z tego Pulpitu** — to nie
+jest tylko „ten raport nie działa”, tylko realna regresja funkcji, które
+wcześniej działały. Do rozważenia:
+1. **Potwierdzenie przyczyny** (zalecane przed dalszymi krokami): tymczasowo
+   usunąć/dezaktywować snippet `ZestawienieKomisjaSocjalna` (lub cały wzorzec
+   wydruku) w Enova i sprawdzić, czy ten inny raport od razu znów działa z
+   Pulpitu WWW. Jeśli tak — teoria „wspólna paczka kompilacji” jest
+   potwierdzona.
+2. **Do czasu naprawy hosta** (dodanie brakującej `DevExpress.DataAccess.v24.1.dll`
+   do Pulpitu WWW) rozważyć, czy nie lepiej trzymać ten raport
+   niewgrany/wyłączony w produkcji — skoro jego samo wgranie blokuje inny,
+   używany raport, a wgranie samego kodu (bez wywołania) już powoduje
+   regresję.
+3. Docelowa naprawa pozostaje ta sama: dodać brakującą bibliotekę do hosta
+   Pulpitu WWW (patrz niżej) — to jedyny sposób, by ten raport (z
+   `BusinessDataSource` w `.repx`) mógł w ogóle współistnieć z innymi w tym
+   środowisku.
+
 **Doprecyzowanie hostingu:** skoro Pulpit działa jako aplikacja
 przeglądarkowa (nie moduł klienta desktopowego), proces kompilujący snippet
 to najpewniej osobna aplikacja/site w IIS (albo Kestrel) obsługująca Pulpity
