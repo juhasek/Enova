@@ -57,7 +57,7 @@ Plik importu XML (definicja gotowa do wczytania przez `dbmgr importxml`):
 | Lista płac | Lista płac-etaty (LPE) |
 | Generuj zerowy element | **Tak** (element widoczny na wypłacie także z kwotą 0) |
 | Korygowany | **Tak** |
-| PIT | PIT-11 1a — Wynagrodzenia ze stosunku pracy |
+| PIT | `PIT-11 1/PIT-4R 1` — Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej (stan bazy `Al` 2026-09-07; wcześniej „PIT-11 1a") |
 | ZUS społeczne / zdrowotne | Naliczać (standardowo) |
 | Podstawa urlopu wypoczynkowego | Nie wliczać (§6 ust.1 regulaminu) |
 | Podstawa ekwiwalentu za urlop | Nie wliczać (§6 ust.1 regulaminu) |
@@ -161,6 +161,23 @@ Nazwy definicji nieobecności (p. 5) zweryfikowane wprost w tabeli `DefNieobecno
   ZUS, lista płac, okres naliczania) bez zmian. Plik XML doprowadzony do tego stanu.
 - algorytm: `rocznyOkres` pobierany z `Element.DodHistoria.Okres` (pole „Okres" na dodatku
   w kartotece) zamiast `new FromTo(2026-01-01, 2026-12-31)`; dodana bramka 0 (brak okresu → 0).
+
+**Aktualizacja 2026-09-07 (ponowna synchronizacja z bazą `Al`):**
+- odczyt wprost z `dbo.DefElementow` (ID 262, guid `C973AFE6-…`) wraz z kolumną `Tekst`
+  (kod Edytora algorytmu).
+- **Jedyna zmiana operatora:** pozycja PIT. Element wskazywał `PIT-11 1a`
+  (`PozycjePIT` ID 72, guid `…-0004-0021-…`); operator przestawił na `PIT-11 1/PIT-4R 1`
+  (`PozycjePIT` ID 1, guid `…-0004-0001-…`, „Wynagrodzenia ze stosunku: pracy, służbowego,
+  spółdzielczego i z pracy nakładczej…") — standardowa pozycja dla oskładkowanego
+  i opodatkowanego dodatku pieniężnego. Plik XML doprowadzony do tego stanu.
+- **Kod algorytmu — bez zmian.** Treść w bazie `Al` jest semantycznie identyczna z wersją
+  w pliku XML: te same bramki (0–3), ta sama lista dozwolonych nieobecności, ten sam warunek
+  „na żądanie" (`PrzyczynaUrlopu.NaŻądanie`). Baza trzyma wariant z tokenami `%NAZWA%`/`%TYP%`
+  (podstawiane przez enova) i bez komentarzy; plik XML zachowuje wersję opisaną komentarzami.
+- pozostałe kolumny konfiguracji (`RodzajZrodla`=Dodatek, `Zatrudnienie`=Etat,
+  `DefinicjaListyPlac`=LPE, `OkresNaliczania` Jednorazowa/PłatnaZDołu, `GenerujZerowy`=True,
+  `Korygowany`=True, ZUS społeczne/zdrowotne=Naliczać, zaliczka wg skali,
+  `Nieobecnosci.Urlop/Ekwiwalent`=NieWliczać) — bez zmian względem 2026-09-02.
 
 **Niezweryfikowane / do zrobienia przed produkcją:**
 - **dynamiczny `rocznyOkres`** — `Element.DodHistoria.Okres` jako źródło okresu wymaga

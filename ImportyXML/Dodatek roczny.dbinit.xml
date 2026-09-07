@@ -9,6 +9,14 @@
   "rocznyOkres" pobierany dynamicznie z Element.DodHistoria.Okres (operator wskazuje okres
   na dodatku w kartotece) zamiast zaszytego na sztywno roku 2026.
 
+  Aktualizacja 2026-09-07: ponowna synchronizacja z bazą Al (odczyt wprost z dbo.DefElementow
+  ID 262 + kolumna Tekst). Operator zmienił w GUI pozycję PIT: z "PIT-11 1a" (PozycjePIT ID 72,
+  guid ...-0004-0021-...) na "PIT-11 1/PIT-4R 1. Wynagrodzenia ze stosunku pracy..." (PozycjePIT
+  ID 1, guid ...-0004-0001-...) — standardowa pozycja dla oskładkowanego/opodatkowanego dodatku
+  pieniężnego. Kod algorytmu (Edytora) BEZ ZMIAN — treść w bazie Al jest semantycznie identyczna
+  z poniższą (baza trzyma wariant z tokenami %NAZWA%/%TYP% i bez komentarzy). Pozostałe pola
+  konfiguracji bez zmian.
+
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
 -->
@@ -139,9 +147,11 @@ private bool CzyDozwolonaNieobecnosc(Nieobecnosc n)
       <Zaliczka>
         <Typ>NaliczaćWgSkaliPodatkowej</Typ>
       </Zaliczka>
-      <!-- Standardowa pozycja PIT-11 dla dodatku ze stosunku pracy (potwierdzone w słowniku
-           PozycjePIT na bazie Al: Kod="PIT-11 1", "Wynagrodzenia ze stosunku: pracy...") -->
-      <PozycjaPIT>00000000-0007-0004-0021-000000000000</PozycjaPIT>
+      <!-- Pozycja PIT ustawiona przez operatora w GUI (baza Al, stan 2026-09-07):
+           PozycjePIT ID 1, Kod="PIT-11 1/PIT-4R 1", Opis="PIT-11 1/PIT-4R 1. Wynagrodzenia
+           ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej...".
+           Wcześniej (do 2026-09-02) element wskazywał "PIT-11 1a" (ID 72, guid ...-0021-...). -->
+      <PozycjaPIT>00000000-0007-0004-0001-000000000000</PozycjaPIT>
       <!-- KodRSA celowo pominięty — dotyczy specjalnych kodów raportowania ZUS (np. zasiłki),
            nie zwykłego opodatkowanego/ozusowanego dodatku pieniężnego. -->
     </Deklaracje>
