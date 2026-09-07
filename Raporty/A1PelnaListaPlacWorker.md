@@ -1,106 +1,131 @@
-# A1PelnaListaPlacWorker — generowanie xlsx z prawdziwym auto-fit (DevExpress.Spreadsheet)
+# A1PelnaListaPlacWorker — pełna lista płac prosto do XLSX (auto-fit)
 
-**Status: NIEPRZETESTOWANE, WYSOKIE RYZYKO** — to nowe podejście, alternatywne wobec
-pseudo-autofit w samym `A1PelnaListaPlacSnippet`, wprowadzone na wyraźną prośbę
-użytkownika po tym, jak zrzut z Excela pokazał, że natywne poszerzanie kolumn w
-DevExpress (`Weight`/`WidthF` + poszerzenie strony) nadal daje niespójne/rozjeżdżające
-się szerokości kolumn. Ma **kilka niezależnych, niepotwierdzonych założeń na raz** —
-zob. „Do sprawdzenia w tej kolejności” niżej, zanim zaczniesz cokolwiek debugować.
+**Cel (życzenie użytkownika):** raport listy płac ma **od razu generować się do
+Excela z prawidłowym formatowaniem** — bez ręcznego eksportu z podglądu wydruku i
+bez rozjeżdżających się szerokości kolumn.
 
-## Dlaczego DevExpress.Spreadsheet, nie EPPlus
-
-Użytkownik poprosił wprost o EPPlus. Zamiast dokładać nową bibliotekę, najpierw
-sprawdziłem, czy jest już dostępna: przeszukałem folder z bibliotekami tego serwera
-enova (`C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard\`, **442 pliki DLL** —
-stąd proces serwera ładuje **wszystkie** swoje referencje, w tym już używany
-`DevExpress.XtraReports.v24.1.dll`) — **EPPlus/OfficeOpenXml tam nie ma**.
-
-Ręczne dołożenie nowego pliku DLL do tego folderu to zmiana **współdzielonej
-infrastruktury serwera** (obsługuje prawdopodobnie też inne bazy, nie tylko `Claude`) —
-inwazyjna, trudna do odwrócenia, i niemal na pewno wymagałaby restartu usługi enova
-(co przerwałoby pracę innym użytkownikom, jeśli tacy są). To nie jest coś, co robię bez
-wyraźnej zgody na ryzyko — a przede wszystkim: **nie było potrzeby**, bo w tym samym
-folderze już leży `DevExpress.Spreadsheet.v24.1.Core.dll` — biblioteka tego samego
-dostawcy (DevExpress) do tworzenia/odczytu/edycji plików `.xlsx`, funkcjonalnie
-odpowiadająca EPPlus (`Workbook`/`Worksheet`, `AutoFitColumns()`/`AutoFitRows()`) — i
-prawdopodobnie już referencjonowana przez ten sam kompilator, który kompiluje
-`A1PelnaListaPlacSnippet` (ten sam dostawca, ten sam folder, ten sam mechanizm
-kompilacji „Kod źródłowy").
-
-**Jeśli mimo to chcesz koniecznie EPPlus** (np. bo masz pewność, że jest gdzieś
-dostępny w tej instalacji, czego ja nie znalazłem) — daj znać, gdzie, albo potwierdź, że
-się zgadzasz na ręczne dołożenie pliku DLL do folderu serwera (z restartem usługi) — wtedy
-podmienię `SformatujExcel` z powrotem na `OfficeOpenXml`/`ExcelPackage` (kod z historii
-commitów, `Raporty/SeopEnrollmentFileWorker`, jest gotowy do przywrócenia).
+**Status: kod przepisany i zweryfikowany względem DLL-i serwera (enova 2512.5.6),
+NIEPRZETESTOWANY na żywej bazie.** Wymaga wgrania jako „Projekt w bazie" (patrz
+„Jak wgrać") i sprawdzenia 3 punktów z sekcji „Do potwierdzenia na żywej bazie".
 
 ## Co robi
 
-Dokłada do listy **Płace → Listy płac** pozycję w menu Czynności — „Generuj pełną listę
-płac (xlsx, auto-fit)" — działającą na zaznaczonych pozycjach. W odróżnieniu od zwykłego
-wydruku (`A1PelnaListaPlacSnippet`, eksportowanego ręcznie z podglądu wydruku):
+Dokłada do listy **Płace → Listy płac** czynność w menu **„Pełna lista płac →
+XLSX (auto-fit)"**, działającą na **zaznaczonych** pozycjach:
 
-1. Generuje plik `.xlsx` **programowo** przez `IReportService.GenerateReport(...)` —
-   używa **tego samego** wzorca `A1PelnaListaPlac.repx` i tego samego snippetu, więc cała
-   logika liczenia kolumn/wierszy (dynamiczne elementy, 17 kolumn podsumowania ZUS/PPK/
-   PIT) jest **w 100% ponownie wykorzystana**, nic nie jest duplikowane.
-2. Dostaje z tego wywołania gotowe **surowe bajty** pliku `.xlsx` (`Stream`) — w
-   odróżnieniu od eksportu z podglądu wydruku, gdzie DevExpress sam zapisuje plik i nie
-   ma zdarzenia z dostępem do gotowych bajtów „po fakcie".
-3. Otwiera te bajty jako `DevExpress.Spreadsheet.Workbook` i wywołuje
-   `Worksheet.AutoFitColumns()`/`AutoFitRows()` na całym arkuszu — to **prawdziwy**
-   auto-fit (mierzy realnie renderowany tekst), nie przybliżenie „długość znaku × stała"
-   jak w pseudo-autofit samego snippetu.
-4. Zwraca doformatowany plik jako `NamedStream` — operator dostaje go do pobrania.
+1. Generuje `.xlsx` **programowo** przez `IReportService.GenerateReport(...)` —
+   używa **tego samego** wzorca `A1PelnaListaPlac.repx` i **tego samego** snippetu
+   `A1PelnaListaPlacSnippet`, więc cała logika liczenia kolumn (dynamiczne
+   elementy + 17 stałych kolumn ZUS/PPK/PIT, storno, wydział historyczny) jest
+   w 100% ponownie wykorzystana — nic nie jest duplikowane.
+2. Otwiera surowe bajty `.xlsx` jako `DevExpress.Spreadsheet.Workbook` i robi
+   **prawdziwy** auto-fit: `Columns.AutoFit` / `Rows.AutoFit` na użytym zakresie
+   każdego arkusza (mierzy realnie renderowany tekst — nie przybliżenie „długość
+   znaku × stała" jak pseudo-autofit w samym snippecie).
+3. Zwraca gotowy plik jako `NamedStream` — operator dostaje go do pobrania.
 
-## Architektura wzorowana na wycofanym SeopEnrollmentFileWorker
+## Dlaczego worker, a nie sam eksport z podglądu
 
-`Raporty/SeopEnrollmentFileWorker` (commit `05e0824`) robił to samo dla raportu SEOP
-(tam z EPPlus) i został wycofany (`5ac1a17`) — **ale commit wycofujący nie podaje
-technicznego powodu** („zostaw tylko zsynchronizowaną wersję raportu”), nie ma dowodu,
-że post-processing tam faktycznie nie zadziałał. Ten plik przywraca strukturę 1:1
-(`IReportService.GenerateReport` → `MemoryStream` → post-processing → `NamedStream`),
-tylko z inną biblioteką formatującą.
+Standardowy eksport z podglądu wydruku Enova (DevExpress) sam zapisuje plik i nie
+daje zdarzenia z dostępem do gotowych bajtów „po fakcie" — nie da się go
+post-processować. Tutaj `IReportService.GenerateReport` zwraca `Stream` z surowymi
+bajtami `.xlsx`, które swobodnie doformatowujemy przed oddaniem operatorowi.
 
-## Do sprawdzenia w TEJ kolejności (każdy kolejny punkt zależy od poprzedniego)
+## Dlaczego DevExpress.Spreadsheet, nie EPPlus
 
-1. **Czy `DevExpress.Spreadsheet` jest referencjonowany przez kompilator kodu
-   snippetów** (nie tylko obecny na dysku obok innych DLL) — wysoce prawdopodobne (ten
-   sam dostawca, ten sam folder co już działający `DevExpress.XtraReports`), ale
-   niepotwierdzone. **Pierwszy test:** wklej ten plik w odpowiednim miejscu (patrz punkt
-   3) i sprawdź, czy w ogóle się kompiluje. Błąd typu „nie znaleziono typu lub przestrzeni
-   nazw «DevExpress.Spreadsheet»” oznaczałby, że mimo obecności na dysku nie jest
-   referencjonowany przez ten konkretny kompilator — wtedy wracamy do EPPlus (patrz wyżej)
-   albo do dalszego poprawiania pseudo-autofit w samym snippecie.
-2. **Dokładne nazwy/zachowanie `Worksheet.AutoFitColumns()`/`AutoFitRows()`**
-   (bezparametrowe warianty = cały użyty zakres) — zgodne z ogólną wiedzą o API
-   DevExpress Spreadsheet, ale nie zweryfikowane na wersji v24.1 konkretnie w tej
-   instalacji. Jeśli te konkretne przeciążenia nie istnieją, kompilator wskaże błędną
-   nazwę/sygnaturę.
-3. **Gdzie w GUI enova wkleja się kod klasy `Worker`.** To rozszerzenie **globalne**
-   dodatku (atrybut `[assembly: Worker<...>]`), nie kod przypięty do jednego konkretnego
-   wzorca wydruku — inne miejsce niż „Kod źródłowy” wydruku, którego używaliśmy dla
-   `A1PelnaListaPlacSnippet`. W tym repo **nie ma jeszcze potwierdzonego przykładu** takiej
-   rejestracji przez GUI tej konkretnej instalacji — prawdopodobnie osobna sekcja typu
-   „Kod źródłowy dodatku” / „Rozszerzenia” w Narzędzia → Opcje, ale wymaga sprawdzenia w
-   GUI. **Nie wstawiłem tego pliku do `SystemFiles` przez SQL** (jak przy snippecie
-   wydruku) — nie znam właściwego `Name`/`RuntimeInfoIdentifier` dla Workera w tej bazie.
-4. **Czy `Context[typeof(Row[])]` faktycznie dotrze do `A1PelnaListaPlacSnippet`.**
-   Worker jawnie robi `context.Set(zaznaczoneWiersze)` (typ `Row[]`) — dokładnie to, co
-   `Report_BeforePrint` czyta (`dc?[typeof(Row[])] as Row[]`), więc **nie** polegamy
-   wyłącznie na (niepotwierdzonym w SEOP) automatycznym wypełnianiu przez
-   `ReportResult.Rows`. Mimo to wymaga sprawdzenia jednym wygenerowanym plikiem — czy
-   wynikowy `.xlsx` faktycznie ma dane zaznaczonych list płac, a nie pustą tabelę.
-5. **`TemplateFileName = "A1PelnaListaPlac.repx"`** musi się zgadzać z rzeczywistą nazwą
-   wzorca zarejestrowaną w Enova (tak jak wgrałeś go w projektancie wydruków).
-6. Jeśli punkty 1–5 przejdą: porównaj wynikowy plik z tym z ręcznego eksportu — czy
-   auto-fit faktycznie daje czytelniejszy, spójny układ kolumn (bez „rozjazdu” widocznego
-   na wcześniejszym zrzucie z ręcznego eksportu).
+Przeszukanie folderu bibliotek serwera
+(`C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard\`) — **EPPlus/OfficeOpenXml
+tam nie ma**. Dokładanie nowej DLL do współdzielonego folderu serwera (obsługuje
+też inne bazy) to inwazyjna, trudna do odwrócenia zmiana z restartem usługi —
+świadomie tego nie robimy. Za to w tym samym folderze już leżą
+`DevExpress.Docs.v24.1.dll` (klasa `Workbook`) i
+`DevExpress.Spreadsheet.v24.1.Core.dll` (`ColumnCollection.AutoFit`,
+`Worksheet.GetUsedRange` itd.) — biblioteka tego samego dostawcy, funkcjonalny
+odpowiednik EPPlus, nic nie trzeba dokładać.
 
-## Jeśli DevExpress.Spreadsheet się nie skompiluje (punkt 1 zawiedzie)
+## Zweryfikowane na DLL-ach serwera (ilspycmd, 2026-09-07)
 
-Wtedy albo (a) sprawdzić, czy EPPlus jest **jednak** gdzieś dostępny w tej instalacji
-(np. inna wersja/instalacja enova, inny serwer) i wskazać mi to, albo (b) dalej
-poprawiać natywny pseudo-autofit w samym `A1PelnaListaPlacSnippet`
-(`DopasujSzerokosciKolumn`/`DopasujSzerokoscStrony`) — np. sprawdzenie, czy problem z
-„rozjazdem” po zrzucie z Excela to kwestia `ExportMode` (`SingleFilePageByPage` vs
-`SingleFile`) czy czegoś innego w konfiguracji strony/marginesów.
+- `IReportService` (`Soneta.Business.UI`): `Stream GenerateReport(ReportResult)`,
+  `Type[] GetParameterTypes(string, Context)`. Zarejestrowany jako
+  `[Service(typeof(IReportService), typeof(ReportServiceImpl), ServiceScope.Session)]`
+  → `session.GetRequiredService<IReportService>()` działa.
+- `ReportFormats` (`Soneta.Business.UI`) **ma wartość `XLSX`** (obok
+  `XLS/CSV/DOCX/RTF/PDF/HTML/...`). `DxReportGenerator.BuildReport`:
+  `ReportFormats.XLSX` → `Report.ExportToXlsx(stream, new XlsxExportOptions())`.
+- **`GetParameterTypes` zwraca dokładnie typy property `[Context(Required = true)]`
+  z klas `ReportSnippet` w tym `.repx`** (`DxQueryParameters.Analyse`) — czyli
+  `{ typeof(A1PelnaListaPlacSnippet.PrnParams) }`.
+- **Bez wstawienia instancji tego typu do kontekstu** `ReportServiceImpl.Generate`
+  zwraca `QueryContextInformation`, a `GenerateReport` rzuca „Problem z
+  przygotowaniem raportu"; dodatkowo snippet i tak wszedłby w gałąź „designer"
+  (`pars == null` → wczesny `return`) i wygenerował **pustą tabelę**. Dlatego
+  worker robi pętlę: `foreach (Type t in GetParameterTypes(...)) ctx.Set(Activator.CreateInstance(t, ctx))`.
+- `ReportResult.CheckConsistency(reportService: true)` **rzuca, gdy ustawiony jest
+  `OutputHandler`** → przy wywołaniu przez `IReportService` nie wolno go ustawiać;
+  post-processing robimy po odebraniu strumienia (tak jest w kodzie).
+- `Context.Set(object)` kluczuje po `value.GetType()` → zaznaczenie musi mieć
+  runtime-typ `Row[]` (stąd `Cast<Row>().ToArray()`), żeby snippetowe
+  `dc?[typeof(Row[])]` je znalazło.
+- `DevExpress.Spreadsheet`: klasa konkretna `Workbook` (public ctor,
+  `LoadDocument`/`SaveDocument(Stream, DocumentFormat)`) → `DevExpress.Docs.v24.1.dll`;
+  `ColumnCollection.AutoFit(int first, int last)`, `RowCollection.AutoFit(int, int)`,
+  `Worksheet.GetUsedRange()` → `CellRange` (`LeftColumnIndex`/`RightColumnIndex`/
+  `TopRowIndex`/`BottomRowIndex`) → `DevExpress.Spreadsheet.v24.1.Core.dll`.
+  Oba pliki są w folderze serwera.
+
+## Jak wgrać — Projekt kodu w bazie (nie „Kod źródłowy" wydruku!)
+
+Worker to **rozszerzenie globalne** (`[assembly: Worker<...>]`) — inne miejsce niż
+snippet wydruku. W bazie `Claude` mechanizm „kodu w bazie" jest już aktywny:
+tabele `RuntimeProjects` (projekty) + `CodeFiles` (pliki źródłowe), np. gotowe
+projekty użytkownika `Soneta.Runtime.Database.KadryPlace` (ID 13),
+`Soneta.Runtime.Database.Handel` itd. (Solution 2 = „kod encji użytkownika").
+
+1. Enova → **Narzędzia → Opcje → Ogólne → Programista** — upewnij się, że obsługa
+   projektów w bazie jest włączona (w bazie `Claude` już są w niej pliki, więc
+   powinna być).
+2. W edytorze projektów w bazie otwórz projekt użytkownika dla kadr/płac
+   (namespace `Soneta.Runtime.Database.KadryPlace`) — albo dowolny projekt
+   „Database" z modułem Płace w referencjach.
+3. Dodaj nowy plik źródłowy (np. `A1PelnaListaPlacWorker.cs`) i wklej całą
+   zawartość pliku `Raporty/A1PelnaListaPlacWorker` z repo.
+4. Zapisz / przelicz projekt — enova skompiluje kod. **Jeśli poleci błąd
+   kompilacji `nie znaleziono typu lub przestrzeni nazw DevExpress.Spreadsheet`** —
+   ten konkretny kompilator nie referencjonuje `DevExpress.Docs`/
+   `DevExpress.Spreadsheet` (mimo obecności na dysku). Wtedy: albo dodać
+   referencję do projektu (jeśli edytor projektów na to pozwala), albo wariant
+   awaryjny (niżej).
+5. Zrestartuj usługę enova (globalne rozszerzenia ładują się przy starcie) i wejdź
+   na **Płace → Listy płac**, zaznacz 1+ pozycji → menu Czynności →
+   **„Pełna lista płac → XLSX (auto-fit)"**.
+
+Snippet `A1PelnaListaPlacSnippet` i wzorzec `A1PelnaListaPlac.repx` muszą być
+**już wgrane** (patrz `A1PelnaListaPlac.md` → „Jak wgrać") — worker tylko je
+wywołuje.
+
+## Do potwierdzenia na żywej bazie (w tej kolejności)
+
+1. **Kompilacja** — czy projekt w bazie w ogóle się kompiluje (referencje
+   `DevExpress.Docs` / `DevExpress.Spreadsheet`, `Microsoft.Extensions.DependencyInjection`
+   dla `GetRequiredService`).
+2. **`NazwaWzorca` + `TemplateFileSource`** — `"A1PelnaListaPlac.repx"` +
+   `AspxSource.Storage` musi trafić we wzorzec zarejestrowany w Projektancie
+   wydruków. Jeśli `GenerateReport` nie znajdzie wzorca: spróbuj nazwy **bez**
+   `.repx`, albo `AspxSource.Local`.
+3. **Dane w pliku** — czy wynikowy `.xlsx` ma dane zaznaczonych list płac (czyli
+   `Context[typeof(Row[])]` dotarł do snippetu), a nie pustą tabelę / wiersz
+   `BRAK WYPŁAT`.
+4. Porównaj wynik z ręcznym eksportem z podglądu — czy `AutoFit` daje wyraźnie
+   czytelniejszy, spójny układ kolumn (bez „rozjazdu" z wcześniejszego zrzutu).
+
+## Wariant awaryjny (gdy pkt 1 lub 2 zawiedzie)
+
+- **Nie kompiluje się `DevExpress.Spreadsheet`** → zostaw sam snippet
+  `A1PelnaListaPlacSnippet` z jego natywnym pseudo-autofit
+  (`DopasujSzerokosciKolumn`/`DopasujSzerokoscStrony`) i eksportuj ręcznie z
+  podglądu; dalej dopracowuj tam szerokości (to jedyna ścieżka, która już działa
+  end-to-end).
+- **Nie da się wgrać globalnego workera przez GUI** (brak edytora projektów w
+  bazie w tej licencji) → trzeba skompilowany dodatek `.csproj`
+  (`dotnet new soneta-addon`, deploy DLL do folderu serwera, restart) — większa
+  operacja, wymaga osobnej zgody.

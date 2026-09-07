@@ -12,123 +12,141 @@ using DevExpress.Spreadsheet;
 
 namespace x.x.Reports
 {
-    // Worker dokłada do listy "Płace -> Listy płac" pozycję w menu Czynności generującą
-    // .xlsx PROGRAMOWO przez IReportService (ten sam wzorzec .repx +
-    // A1PelnaListaPlacSnippet co zwykły wydruk), a następnie doformatowującą GOTOWE bajty
-    // pliku biblioteką DevExpress.Spreadsheet - prawdziwy auto-fit szerokości kolumn
-    // (mierzy realnie renderowany tekst, nie przybliżeniem jak pseudo-autofit w samym
-    // snippecie: DopasujSzerokosciKolumn/DopasujSzerokoscStrony).
+    // Czynnosc "Pelna lista plac -> XLSX (auto-fit)" na liscie Place -> Listy plac.
+    // Dziala na ZAZNACZONYCH pozycjach listy plac. W odroznieniu od zwyklego wydruku
+    // (A1PelnaListaPlacSnippet eksportowanego recznie z podgladu):
     //
-    // DLACZEGO DevExpress.Spreadsheet, NIE EPPlus: użytkownik poprosił o EPPlus, ale
-    // przeszukanie folderu z bibliotekami tego serwera enova
-    // (C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard\, 442 pliki DLL - stąd
-    // proces ładuje wszystkie swoje referencje) NIE znalazło EPPlus/OfficeOpenXml. Ręczne
-    // dołożenie nowej DLL do folderu współdzielonego serwera (obsługującego też inne bazy,
-    // nie tylko `Claude`) to ryzykowna, trudna do odwrócenia zmiana infrastruktury
-    // (prawdopodobnie wymaga restartu usługi enova) - świadomie tego NIE zrobiono bez
-    // wyraźnej zgody. Za to w TYM SAMYM folderze już leży
-    // `DevExpress.Spreadsheet.v24.1.Core.dll` (obok już używanego
-    // `DevExpress.XtraReports.v24.1.dll`) - biblioteka tego samego dostawcy do
-    // tworzenia/edycji plików Excel, funkcjonalnie odpowiadająca EPPlus
-    // (Workbook/Worksheet, AutoFitColumns/AutoFitRows) - i nie wymaga niczego dokładać.
+    //   1. generuje plik .xlsx PROGRAMOWO przez IReportService.GenerateReport(...),
+    //      uzywajac TEGO SAMEGO wzorca A1PelnaListaPlac.repx i tego samego snippetu
+    //      (cala logika kolumn/wierszy - dynamiczne elementy + 17 kolumn ZUS/PPK/PIT -
+    //      jest w 100% ponownie wykorzystana),
+    //   2. otwiera surowe bajty .xlsx jako DevExpress.Spreadsheet.Workbook i robi
+    //      PRAWDZIWY auto-fit (Columns.AutoFit / Rows.AutoFit - mierzy realnie
+    //      renderowany tekst, nie przyblizeniem "dlugosc znaku x stala" jak
+    //      pseudo-autofit w samym snippecie),
+    //   3. zwraca gotowy plik jako NamedStream - operator dostaje go do pobrania.
     //
-    // Różnica względem zwykłego eksportu z podglądu wydruku: tam DevExpress sam zapisuje
-    // plik na dysk i nie ma zdarzenia z dostępem do gotowych bajtów "po fakcie" (dlatego
-    // podejście z post-processingiem było wcześniej wycofane dla Raporty/SeopEnrollmentFile,
-    // tam z EPPlus - zob. ten .md p.6). TUTAJ generujemy plik przez
-    // IReportService.GenerateReport(...) WPROST, dostajemy Stream z surowymi bajtami .xlsx
-    // i możemy je swobodnie post-processować przed oddaniem operatorowi do pobrania -
-    // architektura wzorem (przywróconym tu z historii commitów, ale z inną biblioteką
-    // formatującą) `Raporty/SeopEnrollmentFileWorker` (dodany 05e0824, wycofany 5ac1a17 -
-    // wycofany bez podanego technicznego powodu w commicie).
+    // ---------------------------------------------------------------------------
+    // ZWERYFIKOWANE NA DLL-ach serwera (C:\enovaServer\2512.5.6\...\, enova 2512.5.6),
+    // dekompilacja ilspycmd - 2026-09-07:
     //
-    // TODO/UNVERIFIED - sprawdzić PRZED czymkolwiek innym, w tej kolejności:
-    // 1. Czy `DevExpress.Spreadsheet` faktycznie jest referencjonowany przez kompilator
-    //    kodu snippetów (nie tylko obecny na dysku obok innych DLL) - wysoce prawdopodobne
-    //    (ten sam dostawca, ten sam folder co już działający DevExpress.XtraReports), ale
-    //    niepotwierdzone. Jeśli edytor rzuci błąd "nie znaleziono typu lub przestrzeni nazw
-    //    DevExpress.Spreadsheet" - biblioteka mimo obecności na dysku nie jest jednak
-    //    referencjonowana przez ten konkretny kompilator.
-    // 2. Dokładne nazwy metod `Worksheet.AutoFitColumns()`/`AutoFitRows()` (bezparametrowe
-    //    warianty = cały użyty zakres) - zgodne z ogólną wiedzą o API DevExpress
-    //    Spreadsheet, ale nie zweryfikowane na wersji v24.1 konkretnie w tej instalacji.
-    // 3. GDZIE w GUI enova wkleja się kod klasy Worker (z atrybutem [assembly: Worker<...>])
-    //    - w odróżnieniu od kodu snippetu wydruku (wklejanego w "Kod źródłowy" KONKRETNEGO
-    //    wzorca .repx), Worker to rozszerzenie GLOBALNE dodatku. W tym repo nie mamy
-    //    jeszcze potwierdzonego przykładu takiej rejestracji przez GUI (brak wcześniejszego
-    //    Workera w repo) - prawdopodobnie osobne miejsce typu "Kod źródłowy dodatku" /
-    //    "Rozszerzenia" w Narzędzia -> Opcje, ale wymaga potwierdzenia w GUI.
-    // 4. Czy `DataType = typeof(ListaPlac[])` + jawne `context.Set(zaznaczoneWiersze)`
-    //    (Row[]) faktycznie trafia do `A1PelnaListaPlacSnippet.Report_BeforePrint` jako
-    //    `Context[typeof(Row[])]` - w SEOP-owym pierwowzorze ten mechanizm (przez
-    //    `ReportResult.Rows`) był oznaczony jako niepotwierdzony; tu dodatkowo
-    //    strachujemy się jawnym `context.Set(...)`, ale i tak wymaga sprawdzenia jednym
-    //    wygenerowanym plikiem.
+    //  - IReportService (Soneta.Business.UI): Stream GenerateReport(ReportResult),
+    //    Type[] GetParameterTypes(string templateFileName, Context). Rejestrowany jako
+    //    [Service(typeof(IReportService), typeof(ReportServiceImpl), ServiceScope.Session)]
+    //    -> session.GetRequiredService<IReportService>() dziala.
+    //  - ReportFormats (Soneta.Business.UI) MA wartosc XLSX (obok XLS/CSV/DOCX/PDF...).
+    //    DxReportGenerator.BuildReport: ReportFormats.XLSX -> Report.ExportToXlsx(stream).
+    //  - GetParameterTypes zwraca dokladnie typy property [Context(Required = true)]
+    //    z klas ReportSnippet w tym .repx (DxQueryParameters.Analyse) - czyli
+    //    { typeof(A1PelnaListaPlacSnippet.PrnParams) }. Bez wstawienia instancji tego
+    //    typu do kontekstu ReportServiceImpl.Generate zwraca QueryContextInformation /
+    //    GenerateReport rzuca "Problem z przygotowaniem raportu", a snippet i tak
+    //    wszedlby w galaz "designer" (pars == null) i zwrocil pusta tabele.
+    //    Dlatego ponizej: petla po GetParameterTypes -> Activator.CreateInstance(t, ctx).
+    //  - ReportResult.CheckConsistency(reportService: true) RZUCA, gdy ustawiony jest
+    //    OutputHandler -> przy wywolaniu przez IReportService NIE wolno go ustawiac;
+    //    post-processing robimy po odebraniu strumienia.
+    //  - DevExpress.Spreadsheet: klasa konkretna Workbook (public ctor, LoadDocument/
+    //    SaveDocument(Stream, DocumentFormat)) jest w DevExpress.Docs.v24.1.dll;
+    //    ColumnCollection.AutoFit(int first, int last) i RowCollection.AutoFit(int, int)
+    //    oraz Worksheet.GetUsedRange() -> CellRange (LeftColumnIndex/RightColumnIndex/
+    //    TopRowIndex/BottomRowIndex) sa w DevExpress.Spreadsheet.v24.1.Core.dll.
+    //    Oba pliki leza w folderze serwera obok uzywanego DevExpress.XtraReports.
+    //
+    // DO POTWIERDZENIA NA ZYWEJ BAZIE (patrz A1PelnaListaPlacWorker.md, sekcja
+    // "Do sprawdzenia w tej kolejnosci"):
+    //  A. Czy kompilator "Projektow w bazie" (RuntimeProjects / CodeFiles) referencjonuje
+    //     DevExpress.Spreadsheet + DevExpress.Docs (blad "nie znaleziono typu
+    //     DevExpress.Spreadsheet" = nie referencjonuje -> patrz .md, wariant awaryjny).
+    //  B. NazwaWzorca / TemplateFileSource - "A1PelnaListaPlac.repx" + AspxSource.Storage
+    //     musi trafic we wzorzec zarejestrowany w Projektancie wydrukow. Jesli
+    //     GenerateReport nie znajdzie wzorca - sprobowac samej nazwy bez ".repx",
+    //     albo AspxSource.Local.
+    //  C. Czy Context[typeof(Row[])] faktycznie dociera do snippetu (wynikowy .xlsx ma
+    //     dane zaznaczonych list plac, nie pusta tabele).
     public class A1PelnaListaPlacWorker
     {
+        [Context]
+        public Context Context { get; set; }
+
         [Context]
         public ListaPlac[] ZaznaczoneListyPlac { get; set; }
 
         public bool IsVisibleGenerujXlsx() => ZaznaczoneListyPlac?.Length > 0;
         public bool IsEnabledGenerujXlsx() => ZaznaczoneListyPlac?.Length > 0;
 
-        [Action("Generuj pełną listę płac (xlsx, auto-fit)")]
+        // Nazwa wzorca zarejestrowanego w Projektancie wydrukow (patrz punkt B wyzej).
+        const string NazwaWzorca = "A1PelnaListaPlac.repx";
+
+        [Action("Pełna lista płac → XLSX (auto-fit)")]
         public object GenerujXlsx()
         {
             var session = ZaznaczoneListyPlac[0].Session;
             var raporty = session.GetRequiredService<IReportService>();
 
-            // Row[] jawnie w Context - to dokładnie to, czego oczekuje
-            // A1PelnaListaPlacSnippet.Report_BeforePrint (dc?[typeof(Row[])] as Row[]).
-            // Nie polegamy wyłącznie na (niepotwierdzonym) automatycznym wypełnianiu
-            // Context z ReportResult.Rows.
-            Row[] zaznaczoneWiersze = ZaznaczoneListyPlac.Cast<Row>().ToArray();
+            // Wlasny kontekst tego wywolania - nie zasmiecamy kontekstu UI.
+            var ctx = (Context ?? Soneta.Business.Context.Empty).Clone(session);
 
-            var context = Context.Empty.Clone(session);
-            context.Set(zaznaczoneWiersze);
+            // Zaznaczenie jako Row[] - dokladnie to czyta A1PelnaListaPlacSnippet
+            // (dc?[typeof(Row[])] as Row[]). Context.Set kluczuje po value.GetType(),
+            // wiec tablica musi miec runtime-typ Row[] (stad Cast<Row>().ToArray()).
+            Row[] zaznaczone = ZaznaczoneListyPlac.Cast<Row>().ToArray();
+            ctx.Set(zaznaczone);
+
+            // WYMAGANE parametry wydruku (snippet: [Context(Required = true)] PrnParams).
+            // Bez tego generacja zwroci null / zazada parametrow (patrz komentarz u gory).
+            foreach (Type t in raporty.GetParameterTypes(NazwaWzorca, ctx))
+            {
+                if (ctx[t, false] == null)
+                    ctx.Set(Activator.CreateInstance(t, ctx));
+            }
 
             var rr = new ReportResult
             {
-                TemplateFileName = "A1PelnaListaPlac.repx",
+                TemplateFileName = NazwaWzorca,
+                TemplateFileSource = AspxSource.Storage,
                 DataType = typeof(ListaPlac[]),
                 Rows = ZaznaczoneListyPlac,
-                Context = context,
+                Context = ctx,
                 OutputFormat = ReportFormats.XLSX,
                 AskForParameters = false,
             };
 
             byte[] surowyXlsx;
-            using (var strumien = raporty.GenerateReport(rr))
-            using (var bufor = new MemoryStream())
+            using (Stream strumien = raporty.GenerateReport(rr))
             {
-                strumien.CopyTo(bufor);
-                surowyXlsx = bufor.ToArray();
+                if (strumien == null)
+                    return "Nie udało się wygenerować wydruku XLSX (brak strumienia z IReportService).";
+                using (var bufor = new MemoryStream())
+                {
+                    strumien.CopyTo(bufor);
+                    surowyXlsx = bufor.ToArray();
+                }
             }
 
-            byte[] sformatowanyXlsx = SformatujExcel(surowyXlsx);
+            byte[] wynik = DopasujSzerokosci(surowyXlsx);
 
-            string nazwaPliku = $"A1_Pelna_Lista_Plac_{Date.Today:yyyyMMdd}.xlsx";
-            return new NamedStream(nazwaPliku, () => new MemoryStream(sformatowanyXlsx));
+            string nazwaPliku = "A1_Pelna_Lista_Plac_" + Date.Today.ToString("yyyyMMdd") + ".xlsx";
+            return new NamedStream(nazwaPliku, () => new MemoryStream(wynik));
         }
 
-        // Doformatowanie gotowego pliku wygenerowanego przez DevExpress XtraReports:
-        // prawdziwy auto-fit szerokosci kolumn i wysokosci wierszy przez
-        // DevExpress.Spreadsheet (mierzy realnie renderowany tekst zamiast przyblizenia
-        // "dlugosc znaku x stala" jak w pseudo-autofit samego snippetu wydruku).
-        private static byte[] SformatujExcel(byte[] surowyXlsx)
+        // Prawdziwy auto-fit: otwiera gotowy .xlsx z XtraReports i mierzy realnie
+        // renderowany tekst (DevExpress.Spreadsheet), zamiast przyblizenia w snippecie.
+        static byte[] DopasujSzerokosci(byte[] surowyXlsx)
         {
             using (var workbook = new Workbook())
             {
                 using (var wejscie = new MemoryStream(surowyXlsx))
                     workbook.LoadDocument(wejscie, DocumentFormat.Xlsx);
 
-                Worksheet arkusz = workbook.Worksheets[0];
+                foreach (Worksheet arkusz in workbook.Worksheets)
+                {
+                    CellRange uzyty = arkusz.GetUsedRange();
+                    if (uzyty == null) continue;
 
-                // TODO/UNVERIFIED: warianty bezparametrowe = caly uzyty zakres arkusza
-                // (zgodnie z ogolna wiedza o API DevExpress Spreadsheet, niezweryfikowane
-                // na tej konkretnej wersji v24.1).
-                arkusz.AutoFitColumns();
-                arkusz.AutoFitRows();
+                    arkusz.Columns.AutoFit(uzyty.LeftColumnIndex, uzyty.RightColumnIndex);
+                    arkusz.Rows.AutoFit(uzyty.TopRowIndex, uzyty.BottomRowIndex);
+                }
 
                 using (var wyjscie = new MemoryStream())
                 {
