@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using DevExpress.DataAccess;
 using DevExpress.XtraReports.UI;
 using Soneta.Business;
 using Soneta.Business.UI.DxReports;

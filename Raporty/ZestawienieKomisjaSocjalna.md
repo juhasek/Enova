@@ -125,6 +125,54 @@ Rok oświadczenia = rok z „Daty posiedzenia komisji”; data graniczna wniosku
   `.Nazwa`; brak wartości → `"brak"`. Nazwa cechy w konfiguracji to dokładnie
   „Jednostka obsługująca” (ze spacją). Wymaga `using Soneta.Ksiega;`.
 
+## Błąd „DataComponentBase” przy wywołaniu z Pulpitu
+
+Zgłoszony błąd: raport działa poprawnie uruchamiany w wersji okienkowej
+(z Listy pracowników), ale wywołany z **Pulpitu** (np. Pulpitu kierownika)
+kończy się błędem kompilacji snippetu:
+
+```
+Systemowy plik dodatkowy: Snippet: A1ZestawienieKomisjaSocjalna
+A1ZestawienieKomisjaSocjalna.cs(155,21): error CS0012: Typ „DataComponentBase”
+jest zdefiniowany w nieprzywoływanym zestawie. Musisz dodać odwołanie do
+zestawu „DevExpress.DataAccess.v24.1, Version=24.1.5.0, Culture=neutral,
+PublicKeyToken=b88d1754d700e49a”.
+```
+
+**Hipoteza przyczyny:** `DataComponentBase` (assembly `DevExpress.DataAccess.v24.1`)
+to bazowa klasa `Soneta.Business.UI.DxReports.BusinessDataSource` — komponentów
+`BusinessSource`/`BusinessSourceContext` osadzonych w `ComponentStorage` tego
+`.repx` (patrz `Raporty/SzablonTabela6Kolumn.md`, sekcja „Historia usterki: brak
+źródła danych w `.repx`” — identyczne komponenty). Przy kompilacji snippetu
+Enova musi więc rozwiązać typ `BusinessDataSource` łącznie z jego klasą
+bazową. W wersji okienkowej ta biblioteka jest już załadowana w procesie
+klienta (m.in. przez sam projektant wydruków), więc kompilator dynamiczny ją
+znajduje. Host obsługujący **Pulpity** to prawdopodobnie osobny proces/AppDomain
+(np. serwis WWW dla pulpitów), w którym `DevExpress.DataAccess.v24.1.dll` nie
+została jeszcze załadowana / nie jest automatycznie referencjonowana — stąd
+`CS0012` tylko w tej ścieżce wywołania.
+
+**Zmiana w snippecie:** dodano `using DevExpress.DataAccess;` na początku pliku
+(mechanizm doboru referencji w Enova zwykle mapuje `using`-y w kodzie na
+zestawy do dołączenia przy kompilacji — jawny `using` może wymusić
+dołączenie referencji, której silnik inaczej by nie dodał w tym hoście).
+**Niepotwierdzone** — do przetestowania: wkleić zaktualizowaną treść
+snippetu i ponownie uruchomić wydruk z Pulpitu.
+
+**Jeśli to nie pomoże** — to sygnał, że `DevExpress.DataAccess.v24.1.dll`
+faktycznie nie jest dostępna w procesie hostującym Pulpity (nie da się tego
+naprawić samą treścią snippetu):
+- sprawdzić, czy w folderze `bin` procesu obsługującego Pulpity (może to być
+  osobny serwis/aplikacja WWW, nie ten sam katalog co klient desktopowy)
+  znajduje się `DevExpress.DataAccess.v24.1.dll` obok innych bibliotek
+  `DevExpress.XtraReports.v24.1` / `DevExpress.XtraPrinting.v24.1`;
+- jeśli brakuje — skopiować ją tam z instalacji klienta (ta sama wersja
+  `24.1.5.0`) i zrestartować usługę/proces Pulpitów;
+- sprawdzić, czy **jakikolwiek** wydruk oparty o `.repx` z komponentem
+  `BusinessDataSource` (wzorzec `Soneta.Business.UI.DxReports`) w ogóle działa
+  wywołany z tej instalacji Pulpitów — jeśli żaden nie działa, problem jest
+  po stronie hosta Pulpitów, a nie tego konkretnego raportu.
+
 ## Jak podpiąć snippet w Enova
 
 1. Otwórz `ZestawienieKomisjaSocjalna` w projektancie wydruków Enova.
