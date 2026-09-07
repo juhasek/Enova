@@ -166,18 +166,25 @@ namespace x.x.Reports
         }
 
         // tabelaNaglowek z .repx nie jest juz uzywana - cala tabela idzie w tabelaDane.
-        // Ukrywamy sama kontrolke i (jesli sie da) jej band, zeby w Excelu nie zostal
-        // pusty wiersz na gorze kazdej strony.
+        // Ukrywamy sama kontrolke oraz caly PageHeaderBand (w .repx zawiera TYLKO
+        // tabelaNaglowek - lblTytul/lblPodtytul sa w ReportHeaderBand), zeby w Excelu
+        // nie zostal pusty wiersz na gorze kazdej strony. Band bierzemy przez
+        // Report.Bands[BandKind.PageHeader] - XRControl.GetBand() jest protected.
         void UkryjTabeleNaglowka()
         {
-            if (tabelaNaglowek == null) return;
-            tabelaNaglowek.Rows.Clear();
-            tabelaNaglowek.Visible = false;
-            Band band = tabelaNaglowek.GetBand();
-            if (band != null)
+            if (tabelaNaglowek != null)
             {
-                band.Visible = false;
-                band.HeightF = 0f;
+                tabelaNaglowek.Rows.Clear();
+                tabelaNaglowek.Visible = false;
+            }
+            if (this.Report != null)
+            {
+                Band ph = this.Report.Bands[BandKind.PageHeader];
+                if (ph != null)
+                {
+                    ph.Visible = false;
+                    ph.HeightF = 0f;
+                }
             }
         }
 
