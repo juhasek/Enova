@@ -270,35 +270,63 @@ metodami.
   (`if (linia.Strefa.OdGodziny != Time.Zero)`).
 
 **Reguła po poprawce** (uzgodniona z użytkownikiem, liczona w raporcie, nie
-przez `kalkulator.Nocne`): liczba godzin nocnych **dnia**:
-1. jeśli w dniu jest strefa „Praca w godzinach nocnych” (tak wchodziły dane z
-   migracji) → suma jej godzin (`Czas`) wprost;
+przez `kalkulator.Nocne`): godziny nocne przypadające na **konkretny wiersz
+karty** (`Linia`):
+1. jeśli dzień ma jawną strefę „Praca w godzinach nocnych” (tak wchodziły dane
+   z migracji) → noc pokazuje się **tylko na wierszach tej strefy**, wprost z
+   jej godzin (`Linia.CzasLaczny`); pozostałe wiersze dnia = 0;
 2. w przeciwnym razie (docelowy sposób produkcyjny — czas w strefach „Praca w
-   normie”/„Praca poza normą” itd.) → suma przecięć godzin stref zwiększających
-   czas pracy z oknem pory nocnej z kalendarza;
-3. dzień bez żadnych stref → wartość z `kalkulator.Nocne` dnia.
+   normie”/„Praca poza normą” itd.) → noc = godziny **tego wiersza** (strefy
+   zwiększającej czas pracy) przecięte z oknem pory nocnej z kalendarza;
+3. wiersz bez strefy (dzień bez stref) → wartość z `kalkulator.Nocne` dnia.
+
+Podsumowanie **`RazemNoc` = suma `NocWiersza` po wszystkich wierszach**, więc
+kolumna zawsze zgadza się z podsumowaniem, a wartość trafia w ten wiersz,
+którego dotyczy (np. praca 5:00–7:00 pokazuje noc przy swoim wierszu, a nie
+przy porannej „Pracy w normie”).
 
 **Zmiany w kodzie:**
-- Nowa metoda `NoceDnia(pracownik, dzienPracy, data)` realizująca powyższą
-  regułę; nowa `PrzeciecieZPoraNocna(...)` poprawnie licząca przecięcie z
-  oknem pory nocnej przechodzącym przez północ (przedział pracy przecinany z
-  oknem wprost oraz przesunięty o dobę — dzięki temu poranny fragment pracy
-  wpadający w porę nocną z poprzedniej doby też jest liczony, a strefa od
-  00:00 nie jest pomijana). `PoliczPoreNocna` zachowuje sygnaturę, ale w
-  środku deleguje do `PrzeciecieZPoraNocna`.
-- `detailReportBand1_BeforePrint` liczy noc dzień po dniu do słownika
-  `nocnePerDzien` i sumuje do `nocne`; **`RazemNoc` = ta suma** (nie
+- Nowa metoda `NocWiersza(pracownik, linia)` realizująca powyższą regułę
+  (per wiersz, po zbudowaniu i scaleniu wierszy); `DzienMaStrefeNocna(...)` do
+  rozpoznania dnia z jawną strefą nocną.
+- Nowa `PrzeciecieZPoraNocna(...)` poprawnie licząca przecięcie z oknem pory
+  nocnej przechodzącym przez północ (przedział pracy przecinany z oknem wprost
+  oraz przesunięty o dobę — poranny fragment pracy wpadający w porę nocną z
+  poprzedniej doby też jest liczony, a strefa/godzina od 00:00 nie jest
+  pomijana). `PoliczPoreNocna` zachowuje sygnaturę, w środku deleguje do
+  `PrzeciecieZPoraNocna`.
+- `detailReportBand1_BeforePrint` po zbudowaniu `linie` wypełnia
+  `Linia.NocWiersza` i sumuje do `nocne`; **`RazemNoc` = `nocne`** (nie
   `kalkulator.Nocne(oz)`).
-- Kolumna „Godziny nocne” pokazuje `NoceDnia` dnia **tylko na pierwszym
-  wierszu danego dnia** (pola `Linia.PierwszaWDniu` / `Linia.NocDnia`), pusto
-  na kolejnych wierszach tego samego dnia. Dzięki temu na dniu z kilkoma
-  strefami noc nie sumuje się na każdym wierszu, a **suma kolumny zawsze
-  zgadza się z RazemNoc**.
-- Podział na wiersze bez zmian — strefa „Praca w godzinach nocnych” nadal
-  tworzy własny wiersz, dzielony/scalany po Projekt/Task jak w punkcie 5.
+- Kolumna „Godziny nocne” drukuje `linia.NocWiersza` (na każdym wierszu jego
+  własną część nocy).
+- Podział na wiersze — strefa „Praca w godzinach nocnych” nadal tworzy własny
+  wiersz, dzielony/scalany po Projekt/Task jak w punkcie 5.
 
 **Uwaga:** raport liczy teraz noc „wg zegara” (godziny pracy w porze nocnej).
 Może się to różnić od dopłaty za pracę w nocy naliczonej na liście płac, jeśli
 w kalendarzu ustawiono `Nocne.Limit` albo `Nocne.Rozliczaj = false` — to
 świadoma decyzja: karta ewidencji ma pokazywać faktyczny czas pracy w nocy, a
 kolumna i podsumowanie mają być spójne.
+
+## 11. Poprawka: scalanie wierszy strefy z przerwą między zapisami
+
+**Objaw:** dzień, w którym pracownik miał „Pracę poza normą” w dwóch kawałkach
+z długą przerwą między nimi (np. 15:00–17:00 oraz 5:00–7:00 następnej doby,
+zapisane jako 29:00–31:00), drukował **jeden** wiersz „od 15:00 do +7:00” —
+tak jakby pracował ciągiem przez całą noc, mimo że w przerwie (17:00–29:00)
+nie pracował. Dodatkowo godziny nocne z tego dnia lądowały nie przy tym
+wierszu, przy którym powinny.
+
+**Przyczyna:** scalanie wierszy (punkt 5) łączyło kolejne zapisy tej samej
+strefy z tym samym Projektem/Taskiem **bez sprawdzania, czy się stykają** —
+liczył się tylko typ strefy i cechy. Przy dwóch zapisach z 12-godzinną
+przerwą i tak powstawał jeden wiersz z `DoGodzinyLaczna` rozciągniętym do
+końca drugiego zapisu.
+
+**Poprawka:** do warunku scalania (`mozeScalic`) dołożono
+`strefa.OdGodziny <= poprzednia.DoGodzinyLaczna` — zapisy scalają się tylko,
+gdy się stykają lub nakładają. Jeśli między nimi jest przerwa, zostają
+osobnymi wierszami (użytkownik: „mimo że to ten sam projekt, lepiej to
+rozbić”). Zapisy stykające się (np. 15:00–16:00 + 16:00–18:00, pod które
+pierwotnie robiono scalanie) łączą się nadal.

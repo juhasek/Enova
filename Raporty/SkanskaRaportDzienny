@@ -258,54 +258,64 @@ namespace Soneta.KadryPlace.Reports
             return PrzeciecieZPoraNocna(godzinaRozpoczecia, godzinaZakonczenia, nocOd, nocDo);
         }
 
-        // Liczba godzin nocnych dnia wg reguły uzgodnionej z użytkownikiem:
-        //  1. jeśli w dniu jest strefa "Praca w godzinach nocnych" (tak wchodziły
-        //     dane z migracji) - bierzemy sumę jej godzin wprost;
-        //  2. w przeciwnym razie noc wynika z godzin, w których pracownik
-        //     faktycznie pracował (strefy zwiększające czas pracy - "Praca w
-        //     normie", "Praca poza normą" itd.), przeciętych z oknem pory nocnej
-        //     z kalendarza;
-        //  3. dzień bez żadnych stref - fallback do kalkulatora enova.
-        // Ta sama wartość trafia do kolumny "Godziny nocne" i do podsumowania
-        // RazemNoc, więc suma kolumny zawsze zgadza się z podsumowaniem. Wcześniej
-        // kolumna liczyła PoliczPoreNocna osobno dla KAŻDEGO wiersza strefy (na
-        // dniu z pracą + osobną strefą nocną z migracji noc wychodziła na obu
-        // wierszach), a RazemNoc brało kalkulator.Nocne (z limitem/rozliczaniem
-        // wg kalendarza) - stąd raport "2x8h w kolumnie, 1h w podsumowaniu".
-        Time NoceDnia(Pracownik pracownik, DzienPracy dzienPracy, Date data)
+        static bool JestStrefaNocna(string nazwaStrefy) =>
+            nazwaStrefy == "Praca w godzinach nocnych";
+
+        // Czy w dniu jest jawna strefa "Praca w godzinach nocnych" (tak wchodziły
+        // dane z migracji). Jeśli tak - noc bierzemy wprost z tej strefy, a nie
+        // z przecięcia godzin pracy z porą nocną.
+        static bool DzienMaStrefeNocna(DzienPracy dzienPracy)
         {
             if (dzienPracy == null || !dzienPracy.Strefy.Any)
+                return false;
+            foreach (var s in dzienPracy.Strefy)
+                if (s.Definicja != null && JestStrefaNocna(s.Definicja.Nazwa))
+                    return true;
+            return false;
+        }
+
+        // Godziny nocne przypadające na KONKRETNY wiersz karty (Linia) wg reguły
+        // uzgodnionej z użytkownikiem:
+        //  1. dzień ma jawną strefę "Praca w godzinach nocnych" -> noc pokazuje
+        //     się tylko na wierszach tej strefy, wprost z jej godzin
+        //     (linia.CzasLaczny); pozostałe wiersze dnia = 0 (bez podwójnego
+        //     liczenia);
+        //  2. brak jawnej strefy nocnej -> noc = godziny tego wiersza (strefy
+        //     zwiększającej czas pracy) przecięte z oknem pory nocnej;
+        //  3. wiersz bez strefy (dzień bez stref) -> wartość z kalkulator.Nocne.
+        // Suma NocWiersza po wszystkich wierszach = podsumowanie RazemNoc, więc
+        // kolumna i podsumowanie zawsze się zgadzają, a wartość trafia w ten
+        // wiersz, którego dotyczy.
+        Time NocWiersza(Pracownik pracownik, Linia linia)
+        {
+            Date data = linia.DzienM;
+            DzienPracy dzienPracy = pracownik.DniPracy[data];
+            bool maStrefeNocna = DzienMaStrefeNocna(dzienPracy);
+
+            if (linia.Strefa == null)
             {
+                if (maStrefeNocna)
+                    return Time.Zero;
                 Time n = kalkulator.Nocne(new FromTo(data, data));
                 return n == Time.Empty ? Time.Zero : n;
             }
 
-            Time zeStrefyNocnej = Time.Zero;
-            bool maStrefeNocna = false;
-            foreach (var s in dzienPracy.Strefy)
-            {
-                if (s.Definicja != null && s.Definicja.Nazwa == "Praca w godzinach nocnych")
-                {
-                    maStrefeNocna = true;
-                    if (s.Czas != Time.Empty)
-                        zeStrefyNocnej += s.Czas;
-                }
-            }
             if (maStrefeNocna)
-                return zeStrefyNocnej;
+            {
+                return (linia.Strefa.Definicja != null && JestStrefaNocna(linia.Strefa.Definicja.Nazwa))
+                    ? linia.CzasLaczny
+                    : Time.Zero;
+            }
+
+            var def = linia.Strefa.Definicja;
+            if (def == null || !def.Wchodzi || def.Typ != TypStrefy.Zwieksza)
+                return Time.Zero;
+            if (linia.Strefa.OdGodziny == Time.Empty || linia.DoGodzinyLaczna == Time.Empty)
+                return Time.Zero;
 
             Time nocOd = pracownik[data].Etat.Kalendarz.Nocne.Od;
             Time nocDo = pracownik[data].Etat.Kalendarz.Nocne.Do;
-            Time wynik = Time.Zero;
-            foreach (var s in dzienPracy.Strefy)
-            {
-                if (s.Definicja == null || !s.Definicja.Wchodzi || s.Definicja.Typ != TypStrefy.Zwieksza)
-                    continue;
-                if (s.OdGodziny == Time.Empty || s.Czas == Time.Empty)
-                    continue;
-                wynik += PrzeciecieZPoraNocna(s.OdGodziny, s.OdGodziny + s.Czas, nocOd, nocDo);
-            }
-            return wynik;
+            return PrzeciecieZPoraNocna(linia.Strefa.OdGodziny, linia.DoGodzinyLaczna, nocOd, nocDo);
         }
 
         Dictionary<string, Time> sumaDyżurow;
@@ -319,10 +329,6 @@ namespace Soneta.KadryPlace.Reports
 
         Time czas, czasPrzestoju, swieta, wolne, nocne, nadlicz, uw, uwd, uok, uop, usz, ub, ch, op, wych, nu, nn, nad50, nad100, karmienie, dp, dd, pbez, nadZP, nadDoP;
         DevExpress.XtraReports.UI.XRTableCell kolumna = null;
-
-        // Godziny nocne wyliczone raz na dzień (klucz = dzień), wspólne dla
-        // kolumny "Godziny nocne" i podsumowania RazemNoc - patrz NoceDnia.
-        Dictionary<Date, Time> nocnePerDzien;
 
         [DxBind]
         private void Grid1ListaWiersz_BeforePrint(object sender, CancelEventArgs e)
@@ -366,7 +372,7 @@ namespace Soneta.KadryPlace.Reports
                         colOd.Text = dzień.OdGodziny == Time.Zero ? "" : dzień.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
                         var doGodziny = Dzien.DoGodziny(dzień);
                         colDo.Text = doGodziny == Time.Zero ? "" : Dzien.DoGodziny(dzień).ToString("+", System.Globalization.CultureInfo.InvariantCulture);
-                        // Kolumna "Godziny nocne" wypełniana jest niżej, raz na dzień, z nocnePerDzien.
+                        // Kolumna "Godziny nocne" wypełniana jest niżej z linia.NocWiersza.
                     }
                     else
                     {
@@ -382,9 +388,8 @@ namespace Soneta.KadryPlace.Reports
                         else
                             colDo.Text = strefaDoGodziny == Time.Zero ? "" : strefaDoGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
 
-                        // Kolumna "Godziny nocne" wypełniana jest niżej, raz na dzień, z nocnePerDzien -
-                        // nie liczymy jej już osobno dla każdego wiersza strefy (dublowało noc na dniu
-                        // z pracą + osobną strefą "Praca w godzinach nocnych" z migracji).
+                        // Kolumna "Godziny nocne" wypełniana jest niżej z linia.NocWiersza
+                        // (część nocna przypadająca na ten wiersz).
 
                         DodatekBryg.Text = linia.Strefa.Features.GetBool("DodatekBryg") ? "TAK" : "";
                         ElemSlownika elProj = (ElemSlownika)linia.Strefa.Features["Projekt"];
@@ -410,14 +415,10 @@ namespace Soneta.KadryPlace.Reports
                     }
                 }
 
-                // Godziny nocne - jedna wartość na dzień (policzona w
-                // detailReportBand1_BeforePrint / NoceDnia), drukowana tylko na
-                // pierwszym wierszu danego dnia; na kolejnych wierszach kolumna
-                // zostaje pusta (wyzerowana wyżej). Dzięki temu na dniu z kilkoma
-                // strefami noc nie sumuje się na każdym wierszu, a suma kolumny
-                // zgadza się z podsumowaniem RazemNoc.
-                if (linia.PierwszaWDniu)
-                    colNocne.Text = linia.NocDnia == Time.Zero ? "" : linia.NocDnia.ToString();
+                // Godziny nocne - część nocna przypadająca na TEN wiersz
+                // (policzona w detailReportBand1_BeforePrint / NocWiersza).
+                // Suma po wszystkich wierszach = podsumowanie RazemNoc.
+                colNocne.Text = linia.NocWiersza == Time.Zero ? "" : linia.NocWiersza.ToString();
 
                 if (kalkulator.Plan[data].Czas == Time.Zero)
                     Harmonogram.Text = "";
@@ -629,14 +630,6 @@ namespace Soneta.KadryPlace.Reports
 
             nadgodziny.TrybRozliczania = KalkulatorNadgodzin.TrybRozliczaniaNadgodzin.TylkoDobowe;
 
-            // Godziny nocne liczymy sami, dzień po dniu (NoceDnia), i tą samą
-            // wartością wypełniamy kolumnę "Godziny nocne". RazemNoc = suma tych
-            // wartości, więc kolumna zawsze zgadza się z podsumowaniem. Wcześniej
-            // RazemNoc brało kalkulator.Nocne(oz) (z limitem/rozliczaniem wg
-            // kalendarza), a kolumna PoliczPoreNocna per wiersz strefy - stąd
-            // raport "2x8h w kolumnie, 1h w podsumowaniu".
-            nocnePerDzien = new Dictionary<Date, Time>();
-
             List<Linia> linie = new List<Linia>();
             linie.Clear();
 
@@ -648,13 +641,6 @@ namespace Soneta.KadryPlace.Reports
                 // raport będzie drukowany dla osób które podzielnik mają na strefach
 
                 DzienPracy dzienPracy = pracownik.DniPracy[dataSpr];
-
-                if (okresy_zatrudnienia.Contains(dataSpr))
-                {
-                    Time nocDnia = NoceDnia(pracownik, dzienPracy, dataSpr);
-                    nocnePerDzien[dataSpr] = nocDnia;
-                    nocne += nocDnia;
-                }
 
                 if (dzienPracy == null)
                 {
@@ -669,9 +655,13 @@ namespace Soneta.KadryPlace.Reports
                     else
                     {
                         // Kilka zapisów strefy tego samego typu, z tym samym Projektem i
-                        // Taskiem (np. dwa osobne zapisy "Praca poza normą" o różnych
-                        // godzinach), traktujemy jako jeden ciągły wpis w karcie - inaczej
+                        // Taskiem (np. dwa zapisy "Praca poza normą" 15:00-16:00 i
+                        // 16:00-18:00), traktujemy jako jeden ciągły wpis w karcie - inaczej
                         // ten sam dzień drukował kilka wierszy wyglądających na zdublowane.
+                        // Scalamy jednak TYLKO gdy zapisy się stykają/nakładają - jeśli
+                        // między nimi jest przerwa (np. "Praca poza normą" 15:00-17:00
+                        // oraz 29:00-31:00, czyli 5:00-7:00 następnego dnia), zostają
+                        // osobnymi wierszami, bo pracownik w przerwie nie pracował.
                         foreach (var strefa in dzienPracy.Strefy
                             .Where(s => strefyraportu.Contains(s.Definicja.Nazwa) || JestStrefaZdalna(s.Definicja.Nazwa) || JestStrefaOdbioruNadgodzin(s.Definicja.Nazwa))
                             .OrderBy(s => s.OdGodziny))
@@ -684,7 +674,9 @@ namespace Soneta.KadryPlace.Reports
                                 poprzednia.Strefa != null &&
                                 poprzednia.Strefa.Definicja.Nazwa == strefa.Definicja.Nazwa &&
                                 GetFeatureSymbol(poprzednia.Strefa, "Projekt") == projektSym &&
-                                GetFeatureSymbol(poprzednia.Strefa, "Task") == taskSym;
+                                GetFeatureSymbol(poprzednia.Strefa, "Task") == taskSym &&
+                                strefa.OdGodziny != Time.Empty &&
+                                strefa.OdGodziny <= poprzednia.DoGodzinyLaczna;
 
                             if (mozeScalic)
                             {
@@ -701,20 +693,17 @@ namespace Soneta.KadryPlace.Reports
                 }
             }
 
-            // Oznaczamy pierwszy wiersz każdego dnia i przypisujemy mu godziny
-            // nocne dnia - kolumna "Godziny nocne" drukuje wartość tylko na tym
-            // wierszu (na kolejnych wierszach tego samego dnia pusto). Robimy to
-            // na obiekcie Linia, a nie na polu raportu, żeby było odporne na
-            // ponowne drukowanie wierszy przy paginacji.
-            Date poprzedniDzienNoc = Date.Empty;
+            // Godziny nocne liczymy per wiersz (NocWiersza) - na obiekcie Linia,
+            // po zbudowaniu i scaleniu wierszy, żeby wartość trafiła w ten wiersz,
+            // którego dotyczy, i była odporna na ponowne drukowanie przy paginacji.
+            // RazemNoc = suma tych wartości, więc kolumna zawsze zgadza się z
+            // podsumowaniem.
             foreach (Linia l in linie)
             {
-                if (l.DzienM != poprzedniDzienNoc)
-                {
-                    l.PierwszaWDniu = true;
-                    l.NocDnia = nocnePerDzien.ContainsKey(l.DzienM) ? nocnePerDzien[l.DzienM] : Time.Zero;
-                    poprzedniDzienNoc = l.DzienM;
-                }
+                if (!okresy_zatrudnienia.Contains(l.DzienM))
+                    continue;
+                l.NocWiersza = NocWiersza(pracownik, l);
+                nocne += l.NocWiersza;
             }
 
             Grid1Lista.DataSource = linie;
@@ -752,15 +741,10 @@ namespace Soneta.KadryPlace.Reports
             public ElementPodzielnika ElemPodz { get; set; }
             public Pracownik Prac { get; set; }
 
-            // Pierwszy wiersz danego dnia w karcie - tylko na nim drukujemy
-            // godziny nocne dnia (NocDnia), żeby na dniu z kilkoma strefami noc
-            // nie powielała się na każdym wierszu.
-            public bool PierwszaWDniu { get; set; }
-
-            // Godziny nocne całego dnia (wg NoceDnia): ze strefy "Praca w
-            // godzinach nocnych" jeśli jest, inaczej z godzin pracy przeciętych
-            // z porą nocną. Ta sama suma trafia do podsumowania RazemNoc.
-            public Time NocDnia { get; set; }
+            // Godziny nocne przypadające na TEN wiersz (wg NocWiersza): ze strefy
+            // "Praca w godzinach nocnych" jeśli dzień ją ma, inaczej z godzin
+            // tego wiersza przeciętych z porą nocną. Suma po wierszach = RazemNoc.
+            public Time NocWiersza { get; set; }
 
             // Łączna godzina zakończenia po ewentualnym scaleniu kilku zapisów strefy
             // o tym samym typie/Projekcie/Tasku w jeden wiersz karty (patrz
