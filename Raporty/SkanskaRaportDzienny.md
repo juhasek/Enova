@@ -243,3 +243,62 @@ opisany w punkcie 7 dla strefy pracy zdalnej).
   Jeśli w kolumnie było już coś wpisane (rzadki przypadek zbiegu z realną
   nieobecnością tego samego dnia), nowy wpis jest dopisywany po przecinku, a
   nie nadpisuje istniejącej treści.
+
+## 10. Poprawka: kolumna „Godziny nocne” nie zgadzała się z podsumowaniem RazemNoc
+
+**Objaw:** dla pracownika, który w dwóch dniach miał wykazaną pracę w nocy po
+8h, kolumna „Godziny nocne” pokazywała 8h przy każdym z tych dni, ale w
+podsumowaniu na końcu karty (**RazemNoc**) widniała tylko 1h.
+
+**Przyczyna:** kolumna i podsumowanie liczyły noc dwoma różnymi, niezależnymi
+metodami.
+- **Podsumowanie** brało `kalkulator.Nocne(oz)` — algorytm enova
+  (`KalkulatorPracyBase.Nocne`), który: gdy w dniu jest strefa „Praca w
+  godzinach nocnych” bierze jej czas wprost, a w przeciwnym razie przecina
+  strefy zwiększające czas pracy z oknem pory nocnej **i przycina wynik dnia
+  do `Kalendarz.Nocne.Limit`** oraz respektuje `Kalendarz.Nocne.Rozliczaj`
+  (przy `Rozliczaj = false` liczy jako noc wyłącznie jawną strefę „Praca w
+  godzinach nocnych”). Stąd 1h.
+- **Kolumna** (dla wierszy ze strefą) brała `PoliczPoreNocna` — ręczne
+  przecięcie godzin **każdej** strefy wiersza z oknem pory nocnej, bez limitu,
+  bez `Rozliczaj`, bez odróżniania strefy nocnej od zwykłej. Na dniu z
+  migracji, gdzie te same godziny są opisane dwiema strefami naraz („Praca w
+  normie”/„poza normą” + osobna „Praca w godzinach nocnych”), noc była
+  liczona **na obu wierszach** — stąd „2 × 8h” dla jednego dnia. Dodatkowo
+  `PoliczPoreNocna` liczyła błędnie okno pory nocnej przechodzące przez północ
+  (zwykłe `Max`/`Min`) i całkiem pomijała strefę zaczynającą się o 00:00
+  (`if (linia.Strefa.OdGodziny != Time.Zero)`).
+
+**Reguła po poprawce** (uzgodniona z użytkownikiem, liczona w raporcie, nie
+przez `kalkulator.Nocne`): liczba godzin nocnych **dnia**:
+1. jeśli w dniu jest strefa „Praca w godzinach nocnych” (tak wchodziły dane z
+   migracji) → suma jej godzin (`Czas`) wprost;
+2. w przeciwnym razie (docelowy sposób produkcyjny — czas w strefach „Praca w
+   normie”/„Praca poza normą” itd.) → suma przecięć godzin stref zwiększających
+   czas pracy z oknem pory nocnej z kalendarza;
+3. dzień bez żadnych stref → wartość z `kalkulator.Nocne` dnia.
+
+**Zmiany w kodzie:**
+- Nowa metoda `NoceDnia(pracownik, dzienPracy, data)` realizująca powyższą
+  regułę; nowa `PrzeciecieZPoraNocna(...)` poprawnie licząca przecięcie z
+  oknem pory nocnej przechodzącym przez północ (przedział pracy przecinany z
+  oknem wprost oraz przesunięty o dobę — dzięki temu poranny fragment pracy
+  wpadający w porę nocną z poprzedniej doby też jest liczony, a strefa od
+  00:00 nie jest pomijana). `PoliczPoreNocna` zachowuje sygnaturę, ale w
+  środku deleguje do `PrzeciecieZPoraNocna`.
+- `detailReportBand1_BeforePrint` liczy noc dzień po dniu do słownika
+  `nocnePerDzien` i sumuje do `nocne`; **`RazemNoc` = ta suma** (nie
+  `kalkulator.Nocne(oz)`).
+- Kolumna „Godziny nocne” pokazuje `NoceDnia` dnia **tylko na pierwszym
+  wierszu danego dnia** (pola `Linia.PierwszaWDniu` / `Linia.NocDnia`), pusto
+  na kolejnych wierszach tego samego dnia. Dzięki temu na dniu z kilkoma
+  strefami noc nie sumuje się na każdym wierszu, a **suma kolumny zawsze
+  zgadza się z RazemNoc**.
+- Podział na wiersze bez zmian — strefa „Praca w godzinach nocnych” nadal
+  tworzy własny wiersz, dzielony/scalany po Projekt/Task jak w punkcie 5.
+
+**Uwaga:** raport liczy teraz noc „wg zegara” (godziny pracy w porze nocnej).
+Może się to różnić od dopłaty za pracę w nocy naliczonej na liście płac, jeśli
+w kalendarzu ustawiono `Nocne.Limit` albo `Nocne.Rozliczaj = false` — to
+świadoma decyzja: karta ewidencji ma pokazywać faktyczny czas pracy w nocy, a
+kolumna i podsumowanie mają być spójne.

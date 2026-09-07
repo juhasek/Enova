@@ -219,23 +219,93 @@ namespace Soneta.KadryPlace.Reports
             return stanowiskoPelne;
         }
 
-        // te drugie daty
-        public static Time PoliczPoreNocna(Pracownik pracownik, Date data, Time godzinaRozpoczecia, Time godzinaZakonczenia)
+        // Przecięcie przedziału pracy [pracaOd, pracaDo] z oknem pory nocnej z
+        // kalendarza. Okno pory nocnej enova zapisuje z końcem "po północy"
+        // (np. 21:00-07:00 => Od=21:00, Do=31:00), a strefa pracy na nockę kończy
+        // się po 24:00 (OdGodziny + Czas). Poprzednia wersja liczyła zwykłe
+        // Max/Min i przy oknie przechodzącym przez północ dawała błędne wyniki.
+        // Tutaj przecinamy przedział pracy z oknem dwukrotnie: wprost oraz
+        // przesunięty o dobę do przodu - dzięki temu poranny fragment pracy
+        // (np. 6:00-7:00, należący do pory nocnej z poprzedniej doby) też trafia
+        // w okno.
+        static Time PrzeciecieZPoraNocna(Time pracaOd, Time pracaDo, Time nocOd, Time nocDo)
         {
-            // przedział pobrany z kalendarza
-            Time nocOd = pracownik[data].Etat.Kalendarz.Nocne.Od;
-            Time nocDo = pracownik[data].Etat.Kalendarz.Nocne.Do;
-
-            Time pracaOd = godzinaRozpoczecia;
-            Time pracaDo = godzinaZakonczenia;
-
-            Time start = Time.Max(nocOd, pracaOd);
-            Time end = Time.Min(nocDo, pracaDo);
-
-            if (end <= start)
+            if (pracaDo <= pracaOd || nocDo <= nocOd)
                 return Time.Zero;
 
-            return end - start;
+            Time doba = new Time(24, 0);
+            Time wynik = Time.Zero;
+
+            Time s1 = Time.Max(pracaOd, nocOd);
+            Time e1 = Time.Min(pracaDo, nocDo);
+            if (e1 > s1)
+                wynik += e1 - s1;
+
+            Time s2 = Time.Max(pracaOd + doba, nocOd);
+            Time e2 = Time.Min(pracaDo + doba, nocDo);
+            if (e2 > s2)
+                wynik += e2 - s2;
+
+            return wynik;
+        }
+
+        // Sygnatura zachowana - metoda bywała wykorzystywana w wyrażeniach układu
+        // raportu. Deleguje do poprawnego PrzeciecieZPoraNocna.
+        public static Time PoliczPoreNocna(Pracownik pracownik, Date data, Time godzinaRozpoczecia, Time godzinaZakonczenia)
+        {
+            Time nocOd = pracownik[data].Etat.Kalendarz.Nocne.Od;
+            Time nocDo = pracownik[data].Etat.Kalendarz.Nocne.Do;
+            return PrzeciecieZPoraNocna(godzinaRozpoczecia, godzinaZakonczenia, nocOd, nocDo);
+        }
+
+        // Liczba godzin nocnych dnia wg reguły uzgodnionej z użytkownikiem:
+        //  1. jeśli w dniu jest strefa "Praca w godzinach nocnych" (tak wchodziły
+        //     dane z migracji) - bierzemy sumę jej godzin wprost;
+        //  2. w przeciwnym razie noc wynika z godzin, w których pracownik
+        //     faktycznie pracował (strefy zwiększające czas pracy - "Praca w
+        //     normie", "Praca poza normą" itd.), przeciętych z oknem pory nocnej
+        //     z kalendarza;
+        //  3. dzień bez żadnych stref - fallback do kalkulatora enova.
+        // Ta sama wartość trafia do kolumny "Godziny nocne" i do podsumowania
+        // RazemNoc, więc suma kolumny zawsze zgadza się z podsumowaniem. Wcześniej
+        // kolumna liczyła PoliczPoreNocna osobno dla KAŻDEGO wiersza strefy (na
+        // dniu z pracą + osobną strefą nocną z migracji noc wychodziła na obu
+        // wierszach), a RazemNoc brało kalkulator.Nocne (z limitem/rozliczaniem
+        // wg kalendarza) - stąd raport "2x8h w kolumnie, 1h w podsumowaniu".
+        Time NoceDnia(Pracownik pracownik, DzienPracy dzienPracy, Date data)
+        {
+            if (dzienPracy == null || !dzienPracy.Strefy.Any)
+            {
+                Time n = kalkulator.Nocne(new FromTo(data, data));
+                return n == Time.Empty ? Time.Zero : n;
+            }
+
+            Time zeStrefyNocnej = Time.Zero;
+            bool maStrefeNocna = false;
+            foreach (var s in dzienPracy.Strefy)
+            {
+                if (s.Definicja != null && s.Definicja.Nazwa == "Praca w godzinach nocnych")
+                {
+                    maStrefeNocna = true;
+                    if (s.Czas != Time.Empty)
+                        zeStrefyNocnej += s.Czas;
+                }
+            }
+            if (maStrefeNocna)
+                return zeStrefyNocnej;
+
+            Time nocOd = pracownik[data].Etat.Kalendarz.Nocne.Od;
+            Time nocDo = pracownik[data].Etat.Kalendarz.Nocne.Do;
+            Time wynik = Time.Zero;
+            foreach (var s in dzienPracy.Strefy)
+            {
+                if (s.Definicja == null || !s.Definicja.Wchodzi || s.Definicja.Typ != TypStrefy.Zwieksza)
+                    continue;
+                if (s.OdGodziny == Time.Empty || s.Czas == Time.Empty)
+                    continue;
+                wynik += PrzeciecieZPoraNocna(s.OdGodziny, s.OdGodziny + s.Czas, nocOd, nocDo);
+            }
+            return wynik;
         }
 
         Dictionary<string, Time> sumaDyżurow;
@@ -249,6 +319,10 @@ namespace Soneta.KadryPlace.Reports
 
         Time czas, czasPrzestoju, swieta, wolne, nocne, nadlicz, uw, uwd, uok, uop, usz, ub, ch, op, wych, nu, nn, nad50, nad100, karmienie, dp, dd, pbez, nadZP, nadDoP;
         DevExpress.XtraReports.UI.XRTableCell kolumna = null;
+
+        // Godziny nocne wyliczone raz na dzień (klucz = dzień), wspólne dla
+        // kolumny "Godziny nocne" i podsumowania RazemNoc - patrz NoceDnia.
+        Dictionary<Date, Time> nocnePerDzien;
 
         [DxBind]
         private void Grid1ListaWiersz_BeforePrint(object sender, CancelEventArgs e)
@@ -292,7 +366,7 @@ namespace Soneta.KadryPlace.Reports
                         colOd.Text = dzień.OdGodziny == Time.Zero ? "" : dzień.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
                         var doGodziny = Dzien.DoGodziny(dzień);
                         colDo.Text = doGodziny == Time.Zero ? "" : Dzien.DoGodziny(dzień).ToString("+", System.Globalization.CultureInfo.InvariantCulture);
-                        colNocne.Text = kalkulator.Nocne(new FromTo(data, data)) == Time.Zero ? "" : kalkulator.Nocne(new FromTo(data, data)).ToString();
+                        // Kolumna "Godziny nocne" wypełniana jest niżej, raz na dzień, z nocnePerDzien.
                     }
                     else
                     {
@@ -308,13 +382,9 @@ namespace Soneta.KadryPlace.Reports
                         else
                             colDo.Text = strefaDoGodziny == Time.Zero ? "" : strefaDoGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture);
 
-                        if (linia.Strefa.OdGodziny != Time.Zero)
-                        {
-                            Time nocnerob = PoliczPoreNocna(linia.Prac, data, linia.Strefa.OdGodziny, linia.DoGodzinyLaczna);
-                            colNocne.Text = nocnerob == Time.Zero ? "" : nocnerob.ToString();
-                            if (linia.Strefa.Definicja.Nazwa == "Praca w godzinach nocnych")
-                                colNocne.Text = nocnerob == Time.Zero ? kalkulator.Nocne(new FromTo(data, data)).ToString() : nocnerob.ToString();
-                        }
+                        // Kolumna "Godziny nocne" wypełniana jest niżej, raz na dzień, z nocnePerDzien -
+                        // nie liczymy jej już osobno dla każdego wiersza strefy (dublowało noc na dniu
+                        // z pracą + osobną strefą "Praca w godzinach nocnych" z migracji).
 
                         DodatekBryg.Text = linia.Strefa.Features.GetBool("DodatekBryg") ? "TAK" : "";
                         ElemSlownika elProj = (ElemSlownika)linia.Strefa.Features["Projekt"];
@@ -339,6 +409,15 @@ namespace Soneta.KadryPlace.Reports
                             pracazdalna.Text = "TAK";
                     }
                 }
+
+                // Godziny nocne - jedna wartość na dzień (policzona w
+                // detailReportBand1_BeforePrint / NoceDnia), drukowana tylko na
+                // pierwszym wierszu danego dnia; na kolejnych wierszach kolumna
+                // zostaje pusta (wyzerowana wyżej). Dzięki temu na dniu z kilkoma
+                // strefami noc nie sumuje się na każdym wierszu, a suma kolumny
+                // zgadza się z podsumowaniem RazemNoc.
+                if (linia.PierwszaWDniu)
+                    colNocne.Text = linia.NocDnia == Time.Zero ? "" : linia.NocDnia.ToString();
 
                 if (kalkulator.Plan[data].Czas == Time.Zero)
                     Harmonogram.Text = "";
@@ -546,12 +625,17 @@ namespace Soneta.KadryPlace.Reports
                 ZestawienieNadgodzin zn = nadgodziny.Nadgodziny(oz);
                 n50 += zn.N50;
                 n100 += zn.N100 + zn.NSW;
-                nocne += kalkulator.Nocne(oz);
             }
 
             nadgodziny.TrybRozliczania = KalkulatorNadgodzin.TrybRozliczaniaNadgodzin.TylkoDobowe;
 
-            RazemNoc.Text = nocne.ToString();
+            // Godziny nocne liczymy sami, dzień po dniu (NoceDnia), i tą samą
+            // wartością wypełniamy kolumnę "Godziny nocne". RazemNoc = suma tych
+            // wartości, więc kolumna zawsze zgadza się z podsumowaniem. Wcześniej
+            // RazemNoc brało kalkulator.Nocne(oz) (z limitem/rozliczaniem wg
+            // kalendarza), a kolumna PoliczPoreNocna per wiersz strefy - stąd
+            // raport "2x8h w kolumnie, 1h w podsumowaniu".
+            nocnePerDzien = new Dictionary<Date, Time>();
 
             List<Linia> linie = new List<Linia>();
             linie.Clear();
@@ -564,6 +648,14 @@ namespace Soneta.KadryPlace.Reports
                 // raport będzie drukowany dla osób które podzielnik mają na strefach
 
                 DzienPracy dzienPracy = pracownik.DniPracy[dataSpr];
+
+                if (okresy_zatrudnienia.Contains(dataSpr))
+                {
+                    Time nocDnia = NoceDnia(pracownik, dzienPracy, dataSpr);
+                    nocnePerDzien[dataSpr] = nocDnia;
+                    nocne += nocDnia;
+                }
+
                 if (dzienPracy == null)
                 {
                     linie.Add(new Linia(dataSpr, pracownik));
@@ -609,7 +701,25 @@ namespace Soneta.KadryPlace.Reports
                 }
             }
 
+            // Oznaczamy pierwszy wiersz każdego dnia i przypisujemy mu godziny
+            // nocne dnia - kolumna "Godziny nocne" drukuje wartość tylko na tym
+            // wierszu (na kolejnych wierszach tego samego dnia pusto). Robimy to
+            // na obiekcie Linia, a nie na polu raportu, żeby było odporne na
+            // ponowne drukowanie wierszy przy paginacji.
+            Date poprzedniDzienNoc = Date.Empty;
+            foreach (Linia l in linie)
+            {
+                if (l.DzienM != poprzedniDzienNoc)
+                {
+                    l.PierwszaWDniu = true;
+                    l.NocDnia = nocnePerDzien.ContainsKey(l.DzienM) ? nocnePerDzien[l.DzienM] : Time.Zero;
+                    poprzedniDzienNoc = l.DzienM;
+                }
+            }
+
             Grid1Lista.DataSource = linie;
+
+            RazemNoc.Text = nocne.ToString();
         }
 
         public class Linia
@@ -641,6 +751,16 @@ namespace Soneta.KadryPlace.Reports
             public Date DzienM { get; set; }
             public ElementPodzielnika ElemPodz { get; set; }
             public Pracownik Prac { get; set; }
+
+            // Pierwszy wiersz danego dnia w karcie - tylko na nim drukujemy
+            // godziny nocne dnia (NocDnia), żeby na dniu z kilkoma strefami noc
+            // nie powielała się na każdym wierszu.
+            public bool PierwszaWDniu { get; set; }
+
+            // Godziny nocne całego dnia (wg NoceDnia): ze strefy "Praca w
+            // godzinach nocnych" jeśli jest, inaczej z godzin pracy przeciętych
+            // z porą nocną. Ta sama suma trafia do podsumowania RazemNoc.
+            public Time NocDnia { get; set; }
 
             // Łączna godzina zakończenia po ewentualnym scaleniu kilku zapisów strefy
             // o tym samym typie/Projekcie/Tasku w jeden wiersz karty (patrz
