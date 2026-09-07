@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using DevExpress.DataAccess;
 using DevExpress.XtraReports.UI;
 using Soneta.Business;
 using Soneta.Business.UI.DxReports;
@@ -109,6 +108,29 @@ namespace x.x.Reports
             set { pars = value; }
         }
 
+        // Ustawia listę wierszy jako CustomDataSource przez refleksję zamiast
+        // bezpośredniego DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = ...
+        // Powód: statyczne odwołanie do właściwości CustomDataSource wymusza w
+        // kompilowanym snippecie rozwiązanie pełnej hierarchii klas
+        // BusinessDataSource (klasa bazowa DataComponentBase z zestawu
+        // DevExpress.DataAccess.v24.1) - w środowisku, w którym ten zestaw nie
+        // jest dostępny (Pulpit WWW), kompilacja snippetu kończy się błędem
+        // CS0012, a że snippety są tam kompilowane razem w jednej paczce, psuje
+        // to też inne, niepowiązane raporty. Wersja przez refleksję nigdy nie
+        // odwołuje się do typu BusinessDataSource w kodzie źródłowym (tylko
+        // przez object), więc kompilator nie musi rozwiązywać jego klasy
+        // bazowej. Patrz ZestawienieKomisjaSocjalna.md, sekcja „Błąd
+        // DataComponentBase przy wywołaniu z Pulpitu”.
+        private void UstawDaneRaportu(object dane)
+        {
+            object zrodlo = DxReportHelpers.GetDataSourceEmpty(this);
+            if (zrodlo == null)
+                return;
+            var wlasciwosc = zrodlo.GetType().GetProperty("CustomDataSource");
+            if (wlasciwosc != null)
+                wlasciwosc.SetValue(zrodlo, dane, null);
+        }
+
         [DxBind(Name = "Report")]
         private void ZestawienieKomisjaSocjalna_BeforePrint(object sender, CancelEventArgs e)
         {
@@ -118,7 +140,7 @@ namespace x.x.Reports
                 etap = "sprawdzenie trybu (designer)";
                 if (pars == null)
                 {
-                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    UstawDaneRaportu(new List<Wiersz>());
                     return;
                 }
 
@@ -126,7 +148,7 @@ namespace x.x.Reports
                 Context dc = pars.Context;
                 if (dc == null)
                 {
-                    DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                    UstawDaneRaportu(new List<Wiersz>());
                     return;
                 }
 
@@ -147,7 +169,7 @@ namespace x.x.Reports
                     Row[] rows = dc[typeof(Row[])] as Row[];
                     if (rows == null)
                     {
-                        DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = new List<Wiersz>();
+                        UstawDaneRaportu(new List<Wiersz>());
                         return;
                     }
                     foreach (Row row in rows)
@@ -192,22 +214,19 @@ namespace x.x.Reports
                 }
 
                 etap = "ustawienie CustomDataSource";
-                DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
+                UstawDaneRaportu(wiersze);
             }
             catch (Exception ex)
             {
-                var ds = DxReportHelpers.GetDataSourceEmpty(this);
-                if (ds == null)
-                    return;
                 string opis = "ETAP=" + (etap ?? "(null)")
                     + " | TYP=" + ex.GetType().FullName
                     + " | KOMUNIKAT=" + ex.Message;
-                ds.CustomDataSource = new List<Wiersz> {
+                UstawDaneRaportu(new List<Wiersz> {
                     new Wiersz {
                         Lp = "BŁĄD",
                         NazwiskoImie = opis
                     }
-                };
+                });
             }
         }
 

@@ -180,6 +180,39 @@ obsługującym Pulpity** — brakuje mu dostępu do
 ograniczoną listę referencjonowanych zestawów, do której ta biblioteka nie
 należy).
 
+**Próba nr 2 — ominięcie w kodzie źródłowym snippetu (nieprzetestowana):**
+CS0012 pojawia się dokładnie tam, gdzie kod snippetu odwołuje się do
+właściwości `CustomDataSource` na wyniku `DxReportHelpers.GetDataSourceEmpty(this)`
+(zadeklarowanym jako `BusinessDataSource`) — takie odwołanie do właściwości
+wymaga od kompilatora rozwiązania **pełnej hierarchii klas** `BusinessDataSource`
+(w tym `DataComponentBase`), bo odczyt/zapis właściwości wymaga przeszukania
+także składowych odziedziczonych. Sam fakt wywołania metody zwracającej ten
+typ i przypisania wyniku do zmiennej `object` (bez dotykania jego składowych)
+**nie powinien** wymagać tej samej pełnej hierarchii — rzutowanie w górę do
+`object` jest zawsze legalne bez pełnego rozwiązania klasy bazowej.
+
+Na tej podstawie zmieniono snippet: nowa prywatna metoda `UstawDaneRaportu(object dane)`
+przechowuje wynik `GetDataSourceEmpty(this)` w zmiennej typu `object` i
+ustawia `CustomDataSource` **przez refleksję** (`Type.GetProperty` +
+`PropertyInfo.SetValue`), więc w kodzie źródłowym nigdzie nie ma już
+statycznego odwołania do typu `BusinessDataSource` ani jego składowych.
+Wszystkie 4 miejsca w `BeforePrint`, które wcześniej ustawiały
+`CustomDataSource` bezpośrednio, przechodzą teraz przez tę metodę.
+
+**To nadal hipoteza, nieprzetestowana na żywo** — dwa możliwe wyniki po
+wgraniu:
+- **Zadziała** (błąd zniknie, także przy wywołaniu tamtego innego raportu) —
+  potwierdzi, że problem był ściśle w treści snippetu (odwołanie do
+  `CustomDataSource`), a nie w samej obecności `.repx` z komponentami
+  `BusinessDataSource` w `ComponentStorage`.
+- **Nie zadziała / ten sam błąd** — oznaczać będzie, że CS0012 pochodzi z
+  kodu generowanego automatycznie przez Enova na podstawie `ComponentStorage`
+  tego `.repx` (pola dla komponentów `BusinessSource`/`BusinessSourceContext`
+  łączonego przy kompilacji z treścią snippetu), a nie z treści snippetu
+  wklejanej w „Kod źródłowy” — wtedy jedyną naprawą zostaje strona
+  serwera/hosta (dodanie `DevExpress.DataAccess.v24.1.dll` do Pulpitu WWW),
+  bo nic w treści snippetu tego już nie ominie.
+
 Do ustalenia (wymaga dostępu do serwera/instalacji — poza zasięgiem tego
 repo):
 - sprawdzić, czy w folderze `bin` procesu obsługującego Pulpity (może to być
