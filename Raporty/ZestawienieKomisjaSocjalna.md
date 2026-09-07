@@ -127,9 +127,23 @@ Rok oświadczenia = rok z „Daty posiedzenia komisji”; data graniczna wniosku
 
 ## Błąd „DataComponentBase” przy wywołaniu z Pulpitu
 
-Zgłoszony błąd: raport działa poprawnie uruchamiany w wersji okienkowej
-(z Listy pracowników), ale wywołany z **Pulpitu** (np. Pulpitu kierownika)
-kończy się błędem kompilacji snippetu:
+**Ważne doprecyzowanie (2026-09-07):** ten raport (`ZestawienieKomisjaSocjalna`)
+sam w sobie **nie jest wywoływany** z Pulpitów w tej instalacji. Poniższy błąd
+pojawia się przy próbie wywołania **innego** raportu z **Pulpitu WWW**
+(pulpit działa jako aplikacja przeglądarkowa, nie jako moduł w kliencie
+desktopowym). Mimo to treść błędu wskazuje na plik/snippet
+`A1ZestawienieKomisjaSocjalna` — czyli na **ten sam kod** (prawdopodobnie ten
+inny raport w Enova przejął/skopiował ten sam „systemowy plik dodatkowy”
+snippetu, zamiast dostać własny). To istotna poszlaka: błąd nie jest
+specyficzny dla konkretnego `.repx` tego raportu ani dla ścieżki wywołania
+„Lista pracowników → ten raport” — pojawia się przy kompilacji **tego kodu**
+w procesie **Pulpitu WWW**, niezależnie od tego, z poziomu którego raportu
+Enova akurat tę kompilację wyzwoliła. Wzmacnia to hipotezę „host Pulpitu WWW
+nie ma dostępu do `DevExpress.DataAccess.v24.1.dll`”, a osłabia potrzebę
+grzebania dalej w treści snippetu — problem wygląda na czysto
+środowiskowy/wdrożeniowy po stronie serwera WWW obsługującego Pulpity.
+
+Treść błędu:
 
 ```
 Systemowy plik dodatkowy: Snippet: A1ZestawienieKomisjaSocjalna
@@ -152,16 +166,22 @@ znajduje. Host obsługujący **Pulpity** to prawdopodobnie osobny proces/AppDoma
 została jeszcze załadowana / nie jest automatycznie referencjonowana — stąd
 `CS0012` tylko w tej ścieżce wywołania.
 
-**Zmiana w snippecie:** dodano `using DevExpress.DataAccess;` na początku pliku
-(mechanizm doboru referencji w Enova zwykle mapuje `using`-y w kodzie na
-zestawy do dołączenia przy kompilacji — jawny `using` może wymusić
-dołączenie referencji, której silnik inaczej by nie dodał w tym hoście).
-**Niepotwierdzone** — do przetestowania: wkleić zaktualizowaną treść
-snippetu i ponownie uruchomić wydruk z Pulpitu.
+**Próba nr 1 (obalona):** dodano `using DevExpress.DataAccess;` na początku
+pliku, w nadziei że jawny `using` wymusi dołączenie referencji przy
+kompilacji. **Przetestowane na żywo — ten sam błąd nadal występuje.** To
+wyklucza hipotezę „silnik dobiera referencje z `using`-ów w kodzie źródłowym
+snippetu” — najwyraźniej lista zestawów dostępnych kompilatorowi w procesie
+Pulpitów jest ustalana niezależnie od treści snippetu (np. z góry
+skonfigurowana lista referencji dla tego hosta, albo zestaw assembly faktycznie
+załadowanych w tym AppDomain). Skoro sama treść kodu tego nie zmienia, wniosek
+jest taki, że **problem nie leży w snippecie, tylko w środowisku/hoście
+obsługującym Pulpity** — brakuje mu dostępu do
+`DevExpress.DataAccess.v24.1.dll` (lub kompilator w tym procesie ma z góry
+ograniczoną listę referencjonowanych zestawów, do której ta biblioteka nie
+należy).
 
-**Jeśli to nie pomoże** — to sygnał, że `DevExpress.DataAccess.v24.1.dll`
-faktycznie nie jest dostępna w procesie hostującym Pulpity (nie da się tego
-naprawić samą treścią snippetu):
+Do ustalenia (wymaga dostępu do serwera/instalacji — poza zasięgiem tego
+repo):
 - sprawdzić, czy w folderze `bin` procesu obsługującego Pulpity (może to być
   osobny serwis/aplikacja WWW, nie ten sam katalog co klient desktopowy)
   znajduje się `DevExpress.DataAccess.v24.1.dll` obok innych bibliotek
@@ -171,7 +191,21 @@ naprawić samą treścią snippetu):
 - sprawdzić, czy **jakikolwiek** wydruk oparty o `.repx` z komponentem
   `BusinessDataSource` (wzorzec `Soneta.Business.UI.DxReports`) w ogóle działa
   wywołany z tej instalacji Pulpitów — jeśli żaden nie działa, problem jest
-  po stronie hosta Pulpitów, a nie tego konkretnego raportu.
+  po stronie hosta Pulpitów, a nie tego konkretnego raportu;
+- w projektancie wydruków sprawdzić, czy raport, przy którego wywołaniu z
+  Pulpitu WWW faktycznie wystąpił błąd, rzeczywiście **celowo** ma podpięty
+  „systemowy plik dodatkowy” `A1ZestawienieKomisjaSocjalna` — jeśli to
+  przypadkowe powielenie/pozostałość po kopiowaniu wydruku, warto to
+  rozdzielić niezależnie od naprawy samego hosta.
+
+**Doprecyzowanie hostingu:** skoro Pulpit działa jako aplikacja
+przeglądarkowa (nie moduł klienta desktopowego), proces kompilujący snippet
+to najpewniej osobna aplikacja/site w IIS (albo Kestrel) obsługująca Pulpity
+WWW — z własnym folderem `bin`/`wwwroot` i własnym app poolem, fizycznie
+oddzielona od instalacji klienta desktopowego, mimo że łączy się z tą samą
+bazą enova. To w jej folderze `bin` (a nie w folderze klienta) trzeba szukać
+`DevExpress.DataAccess.v24.1.dll` i po ewentualnym dodaniu — zrestartować
+tamten app pool/serwis (nie sam klient desktopowy).
 
 ## Jak podpiąć snippet w Enova
 
