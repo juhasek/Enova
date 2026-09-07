@@ -217,6 +217,16 @@ naszym raporcie **wywala kompilację całej paczki**, więc przestają działać
 też inne, niepowiązane raporty które akurat są w tej samej paczce — łącznie
 z tym „innym raportem”, którego kod nigdy nie dotykał `DataComponentBase`.
 
+**Przyczyna potwierdzona (użytkownik, 2026-09-07):** bez snippetu
+`ZestawienieKomisjaSocjalna` w bazie tamten inny raport z Pulpitu WWW działa
+bez problemu. To potwierdza teorię „wspólna paczka kompilacji” — nasz
+`.repx` psuje kompilację całej paczki w hoście Pulpitu WWW, który nie ma
+`DevExpress.DataAccess.v24.1.dll`. Użytkownik pamięta, że podobny problem z
+innym raportem w Pulpitach już kiedyś wystąpił i został jakoś rozwiązany,
+ale rozwiązanie nie zostało odnotowane w tym repo (przeszukane commity i
+`.md` — brak śladu) — najpewniej rozwiązano to bezpośrednio po stronie
+serwera (np. dograniem brakującej biblioteki), bez zapisu tutaj.
+
 **Wniosek praktyczny:** dopóki `DevExpress.DataAccess.v24.1.dll` nie
 znajdzie się w hoście Pulpitu WWW, obecność tego snippetu/raportu w bazie
 **psuje inne, działające dotąd raporty wywoływane z tego Pulpitu** — to nie
