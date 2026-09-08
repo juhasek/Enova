@@ -73,13 +73,21 @@ Z zakładki *Płace/Wypłaty* na kartotece enova podaje w CurrentList **pracowni
 - **inaczej** fallback → wszystkie wypłaty etatowe pracownika
   (`PlaceModule.Wyplaty.WgPracownik[prac]`).
 
-**Do potwierdzenia na żywej bazie:** czy `INavigatorContext` w kontekście wydruku
-odpalonego z pod-listy *Wypłaty* wskazuje nawigator tej pod-listy (`RowType =
-WyplataEtat`), czy nawigator formularza (`RowType = PracHistoria`). Jeśli to
-drugie — zaznaczenia nie da się odzyskać w snippet-cie i trzeba: albo odpalać
-druk z własnego paska narzędzi pod-listy *Wypłaty* (kontekst `Wyplata`, jak
-standardowy „Wypłata pasek duży"), albo zrobić dedykowaną **czynność** na liście
-Wypłat, która czyta zaznaczenie i woła raport z jawnym źródłem danych.
+**Potwierdzone na żywej bazie (2026-09-08):** `INavigatorContext` z pod-listy
+*Wypłaty* na kartotece **niesie zaznaczenie wypłat** — wydruk poprawnie obejmuje
+tylko zaznaczone zapisy zarówno z `Płace/Wypłaty`, jak i z kartoteki.
+
+## Grupowanie per miesiąc
+
+Klucz grupowania to `(Pracownik.Guid, rep.Data.Month, typ wypłaty)` — wypłaty z
+tego samego miesiąca schodzą się na jeden zbiorczy pasek. W nagłówku
+„Wypłata za okres" idzie `rep.ListaPlac.Okres.ToYearMonth()` (**metoda**, z
+nawiasami — `FromTo.ToYearMonth()`), a linia „Data wypłaty" jest zakomentowana,
+bo dla paska zbiorczego pojedyncza data byłaby myląca.
+
+Uwaga: `Data.Month` to sam numer miesiąca, bez roku — luty 2025 i luty 2026
+wpadłyby na jeden pasek. Jeśli kiedyś zacznie przeszkadzać, dołożyć
+`&& rep.Data.Year == w.Data.Year`.
 
 ## Jak wgrać
 
