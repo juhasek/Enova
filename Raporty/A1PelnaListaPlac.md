@@ -3,6 +3,7 @@
 **Status: DZIAŁA jako wydruk** na bazie `Claude` (potwierdzone 2026-09-05).
 
 > **Do Excela używać dodatku `Addon/` (`Pełna lista płac (XLSX)`), nie tego wydruku.**
+> Dodatek DZIAŁA — potwierdzone przez użytkownika 2026-09-08.
 > Eksport tego wydruku do XLSX z podglądu **strukturalnie scala kolumny tekstowe**
 > (XRTable → xlsx: kolumna o zmiennej długości tekstu rozbija się na 2), czego nie
 > dało się naprawić mimo wielu prób (jedna tabela, `Weight`-only, snap-to-grid,

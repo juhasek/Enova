@@ -1,5 +1,8 @@
 # A1PelnaListaPlacAddon — skompilowany dodatek enova365
 
+**Status: DZIAŁA — potwierdzone przez użytkownika 2026-09-08** (wgrany przez
+`ExtPath`, czynność generuje poprawny plik XLSX z rozdzielonymi kolumnami).
+
 Czynność **„Pełna lista płac (XLSX)"** na liście **Płace → Listy płac** (działa na
 zaznaczonych pozycjach). Generuje plik `.xlsx` bezpośrednio biblioteką
 `DevExpress.Spreadsheet` — **czysta siatka komórek, bez scalania/rozjeżdżania
