@@ -1,8 +1,16 @@
 # A1PelnaListaPlac — pełna lista płac wg elementów (Płace / Listy płac)
 
-**Status: DZIAŁA na bazie testowej `Claude`** (potwierdzone przez użytkownika, 2026-09-05).
+**Status: DZIAŁA jako wydruk** na bazie `Claude` (potwierdzone 2026-09-05).
 
-**Przebudowa 2026-09-07/08 pod czytelny eksport do Excela (do potwierdzenia na żywo).**
+> **Do Excela używać dodatku `Addon/` (`Pełna lista płac (XLSX)`), nie tego wydruku.**
+> Eksport tego wydruku do XLSX z podglądu **strukturalnie scala kolumny tekstowe**
+> (XRTable → xlsx: kolumna o zmiennej długości tekstu rozbija się na 2), czego nie
+> dało się naprawić mimo wielu prób (jedna tabela, `Weight`-only, snap-to-grid,
+> ukrycie pozostałych bandów, `SingleFile`...). Wydruk zostaje do podglądu/PDF.
+> Excel: `Addon/A1PelnaListaPlacWorker.cs` — buduje xlsx od zera, 1 kolumna = 1
+> kolumna Excela.
+
+**Przebudowa 2026-09-07/08 pod czytelny eksport do Excela (nieskuteczna — patrz wyżej).**
 Wcześniejszy eksport wychodził nieczytelny: kolumny mikroskopijne, arkusz rozbity na
 dziesiątki wąskich kolumn (`B D F I J L…`), nagłówki łamane litera po literze. Cztery
 przyczyny naprawione naraz w snippecie:
