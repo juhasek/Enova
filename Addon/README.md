@@ -1,10 +1,12 @@
 # A1PelnaListaPlacAddon — skompilowany dodatek enova365
 
 **Status: DZIAŁA — potwierdzone przez użytkownika 2026-09-08** (wgrany przez
-`ExtPath`, czynność generuje poprawny plik XLSX z rozdzielonymi kolumnami).
+`ExtPath`, generuje poprawny plik XLSX z rozdzielonymi kolumnami).
 
-Czynność **„Pełna lista płac (XLSX)"** na liście **Płace → Listy płac** (działa na
-zaznaczonych pozycjach). Generuje plik `.xlsx` bezpośrednio biblioteką
+**Przycisk „Pełna lista płac (XLSX)" na pasku narzędzi** widoku **Płace → Listy
+płac** (działa na zaznaczonych pozycjach) — od 2026-09-08 nie jest to już pozycja
+menu *Czynności*, tylko przycisk (`Target = ActionTarget.ToolbarWithText`,
+`Icon = ActionIcon.ExcelPreview`). Generuje plik `.xlsx` bezpośrednio biblioteką
 `DevExpress.Spreadsheet` — **czysta siatka komórek, bez scalania/rozjeżdżania
 kolumn**, którego nie dało się wyeliminować przy eksporcie report-snippetu z
 podglądu wydruku (zob. `Raporty/A1PelnaListaPlac.md`).
@@ -63,8 +65,8 @@ katalog `ExtPath` (przeżywa aktualizacje enova, nie miesza się z plikami produ
    lub `--ext "C:\enovaServer\Dodatki\A1PelnaListaPlacAddon.dll"` per komponent.)
 
 4. **Zrestartuj usługi enova** (orchestrator pociągnie resztę).
-5. **Płace → Listy płac** → zaznacz 1+ pozycji → **Czynności → „Pełna lista płac
-   (XLSX)"** → pobierz plik.
+5. **Płace → Listy płac** → zaznacz 1+ pozycji → przycisk **„Pełna lista płac
+   (XLSX)"** na pasku narzędzi listy → pobierz plik.
 
 ### Szybki wariant (bez konfiguracji, ginie przy aktualizacji)
 
@@ -77,8 +79,10 @@ i zrestartuj usługi. Działa, jeśli enova skanuje katalog bazowy komponentu �
 
 ## Weryfikacja po wgraniu
 
-- Czynność pojawia się w menu na liście płac (jeśli nie — dodatek się nie
+- Przycisk pojawia się na pasku narzędzi listy płac (jeśli nie — dodatek się nie
   załadował: zły `ExtPath` / nie zrestartowano / niezgodna wersja net/enova).
+  Przycisk jest widoczny/aktywny dopiero po zaznaczeniu min. 1 listy płac
+  (`IsVisibleGenerujXlsx` / `IsEnabledGenerujXlsx`).
 - Wygenerowany `.xlsx`: jedna spójna tabela, **każda kolumna = jedna kolumna
   Excela** (bez scaleń), liczby jako liczby (`=SUMA(...)` działa), nagłówek
   pogrubiony i zamrożony, autofiltr.

@@ -13,8 +13,8 @@ using DevExpress.Spreadsheet;
 
 namespace A1.Rozszerzenia
 {
-    // Czynnosc "Pelna lista plac -> XLSX" na liscie Place -> Listy plac (dziala na
-    // zaznaczonych pozycjach). Buduje plik .xlsx OD ZERA biblioteka DevExpress.Spreadsheet
+    // Przycisk "Pelna lista plac (XLSX)" na pasku narzedzi widoku Place -> Listy plac
+    // (dziala na zaznaczonych pozycjach). Buduje plik .xlsx OD ZERA biblioteka DevExpress.Spreadsheet
     // - czysta siatka komorek, wiec NIE MA problemu ze scalaniem/rozjezdzaniem kolumn,
     // ktory wystepowal przy eksporcie report-snippetu z podgladu wydruku (XRTable -> xlsx
     // scala kolumny tekstowe o zmiennej dlugosci; patrz Raporty/A1PelnaListaPlac.md).
@@ -35,7 +35,13 @@ namespace A1.Rozszerzenia
         const double MaxSzerokoscZnaki = 42;
         const double MinSzerokoscLiczbaZnaki = 12;
 
-        [Action("Pełna lista płac (XLSX)")]
+        // Target = ToolbarWithText -> przycisk (z opisem) na pasku narzedzi widoku
+        // Place -> Listy plac, a NIE pozycja w menu "Czynnosci" (to bylby ActionTarget.Menu,
+        // wartosc domyslna ActionAttribute.Target). Icon = ikona na przycisku.
+        [Action("Pełna lista płac (XLSX)",
+                Target = ActionTarget.ToolbarWithText,
+                Icon = ActionIcon.ExcelPreview,
+                Priority = 100)]
         public object GenerujXlsx()
         {
             // 1. Zebranie wszystkich wyplat z zaznaczonych list plac.

@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Skompilowany dodatek enova365 (net8.0) - czynnosc "Pelna lista plac -> XLSX"
-    na liscie Place -> Listy plac. Powstal, bo report-snippet + eksport z podgladu
+    Skompilowany dodatek enova365 (net8.0) - przycisk "Pelna lista plac (XLSX)"
+    na pasku narzedzi listy Place -> Listy plac (ActionTarget.ToolbarWithText;
+    wczesniej byla to pozycja menu Czynnosci). Powstal, bo report-snippet + eksport z podgladu
     DevExpress uporczywie scala kolumny tekstowe w Excelu (patrz Raporty/A1PelnaListaPlac.md).
 
     BUDOWANIE (na maszynie z DLL-ami serwera enova 2512.5.6):
@@ -14,7 +15,8 @@
          C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard\
          C:\enovaServer\2512.5.6\Soneta.Products.Web.Standard\
       2. Zrestartuj uslugi enova (orchestrator / server / web / webapi).
-      3. Place -> Listy plac -> zaznacz pozycje -> Czynnosci -> "Pelna lista plac -> XLSX".
+      3. Place -> Listy plac -> zaznacz pozycje -> przycisk "Pelna lista plac (XLSX)"
+         na pasku narzedzi listy.
 
     UWAGA: dodatek celuje w net8.0 (serwer enova = net8.0). Referencje sa do DLL-i
     z folderu serwera (Private=false - NIE kopiujemy ich do bin, sa juz na serwerze).
