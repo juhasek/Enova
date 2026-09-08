@@ -459,7 +459,10 @@ namespace x.x.Reports
             komorka.TextAlignment = liczba ? TextAlignment.MiddleRight : TextAlignment.MiddleLeft;
             komorka.Borders = BorderSide.All;
             komorka.Font = new Font("Calibri", 9f, naglowek ? FontStyle.Bold : FontStyle.Regular);
-            komorka.WordWrap = naglowek;   // zawijanie tylko w nagłówkach (długie nazwy)
+            // WordWrap=false wszędzie: kolumny liczymy tak, by najdłuższy tekst (nagłówek
+            // lub dana) mieścił się w jednej linii. Różne WordWrap między wierszem
+            // nagłówka a danymi potrafi w eksporcie do Excela rozbić kolumnę na dwie.
+            komorka.WordWrap = false;
             return komorka;
         }
 
@@ -474,15 +477,20 @@ namespace x.x.Reports
         }
 
         // Pseudo-autofit na JEDNEJ tabeli. Dla każdej kolumny bierzemy najdłuższy tekst
-        // po wszystkich wierszach (z nagłówkiem), ustawiamy WidthF/Weight wszystkich
-        // komórek tej kolumny na tę samą wartość, a na końcu poszerzamy tabelę, KAŻDY
-        // wiersz i stronę do sumy szerokości kolumn.
+        // po wszystkich wierszach (z nagłówkiem) i ustawiamy WYŁĄCZNIE Weight wszystkich
+        // komórek tej kolumny na tę samą wartość (szerokość renderowana komórki =
+        // Weight / suma wag wiersza * szerokość wiersza; przy sumie wag = szerokości
+        // wiersza wychodzi dokładnie Weight). NIE ustawiamy XRTableCell.WidthF - jego
+        // setter przelicza wagi POZOSTAŁYCH komórek wiersza, co przy pętli po kolumnach
+        // rozjeżdżało krawędzie i w eksporcie do Excela dawało scalone kolumny.
+        // Szerokości zaokrąglane w górę do 25 j. (SnapGridSize z .repx) - krawędzie
+        // kolumn trafiają wtedy w równy raster.
         void DopasujSzerokosciKolumn()
         {
             if (tabelaDane == null || tabelaDane.Rows.Count == 0) return;
 
             // AnchorHorizontal="Both" z .repx ściągnąłby tabelę z powrotem do szerokości
-            // bandu (~1704 j.) niezależnie od WidthF ustawianego niżej.
+            // bandu (~1704 j.) niezależnie od szerokości ustawianej niżej.
             tabelaDane.AnchorHorizontal = HorizontalAnchorStyles.Left;
             tabelaDane.LocationF = new PointF(0f, 0f);
 
@@ -502,12 +510,12 @@ namespace x.x.Reports
 
                 float szerokosc = Math.Max(MinSzerokoscKolumny,
                     Math.Min(MaxSzerokoscKolumny, maxDlugosc * SzerokoscNaZnak + MarginesKomorki));
+                szerokosc = (float)(Math.Ceiling(szerokosc / 25.0) * 25.0);
                 sumaSzerokosci += szerokosc;
 
                 foreach (XRTableRow wiersz in tabelaDane.Rows)
                 {
                     if (i >= wiersz.Cells.Count) continue;
-                    wiersz.Cells[i].WidthF = szerokosc;
                     wiersz.Cells[i].Weight = szerokosc;
                 }
             }
