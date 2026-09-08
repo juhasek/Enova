@@ -2,8 +2,9 @@
 
   <!--
     Skompilowany dodatek enova365 (net8.0) - przycisk "Pelna lista plac (XLSX)"
-    na pasku narzedzi listy Place -> Listy plac (ActionTarget.ToolbarWithText;
-    wczesniej byla to pozycja menu Czynnosci). Powstal, bo report-snippet + eksport z podgladu
+    na pasku narzedzi widoku Place -> Listy plac (worker zarejestrowany na TABELI
+    ListyPlac + ActionTarget.ToolbarWithText; wczesniej: worker na wierszu ListaPlac
+    i pozycja menu Czynnosci). Powstal, bo report-snippet + eksport z podgladu
     DevExpress uporczywie scala kolumny tekstowe w Excelu (patrz Raporty/A1PelnaListaPlac.md).
 
     BUDOWANIE (na maszynie z DLL-ami serwera enova 2512.5.6):

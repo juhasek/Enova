@@ -4,8 +4,9 @@
 `ExtPath`, generuje poprawny plik XLSX z rozdzielonymi kolumnami).
 
 **Przycisk „Pełna lista płac (XLSX)" na pasku narzędzi** widoku **Płace → Listy
-płac** (działa na zaznaczonych pozycjach) — od 2026-09-08 nie jest to już pozycja
-menu *Czynności*, tylko przycisk (`Target = ActionTarget.ToolbarWithText`,
+płac** (lista wszystkich list płac; działa na zaznaczonych pozycjach) — od
+2026-09-08 nie jest to już pozycja menu *Czynności*, tylko przycisk
+(`Target = ActionTarget.ToolbarWithText | ActionTarget.Menu`,
 `Icon = ActionIcon.ExcelPreview`). Generuje plik `.xlsx` bezpośrednio biblioteką
 `DevExpress.Spreadsheet` — **czysta siatka komórek, bez scalania/rozjeżdżania
 kolumn**, którego nie dało się wyeliminować przy eksporcie report-snippetu z
@@ -14,6 +15,34 @@ podglądu wydruku (zob. `Raporty/A1PelnaListaPlac.md`).
 Dane (kolumny: Kod / Imię i Nazwisko / Wydział + po jednej na każdą definicję
 elementu + 17 stałych kolumn ZUS/PPK/PIT + Kwota do wypłaty) — logika przeniesiona
 1:1 z `Raporty/A1PelnaListaPlacSnippet`.
+
+## Gdzie ląduje przycisk (mechanika enova)
+
+Rejestracja workera decyduje o miejscu przycisku:
+
+```csharp
+[assembly: Worker<A1PelnaListaPlacWorker, ListyPlac>]   // TABELA -> widok listy płac
+// [assembly: Worker<A1PelnaListaPlacWorker, ListaPlac>] // WIERSZ -> formularz jednej listy
+```
+
+Klient (`Soneta.Net.Business`, `ViewInfoWindow.MyWorkers`) buduje czynności widoku
+listy z dwóch „indeksów”: **0 = typ tabeli** (`ListyPlac`, `IsEnumerableItem == true`)
+i **1 = typ wiersza** (`ListaPlac`, `IsEnumerableItem == false`).
+`WorkersMenu.RenderToolbarCommands` rysuje przycisk tylko gdy:
+
+```
+IsToolbarAction(akcja) && (IsEnumerableItem(index) || Mode ma SingleSession/IsolatedSession)
+```
+
+Dlatego worker zarejestrowany na **wierszu** z `Mode = None` nie dawał przycisku na
+widoku listy — akcja pojawiała się dopiero na pasku **formularza** konkretnej listy
+płac. Rejestracja na **tabeli** daje przycisk tam, gdzie trzeba. Tak samo robi to
+sama enova: `[assembly: Worker(typeof(PodsumowanieWyplatListyWorker), typeof(ListyPlac))]`
+(„Podsumowanie zaznaczonych list płac”, też z `[Context] ListaPlac[]`).
+
+Zaznaczone wiersze trafiają do workera przez kontekst okna
+(`context[selectedRows.GetType()] = selectedRows`). Bez zaznaczenia akcja pokazuje
+komunikat „Zaznacz na liście co najmniej jedną listę płac”.
 
 ## Gotowy plik
 
@@ -79,10 +108,10 @@ i zrestartuj usługi. Działa, jeśli enova skanuje katalog bazowy komponentu �
 
 ## Weryfikacja po wgraniu
 
-- Przycisk pojawia się na pasku narzędzi listy płac (jeśli nie — dodatek się nie
-  załadował: zły `ExtPath` / nie zrestartowano / niezgodna wersja net/enova).
-  Przycisk jest widoczny/aktywny dopiero po zaznaczeniu min. 1 listy płac
-  (`IsVisibleGenerujXlsx` / `IsEnabledGenerujXlsx`).
+- Przycisk pojawia się na pasku narzędzi widoku **Płace → Listy płac** (lista
+  wszystkich list płac), niezależnie od zaznaczenia. Jeśli go nie ma — dodatek się
+  nie załadował: zły `ExtPath` / nie zrestartowano / niezgodna wersja net/enova.
+  Ta sama czynność jest też w menu *Czynności* (grupa „Listy płac”).
 - Wygenerowany `.xlsx`: jedna spójna tabela, **każda kolumna = jedna kolumna
   Excela** (bez scaleń), liczby jako liczby (`=SUMA(...)` działa), nagłówek
   pogrubiony i zamrożony, autofiltr.

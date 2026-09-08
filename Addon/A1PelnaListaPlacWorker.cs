@@ -4,12 +4,25 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Soneta.Business;
+using Soneta.Business.UI;
 using Soneta.Kadry;
 using Soneta.Place;
 using Soneta.Types;
 using DevExpress.Spreadsheet;
 
-[assembly: Worker<A1.Rozszerzenia.A1PelnaListaPlacWorker, ListaPlac>]
+// UWAGA - typ danych workera to TABELA "ListyPlac", a NIE wiersz "ListaPlac".
+// To decyduje o tym, GDZIE pojawi sie przycisk. Klient enova (Soneta.Net.Business,
+// ViewInfoWindow.MyWorkers) buduje czynnosci widoku listy z dwoch "indeksow":
+//   index 0 -> typ TABELI  (ListyPlac)  -> IsEnumerableItem == true
+//   index 1 -> typ WIERSZA (ListaPlac)  -> IsEnumerableItem == false
+// a WorkersMenu.RenderToolbarCommands rysuje przycisk tylko gdy:
+//   IsToolbarAction(akcja) && (IsEnumerableItem(index) || Mode ma SingleSession/IsolatedSession)
+// Przy rejestracji na wierszu (index 1) i Mode = None przycisk NIE byl rysowany na
+// widoku listy - akcja ladowala dopiero na pasku FORMULARZA konkretnej listy plac.
+// Rejestracja na tabeli daje przycisk na widoku "Kadry i place/Place/Listy plac".
+// Tak samo robi to sama enova: [assembly: Worker(typeof(PodsumowanieWyplatListyWorker),
+// typeof(ListyPlac))] - "Podsumowanie zaznaczonych list plac", tez z [Context] ListaPlac[].
+[assembly: Worker<A1.Rozszerzenia.A1PelnaListaPlacWorker, ListyPlac>]
 
 namespace A1.Rozszerzenia
 {
@@ -25,25 +38,34 @@ namespace A1.Rozszerzenia
     // 1:1 z Raporty/A1PelnaListaPlacSnippet.
     public class A1PelnaListaPlacWorker
     {
+        // Zaznaczone wiersze widoku - klient wklada je do kontekstu okna jako ListaPlac[]
+        // (ViewInfoWindow: context[selectedRows.GetType()] = selectedRows).
         [Context]
         public ListaPlac[] ZaznaczoneListyPlac { get; set; }
 
-        public bool IsVisibleGenerujXlsx() => ZaznaczoneListyPlac != null && ZaznaczoneListyPlac.Length > 0;
-        public bool IsEnabledGenerujXlsx() => ZaznaczoneListyPlac != null && ZaznaczoneListyPlac.Length > 0;
+        // Swiadomie BEZ IsVisible*/IsEnabled* - przycisk ma byc widoczny na widoku zawsze,
+        // a brak zaznaczenia obslugujemy komunikatem w samej akcji (dla paska narzedzi
+        // klient i tak nie wywoluje Action.InitData, wiec predykaty bywaja pomijane).
 
         const int LiczbaKolumnTekst = 3;
         const double MaxSzerokoscZnaki = 42;
         const double MinSzerokoscLiczbaZnaki = 12;
 
-        // Target = ToolbarWithText -> przycisk (z opisem) na pasku narzedzi widoku
-        // Place -> Listy plac, a NIE pozycja w menu "Czynnosci" (to bylby ActionTarget.Menu,
-        // wartosc domyslna ActionAttribute.Target). Icon = ikona na przycisku.
+        // ToolbarWithText -> przycisk z opisem na pasku narzedzi widoku listy plac.
+        // Menu zostawione jako zapasowe wejscie (ta sama czynnosc widoczna tez w "Czynnosci").
         [Action("Pełna lista płac (XLSX)",
-                Target = ActionTarget.ToolbarWithText,
+                Target = ActionTarget.ToolbarWithText | ActionTarget.Menu,
                 Icon = ActionIcon.ExcelPreview,
                 Priority = 100)]
         public object GenerujXlsx()
         {
+            if (ZaznaczoneListyPlac == null || ZaznaczoneListyPlac.Length == 0)
+                return new MessageBoxInformation
+                {
+                    Caption = "Pełna lista płac (XLSX)",
+                    Text = "Zaznacz na liście co najmniej jedną listę płac.",
+                };
+
             // 1. Zebranie wszystkich wyplat z zaznaczonych list plac.
             var wyplaty = new List<Wyplata>();
             foreach (ListaPlac lp in ZaznaczoneListyPlac)
