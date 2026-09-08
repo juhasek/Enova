@@ -273,12 +273,11 @@ namespace Soneta.KadryPlace.Reports
             Context context = DxReportHelpers.GetContext(this);
 
             // Lista bieżąca (CurrentList) raportu zależy od miejsca uruchomienia:
-            //   Płace / Wypłaty        -> wiersze Wyplata (WyplataEtat)   [działało]
-            //   kartoteka pracownika   -> wiersze PracHistoria / Pracownik [rzucało cast exception]
-            //   lista list płac        -> wiersze ListaPlac
-            // Dlatego pobieramy CurrentList jako object i normalizujemy do płaskiej
-            // listy WyplataEtat (dla Pracownika/PracHistorii dobieramy jego wypłaty
-            // etatowe wprost z tabeli Wyplaty.WgPracownik).
+            //   Płace / Wypłaty            -> wiersze Wyplata (WyplataEtat)   [działa, zaznaczone]
+            //   kartoteka -> zakł. Wypłaty -> CurrentList = rekord nadrzędny (PracHistoria),
+            //                                 zaznaczenie wypłat siedzi w INavigatorContext
+            //   lista Pracownicy           -> wiersze PracHistoria / Pracownik
+            //   lista list płac            -> wiersze ListaPlac
             var wyplaty = new List<WyplataEtat>();
             var widziane = new HashSet<Guid>();
 
@@ -286,6 +285,7 @@ namespace Soneta.KadryPlace.Reports
             {
                 if (item is WyplataEtat we)
                 {
+                    // Druk z listy Wypłat — CurrentList to już zaznaczone zapisy.
                     if (widziane.Add(we.Guid))
                         wyplaty.Add(we);
                 }
@@ -301,12 +301,26 @@ namespace Soneta.KadryPlace.Reports
                 }
                 else
                 {
+                    // Druk z kartoteki / listy Pracownicy — CurrentList to pracownik, nie wypłaty.
                     Pracownik prac = PracownikZWiersza(item);
                     if (prac == null)
                         continue;
-                    foreach (Wyplata w in PlaceModule.GetInstance(context).Wyplaty.WgPracownik[prac])
-                        if (w is WyplataEtat we3 && widziane.Add(we3.Guid))
-                            wyplaty.Add(we3);
+
+                    // Najpierw zaznaczenie z nawigatora pod-listy Wypłaty na kartotece.
+                    var zazn = ZaznaczoneWyplaty(context, prac);
+                    if (zazn.Count > 0)
+                    {
+                        foreach (WyplataEtat wz in zazn)
+                            if (widziane.Add(wz.Guid))
+                                wyplaty.Add(wz);
+                    }
+                    else
+                    {
+                        // Fallback: brak zaznaczenia -> wszystkie wypłaty etatowe pracownika.
+                        foreach (Wyplata w in PlaceModule.GetInstance(context).Wyplaty.WgPracownik[prac])
+                            if (w is WyplataEtat we3 && widziane.Add(we3.Guid))
+                                wyplaty.Add(we3);
+                    }
                 }
             }
 
@@ -714,6 +728,29 @@ namespace Soneta.KadryPlace.Reports
             if (row is Wyplata w)
                 return w.Pracownik;
             return null;
+        }
+
+        // Zaznaczone wiersze pod-listy Wypłaty na kartotece pracownika.
+        // Druk z kartoteki podaje w CurrentList rekord nadrzędny (PracHistoria),
+        // ale zaznaczenie wypłat jest dostępne w INavigatorContext. Zwraca tylko
+        // wypłaty etatowe wskazanego pracownika (odsiewa nawigatory innych list).
+        private List<WyplataEtat> ZaznaczoneWyplaty(Context context, Pracownik prac)
+        {
+            var wynik = new List<WyplataEtat>();
+            try
+            {
+                INavigatorContext nav;
+                if (context.Get<INavigatorContext>(out nav) && nav != null && nav.SelectedRows != null)
+                    foreach (object r in nav.SelectedRows)
+                        if (r is WyplataEtat wz && wz.Pracownik != null
+                            && wz.Pracownik.Guid == prac.Guid)
+                            wynik.Add(wz);
+            }
+            catch
+            {
+                wynik.Clear();
+            }
+            return wynik;
         }
 
         private string GetStanowisko(PracHistoria ph)

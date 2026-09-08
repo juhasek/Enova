@@ -61,15 +61,25 @@ w runtime dostaje `CalculateCurrentListHandler = () => Printer.DataSource`
 | kartoteka → zakładka **Wypłaty** (pasek narzędzi tej listy) | `WyplataEtat` — zaznaczone ✅ |
 | kartoteka → wydruk z ramki formularza / lista `Pracownicy` | `PracHistoria` / `Pracownik` ❌ (brak zaznaczenia wypłat) |
 
-**Żeby „zaznaczone wypłaty" działały z kartoteki:** uruchamiać wydruk z paska
-zakładki *Wypłaty* (nie z głównego druku formularza) i zarejestrować wzorzec w
-kontekście `Wyplata` — tak jak standardowy „Wypłata pasek duży"
-(`Soneta.KadryPlace.Reports.DuzyPasekWyplatySnippet`). Ograniczenie do
-zaznaczonych robi enova sama (parametr „Zaznaczone zapisy" z `BusinessContext`).
+### Zaznaczone wypłaty z kartoteki pracownika
 
-Gałąź `Pracownik`/`PracHistoria` w kodzie to **fallback** (np. wydruk z listy
-`Pracownicy`): bierze wszystkie wypłaty etatowe pracownika — platforma nie
-przekazuje wtedy żadnego zaznaczenia wypłat, więc nie da się go odtworzyć.
+Z zakładki *Płace/Wypłaty* na kartotece enova podaje w CurrentList **pracownika**
+(`PracHistoria`), a nie zaznaczone wypłaty. Kod próbuje odzyskać zaznaczenie z
+`INavigatorContext.SelectedRows` (`[Context]`, niesie `SelectedRows` +
+`FocusedRow` + `RowType`), filtrując do `WyplataEtat` danego pracownika:
+
+- w gałęzi `Pracownik`/`PracHistoria`: **jeśli** nawigator zwróci zaznaczone
+  `WyplataEtat` → drukujemy tylko je;
+- **inaczej** fallback → wszystkie wypłaty etatowe pracownika
+  (`PlaceModule.Wyplaty.WgPracownik[prac]`).
+
+**Do potwierdzenia na żywej bazie:** czy `INavigatorContext` w kontekście wydruku
+odpalonego z pod-listy *Wypłaty* wskazuje nawigator tej pod-listy (`RowType =
+WyplataEtat`), czy nawigator formularza (`RowType = PracHistoria`). Jeśli to
+drugie — zaznaczenia nie da się odzyskać w snippet-cie i trzeba: albo odpalać
+druk z własnego paska narzędzi pod-listy *Wypłaty* (kontekst `Wyplata`, jak
+standardowy „Wypłata pasek duży"), albo zrobić dedykowaną **czynność** na liście
+Wypłat, która czyta zaznaczenie i woła raport z jawnym źródłem danych.
 
 ## Jak wgrać
 
