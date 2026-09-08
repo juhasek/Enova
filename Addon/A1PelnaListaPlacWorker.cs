@@ -94,14 +94,20 @@ namespace A1.Rozszerzenia
                 }
             defs.Sort((a, b) => string.Compare(NazwaDef(a), NazwaDef(b), StringComparison.CurrentCulture));
 
-            // 3. Naglowki. Kolumny opisowe wg konfiguracji: ktore pokazac i pod jakim tytulem.
-            //    kolumnyOpisowe trzyma identyfikatory (0=Kod, 1=Nazwisko, 2=Wydzial) w kolejnosci wydruku.
-            var kolumnyOpisowe = new List<int>();
+            // 3. Naglowki. Kolumny opisowe = sloty z konfiguracji (zrodlo + parametr + naglowek);
+            //    slot ze zrodlem "Brak" jest pomijany, kolejnosc slotow = kolejnosc kolumn.
+            var zrodla = new List<A1ZrodloKolumny>();
+            var parametry = new List<string>();
             var naglowki = new List<string>();
-            if (ust.PokazKod) { kolumnyOpisowe.Add(0); naglowki.Add(ust.NaglowekKodEfekt); }
-            if (ust.PokazNazwisko) { kolumnyOpisowe.Add(1); naglowki.Add(ust.NaglowekNazwiskoEfekt); }
-            if (ust.PokazWydzial) { kolumnyOpisowe.Add(2); naglowki.Add(ust.NaglowekWydzialEfekt); }
-            int liczbaKolumnTekst = kolumnyOpisowe.Count;
+            for (int slot = 1; slot <= A1RaportPlacUstawienia.LiczbaSlotow; slot++)
+            {
+                A1ZrodloKolumny zr = ust.ZrodloSlotu(slot);
+                if (zr == A1ZrodloKolumny.Brak) continue;
+                zrodla.Add(zr);
+                parametry.Add(ust.ParametrSlotu(slot));
+                naglowki.Add(ust.NaglowekSlotu(slot));
+            }
+            int liczbaKolumnTekst = zrodla.Count;
 
             foreach (DefinicjaElementu d in defs) naglowki.Add(NazwaDef(d));
 
@@ -135,11 +141,12 @@ namespace A1.Rozszerzenia
                 Pracownik pr = w.Pracownik as Pracownik;
                 var row = new object[nKol];
 
+                // Klucze sortowania liczone zawsze, niezaleznie od tego, czy sa w kolumnach.
                 string kod = Txt(() => pr != null ? pr.Kod : "");
                 string nazwisko = Txt(() => pr != null ? pr.NazwiskoImię : "");
-                string wydzial = Txt(() => Wydzial(pr, w));
-                for (int i = 0; i < kolumnyOpisowe.Count; i++)
-                    row[i] = kolumnyOpisowe[i] == 0 ? kod : (kolumnyOpisowe[i] == 1 ? nazwisko : wydzial);
+
+                for (int i = 0; i < zrodla.Count; i++)
+                    row[i] = Wartosc(zrodla[i], parametry[i], w, pr);
 
                 var wart = new decimal[defs.Count];
                 decimal emP = 0, emF = 0, reP = 0, reF = 0, chP = 0, chF = 0, wyP = 0, wyF = 0,
@@ -263,6 +270,70 @@ namespace A1.Rozszerzenia
                     return ms.ToArray();
                 }
             }
+        }
+
+        // Tresc jednej kolumny opisowej wg zrodla wybranego w konfiguracji.
+        // "Parametr" ma znaczenie tylko dla zrodel cechowych (nazwa cechy).
+        static string Wartosc(A1ZrodloKolumny zr, string parametr, Wyplata w, Pracownik pr)
+        {
+            switch (zr)
+            {
+                case A1ZrodloKolumny.KodPracownika:
+                    return Txt(() => pr != null ? pr.Kod : "");
+                case A1ZrodloKolumny.NazwiskoImie:
+                    return Txt(() => pr != null ? pr.NazwiskoImię : "");
+                case A1ZrodloKolumny.Nazwisko:
+                    return Txt(() => pr != null ? pr.Nazwisko : "");
+                case A1ZrodloKolumny.Imie:
+                    return Txt(() => pr != null ? pr.Imie : "");
+                case A1ZrodloKolumny.Wydzial:
+                    return Txt(() => Wydzial(pr, w));
+                case A1ZrodloKolumny.Stanowisko:
+                    return Txt(() => Stanowisko(pr, w));
+                case A1ZrodloKolumny.Pesel:
+                    return Txt(() => pr != null ? pr.PESEL : "");
+                case A1ZrodloKolumny.NumerListyPlac:
+                    return Txt(() => w.ListaPlac != null ? w.ListaPlac.Numer.Pelny : "");
+                case A1ZrodloKolumny.DefinicjaListyPlac:
+                    return Txt(() => w.ListaPlac != null && w.ListaPlac.Definicja != null
+                                     ? w.ListaPlac.Definicja.Nazwa : "");
+                case A1ZrodloKolumny.DataWyplaty:
+                    return Txt(() => w.Data == Date.Empty ? "" : w.Data.ToString("yyyy-MM-dd"));
+                case A1ZrodloKolumny.OkresWyplaty:
+                    // Okres jest na liscie plac (Wyplata.Okres jest protected).
+                    return Txt(() => w.ListaPlac == null || w.ListaPlac.Okres.From == Date.Empty
+                                     ? "" : w.ListaPlac.Okres.From.ToString("yyyy-MM"));
+                case A1ZrodloKolumny.CechaPracownika:
+                    return Cecha(pr, parametr);
+                case A1ZrodloKolumny.CechaWyplaty:
+                    return Cecha(w, parametr);
+                default:
+                    return "";
+            }
+        }
+
+        // Cecha (Feature) obiektu - Row ma indekser po nazwie cechy.
+        // Kwalifikacja Soneta.Business.Row, bo DevExpress.Spreadsheet tez ma typ Row.
+        static string Cecha(Soneta.Business.Row row, string nazwaCechy)
+        {
+            if (row == null) return "";
+            if (string.IsNullOrEmpty(nazwaCechy) || nazwaCechy.Trim().Length == 0)
+                return "[BŁĄD: nie podano nazwy cechy]";
+            try
+            {
+                object v = row[nazwaCechy.Trim()];
+                return v == null ? "" : v.ToString();
+            }
+            catch (Exception ex) { return "[BŁĄD: " + ex.Message + "]"; }
+        }
+
+        static string Stanowisko(Pracownik pr, Wyplata w)
+        {
+            if (pr == null) return "";
+            Date data = w.Data;
+            if (data == Date.Empty) data = Date.Today;
+            PracHistoria ph = pr.Historia[data];
+            return ph != null && ph.Etat != null ? (ph.Etat.Stanowisko ?? "") : "";
         }
 
         static string NazwaDef(DefinicjaElementu d)

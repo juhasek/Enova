@@ -16,18 +16,36 @@
         CaptionHtml="A1Testy/Konfiguracja raportu płacowego"
         DataContext="{New A1RaportPlacConfigExtender}">
 
-    <Group CaptionHtml="Kolumny opisowe (pusty nagłówek = nazwa domyślna)" LabelWidth="45">
+    <!--
+      5 definiowalnych kolumn opisowych na poczatku raportu. Kazdy slot: zrodlo tresci
+      (lista wyboru), parametr (nazwa cechy - tylko dla zrodel cechowych) i wlasny naglowek
+      (pusty = nazwa domyslna zrodla). Zrodlo "(kolumna nieuzywana)" pomija slot.
+    -->
+    <Group CaptionHtml="Kolumny opisowe" LabelWidth="45">
       <Row>
-        <Field CaptionHtml="Kolumna „Kod”" Width="8" EditValue="{Ustawienia.PokazKod}" />
-        <Field CaptionHtml="Nagłówek" Width="30" EditValue="{Ustawienia.NaglowekKod}" />
+        <Field CaptionHtml="Kolumna 1 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo1}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr1}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek1}" />
       </Row>
       <Row>
-        <Field CaptionHtml="Kolumna „Imię i Nazwisko”" Width="8" EditValue="{Ustawienia.PokazNazwisko}" />
-        <Field CaptionHtml="Nagłówek" Width="30" EditValue="{Ustawienia.NaglowekNazwisko}" />
+        <Field CaptionHtml="Kolumna 2 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo2}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr2}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek2}" />
       </Row>
       <Row>
-        <Field CaptionHtml="Kolumna „Wydział”" Width="8" EditValue="{Ustawienia.PokazWydzial}" />
-        <Field CaptionHtml="Nagłówek" Width="30" EditValue="{Ustawienia.NaglowekWydzial}" />
+        <Field CaptionHtml="Kolumna 3 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo3}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr3}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek3}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna 4 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo4}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr4}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek4}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna 5 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo5}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr5}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek5}" />
       </Row>
     </Group>
 

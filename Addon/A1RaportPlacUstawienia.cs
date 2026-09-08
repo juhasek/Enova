@@ -1,9 +1,30 @@
 using System;
 using Soneta.Business;
 using Soneta.Config;
+using Soneta.Types;
 
 namespace A1.Rozszerzenia
 {
+    // Zrodlo tresci kolumny opisowej raportu "Pelna lista plac (XLSX)".
+    // [Caption] daje polska etykiete na liscie wyboru w oknie Opcji.
+    public enum A1ZrodloKolumny
+    {
+        [Caption("(kolumna nieużywana)")] Brak = 0,
+        [Caption("Kod pracownika")] KodPracownika = 1,
+        [Caption("Nazwisko i imię")] NazwiskoImie = 2,
+        [Caption("Nazwisko")] Nazwisko = 3,
+        [Caption("Imię")] Imie = 4,
+        [Caption("Wydział (wg daty wypłaty)")] Wydzial = 5,
+        [Caption("Stanowisko (wg daty wypłaty)")] Stanowisko = 6,
+        [Caption("PESEL")] Pesel = 7,
+        [Caption("Numer listy płac")] NumerListyPlac = 8,
+        [Caption("Definicja listy płac")] DefinicjaListyPlac = 9,
+        [Caption("Data wypłaty")] DataWyplaty = 10,
+        [Caption("Okres wypłaty")] OkresWyplaty = 11,
+        [Caption("Cecha pracownika (nazwa w kolumnie Parametr)")] CechaPracownika = 12,
+        [Caption("Cecha wypłaty (nazwa w kolumnie Parametr)")] CechaWyplaty = 13,
+    }
+
     // Ustawienia raportu "Pelna lista plac (XLSX)" trzymane w DRZEWIE KONFIGURACJI enova
     // (tabele CfgNodes/CfgAttributes - to samo miejsce, w ktorym enova trzyma swoje opcje):
     //
@@ -23,10 +44,9 @@ namespace A1.Rozszerzenia
         public const string WezelGlowny = "A1Testy";
         public const string WezelRaportu = "Raport placowy";
 
-        // Domyslne (uzywane, gdy w konfiguracji nic nie ustawiono).
-        public const string DomyslnyNaglowekKod = "Kod";
-        public const string DomyslnyNaglowekNazwisko = "Imię i Nazwisko";
-        public const string DomyslnyNaglowekWydzial = "Wydział";
+        // Liczba definiowalnych kolumn opisowych (slotow) na poczatku raportu.
+        public const int LiczbaSlotow = 5;
+
         public const string DomyslnyPrefiksPliku = "A1_Pelna_Lista_Plac_";
         public const string DomyslnaNazwaArkusza = "Lista płac";
 
@@ -37,42 +57,100 @@ namespace A1.Rozszerzenia
             this.session = session;
         }
 
-        // --- kolumny opisowe: widocznosc + wlasny naglowek -----------------------------
+        // --- 5 slotow kolumn opisowych ------------------------------------------------
+        // Domyslnie sloty 1-3 odtwarzaja uklad sprzed wersji definiowalnej
+        // (Kod / Nazwisko i imie / Wydzial), sloty 4-5 sa puste.
 
-        public bool PokazKod
+        public A1ZrodloKolumny Zrodlo1 { get { return Zrodlo(1, A1ZrodloKolumny.KodPracownika); } set { ZapiszZrodlo(1, value); } }
+        public string Parametr1 { get { return Str("Kolumna 1 parametr"); } set { Zapisz("Kolumna 1 parametr", value ?? ""); } }
+        public string Naglowek1 { get { return Str("Kolumna 1 nagłówek"); } set { Zapisz("Kolumna 1 nagłówek", value ?? ""); } }
+
+        public A1ZrodloKolumny Zrodlo2 { get { return Zrodlo(2, A1ZrodloKolumny.NazwiskoImie); } set { ZapiszZrodlo(2, value); } }
+        public string Parametr2 { get { return Str("Kolumna 2 parametr"); } set { Zapisz("Kolumna 2 parametr", value ?? ""); } }
+        public string Naglowek2 { get { return Str("Kolumna 2 nagłówek"); } set { Zapisz("Kolumna 2 nagłówek", value ?? ""); } }
+
+        public A1ZrodloKolumny Zrodlo3 { get { return Zrodlo(3, A1ZrodloKolumny.Wydzial); } set { ZapiszZrodlo(3, value); } }
+        public string Parametr3 { get { return Str("Kolumna 3 parametr"); } set { Zapisz("Kolumna 3 parametr", value ?? ""); } }
+        public string Naglowek3 { get { return Str("Kolumna 3 nagłówek"); } set { Zapisz("Kolumna 3 nagłówek", value ?? ""); } }
+
+        public A1ZrodloKolumny Zrodlo4 { get { return Zrodlo(4, A1ZrodloKolumny.Brak); } set { ZapiszZrodlo(4, value); } }
+        public string Parametr4 { get { return Str("Kolumna 4 parametr"); } set { Zapisz("Kolumna 4 parametr", value ?? ""); } }
+        public string Naglowek4 { get { return Str("Kolumna 4 nagłówek"); } set { Zapisz("Kolumna 4 nagłówek", value ?? ""); } }
+
+        public A1ZrodloKolumny Zrodlo5 { get { return Zrodlo(5, A1ZrodloKolumny.Brak); } set { ZapiszZrodlo(5, value); } }
+        public string Parametr5 { get { return Str("Kolumna 5 parametr"); } set { Zapisz("Kolumna 5 parametr", value ?? ""); } }
+        public string Naglowek5 { get { return Str("Kolumna 5 nagłówek"); } set { Zapisz("Kolumna 5 nagłówek", value ?? ""); } }
+
+        // Dostep po numerze slotu (1..LiczbaSlotow) - uzywane przez worker.
+        public A1ZrodloKolumny ZrodloSlotu(int nr)
         {
-            get { return Bool("Kolumna Kod", true); }
-            set { Zapisz("Kolumna Kod", value); }
+            switch (nr)
+            {
+                case 1: return Zrodlo1;
+                case 2: return Zrodlo2;
+                case 3: return Zrodlo3;
+                case 4: return Zrodlo4;
+                case 5: return Zrodlo5;
+                default: return A1ZrodloKolumny.Brak;
+            }
         }
 
-        public string NaglowekKod
+        public string ParametrSlotu(int nr)
         {
-            get { return Str("Nagłówek Kod"); }
-            set { Zapisz("Nagłówek Kod", value ?? ""); }
+            switch (nr)
+            {
+                case 1: return Parametr1;
+                case 2: return Parametr2;
+                case 3: return Parametr3;
+                case 4: return Parametr4;
+                case 5: return Parametr5;
+                default: return "";
+            }
         }
 
-        public bool PokazNazwisko
+        // Naglowek kolumny: wlasny z konfiguracji, a gdy pusty - opis zrodla.
+        public string NaglowekSlotu(int nr)
         {
-            get { return Bool("Kolumna Nazwisko", true); }
-            set { Zapisz("Kolumna Nazwisko", value); }
+            string wlasny;
+            switch (nr)
+            {
+                case 1: wlasny = Naglowek1; break;
+                case 2: wlasny = Naglowek2; break;
+                case 3: wlasny = Naglowek3; break;
+                case 4: wlasny = Naglowek4; break;
+                case 5: wlasny = Naglowek5; break;
+                default: wlasny = ""; break;
+            }
+            if (!string.IsNullOrEmpty(wlasny) && wlasny.Trim().Length > 0) return wlasny.Trim();
+
+            A1ZrodloKolumny zr = ZrodloSlotu(nr);
+            if (zr == A1ZrodloKolumny.CechaPracownika || zr == A1ZrodloKolumny.CechaWyplaty)
+            {
+                string p = ParametrSlotu(nr);
+                if (!string.IsNullOrEmpty(p) && p.Trim().Length > 0) return p.Trim();
+            }
+            return DomyslnyNaglowek(zr);
         }
 
-        public string NaglowekNazwisko
+        public static string DomyslnyNaglowek(A1ZrodloKolumny zr)
         {
-            get { return Str("Nagłówek Nazwisko"); }
-            set { Zapisz("Nagłówek Nazwisko", value ?? ""); }
-        }
-
-        public bool PokazWydzial
-        {
-            get { return Bool("Kolumna Wydział", true); }
-            set { Zapisz("Kolumna Wydział", value); }
-        }
-
-        public string NaglowekWydzial
-        {
-            get { return Str("Nagłówek Wydział"); }
-            set { Zapisz("Nagłówek Wydział", value ?? ""); }
+            switch (zr)
+            {
+                case A1ZrodloKolumny.KodPracownika: return "Kod";
+                case A1ZrodloKolumny.NazwiskoImie: return "Imię i Nazwisko";
+                case A1ZrodloKolumny.Nazwisko: return "Nazwisko";
+                case A1ZrodloKolumny.Imie: return "Imię";
+                case A1ZrodloKolumny.Wydzial: return "Wydział";
+                case A1ZrodloKolumny.Stanowisko: return "Stanowisko";
+                case A1ZrodloKolumny.Pesel: return "PESEL";
+                case A1ZrodloKolumny.NumerListyPlac: return "Lista płac";
+                case A1ZrodloKolumny.DefinicjaListyPlac: return "Definicja listy";
+                case A1ZrodloKolumny.DataWyplaty: return "Data wypłaty";
+                case A1ZrodloKolumny.OkresWyplaty: return "Okres";
+                case A1ZrodloKolumny.CechaPracownika: return "Cecha pracownika";
+                case A1ZrodloKolumny.CechaWyplaty: return "Cecha wypłaty";
+                default: return "";
+            }
         }
 
         // --- pozostale parametry raportu ----------------------------------------------
@@ -103,11 +181,6 @@ namespace A1.Rozszerzenia
             set { Zapisz("Sortuj wg kodu", value); }
         }
 
-        // --- wartosci efektywne (puste ustawienie -> wartosc domyslna) -----------------
-
-        public string NaglowekKodEfekt { get { return Efekt(NaglowekKod, DomyslnyNaglowekKod); } }
-        public string NaglowekNazwiskoEfekt { get { return Efekt(NaglowekNazwisko, DomyslnyNaglowekNazwisko); } }
-        public string NaglowekWydzialEfekt { get { return Efekt(NaglowekWydzial, DomyslnyNaglowekWydzial); } }
         public string PrefiksNazwyPlikuEfekt { get { return Efekt(PrefiksNazwyPliku, DomyslnyPrefiksPliku); } }
 
         public string NazwaArkuszaEfekt
@@ -131,6 +204,21 @@ namespace A1.Rozszerzenia
         }
 
         // --- dostep do drzewa konfiguracji --------------------------------------------
+
+        // Zrodlo trzymane jako NAZWA elementu enum (string), nie jako liczba: CfgAttribute
+        // nie zna typu enum, a konwersja int->enum przez TypeConverter nie dziala.
+        A1ZrodloKolumny Zrodlo(int nr, A1ZrodloKolumny domyslne)
+        {
+            string s = Str("Kolumna " + nr + " źródło");
+            if (string.IsNullOrEmpty(s)) return domyslne;
+            try { return (A1ZrodloKolumny)Enum.Parse(typeof(A1ZrodloKolumny), s, true); }
+            catch { return domyslne; }
+        }
+
+        void ZapiszZrodlo(int nr, A1ZrodloKolumny wartosc)
+        {
+            Zapisz("Kolumna " + nr + " źródło", wartosc.ToString());
+        }
 
         CfgNode Wezel(bool utworz)
         {

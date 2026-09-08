@@ -18,20 +18,40 @@ elementu + 17 stałych kolumn ZUS/PPK/PIT + Kwota do wypłaty) — logika przeni
 
 ## Konfiguracja: Narzędzia → Opcje → A1Testy → Konfiguracja raportu płacowego
 
-Zakładka w oknie Opcji pozwala sterować raportem bez przebudowy DLL-a:
+Zakładka w oknie Opcji pozwala sterować raportem bez przebudowy DLL-a.
+
+### 5 definiowalnych kolumn opisowych
+
+Pierwsze kolumny raportu to **5 slotów**; każdy ma źródło treści (lista wyboru),
+parametr i własny nagłówek. Slot ze źródłem `(kolumna nieużywana)` jest pomijany,
+kolejność slotów = kolejność kolumn w pliku.
+
+| Slot | Źródło (domyślnie) | Nagłówek (domyślnie) |
+|---|---|---|
+| 1 | Kod pracownika | `Kod` |
+| 2 | Nazwisko i imię | `Imię i Nazwisko` |
+| 3 | Wydział (wg daty wypłaty) | `Wydział` |
+| 4 | (kolumna nieużywana) | |
+| 5 | (kolumna nieużywana) | |
+
+Dostępne źródła: kod pracownika, nazwisko i imię, nazwisko, imię, wydział i stanowisko
+(oba z historii wg daty wypłaty), PESEL, numer listy płac, definicja listy płac, data
+wypłaty, okres wypłaty (z listy płac) oraz **cecha pracownika** i **cecha wypłaty**.
+Dla źródeł cechowych w kolumnie *parametr* wpisuje się nazwę cechy — dzięki temu klient
+dokłada dowolną kolumnę bez zmian w DLL-u (nagłówek pusty = nazwa cechy).
+Pusty nagłówek przy pozostałych źródłach = nazwa domyślna źródła.
+
+### Pozostałe parametry
 
 | Parametr | Domyślnie |
 |---|---|
-| Kolumna „Kod” — pokaż / własny nagłówek | tak / `Kod` |
-| Kolumna „Imię i Nazwisko” — pokaż / własny nagłówek | tak / `Imię i Nazwisko` |
-| Kolumna „Wydział” — pokaż / własny nagłówek | tak / `Wydział` |
 | Pokaż kolumny ZUS / PPK / PIT + kwotę do wypłaty (17 kolumn) | tak |
 | Prefiks nazwy pliku | `A1_Pelna_Lista_Plac_` (+ data + `.xlsx`) |
 | Nazwa arkusza | `Lista płac` |
 | Sortuj wg kodu pracownika (zamiast wg nazwiska) | nie |
 
-Pusty nagłówek = nazwa domyślna. Kolumny elementów wynagrodzenia są zawsze wyliczane
-z zaznaczonych list płac (bez zmian).
+Kolumny elementów wynagrodzenia są zawsze wyliczane z zaznaczonych list płac (bez zmian).
+Sortowanie działa niezależnie od tego, czy kod/nazwisko są w kolumnach.
 
 **Jak to działa:**
 
@@ -54,6 +74,9 @@ z zaznaczonych list płac (bez zmian).
   (`CfgManager(session).Root` → węzeł `A1Testy` → `Raport placowy` → atrybuty).
   Odczyt nigdy nie zakłada węzła (działa na sesji tylko-do-odczytu i zwraca domyślne);
   węzeł powstaje przy pierwszym zapisie z okna Opcji.
+- `A1ZrodloKolumny` — enum źródeł z `[Caption]` (`Soneta.Types`), renderowany jako lista
+  wyboru. W konfiguracji zapisywany jako **nazwa elementu enum (string)** — `CfgAttribute`
+  nie zna typu enum, a konwersja `int → enum` przez `TypeConverter` nie działa.
 
 ## Gdzie ląduje przycisk (mechanika enova)
 
