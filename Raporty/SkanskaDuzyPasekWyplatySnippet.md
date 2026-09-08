@@ -47,15 +47,29 @@ oferowany z tego kontekstu).
 Dalej bez zmian: grupowanie `(Pracownik.Guid, ListaPlac.Okres, typ)` + przełącznik
 `SrParams.SumujWyplaty`.
 
-## Do potwierdzenia z użytkownikiem
+## Skąd bierze się typ wierszy CurrentList (i jak dostać zaznaczone wypłaty)
 
-Przy uruchomieniu z kartoteki pracownika wydruk obejmuje **wszystkie** wypłaty
-etatowe pracownika z całej historii (grupowane po okresie → jeden pasek na
-okres). Jeśli ma to być węższy zakres (np. bieżący rok, ostatnia wypłata,
-parametr „okres od–do") — trzeba dołożyć filtr w gałęzi `Pracownik/PracHistoria`.
-Zaznaczenie konkretnych wierszy w gridzie *Wypłaty* na formularzu nie jest
-przekazywane do wydruku, gdy enova podaje jako CurrentList rekord nadrzędny
-(`PracHistoria`).
+`GetDataSourceList` czyta `BusinessDataSource` o `DataKind="CurrentList"`, a ten
+w runtime dostaje `CalculateCurrentListHandler = () => Printer.DataSource`
+(`Soneta.Business.UI.DxReports`, `DxReportPrinterTarget.InitializeReport`).
+`Printer.DataSource` = lista/zaznaczenie, z którego **fizycznie** odpalono wydruk.
+`.repx` nie wymusza typu (`BusinessSource` bez `DesignDataTypeName`).
+
+| Skąd odpalasz | Printer.DataSource |
+|---|---|
+| `Płace / Wypłaty` (zaznaczone) | `WyplataEtat` — zaznaczone ✅ |
+| kartoteka → zakładka **Wypłaty** (pasek narzędzi tej listy) | `WyplataEtat` — zaznaczone ✅ |
+| kartoteka → wydruk z ramki formularza / lista `Pracownicy` | `PracHistoria` / `Pracownik` ❌ (brak zaznaczenia wypłat) |
+
+**Żeby „zaznaczone wypłaty" działały z kartoteki:** uruchamiać wydruk z paska
+zakładki *Wypłaty* (nie z głównego druku formularza) i zarejestrować wzorzec w
+kontekście `Wyplata` — tak jak standardowy „Wypłata pasek duży"
+(`Soneta.KadryPlace.Reports.DuzyPasekWyplatySnippet`). Ograniczenie do
+zaznaczonych robi enova sama (parametr „Zaznaczone zapisy" z `BusinessContext`).
+
+Gałąź `Pracownik`/`PracHistoria` w kodzie to **fallback** (np. wydruk z listy
+`Pracownicy`): bierze wszystkie wypłaty etatowe pracownika — platforma nie
+przekazuje wtedy żadnego zaznaczenia wypłat, więc nie da się go odtworzyć.
 
 ## Jak wgrać
 
