@@ -327,7 +327,7 @@ namespace Soneta.KadryPlace.Reports
             if (wyplaty.Count == 0)
                 throw new Exception("Brak wypłat etatowych do wydruku.".Translate());
 
-            // --- grupowanie po (Pracownik.Guid, ListaPlac.Okres, typ wypłaty) ---
+            // --- grupowanie po (Pracownik.Guid, miesiąc daty wypłaty, typ wypłaty) ---
             var grupy = new List<List<WyplataEtat>>();
             foreach (var w in wyplaty)
             {
@@ -338,7 +338,7 @@ namespace Soneta.KadryPlace.Reports
                     {
                         var rep = g[0];
                         if (rep.Pracownik.Guid == w.Pracownik.Guid
-                            && rep.ListaPlac.Okres == w.ListaPlac.Okres
+                            && rep.Data.Month == w.Data.Month
                             && rep.GetType() == w.GetType())
                         {
                             grupa = g;
