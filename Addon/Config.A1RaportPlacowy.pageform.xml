@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Strona okna Narzedzia -> Opcje (drzewo "Ustawienia").
+
+  Zasob musi konczyc sie na "Config.<Nazwa>.pageform.xml" - pierwszy z trzech ostatnich
+  czlonow nazwy zasobu ("Config") powoduje, ze strona wiaze sie z typem Session i trafia
+  do okna Opcji (PageInfoCache.Item; ConfigurationFolderViewAttribute sklada z takich stron
+  drzewo "Ustawienia"). Czlony CaptionHtml rozdzielone "/" buduja galezie tego drzewa.
+-->
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+
+  <Page Name="A1RaportPlacowyPage"
+        CaptionHtml="A1Testy/Konfiguracja raportu płacowego"
+        DataContext="{New A1RaportPlacConfigExtender}">
+
+    <Group CaptionHtml="Kolumny opisowe (pusty nagłówek = nazwa domyślna)" LabelWidth="45">
+      <Row>
+        <Field CaptionHtml="Kolumna „Kod”" Width="8" EditValue="{Ustawienia.PokazKod}" />
+        <Field CaptionHtml="Nagłówek" Width="30" EditValue="{Ustawienia.NaglowekKod}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna „Imię i Nazwisko”" Width="8" EditValue="{Ustawienia.PokazNazwisko}" />
+        <Field CaptionHtml="Nagłówek" Width="30" EditValue="{Ustawienia.NaglowekNazwisko}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna „Wydział”" Width="8" EditValue="{Ustawienia.PokazWydzial}" />
+        <Field CaptionHtml="Nagłówek" Width="30" EditValue="{Ustawienia.NaglowekWydzial}" />
+      </Row>
+    </Group>
+
+    <Group CaptionHtml="Pozostałe kolumny" LabelWidth="45">
+      <Field CaptionHtml="Pokaż kolumny ZUS / PPK / PIT i kwotę do wypłaty" Width="8"
+             EditValue="{Ustawienia.PokazSkladki}" />
+    </Group>
+
+    <Group CaptionHtml="Plik wynikowy" LabelWidth="45">
+      <Field CaptionHtml="Prefiks nazwy pliku" Width="30" EditValue="{Ustawienia.PrefiksNazwyPliku}" />
+      <Field CaptionHtml="Nazwa arkusza" Width="30" EditValue="{Ustawienia.NazwaArkusza}" />
+    </Group>
+
+    <Group CaptionHtml="Sortowanie wierszy" LabelWidth="45">
+      <Field CaptionHtml="Sortuj wg kodu pracownika (zamiast wg nazwiska)" Width="8"
+             EditValue="{Ustawienia.SortujWgKodu}" />
+    </Group>
+
+  </Page>
+</DataForm>

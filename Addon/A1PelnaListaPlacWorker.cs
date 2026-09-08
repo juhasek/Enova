@@ -47,9 +47,17 @@ namespace A1.Rozszerzenia
         // a brak zaznaczenia obslugujemy komunikatem w samej akcji (dla paska narzedzi
         // klient i tak nie wywoluje Action.InitData, wiec predykaty bywaja pomijane).
 
-        const int LiczbaKolumnTekst = 3;
         const double MaxSzerokoscZnaki = 42;
         const double MinSzerokoscLiczbaZnaki = 12;
+
+        // Jeden wiersz raportu: klucze sortowania osobno, bo kolumny opisowe moga byc
+        // wylaczone w konfiguracji i nie da sie sortowac "po kolumnie nr 1".
+        class Wiersz
+        {
+            public string Kod;
+            public string Nazwisko;
+            public object[] Komorki;
+        }
 
         // ToolbarWithText -> przycisk z opisem na pasku narzedzi widoku listy plac.
         // Menu zostawione jako zapasowe wejscie (ta sama czynnosc widoczna tez w "Czynnosci").
@@ -65,6 +73,9 @@ namespace A1.Rozszerzenia
                     Caption = "Pełna lista płac (XLSX)",
                     Text = "Zaznacz na liście co najmniej jedną listę płac.",
                 };
+
+            // 0. Ustawienia z Narzedzia -> Opcje -> A1Testy -> Konfiguracja raportu placowego.
+            var ust = new A1RaportPlacUstawienia(ZaznaczoneListyPlac[0].Session);
 
             // 1. Zebranie wszystkich wyplat z zaznaczonych list plac.
             var wyplaty = new List<Wyplata>();
@@ -83,31 +94,52 @@ namespace A1.Rozszerzenia
                 }
             defs.Sort((a, b) => string.Compare(NazwaDef(a), NazwaDef(b), StringComparison.CurrentCulture));
 
-            // 3. Naglowki.
-            var naglowki = new List<string> { "Kod", "Imię i Nazwisko", "Wydział" };
+            // 3. Naglowki. Kolumny opisowe wg konfiguracji: ktore pokazac i pod jakim tytulem.
+            //    kolumnyOpisowe trzyma identyfikatory (0=Kod, 1=Nazwisko, 2=Wydzial) w kolejnosci wydruku.
+            var kolumnyOpisowe = new List<int>();
+            var naglowki = new List<string>();
+            if (ust.PokazKod) { kolumnyOpisowe.Add(0); naglowki.Add(ust.NaglowekKodEfekt); }
+            if (ust.PokazNazwisko) { kolumnyOpisowe.Add(1); naglowki.Add(ust.NaglowekNazwiskoEfekt); }
+            if (ust.PokazWydzial) { kolumnyOpisowe.Add(2); naglowki.Add(ust.NaglowekWydzialEfekt); }
+            int liczbaKolumnTekst = kolumnyOpisowe.Count;
+
             foreach (DefinicjaElementu d in defs) naglowki.Add(NazwaDef(d));
-            naglowki.AddRange(new[]
-            {
-                "Emerytalna (pracownik)", "Emerytalna (pracodawca)",
-                "Rentowa (pracownik)", "Rentowa (pracodawca)",
-                "Chorobowa (pracownik)", "Chorobowa (pracodawca)",
-                "Wypadkowa (pracownik)", "Wypadkowa (pracodawca)",
-                "Zdrowotna (pracownik)", "Zdrowotna (pracodawca)",
-                "Fundusz Pracy", "FGŚP", "FEP",
-                "PPK (pracownik)", "PPK (pracodawca)",
-                "Zaliczka na PIT", "Kwota do wypłaty",
-            });
+
+            bool skladki = ust.PokazSkladki;
+            if (skladki)
+                naglowki.AddRange(new[]
+                {
+                    "Emerytalna (pracownik)", "Emerytalna (pracodawca)",
+                    "Rentowa (pracownik)", "Rentowa (pracodawca)",
+                    "Chorobowa (pracownik)", "Chorobowa (pracodawca)",
+                    "Wypadkowa (pracownik)", "Wypadkowa (pracodawca)",
+                    "Zdrowotna (pracownik)", "Zdrowotna (pracodawca)",
+                    "Fundusz Pracy", "FGŚP", "FEP",
+                    "PPK (pracownik)", "PPK (pracodawca)",
+                    "Zaliczka na PIT", "Kwota do wypłaty",
+                });
             int nKol = naglowki.Count;
+            if (nKol == 0)
+                return new MessageBoxInformation
+                {
+                    Caption = "Pełna lista płac (XLSX)",
+                    Text = "Konfiguracja wyłącza wszystkie kolumny raportu, a zaznaczone listy płac nie mają "
+                         + "elementów wynagrodzenia. Włącz kolumny w Narzędzia → Opcje → A1Testy → "
+                         + "Konfiguracja raportu płacowego.",
+                };
 
             // 4. Wiersze danych.
-            var wiersze = new List<object[]>();
+            var wiersze = new List<Wiersz>();
             foreach (Wyplata w in wyplaty)
             {
                 Pracownik pr = w.Pracownik as Pracownik;
                 var row = new object[nKol];
-                row[0] = Txt(() => pr != null ? pr.Kod : "");
-                row[1] = Txt(() => pr != null ? pr.NazwiskoImię : "");
-                row[2] = Txt(() => Wydzial(pr, w));
+
+                string kod = Txt(() => pr != null ? pr.Kod : "");
+                string nazwisko = Txt(() => pr != null ? pr.NazwiskoImię : "");
+                string wydzial = Txt(() => Wydzial(pr, w));
+                for (int i = 0; i < kolumnyOpisowe.Count; i++)
+                    row[i] = kolumnyOpisowe[i] == 0 ? kod : (kolumnyOpisowe[i] == 1 ? nazwisko : wydzial);
 
                 var wart = new decimal[defs.Count];
                 decimal emP = 0, emF = 0, reP = 0, reF = 0, chP = 0, chF = 0, wyP = 0, wyF = 0,
@@ -135,34 +167,41 @@ namespace A1.Rozszerzenia
                     ppkF += el.Podatki.PPK.Pracodawcy;
                 }
 
-                int c = LiczbaKolumnTekst;
+                int c = liczbaKolumnTekst;
                 for (int i = 0; i < defs.Count; i++) row[c++] = wart[i];
-                row[c++] = emP; row[c++] = emF;
-                row[c++] = reP; row[c++] = reF;
-                row[c++] = chP; row[c++] = chF;
-                row[c++] = wyP; row[c++] = wyF;
-                row[c++] = zdP; row[c++] = zdF;
-                row[c++] = fp; row[c++] = fgsp; row[c++] = fep;
-                row[c++] = ppkP; row[c++] = ppkF;
-                row[c++] = pit;
-                row[c++] = Dec(() => w.Wartosc.Value);
+                if (skladki)
+                {
+                    row[c++] = emP; row[c++] = emF;
+                    row[c++] = reP; row[c++] = reF;
+                    row[c++] = chP; row[c++] = chF;
+                    row[c++] = wyP; row[c++] = wyF;
+                    row[c++] = zdP; row[c++] = zdF;
+                    row[c++] = fp; row[c++] = fgsp; row[c++] = fep;
+                    row[c++] = ppkP; row[c++] = ppkF;
+                    row[c++] = pit;
+                    row[c++] = Dec(() => w.Wartosc.Value);
+                }
 
-                wiersze.Add(row);
+                wiersze.Add(new Wiersz { Kod = kod, Nazwisko = nazwisko, Komorki = row });
             }
-            wiersze.Sort((a, b) => string.Compare((string)(a[1] ?? ""), (string)(b[1] ?? ""), StringComparison.CurrentCulture));
 
-            byte[] plik = Buduj(naglowki, wiersze);
-            string nazwa = "A1_Pelna_Lista_Plac_" + Date.Today.ToString("yyyyMMdd") + ".xlsx";
+            if (ust.SortujWgKodu)
+                wiersze.Sort((a, b) => string.Compare(a.Kod ?? "", b.Kod ?? "", StringComparison.CurrentCulture));
+            else
+                wiersze.Sort((a, b) => string.Compare(a.Nazwisko ?? "", b.Nazwisko ?? "", StringComparison.CurrentCulture));
+
+            byte[] plik = Buduj(naglowki, wiersze, liczbaKolumnTekst, ust.NazwaArkuszaEfekt);
+            string nazwa = ust.PrefiksNazwyPlikuEfekt + Date.Today.ToString("yyyyMMdd") + ".xlsx";
             return new NamedStream(nazwa, plik);
         }
 
-        static byte[] Buduj(List<string> naglowki, List<object[]> wiersze)
+        static byte[] Buduj(List<string> naglowki, List<Wiersz> wiersze, int liczbaKolumnTekst, string nazwaArkusza)
         {
             int nKol = naglowki.Count;
             using (var wb = new Workbook())
             {
                 Worksheet ws = wb.Worksheets.ActiveWorksheet;
-                ws.Name = "Lista płac";
+                ws.Name = nazwaArkusza;
 
                 Color obram = Color.FromArgb(0xBF, 0xBF, 0xBF);
                 Color tloNaglowka = Color.FromArgb(0xE6, 0xE6, 0xE6);
@@ -183,11 +222,11 @@ namespace A1.Rozszerzenia
                 for (int i = 0; i < wiersze.Count; i++)
                 {
                     int r = 1 + i;
-                    object[] src = wiersze[i];
+                    object[] src = wiersze[i].Komorki;
                     for (int c = 0; c < nKol; c++)
                     {
                         Cell cell = ws[r, c];
-                        if (c < LiczbaKolumnTekst)
+                        if (c < liczbaKolumnTekst)
                         {
                             cell.Value = (src[c] as string) ?? "";
                             cell.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Left;
@@ -214,7 +253,7 @@ namespace A1.Rozszerzenia
                     DevExpress.Spreadsheet.Column col = ws.Columns[c];
                     if (col.WidthInCharacters > MaxSzerokoscZnaki)
                         col.WidthInCharacters = MaxSzerokoscZnaki;
-                    if (c >= LiczbaKolumnTekst && col.WidthInCharacters < MinSzerokoscLiczbaZnaki)
+                    if (c >= liczbaKolumnTekst && col.WidthInCharacters < MinSzerokoscLiczbaZnaki)
                         col.WidthInCharacters = MinSzerokoscLiczbaZnaki;
                 }
 

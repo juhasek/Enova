@@ -39,6 +39,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      Strona okna Narzedzia -> Opcje. Nazwa logiczna zasobu MUSI konczyc sie na
+      "Config.<Nazwa>.pageform.xml" - enova bierze 3 ostatnie czlony nazwy
+      (FormXmlParser.Parse + PageInfoCache.Item: czlon "Config" => strona wiaze sie
+      z Session i trafia do drzewa "Ustawienia").
+    -->
+    <EmbeddedResource Include="Config.A1RaportPlacowy.pageform.xml">
+      <LogicalName>A1.Rozszerzenia.Config.A1RaportPlacowy.pageform.xml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Soneta.Business">        <HintPath>$(SonetaDir)\Soneta.Business.dll</HintPath>        <Private>false</Private></Reference>
     <Reference Include="Soneta.Types">           <HintPath>$(SonetaDir)\Soneta.Types.dll</HintPath>           <Private>false</Private></Reference>
     <Reference Include="Soneta.Core">            <HintPath>$(SonetaDir)\Soneta.Core.dll</HintPath>            <Private>false</Private></Reference>

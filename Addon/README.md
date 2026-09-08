@@ -16,6 +16,45 @@ Dane (kolumny: Kod / Imię i Nazwisko / Wydział + po jednej na każdą definicj
 elementu + 17 stałych kolumn ZUS/PPK/PIT + Kwota do wypłaty) — logika przeniesiona
 1:1 z `Raporty/A1PelnaListaPlacSnippet`.
 
+## Konfiguracja: Narzędzia → Opcje → A1Testy → Konfiguracja raportu płacowego
+
+Zakładka w oknie Opcji pozwala sterować raportem bez przebudowy DLL-a:
+
+| Parametr | Domyślnie |
+|---|---|
+| Kolumna „Kod” — pokaż / własny nagłówek | tak / `Kod` |
+| Kolumna „Imię i Nazwisko” — pokaż / własny nagłówek | tak / `Imię i Nazwisko` |
+| Kolumna „Wydział” — pokaż / własny nagłówek | tak / `Wydział` |
+| Pokaż kolumny ZUS / PPK / PIT + kwotę do wypłaty (17 kolumn) | tak |
+| Prefiks nazwy pliku | `A1_Pelna_Lista_Plac_` (+ data + `.xlsx`) |
+| Nazwa arkusza | `Lista płac` |
+| Sortuj wg kodu pracownika (zamiast wg nazwiska) | nie |
+
+Pusty nagłówek = nazwa domyślna. Kolumny elementów wynagrodzenia są zawsze wyliczane
+z zaznaczonych list płac (bez zmian).
+
+**Jak to działa:**
+
+- `Config.A1RaportPlacowy.pageform.xml` — zasób osadzony w DLL (`<EmbeddedResource>`
+  z jawnym `LogicalName`, bo liczą się **trzy ostatnie człony** nazwy zasobu:
+  `Config.<Nazwa>.pageform.xml`). Człon `Config` sprawia, że enova wiąże stronę z typem
+  `Session` i wstawia ją do drzewa „Ustawienia” (`PageInfoCache.Item`:
+  `N1 == "Config" → DataType = typeof(Session)`; `ConfigurationFolderViewAttribute`
+  składa drzewo z `DataFormInfo.GetResourcePages(typeof(Session))`). Człony `CaptionHtml`
+  rozdzielone `/` budują gałęzie — stąd `A1Testy/Konfiguracja raportu płacowego`.
+  Zasoby są zbierane z **każdego** assembly referującego `Soneta.Types`
+  (`DataForm` static ctor → `AssemblyAttributes.GetBusinessAssemblies()`), więc DLL
+  z `ExtPath` też jest skanowany. Cache stron jest kluczowany datą modyfikacji pliku
+  DLL (`Assembly.GetNameKey()`), więc podmiana DLL-a odświeża go sama.
+- `A1RaportPlacConfigExtender` — kontekst danych strony
+  (`DataContext="{New A1RaportPlacConfigExtender}"`); rejestracja
+  `[assembly: Worker(typeof(...))]` bez typu danych (`DataType = DBNull`) sprawia, że
+  klasa jest osiągalna w formularzu po nazwie.
+- `A1RaportPlacUstawienia` — wartości w **drzewie konfiguracji enova**
+  (`CfgManager(session).Root` → węzeł `A1Testy` → `Raport placowy` → atrybuty).
+  Odczyt nigdy nie zakłada węzła (działa na sesji tylko-do-odczytu i zwraca domyślne);
+  węzeł powstaje przy pierwszym zapisie z okna Opcji.
+
 ## Gdzie ląduje przycisk (mechanika enova)
 
 Rejestracja workera decyduje o miejscu przycisku:
@@ -117,6 +156,11 @@ i zrestartuj usługi. Działa, jeśli enova skanuje katalog bazowy komponentu �
   pogrubiony i zamrożony, autofiltr.
 - Sumy w kolumnach ZUS/PPK/PIT zgodne z paskiem wypłaty (na realnie przeliczonej
   liście płac).
+- **Narzędzia → Opcje** → gałąź **A1Testy → Konfiguracja raportu płacowego** — zmiana
+  parametru, zapis, ponowne wygenerowanie pliku pokazuje zmianę (np. wyłączona kolumna
+  „Wydział” znika, własny nagłówek wchodzi zamiast domyślnego). Jeśli gałęzi nie ma:
+  DLL nie został podmieniony w komponencie obsługującym GUI (Web) albo nie zrestartowano
+  usług.
 
 ## Aktualizacja kodu
 
