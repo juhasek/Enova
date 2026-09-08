@@ -389,8 +389,8 @@ namespace Soneta.KadryPlace.Reports
             string nazwaNfz = (ph.OddzialNFZ != null && ph.OddzialNFZ.Oddział != null) ? ph.OddzialNFZ.Oddział.Nazwa : "";
             dto.Naglowek = new[]
             {
-                "Wypłata za okres:  ".Translate() + rep.ListaPlac.Okres,
-                "Data wypłaty:  ".Translate() + rep.Data,
+                "Wypłata za okres:  ".Translate() + rep.ListaPlac.Okres.ToYearMonth(),
+                //"Data wypłaty:  ".Translate() + rep.Data,   // pasek zbiorczy per miesiąc — pojedyncza data wypłaty myląca
                 "Pracownik:  ".Translate() + rep.Pracownik,
                 "Stanowisko: ".Translate() + GetStanowisko(ph),
                 "PESEL:  ".Translate() + ph.PESEL,
