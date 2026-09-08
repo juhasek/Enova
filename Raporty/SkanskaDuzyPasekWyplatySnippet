@@ -1,0 +1,799 @@
+/*
+Tytuł:  Pasek wypłaty duży na potrzeby klienta Skanska — WERSJA SUMUJĄCA
+Opis:   Wydruk pokazuje stronę do koperty i informacje o absencjach IIID z IMIR.
+        MODYFIKACJA (task 276264): jeżeli pracownik ma więcej niż jedną wypłatę
+        w tym samym okresie, pasek sumuje dane (elementy, składki, PIT, czas,
+        kwoty do wypłaty) ze wszystkich zaznaczonych wypłat i drukuje JEDEN
+        zbiorczy pasek zamiast osobnego paska per wypłata.
+
+Konfiguracja:
+Firma:  Alt One Wojnarowski Zaworski Spółka Komandytowa z siedzibą w Warszawie.
+Adres firmy: 03-199 Warszawa, ulica Modlińska 61
+
+Copyright: Copyright © Alt One 2026
+Task pierwotny: 237978 / sprawa 233927-A3084 (autor: Benedykt Kluś)
+Task modyfikacji: 276264 (sumowanie wypłat)
+
+ARCHITEKTURA MODYFIKACJI
+------------------------
+Raport pierwotnie działał per pojedyncza WyplataEtat, a ~30 wartości pobierał
+przez akcesory report-workerów [Workers.X.Y] liczone PER BIEŻĄCY WIERSZ. Takich
+wartości nie da się zsumować między wierszami. Dlatego — zgodnie z produkcyjnym
+wzorcem enova (Soneta.KadryPlace.Reports.PaskiWyplatySnippet) — DataSource raportu
+został podmieniony na listę zagregowanych obiektów DTO (SkanskaPasekSource), a
+bindowania .repx przepięte z [Workers.X.Y] na płaskie pola DTO [Pole].
+
+Grupowanie: (Pracownik.Guid, ListaPlac.Okres, typ wypłaty). Przełącznik SrParams
+"Sumuj wypłaty" (domyślnie włączony) — po wyłączeniu każda wypłata to osobna
+grupa, czyli zachowanie sprzed modyfikacji.
+
+Addytywność: na pasku prezentowane są wartości NOMINALNE (historyczne) z już
+naliczonych wypłat, więc ich sumowanie jest poprawne (bez ponownego naliczania).
+Dane stałe nagłówka (PESEL, stanowisko, stawka, norma, tytuł ubezpieczenia,
+RMUA/absencje) brane są z pierwszej wypłaty grupy — spójnie z PaskiWyplatySnippet.
+*/
+
+namespace Soneta.KadryPlace.Reports
+{
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq;
+    using DevExpress.XtraPrinting;
+    using Soneta.Business;
+    using Soneta.Business.UI.DxReports;
+    using Soneta.Deklaracje;
+    using Soneta.Kadry;
+    using Soneta.Kalend;
+    using Soneta.Langs;
+    using Soneta.Place;
+    using Soneta.Tools;
+    using Soneta.Types;
+
+    public class SkanskaDuzyPasekWyplatySnippet : ReportSnippet
+    {
+        // ========================================================================
+        // DTO — jeden obiekt = jedna grupa wypłat (pracownik + okres)
+        // Wszystkie pola bindowane są w .repx jako [NazwaPola] (zamiast [Workers.*]).
+        // ========================================================================
+        public class SkanskaPasekSource
+        {
+            // --- nagłówek / dane stałe (z reprezentanta grupy) ---
+            public string PracownikAdres { get; set; }   // label8
+            public string Stawka { get; set; }            // label12
+            public string LimitUrlopu { get; set; }       // label13
+            public string NormaText { get; set; }         // labelNorma
+            public string[] Naglowek { get; set; }        // header1.FiltersDescription
+            public string PrzerwyHtml { get; set; }       // richText5 (absencje IIID z IMIR)
+            public bool PrzerwyVisible { get; set; }
+            public bool JestPPK { get; set; }             // SubBand5
+
+            // --- WyplataEtat (dopłaty / kwoty) ---
+            public decimal Zasadnicze { get; set; }
+            public decimal Nadgodziny50 { get; set; }
+            public decimal Nadgodziny100 { get; set; }
+            public decimal Nocne { get; set; }
+            public decimal RozlPit { get; set; }
+
+            // --- CzasInfo (rozliczenie czasu pracy) ---
+            public int PracaDni { get; set; }     // richText1: "Przepracował X dni"
+            public Time PracaCzas { get; set; }   // richText1: "(Y godzin)"
+            public int ChoroboweDni { get; set; }
+            public int UrlopDni { get; set; }
+            public Time UrlopCzas { get; set; }
+            public int PozostaleDni { get; set; }
+            public Time Odchylka { get; set; }
+            public Time NocneCzas { get; set; }
+            public Time Nadg50Czas { get; set; }
+            public Time Nadg100Czas { get; set; }
+
+            // --- PITInfo ---
+            public decimal Brutto { get; set; }
+            public decimal Netto { get; set; }
+            public decimal Koszty { get; set; }
+            public decimal Ulga { get; set; }
+            public decimal ZalFISNieZas { get; set; }
+            public decimal ZalFISZas { get; set; }
+
+            // --- WyplataSkładki.Razem ---
+            public decimal EmPodstawa { get; set; }
+            public decimal EmPrac { get; set; }
+            public decimal EmFirma { get; set; }
+            public decimal RnPrac { get; set; }
+            public decimal RnFirma { get; set; }
+            public decimal ChPodstawa { get; set; }
+            public decimal ChPrac { get; set; }
+            public decimal WpFirma { get; set; }
+            public decimal ZdPodstawa { get; set; }
+            public decimal ZdPrac { get; set; }
+            public decimal KosztyZUS { get; set; }
+            public decimal FirmaZUS { get; set; }
+
+            // --- PPK ---
+            public decimal PPKPodstPracownika { get; set; }
+            public decimal PPKDodPracownika { get; set; }
+            public decimal PPKPracownika { get; set; }
+            public decimal PPKPodstPracodawcy { get; set; }
+            public decimal PPKDodPracodawcy { get; set; }
+            public decimal PPKPracodawcy { get; set; }
+            // Uwaga: suma PPK jest liczona przez CalculatedField "SumaPPKRazem" w .repx
+            // (Expression = [PPKPracodawcy!n] + [PPKPracownika!n]) — bez osobnego pola DTO,
+            // by uniknąć kolizji nazw pola z polem kalkulowanym DevExpress.
+
+            // --- do wypłaty ---
+            public string GotowkaTekst { get; set; }      // dlGotówka
+            public string InneTekst { get; set; }         // dlRor
+
+            // --- elementy (zagregowane po definicji) ---
+            public List<ElementInfo> Elementy { get; set; } = new List<ElementInfo>();
+        }
+
+        public class ElementInfo
+        {
+            public string LP { get; set; }
+            public string Nazwa { get; set; }
+            public string Procent { get; set; }
+            public string Czas { get; set; }
+            public string Dni { get; set; }
+            public string Dodatek { get; set; }
+            public string Potracenie { get; set; }
+        }
+
+        // pomocniczy akumulator elementu (agregacja po definicji)
+        private class ElementAgg
+        {
+            public string Nazwa;
+            public string Procent;
+            public decimal Wartosc;
+            public Time Czas;
+            public int Dni;
+        }
+
+        // ========================================================================
+        // Kontrolki .repx sterowane z kodu (ustawiane per bieżący wiersz DTO)
+        // ========================================================================
+        [DxBind] private readonly DevExpress.XtraReports.UI.DetailReportBand DetailReport;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRLabel labelNorma;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRLabel label8;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRRichText richText5;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRLabel sectionNorma;
+        [DxBind] private readonly Soneta.Business.UI.DxReports.Controls.Header header1;
+        [DxBind] private readonly DevExpress.XtraReports.UI.DetailReportBand DetailReport1;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell tableCell1;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell colNazwa;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell colProcent;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell colCzas;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell colDni;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell colDodatek;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell colPotracenie;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell tableCell4;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell tableCell5;
+        [DxBind] private readonly DevExpress.XtraReports.UI.SubBand SubBand5;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell dlGotówka;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRTableCell dlRor;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRLabel label12;
+        [DxBind] private readonly DevExpress.XtraReports.UI.XRLabel label13;
+
+        // ========================================================================
+        // Parametry ustawień wydruku (SrParams)
+        // ========================================================================
+        public class SrParams : SerializableContextBase
+        {
+            public SrParams(Context context) : base(context) { }
+
+            private bool procentInfo = false;
+            [Priority(1)]
+            [Caption("Kolumna %")]
+            public bool ProcentInfo
+            {
+                get { return procentInfo; }
+                set { procentInfo = value; OnChanged(EventArgs.Empty); }
+            }
+
+            private bool infoNorma = false;
+            [Priority(2)]
+            [Caption("Informacja o normie")]
+            public bool InfoNorma
+            {
+                get { return infoNorma; }
+                set { infoNorma = value; OnChanged(EventArgs.Empty); }
+            }
+
+            private bool pelneStanowisko = false;
+            [Priority(3)]
+            [Caption("Stanowisko pełna nazwa")]
+            public bool PelneStanowisko
+            {
+                get { return pelneStanowisko; }
+                set { pelneStanowisko = value; OnChanged(EventArgs.Empty); }
+            }
+
+            // NOWY przełącznik (task 276264): sumowanie wypłat pracownika w okresie.
+            private bool sumujWyplaty = true;
+            [Priority(4)]
+            [Caption("Sumuj wypłaty w okresie")]
+            public bool SumujWyplaty
+            {
+                get { return sumujWyplaty; }
+                set { sumujWyplaty = value; OnChanged(EventArgs.Empty); }
+            }
+        }
+
+        private SrParams srpars;
+        [SettingsContext]
+        public SrParams SrPars
+        {
+            get { return srpars; }
+            set { srpars = value; }
+        }
+
+        #region html strings (absencje IIID z IMIR — bez zmian względem wersji pierwotnej)
+
+        private readonly string[] bloki1 =
+        {
+            "DSMRMUA", "DLMRMUA", "DMMRMUA", "DKMRMUA", "DJMRMUA", "DCMRMUA",
+            "DPMRMUA", "DRMRMUA", "DWMRMUA", "DZMRMUA", "DTMRMUA", "DGMRMUA"
+        };
+
+        [TranslateIgnore]
+        private static readonly string tabhead =
+            "<TABLE width=\"100%\" style=\"border-collapse: collapse; font-family: Calibri; font-size: 11px;\">" +
+            "<TR height=\"4%\">" +
+            "<TD><b> ZESTAWIENIE WYPŁACONYCH ŚWIADCZEŃ I WYNAGRODZEŃ ZA CZAS ABSENCJI CHOROBOWEJ ORAZ RODZAJE I OKRESY PRZERW W OPŁACANIU SKŁADEK</b></TD>" +
+            "</TR>" +
+            "</TABLE>" +
+            "<TABLE width=\"100%\" style=\"BORDER:silver 1px solid\" style=\"border-collapse: collapse; font-family: Calibri; font-size: 8px;\">" +
+            "<TR height=\"4%\">" +
+            "<TD width=\"60%\" Align=\"Center\" style=\"BORDER-RIGHT:silver 1px solid; font-family: Calibri; font-size: 10px;\">01. Kod świadczenia/przerwy</TD>" +
+            "<TD width=\"20%\" Align=\"Center\" style=\"BORDER-RIGHT:silver 1px solid; font-family: Calibri; font-size: 10px;\">02. Okres od - do (dd/mm/rrrr)</TD>" +
+            "<TD width=\"10%\" Align=\"Center\" style=\"BORDER-RIGHT:silver 1px solid; font-family: Calibri; font-size: 10px;\">03. Liczba dni zasiłkowych</TD>" +
+            "<TD width=\"10%\" Align=\"Center\" style=\"BORDER-RIGHT:silver 1px solid; font-family: Calibri; font-size: 10px;\">04. Kwota</TD>" +
+            "</TR>" +
+            "</TABLE>";
+
+        [TranslateIgnore]
+        private static readonly string tabrow =
+            "<TABLE width=\"100%\" border=\"0\" style=\"border-collapse: collapse; font-family: Calibri; font-size: 10px;\">" +
+            "<TR height=\"4%\">" +
+            "<TD width=\"60%\" Align=\"Left\" style=\"BORDER-RIGHT:silver 1px solid; BORDER-LEFT:silver 1px solid; BORDER-BOTTOM:silver 1px solid\">#1#</TD>" +
+            "<TD width=\"20%\" Align=\"Center\" style=\"BORDER-RIGHT:silver 1px solid; BORDER-BOTTOM:silver 1px solid\"><b>#2#</b></TD>" +
+            "<TD width=\"10%\" Align=\"Center\" style=\"BORDER-RIGHT:silver 1px solid; BORDER-BOTTOM:silver 1px solid\"><b>#4#</b></TD>" +
+            "<TD width=\"10%\" Align=\"Right\" style=\"BORDER-RIGHT:silver 1px solid; BORDER-BOTTOM:silver 1px solid\"><b>#5#</b></TD>" +
+            "</TR>" +
+            "</TABLE>";
+
+        #endregion
+
+        // ========================================================================
+        // GŁÓWNY HANDLER RAPORTU: grupowanie + agregacja + budowa CustomDataSource
+        // ========================================================================
+        [DxBind(Name = "Report")]
+        private void DuzyPasekWyplaty_BeforePrint(object sender, CancelEventArgs e)
+        {
+            Context context = DxReportHelpers.GetContext(this);
+
+            // Lista bieżąca (CurrentList) raportu zależy od miejsca uruchomienia:
+            //   Płace / Wypłaty        -> wiersze Wyplata (WyplataEtat)   [działało]
+            //   kartoteka pracownika   -> wiersze PracHistoria / Pracownik [rzucało cast exception]
+            //   lista list płac        -> wiersze ListaPlac
+            // Dlatego pobieramy CurrentList jako object i normalizujemy do płaskiej
+            // listy WyplataEtat (dla Pracownika/PracHistorii dobieramy jego wypłaty
+            // etatowe wprost z tabeli Wyplaty.WgPracownik).
+            var wyplaty = new List<WyplataEtat>();
+            var widziane = new HashSet<Guid>();
+
+            foreach (object item in DxReportHelpers.GetDataSourceList<object>(this))
+            {
+                if (item is WyplataEtat we)
+                {
+                    if (widziane.Add(we.Guid))
+                        wyplaty.Add(we);
+                }
+                else if (item is Wyplata)
+                {
+                    throw new Exception("Wydruk działa tylko dla wypłat etatowych.".Translate());
+                }
+                else if (item is ListaPlac lp)
+                {
+                    foreach (Wyplata w in lp.Wyplaty)
+                        if (w is WyplataEtat we2 && widziane.Add(we2.Guid))
+                            wyplaty.Add(we2);
+                }
+                else
+                {
+                    Pracownik prac = PracownikZWiersza(item);
+                    if (prac == null)
+                        continue;
+                    foreach (Wyplata w in PlaceModule.GetInstance(context).Wyplaty.WgPracownik[prac])
+                        if (w is WyplataEtat we3 && widziane.Add(we3.Guid))
+                            wyplaty.Add(we3);
+                }
+            }
+
+            if (wyplaty.Count == 0)
+                throw new Exception("Brak wypłat etatowych do wydruku.".Translate());
+
+            // --- grupowanie po (Pracownik.Guid, ListaPlac.Okres, typ wypłaty) ---
+            var grupy = new List<List<WyplataEtat>>();
+            foreach (var w in wyplaty)
+            {
+                List<WyplataEtat> grupa = null;
+                if (srpars != null && srpars.SumujWyplaty)
+                {
+                    foreach (var g in grupy)
+                    {
+                        var rep = g[0];
+                        if (rep.Pracownik.Guid == w.Pracownik.Guid
+                            && rep.ListaPlac.Okres == w.ListaPlac.Okres
+                            && rep.GetType() == w.GetType())
+                        {
+                            grupa = g;
+                            break;
+                        }
+                    }
+                }
+                if (grupa == null)
+                {
+                    grupa = new List<WyplataEtat>();
+                    grupy.Add(grupa);
+                }
+                grupa.Add(w);
+            }
+
+            // --- budowa DTO per grupa ---
+            var lista = new List<SkanskaPasekSource>();
+            foreach (var grupa in grupy)
+                lista.Add(BuildSource(grupa, context));
+
+            DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = lista;
+        }
+
+        // ------------------------------------------------------------------------
+        // Budowa jednego DTO (jedna grupa wypłat)
+        // ------------------------------------------------------------------------
+        private SkanskaPasekSource BuildSource(List<WyplataEtat> grupa, Context context)
+        {
+            var dto = new SkanskaPasekSource();
+            WyplataEtat rep = grupa[0];
+            PracHistoria ph = rep.PracHistoria;
+
+            // --- nagłówek / dane stałe (reprezentant) ---
+            dto.PracownikAdres = ph != null
+                ? ph.Pracownik.ImięNazwisko + Environment.NewLine + ph.Adres.Linia1 + Environment.NewLine + ph.Adres.Linia2
+                : "Brak danych".Translate();
+            dto.Stawka = ph.Etat.Zaszeregowanie.Stawka.ToString();
+            dto.LimitUrlopu = GetLimitUrlopu(ph, rep.Data);
+
+            if (srpars != null && srpars.InfoNorma)
+            {
+                KalkulatorPracownika kalk = new KalkulatorPracownika(rep.Pracownik);
+                CzasDni norma = kalk.Norma(rep.ListaPlac.Okres);
+                dto.NormaText = norma.Czas + " / " + norma.Dni;
+            }
+
+            Wyplata.ZUSInfoWorker zus = new Wyplata.ZUSInfoWorker { Wypłata = rep };
+            string nazwaNfz = (ph.OddzialNFZ != null && ph.OddzialNFZ.Oddział != null) ? ph.OddzialNFZ.Oddział.Nazwa : "";
+            dto.Naglowek = new[]
+            {
+                "Wypłata za okres:  ".Translate() + rep.ListaPlac.Okres,
+                "Data wypłaty:  ".Translate() + rep.Data,
+                "Pracownik:  ".Translate() + rep.Pracownik,
+                "Stanowisko: ".Translate() + GetStanowisko(ph),
+                "PESEL:  ".Translate() + ph.PESEL,
+                "Kod tytułu ubezpieczenia:  ".Translate() + zus.TytułUbezpieczenia,
+                "Oddział NFZ:  ".Translate() + nazwaNfz
+            };
+
+            dto.JestPPK = JestPPK(rep, rep.ListaPlac.DataWyplaty);
+            dto.PrzerwyHtml = BuildPrzerwy(rep, context, out bool przerwyVisible);
+            dto.PrzerwyVisible = przerwyVisible;
+
+            // --- agregacja wartości ze wszystkich wypłat grupy ---
+            var gotowka = new Dictionary<string, decimal>();
+            var inne = new Dictionary<string, decimal>();
+
+            foreach (WyplataEtat w in grupa)
+            {
+                WyplataEtatWorker etat = new WyplataEtatWorker { Wypłata = w };
+                Wyplata.CzasInfoWorker czas = new Wyplata.CzasInfoWorker { Wypłata = w };
+                Wyplata.PITInfoWorker pit = new Wyplata.PITInfoWorker { Wypłata = w };
+                WyplataSkładkiWorker skl = new WyplataSkładkiWorker { Wypłata = w };
+
+                // WyplataEtat
+                dto.Zasadnicze += etat.Zasadnicze;
+                dto.Nadgodziny50 += etat.Nadgodziny50;
+                dto.Nadgodziny100 += etat.Nadgodziny100;
+                dto.Nocne += etat.Nocne;
+                dto.RozlPit += etat.RozlPit;
+
+                // CzasInfo
+                dto.PracaDni += czas.PracaDni;
+                dto.PracaCzas += czas.PracaCzas;
+                dto.ChoroboweDni += czas.Chorobowe.Dni;
+                dto.UrlopDni += czas.Urlop.Dni;
+                dto.UrlopCzas += czas.Urlop.Czas;
+                dto.PozostaleDni += czas.Pozostałe.Dni;
+                dto.Odchylka += czas.Odchyłka;
+                dto.NocneCzas += czas.Nocne;
+                dto.Nadg50Czas += czas.Nadgodziny50;
+                dto.Nadg100Czas += czas.Nadgodziny100;
+
+                // PITInfo
+                dto.Brutto += pit.Brutto;
+                dto.Netto += pit.Netto;
+                dto.Koszty += pit.Koszty;
+                dto.Ulga += pit.Ulga;
+                dto.ZalFISNieZas += pit.ZalFISNieZas;
+                dto.ZalFISZas += pit.ZalFISZas;
+
+                // Składki
+                dto.EmPodstawa += skl.Razem.Emerytalna.Podstawa;
+                dto.EmPrac += skl.Razem.Emerytalna.Prac;
+                dto.EmFirma += skl.Razem.Emerytalna.Firma;
+                dto.RnPrac += skl.Razem.Rentowa.Prac;
+                dto.RnFirma += skl.Razem.Rentowa.Firma;
+                dto.ChPodstawa += skl.Razem.Chorobowa.Podstawa;
+                dto.ChPrac += skl.Razem.Chorobowa.Prac;
+                dto.WpFirma += skl.Razem.Wypadkowa.Firma;
+                dto.ZdPodstawa += skl.Razem.Zdrowotna.Podstawa;
+                dto.ZdPrac += skl.Razem.Zdrowotna.Prac;
+                dto.KosztyZUS += skl.Razem.KosztyZUS;
+                dto.FirmaZUS += skl.Razem.FirmaZUS;
+
+                // PPK
+                dto.PPKPodstPracownika += skl.Razem.PPK.PodstPracownika;
+                dto.PPKDodPracownika += skl.Razem.PPK.DodPracownika;
+                dto.PPKPracownika += skl.Razem.PPK.Pracownika;
+                dto.PPKPodstPracodawcy += skl.Razem.PPK.PodstPracodawcy;
+                dto.PPKDodPracodawcy += skl.Razem.PPK.DodPracodawcy;
+                dto.PPKPracodawcy += skl.Razem.PPK.Pracodawcy;
+
+                // do wypłaty
+                AddMoney(gotowka, w.Gotówka);
+                AddMoney(inne, w.Inne);
+            }
+
+            dto.GotowkaTekst = MoneyText(gotowka);
+            dto.InneTekst = MoneyText(inne);
+
+            // --- elementy zagregowane po definicji ---
+            dto.Elementy = AggregateElementy(grupa);
+
+            return dto;
+        }
+
+        // ------------------------------------------------------------------------
+        // Agregacja elementów wynagrodzenia po (Definicja, %, nazwa)
+        // ------------------------------------------------------------------------
+        private List<ElementInfo> AggregateElementy(List<WyplataEtat> grupa)
+        {
+            var map = new Dictionary<string, ElementAgg>();
+            var order = new List<string>();
+
+            foreach (WyplataEtat w in grupa)
+            {
+                foreach (WypElement el in w.ElementyWgKolejności.Cast<WypElement>().Where(WypElementVisible))
+                {
+                    WypSkladnikGłówny skg = el.SkładnikGłówny;
+                    string procent = (skg == null || skg.Procent == Percent.Zero) ? string.Empty : skg.Procent.ToString();
+                    string nazwa = Korygowany(el);
+                    string key = el.Definicja.ID + "|" + procent + "|" + nazwa;
+
+                    if (!map.TryGetValue(key, out ElementAgg agg))
+                    {
+                        agg = new ElementAgg { Nazwa = nazwa, Procent = procent };
+                        map[key] = agg;
+                        order.Add(key);
+                    }
+                    agg.Wartosc += el.Wartosc;
+                    agg.Czas += el.Czas;
+                    agg.Dni += el.Dni;
+                }
+            }
+
+            var list = new List<ElementInfo>();
+            int lp = 0;
+            foreach (string key in order)
+            {
+                ElementAgg a = map[key];
+                lp++;
+                list.Add(new ElementInfo
+                {
+                    LP = lp.ToString(),
+                    Nazwa = a.Nazwa,
+                    Procent = a.Procent,
+                    Czas = a.Czas == Time.Zero ? string.Empty : a.Czas.ToString(),
+                    Dni = a.Dni == 0 ? string.Empty : a.Dni.ToString(),
+                    Dodatek = a.Wartosc >= 0m ? a.Wartosc.ToString() : null,
+                    Potracenie = a.Wartosc < 0m ? (-a.Wartosc).ToString() : null
+                });
+            }
+            return list;
+        }
+
+        // ------------------------------------------------------------------------
+        // RMUA / przerwy (absencje IIID z IMIR) — liczone raz na grupę (reprezentant)
+        // ------------------------------------------------------------------------
+        [TranslateIgnore]
+        private string BuildPrzerwy(WyplataEtat wyp, Context context, out bool visible)
+        {
+            visible = false;
+            Soneta.Deklaracje.ZUS.RMUA rmua = null;
+            Date dataIMIR = wyp.DataZUS;
+            Pracownik prac = wyp.Pracownik;
+
+            foreach (Soneta.Deklaracje.ZUS.RMUA item in prac.DeklaracjePodmiotu.OfType<Soneta.Deklaracje.ZUS.RMUA>())
+            {
+                if (item.IsDeklaracjaMiesieczna && item.Okres.Contains(dataIMIR))
+                    rmua = item;
+            }
+            if (rmua == null)
+                return string.Empty;
+
+            string nazwaImir = bloki1[dataIMIR.Month - 1];
+            BlokDeklaracji blok = rmua.Bloki[nazwaImir];
+            string tyub0 = prac[dataIMIR].Etat.Ubezpieczenia.Tyub.ToString();
+            string tyub = GetTyub(tyub0);
+
+            string prw = Przerwy(blok, tyub, context);
+            if (prw == "#EMPTY#")
+                return string.Empty;
+
+            visible = true;
+            return prw;
+        }
+
+        [TranslateIgnore]
+        private string Przerwy(BlokDeklaracji blok, string tyub, Context context)
+        {
+            string sp = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator;
+            string row, rows = "";
+            bool result = false;
+            string przerwy = (string)blok["Przerwy"];
+            string[] linie = przerwy.Split('#');
+            foreach (string linia in linie)
+            {
+                string[] elementy = linia.Split('|');
+                if (elementy.Length != 6)
+                    continue;
+                result = true;
+                string t = elementy[0];
+                if (tyub != t)
+                    continue;
+                row = tabrow;
+                row = row.Replace("#1#", KodRSA(elementy[1], context));
+                row = row.Replace("#2#", elementy[3].Replace("...", " - "));
+                row = row.Replace("#4#", elementy[4]);
+                string kw = "", str = elementy[5];
+                for (int ii = 0; ii < str.Length; ii++)
+                    if (str[ii] != 0xa0) kw += str[ii];
+                decimal kwota = Convert.ToDecimal(kw.Replace(",", sp));
+                row = row.Replace("#5#", string.Format("{0:n}", kwota));
+                rows += row;
+            }
+            if (!result)
+            {
+                rows = "#EMPTY#";
+            }
+            return rows;
+        }
+
+        private string KodRSA(string element, Context context)
+        {
+            string opis = element;
+            try
+            {
+                int kod = int.Parse(element);
+                KodRSA rsa = PlaceModule.GetInstance(context).KodyRSA.WgKodu[kod];
+                if (rsa != null)
+                    opis = rsa.Opis;
+            }
+            catch { }
+            return opis;
+        }
+
+        private string GetTyub(string t)
+        {
+            int ty = 0;
+            try
+            {
+                t = new string(t.Where(char.IsDigit).ToArray());
+                ty = int.Parse(t);
+            }
+            catch
+            {
+                return t;
+            }
+            return ty.ToString();
+        }
+
+        // ========================================================================
+        // HANDLERY PASM — czytają bieżący wiersz DTO
+        // ========================================================================
+        [DxBind]
+        private void DetailReport_BeforePrint(object sender, CancelEventArgs e)
+        {
+            SkanskaPasekSource dto = DetailReport.GetCurrentRow() as SkanskaPasekSource;
+            if (dto == null)
+                return;
+
+            label8.Text = dto.PracownikAdres;
+            label12.Text = dto.Stawka;
+            label13.Text = dto.LimitUrlopu;
+            header1.FiltersDescription = dto.Naglowek;
+
+            // grid elementów zasilamy zagregowaną listą DTO (mechanizm jak w wersji pierwotnej)
+            DetailReport1.DataMember = null;
+            DetailReport1.DataSource = dto.Elementy;
+            DetailReport1.Visible = dto.Elementy.Count > 0;
+
+            // absencje IIID z IMIR
+            if (dto.PrzerwyVisible)
+            {
+                richText5.Html = "";
+                richText5.Html = tabhead + dto.PrzerwyHtml;
+                richText5.Visible = true;
+            }
+            else
+            {
+                richText5.Visible = false;
+            }
+
+            // do wypłaty
+            dlGotówka.Text = dto.GotowkaTekst;
+            dlRor.Text = dto.InneTekst;
+
+            // układ kolumny % (bez zmian — wg ustawień)
+            if (srpars != null && !srpars.ProcentInfo)
+            {
+                colProcent.WidthF = System.Single.MinValue;
+
+                colProcent.Borders = BorderSide.None;
+                colProcent.Borders = BorderSide.Bottom;
+
+                colCzas.Borders = BorderSide.None;
+                colCzas.Borders = BorderSide.Bottom | BorderSide.Right;
+
+                tableCell4.WidthF = System.Single.MinValue;
+
+                tableCell4.Borders = BorderSide.None;
+                tableCell4.Borders = BorderSide.Bottom | BorderSide.Top;
+
+                tableCell5.Borders = BorderSide.None;
+                tableCell5.Borders = BorderSide.Right | BorderSide.Top | BorderSide.Bottom;
+            }
+
+            // norma
+            if (srpars != null && srpars.InfoNorma)
+            {
+                sectionNorma.Visible = true;
+                labelNorma.Visible = true;
+                labelNorma.Text = dto.NormaText;
+            }
+            else
+            {
+                sectionNorma.Visible = false;
+                labelNorma.Visible = false;
+            }
+        }
+
+        [DxBind]
+        private void Detail1_BeforePrint(object sender, CancelEventArgs e)
+        {
+            ElementInfo el = DetailReport1.GetCurrentRow() as ElementInfo;
+            if (el == null)
+                return;
+
+            tableCell1.Text = el.LP;
+            colNazwa.Text = el.Nazwa;
+            colProcent.Text = el.Procent;
+            colCzas.Text = el.Czas;
+            colDni.Text = el.Dni;
+            colDodatek.Text = el.Dodatek;
+            colPotracenie.Text = el.Potracenie;
+        }
+
+        [DxBind]
+        private void Detail2_BeforePrint(object sender, CancelEventArgs e)
+        {
+            SkanskaPasekSource dto = DetailReport.GetCurrentRow() as SkanskaPasekSource;
+            SubBand5.Visible = dto != null && dto.JestPPK;
+        }
+
+        // ========================================================================
+        // Metody pomocnicze (zachowane z wersji pierwotnej)
+        // ========================================================================
+
+        // Wiersz CurrentList -> Pracownik (dla uruchomienia z kartoteki pracownika).
+        private Pracownik PracownikZWiersza(object row)
+        {
+            if (row is Pracownik p)
+                return p;
+            if (row is PracHistoria ph)
+                return ph.Pracownik;
+            if (row is Wyplata w)
+                return w.Pracownik;
+            return null;
+        }
+
+        private string GetStanowisko(PracHistoria ph)
+        {
+            string stanowiskoPelne = "";
+            if (srpars != null && srpars.PelneStanowisko)
+                stanowiskoPelne = ph.Etat.StanowiskoPełne;
+            if (stanowiskoPelne.Length == 0)
+                stanowiskoPelne = ph.Etat.Stanowisko;
+            return stanowiskoPelne;
+        }
+
+        private string Korygowany(WypElement element)
+        {
+            string korektaTxt = " (korekta)".Translate();
+            string depozytTxt = " (depozyt)".Translate();
+            string nazwa = element.TranslatedName();
+            if (element.Definicja.Korygowany && nazwa.EndsWith(korektaTxt))
+                nazwa = nazwa.Replace(korektaTxt, "");
+            else if (element is WypElementZajęcieKomornicze && nazwa.EndsWith(depozytTxt))
+                nazwa = nazwa.Replace(depozytTxt, "");
+            return nazwa;
+        }
+
+        private string GetLimitUrlopu(PracHistoria ph, Date data)
+        {
+            DefinicjaLimitu def = KalendModule.GetInstance(ph.Pracownik).DefinicjeLimitow.UrlopWypoczynkowy;
+            DefinicjaLimitu defDod = KalendModule.GetInstance(ph.Pracownik).DefinicjeLimitow.UrlopDodatkowy;
+            var workerLimity = new Pracownik.LimityNieobecnosciWorker(def, data);
+            var workerLimityDod = new Pracownik.LimityNieobecnosciWorker(defDod, data);
+            workerLimity.Row = ph.Pracownik;
+            workerLimityDod.Row = ph.Pracownik;
+
+            return (workerLimity.PozostalyRazemD + workerLimityDod.PozostalyRazemD).ToString()
+                + " dni = "
+                + (workerLimity.PozostalyRazemG + workerLimityDod.PozostalyRazemG).ToString()
+                + " godzin";
+        }
+
+        private bool WypElementVisible(WypElement element)
+        {
+            switch (element.RodzajZrodla)
+            {
+                case RodzajŹródłaWypłaty.NadgodzinyI:
+                case RodzajŹródłaWypłaty.NadgodzinyII:
+                case RodzajŹródłaWypłaty.NadgodzinyŚw:
+                case RodzajŹródłaWypłaty.Nocne:
+                case RodzajŹródłaWypłaty.Etat:
+                    return false;
+            }
+
+            if (element.Wartosc == 0m)
+                return false;
+
+            return true;
+        }
+
+        private bool JestPPK(ISessionable session, Date data)
+        {
+            YearMonth podlegaOd = PlaceModule.GetInstance(session).Config.PracowniczePlanyKapitałowe.Ogólne.PodlegaOd;
+            return podlegaOd != YearMonth.Empty ? new FromTo(podlegaOd.FirstDay, Date.MaxValue).Contains(data) : false;
+        }
+
+        // ------------------------------------------------------------------------
+        // sumowanie kwot do wypłaty (per symbol waluty)
+        // ------------------------------------------------------------------------
+        private void AddMoney(Dictionary<string, decimal> d, Currency c)
+        {
+            if (!d.ContainsKey(c.Symbol))
+                d[c.Symbol] = c.Value;
+            else
+                d[c.Symbol] += c.Value;
+        }
+
+        private string MoneyText(Dictionary<string, decimal> d)
+        {
+            string s = "";
+            foreach (var kv in d)
+                s += (s == "" ? "" : Environment.NewLine) + kv.Value.ToString("n") + " " + kv.Key;
+            return s == "" ? "0" : s;
+        }
+    }
+}
