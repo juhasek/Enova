@@ -2,23 +2,31 @@
 
 **Status: DZIAŁA na bazie testowej `Claude`** (potwierdzone przez użytkownika, 2026-09-05).
 
-**Zmiana 2026-09-07 — JEDNA TABELA (do potwierdzenia na żywo).** Wcześniejszy eksport do
-Excela wychodził nieczytelny: kolumny wąskie na 1 znak, arkusz rozbity na dziesiątki
-wąskich kolumn (`B D F I J L…`), nagłówki łamane litera po literze (zrzut od użytkownika).
-Przyczyna: **dwie osobne `XRTable`** — nagłówek kolumn w `PageHeaderBand` + dane w
-`DetailBand` — których krawędzie komórek nie trafiały w ten sam raster; DevExpress przy
-eksporcie do xlsx budował z tego pofragmentowaną siatkę i scalone komórki. Pseudo-autofit
-(`Weight`/`WidthF` + poszerzanie strony) tego nie naprawiał.
-**Teraz:** cała zawartość (wiersz nagłówka + wszystkie wiersze danych) to **jedna
-`XRTable`** (`tabelaDane` w `DetailBand`); `tabelaNaglowek` z `.repx` jest w kodzie
-ukrywana (`Visible=false` + `GetBand().Visible=false`/`HeightF=0`) — `.repx` bez zmian.
-Wspólny raster kolumn → eksport do Excela daje jedną spójną tabelę. Do potwierdzenia:
-ponowny eksport do xlsx i sprawdzenie, że kolumny są dopasowane i liczby sumowalne
-(`=SUMA(...)`).
+**Przebudowa 2026-09-07/08 pod czytelny eksport do Excela (do potwierdzenia na żywo).**
+Wcześniejszy eksport wychodził nieczytelny: kolumny mikroskopijne, arkusz rozbity na
+dziesiątki wąskich kolumn (`B D F I J L…`), nagłówki łamane litera po literze. Cztery
+przyczyny naprawione naraz w snippecie:
 
-Kod snippetu wgrany do `SystemFiles` w bazie `Claude` (`ID 4`) — SQL-em, polskie znaki
-potwierdzone punktami kodowymi. Po podmianie: „Wymuś rekompilację kodu" nie jest konieczne
-dla snippetu wydruku (kompiluje się przy pierwszym uruchomieniu), ale nie zaszkodzi.
+1. **Dwie osobne `XRTable`** (nagłówek w `PageHeaderBand` + dane w `DetailBand`) +
+   labele tytułu/podtytułu w `ReportHeaderBand` — każda kontrolka poza tabelą dokłada
+   linię podziału kolumn przy eksporcie. **Teraz:** cała treść (wiersz nagłówka +
+   wiersze danych) to **jedna `XRTable`** (`tabelaDane`); bandy `PageHeader` i
+   `ReportHeader` są w kodzie całkowicie ukrywane (`Report.Bands[BandKind.*]` →
+   `Visible=false`, `HeightF=0`). `.repx` bez zmian. **W arkuszu nie ma już tytułu ani
+   podtytułu** — sam nagłówek kolumn + dane.
+2. **Jednostki `.repx` = 0,1 mm** (`ReportUnit="TenthsOfAMillimeter"`), nie 1/100 cala —
+   stałe szerokości były ~2,5× za małe (6,5 j./znak). Poprawione: ~17 j./znak,
+   wiersz danych 55 j., nagłówek 130 j.
+3. **`AnchorHorizontal="Both"`** z `.repx` ściągał tabelę z powrotem do ~1704 j. mimo
+   `WidthF` z kodu → w kodzie ustawiane `AnchorHorizontal = Left` + jawna szerokość
+   tabeli i strony (`PageWidth`).
+4. **`ExportMode = SingleFile`** (było `SingleFilePageByPage` — page-by-page zachowuje
+   paginację wydruku); `TextExportMode = Value` + `{0:N2}` → liczby jako liczby.
+
+Kod wgrany do `SystemFiles` w bazie `Claude` (`ID 4`) SQL-em, polskie znaki potwierdzone.
+Po podmianie kodu snippetu w GUI: uruchomić wydruk z Listy płac → podgląd → **Eksportuj
+→ XLSX** i sprawdzić: kolumny dopasowane do treści, jedna spójna tabela (bez rozjazdu),
+liczby sumowalne (`=SUMA(...)`).
 
 Wzorzec wydruku Enova (`Raporty/A1PelnaListaPlac.repx`) zasilany snippetem
 `Raporty/A1PelnaListaPlacSnippet` (klasa `A1PelnaListaPlacSnippet`), uruchamiany z

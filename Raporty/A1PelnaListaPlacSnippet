@@ -13,58 +13,44 @@ using Soneta.Types;
 namespace x.x.Reports
 {
     // Wydruk z poziomu Płace/Listy płac (zaznaczenie jednej lub wielu pozycji ListaPlac),
-    // docelowo eksportowany do Excela. Kolumny Kod / Imię i Nazwisko / Wydział są na stałe;
-    // kolumny elementów budowane są dynamicznie na podstawie definicji elementów
-    // (WypElement.Definicja) znalezionych na wypłatach (Wyplata.Elementy) wchodzących
-    // w skład zaznaczonych list płac. Brak elementu danego rodzaju na konkretnej wypłacie
-    // -> 0,00 w tej kolumnie. Jeden wiersz wydruku = jedna Wyplata (przy kilku wypłatach
-    // tego samego pracownika na liście - np. etat + inne - powstaje kilka wierszy).
-    //
-    // Po kolumnach elementów dochodzi 17 STAŁYCH kolumn podsumowania - szczegółowy
-    // rozkład składek ZUS (5 rodzajów x pracownik/pracodawca), narzuty pracodawcy
-    // (Fundusz Pracy, FGŚP, FEP), PPK (pracownik/pracodawca), Zaliczka na PIT, Kwota do
-    // wypłaty. To NIE są elementy (WypElement) - są naliczane w strukturze
-    // WypElement.Podatki KAŻDEGO składnika wypłaty (sumowane tu po wszystkich
-    // składnikach), a kwota do wypłaty to wprost pole Wyplata.Wartosc (nie suma
-    // elementów) - stąd liczone inaczej niż kolumny dynamiczne.
+    // budowany pod EKSPORT DO EXCELA. Kolumny Kod / Imię i Nazwisko / Wydział są na stałe;
+    // kolumny elementów budowane dynamicznie z definicji elementów (WypElement.Definicja)
+    // na wypłatach zaznaczonych list płac. Brak elementu -> 0,00. Jeden wiersz = jedna
+    // Wyplata. Po kolumnach elementów 17 STAŁYCH kolumn (ZUS 5x prac/pracodawca, FP, FGŚP,
+    // FEP, PPK prac/pracodawca, Zaliczka na PIT, Kwota do wypłaty) liczonych ze struktury
+    // WypElement.Podatki każdego składnika (kwota do wypłaty = wprost Wyplata.Wartosc).
     //
     // ============================================================================
-    // JEDNA TABELA (nie dwie) - kluczowa zmiana dla czytelnego Excela (2026-09-07).
-    // Wcześniej: nagłówek kolumn w osobnej XRTable w PageHeaderBand + dane w drugiej
-    // XRTable w DetailBand. Przy eksporcie do Excela krawędzie komórek obu tabel nie
-    // trafiały w ten sam raster -> DevExpress budował pofragmentowaną siatkę kolumn
-    // (B, D, F, I, J, L...) i scalone komórki; kolumny wychodziły wąskie na 1 znak,
-    // nagłówki łamane litera po literze (potwierdzone zrzutem z Excela).
-    // Teraz: CAŁA tabela (wiersz nagłówka + wszystkie wiersze danych) to JEDNA XRTable
-    // w DetailBand. Wszystkie komórki mają wspólny, spójny raster kolumn -> eksport do
-    // Excela daje jedną czytelną tabelę. tabelaNaglowek (z .repx) jest w kodzie ukrywana
-    // (Visible=false + zerowanie bandu), .repx nie wymaga zmiany.
+    // CZYTELNY EKSPORT DO EXCELA - lekcje z 2026-09-07/08:
     //
-    // Zamiast statycznej tabeli z .repx cała zawartość budowana jest w kodzie na pustej
-    // kontrolce XRTable (tabelaDane w DetailBand) - liczba i nazwy kolumn nie są znane
-    // w momencie projektowania wydruku.
+    // 1. JEDNA TABELA, NIC WIĘCEJ NA STRONIE. Wcześniej nagłówek kolumn był w osobnej
+    //    XRTable w PageHeaderBand, a tytuł/podtytuł w ReportHeaderBand. DevExpress przy
+    //    eksporcie XRTable -> xlsx tworzy kolumnę arkusza dla KAŻDEJ odrębnej współrzędnej
+    //    X dowolnej kontrolki -> dwie tabele + dwa labele o niedopasowanych krawędziach
+    //    dawały pofragmentowaną siatkę (B, D, F, I, J, L...) i scalone komórki.
+    //    Teraz: cała treść (wiersz nagłówka + wiersze danych) to JEDNA XRTable
+    //    (tabelaDane w DetailBand); PageHeaderBand i ReportHeaderBand są w kodzie
+    //    całkowicie ukrywane. .repx bez zmian.
+    //
+    // 2. JEDNOSTKI .repx = 0,1 mm (ReportUnit="TenthsOfAMillimeter"), NIE 1/100 cala.
+    //    Stałe szerokości/wysokości muszą być w 0,1 mm: ~17 j. na znak 9pt Calibri,
+    //    wiersz danych ~55 j. (5,5 mm), nagłówek ~130 j. Wcześniejsze 6,5 j./znak i
+    //    18 j./wiersz (skopiowane z raportu w calach) dawały mikroskopijne kolumny.
+    //
+    // 3. AnchorHorizontal="Both" (z .repx) ściąga tabelę z powrotem do szerokości bandu
+    //    (~1704 j.) niezależnie od WidthF ustawianego w kodzie. W kodzie ustawiamy
+    //    AnchorHorizontal = Left i jawnie szerokość tabeli + strony (PageWidth).
+    //
+    // 4. Opcje eksportu: ExportMode = SingleFile (nie PageByPage - page-by-page zachowuje
+    //    paginację wydruku), TextExportMode = Value + TextFormatString "{0:N2}" na
+    //    komórkach liczbowych -> liczby jako prawdziwe liczby Excela z formatem 2 miejsc.
     //
     // Wzorowane na Raporty/SzablonTabela6KolumnSnippet: [Context(Required = true)]
-    // wymusza wstrzyknięcie działającego Context (PrnParams), a jedno-elementowy
-    // CustomDataSource na komponencie Empty (DxReportHelpers.GetDataSourceEmpty)
-    // wymusza dokładnie jedno odpalenie DetailBand (w którym budujemy całą tabelę na
-    // raz, a nie wiersz po wierszu).
+    // wymusza wstrzyknięcie działającego Context (PrnParams); jedno-elementowy
+    // CustomDataSource na komponencie Empty wymusza dokładnie jedno odpalenie DetailBand.
     //
-    // EKSPORT DO EXCELA: pseudo-autofit natywnie przez DevExpress w Report_BeforePrint:
-    // - DopasujSzerokosciKolumn liczy dla każdej kolumny długość najdłuższego tekstu
-    //   (nagłówek + wszystkie wiersze danych) i ustawia Weight/WidthF wszystkich komórek
-    //   tej kolumny na tę samą wartość, a potem poszerza tabelę i każdy wiersz do sumy
-    //   szerokości kolumn (Weight komórki to tylko PROPORCJA w obrębie szerokości
-    //   wiersza/tabeli - trzeba jawnie poszerzyć też tabelę, wiersze i stronę),
-    // - DopasujSzerokoscStrony poszerza stronę raportu (PageWidth), gdy suma kolumn
-    //   przekracza dotychczasową szerokość,
-    // - UstawWysokoscWierszy ustawia stałą wysokość (HeightF) wszystkich wierszy,
-    // - Report.ExportOptions.Xlsx.{ExportMode, RawDataMode, TextExportMode=Value} +
-    //   TextFormatString="{0:N2}" na komórkach liczbowych - każą eksporterowi zapisać
-    //   wartości liczbowe jako prawdziwe liczby Excela (nie tekst), z formatem 2 miejsc.
-    //
-    // Cała metoda BeforePrint jest opakowana w try/catch z etykietą etapu - błąd trafia
-    // do tabeli danych jako pojedynczy wiersz diagnostyczny zamiast wywalać wydruk.
+    // Cała metoda BeforePrint jest w try/catch z etykietą etapu - błąd trafia jako
+    // pojedynczy wiersz diagnostyczny do tabeli zamiast wywalać wydruk.
     public class A1PelnaListaPlacSnippet : ReportSnippet
     {
         public class PrnParams : ContextBase
@@ -94,12 +80,13 @@ namespace x.x.Reports
         const float WagaPodsumowania = 1.3f;
         const int LiczbaKolumnPodsumowania = 17;
 
-        // Stałe pseudo-autofit.
-        const float WysokoscWiersza = 18f;
-        const float MinSzerokoscKolumny = 40f;
-        const float MaxSzerokoscKolumny = 400f;
-        const float SzerokoscNaZnak = 6.5f;
-        const float MarginesKomorki = 10f;
+        // Stałe pseudo-autofit W JEDNOSTKACH 0,1 mm (patrz pkt 2 w komentarzu klasy).
+        const float WysokoscWiersza = 55f;           // ~5,5 mm - wiersz danych 9pt
+        const float WysokoscWierszaNaglowka = 130f;  // nagłówki bywają dwuwierszowe
+        const float MinSzerokoscKolumny = 110f;      // ~11 mm
+        const float MaxSzerokoscKolumny = 1100f;     // ~110 mm
+        const float SzerokoscNaZnak = 17f;           // ~1,7 mm / znak 9pt Calibri
+        const float MarginesKomorki = 60f;           // ~6 mm zapasu na komórkę
 
         [DxBind(Name = "Report")]
         private void Report_BeforePrint(object sender, CancelEventArgs e)
@@ -110,13 +97,14 @@ namespace x.x.Reports
                 etap = "ustawienie opcji eksportu do Excela";
                 if (this.Report != null)
                 {
-                    this.Report.ExportOptions.Xlsx.ExportMode = XlsxExportMode.SingleFilePageByPage;
+                    this.Report.ExportOptions.Xlsx.ExportMode = XlsxExportMode.SingleFile;
                     this.Report.ExportOptions.Xlsx.RawDataMode = false;
                     this.Report.ExportOptions.Xlsx.TextExportMode = TextExportMode.Value;
+                    this.Report.ExportOptions.Xlsx.ShowGridLines = true;
                 }
 
-                etap = "ukrycie tabeli naglowka (jedna tabela = spojna siatka w Excelu)";
-                UkryjTabeleNaglowka();
+                etap = "ukrycie zbednych kontrolek (jedna tabela = spojna siatka w Excelu)";
+                UkryjZbedneKontrolki();
 
                 etap = "sprawdzenie trybu (designer)";
                 if (pars == null)
@@ -151,11 +139,6 @@ namespace x.x.Reports
                 DopasujSzerokosciKolumn();
                 UstawWysokoscWierszy();
 
-                etap = "podtytul";
-                if (lblPodtytul != null)
-                    lblPodtytul.Text = "Listy płac: " + listy.Count + ", wypłaty: " + wyplaty.Count
-                        + ", elementy (kolumny): " + kolumny.Count;
-
                 UstawJedenPustyRekord();
             }
             catch (Exception ex)
@@ -165,26 +148,34 @@ namespace x.x.Reports
             }
         }
 
-        // tabelaNaglowek z .repx nie jest juz uzywana - cala tabela idzie w tabelaDane.
-        // Ukrywamy sama kontrolke oraz caly PageHeaderBand (w .repx zawiera TYLKO
-        // tabelaNaglowek - lblTytul/lblPodtytul sa w ReportHeaderBand), zeby w Excelu
-        // nie zostal pusty wiersz na gorze kazdej strony. Band bierzemy przez
-        // Report.Bands[BandKind.PageHeader] - XRControl.GetBand() jest protected.
-        void UkryjTabeleNaglowka()
+        // Do Excela ma trafić WYŁĄCZNIE tabelaDane. Ukrywamy tabelaNaglowek i całe bandy
+        // PageHeader (tylko tabelaNaglowek) oraz ReportHeader (lblTytul + lblPodtytul) -
+        // każda kontrolka poza tabelą dokłada linie podziału kolumn w wyeksportowanym
+        // arkuszu. Band bierzemy przez Report.Bands[BandKind.*] - XRControl.GetBand()
+        // jest protected i niedostępny ze snippetu.
+        void UkryjZbedneKontrolki()
         {
             if (tabelaNaglowek != null)
             {
                 tabelaNaglowek.Rows.Clear();
                 tabelaNaglowek.Visible = false;
             }
+            if (lblPodtytul != null)
+                lblPodtytul.Visible = false;
             if (this.Report != null)
             {
-                Band ph = this.Report.Bands[BandKind.PageHeader];
-                if (ph != null)
-                {
-                    ph.Visible = false;
-                    ph.HeightF = 0f;
-                }
+                UkryjBand(BandKind.PageHeader);
+                UkryjBand(BandKind.ReportHeader);
+            }
+        }
+
+        void UkryjBand(BandKind rodzaj)
+        {
+            Band b = this.Report.Bands[rodzaj];
+            if (b != null)
+            {
+                b.Visible = false;
+                b.HeightF = 0f;
             }
         }
 
@@ -360,6 +351,7 @@ namespace x.x.Reports
         }
 
         // JEDNA tabela: wiersz 0 = naglowek (pogrubiony), potem wiersze danych.
+        // Wszystkie wiersze maja identyczna liczbe komorek -> spojny raster kolumn.
         void BudujTabele(List<DefinicjaElementu> kolumny, List<WierszWyplaty> wiersze)
         {
             if (tabelaDane == null) return;
@@ -392,17 +384,18 @@ namespace x.x.Reports
             naglowek.Cells.Add(NowaKomorka("Kwota do wypłaty", WagaPodsumowania, true, true));
             tabelaDane.Rows.Add(naglowek);
 
+            int liczbaKolumn = naglowek.Cells.Count;
+
             // --- wiersze danych ---
             if (wiersze.Count == 0)
             {
                 XRTableRow pusty = new XRTableRow();
                 pusty.Weight = 1;
-                XRTableCell cInfo = NowaKomorka(
-                    "Brak wypłat do wydrukowania - sprawdź zaznaczenie listy/list płac.",
-                    1, false, false);
-                cInfo.Weight = WagaKod + WagaNazwisko + WagaWydzial + (kolumny.Count * WagaElementu)
-                    + (LiczbaKolumnPodsumowania * WagaPodsumowania);
-                pusty.Cells.Add(cInfo);
+                pusty.Cells.Add(NowaKomorka("Brak wypłat - sprawdź zaznaczenie listy/list płac.",
+                    WagaNazwisko, false, false));
+                // dopełnienie do pełnej liczby kolumn, żeby raster się nie rozjechał
+                for (int i = 1; i < liczbaKolumn; i++)
+                    pusty.Cells.Add(NowaKomorka("", WagaElementu, false, false));
                 tabelaDane.Rows.Add(pusty);
                 return;
             }
@@ -441,7 +434,7 @@ namespace x.x.Reports
 
         void BudujBlad(string etap, Exception ex)
         {
-            UkryjTabeleNaglowka();
+            UkryjZbedneKontrolki();
 
             if (tabelaDane != null)
             {
@@ -454,6 +447,7 @@ namespace x.x.Reports
                 XRTableCell cInfo = NowaKomorka(opis, 1, false, false);
                 wiersz.Cells.Add(cInfo);
                 tabelaDane.Rows.Add(wiersz);
+                tabelaDane.AnchorHorizontal = HorizontalAnchorStyles.Left;
             }
         }
 
@@ -465,13 +459,13 @@ namespace x.x.Reports
             komorka.TextAlignment = liczba ? TextAlignment.MiddleRight : TextAlignment.MiddleLeft;
             komorka.Borders = BorderSide.All;
             komorka.Font = new Font("Calibri", 9f, naglowek ? FontStyle.Bold : FontStyle.Regular);
+            komorka.WordWrap = naglowek;   // zawijanie tylko w nagłówkach (długie nazwy)
             return komorka;
         }
 
-        // Komórka z liczbą (wiersz danych, nie nagłówek) - oprócz sformatowanego tekstu
-        // ustawia TextFormatString, żeby przy eksporcie do Excela (TextExportMode.Value,
-        // patrz Report_BeforePrint) wartość trafiła jako prawdziwa liczba z formatem
-        // "2 miejsca po przecinku", a nie jako zwykły tekst.
+        // Komórka z liczbą (wiersz danych) - oprócz sformatowanego tekstu ustawia
+        // TextFormatString, żeby przy eksporcie do Excela (TextExportMode.Value) wartość
+        // trafiła jako prawdziwa liczba z formatem "2 miejsca po przecinku".
         static XRTableCell NowaKomorkaLiczba(decimal wartosc, float waga)
         {
             XRTableCell komorka = NowaKomorka(wartosc.ToString("N2"), waga, false, true);
@@ -479,19 +473,21 @@ namespace x.x.Reports
             return komorka;
         }
 
-        // Pseudo-autofit na JEDNEJ tabeli (tabelaDane): wiersz 0 to nagłówek, reszta to
-        // dane. Dla każdej kolumny bierzemy najdłuższy tekst po wszystkich wierszach
-        // (łącznie z nagłówkiem), ustawiamy Weight/WidthF wszystkich komórek tej kolumny
-        // na tę samą wartość, a na końcu poszerzamy samą tabelę i KAŻDY jej wiersz do
-        // sumy szerokości kolumn (Weight komórki to tylko proporcja w obrębie szerokości
-        // wiersza/tabeli - bez jawnego poszerzenia tabeli/wierszy/strony silnik ściśnie
-        // wszystko z powrotem do wąskiej szerokości z .repx).
+        // Pseudo-autofit na JEDNEJ tabeli. Dla każdej kolumny bierzemy najdłuższy tekst
+        // po wszystkich wierszach (z nagłówkiem), ustawiamy WidthF/Weight wszystkich
+        // komórek tej kolumny na tę samą wartość, a na końcu poszerzamy tabelę, KAŻDY
+        // wiersz i stronę do sumy szerokości kolumn.
         void DopasujSzerokosciKolumn()
         {
             if (tabelaDane == null || tabelaDane.Rows.Count == 0) return;
 
-            XRTableRow pierwszy = tabelaDane.Rows[0];
-            int liczbaKolumn = pierwszy.Cells.Count;
+            // AnchorHorizontal="Both" z .repx ściągnąłby tabelę z powrotem do szerokości
+            // bandu (~1704 j.) niezależnie od WidthF ustawianego niżej.
+            tabelaDane.AnchorHorizontal = HorizontalAnchorStyles.Left;
+            tabelaDane.LocationF = new PointF(0f, 0f);
+
+            XRTableRow naglowek = tabelaDane.Rows[0];
+            int liczbaKolumn = naglowek.Cells.Count;
             float sumaSzerokosci = 0f;
 
             for (int i = 0; i < liczbaKolumn; i++)
@@ -511,8 +507,8 @@ namespace x.x.Reports
                 foreach (XRTableRow wiersz in tabelaDane.Rows)
                 {
                     if (i >= wiersz.Cells.Count) continue;
-                    wiersz.Cells[i].Weight = szerokosc;
                     wiersz.Cells[i].WidthF = szerokosc;
+                    wiersz.Cells[i].Weight = szerokosc;
                 }
             }
 
@@ -523,28 +519,29 @@ namespace x.x.Reports
             DopasujSzerokoscStrony(sumaSzerokosci);
         }
 
-        // Strona wydruku A1PelnaListaPlac.repx jest zaprojektowana wąsko (A4 portret) -
-        // przy kilkunastu-kilkudziesięciu kolumnach trzeba ją jawnie poszerzyć. Jednostki
-        // raportu = 1/100 cala, ta sama skala co WidthF/HeightF.
+        // Strona .repx jest wąska (A4 portret, jednostki 0,1 mm). Poszerzamy ją tak, żeby
+        // cała tabela zmieściła się na JEDNEJ stronie (bez paginacji poziomej, która w
+        // eksporcie do Excela robi bałagan).
         void DopasujSzerokoscStrony(float sumaSzerokosciKolumn)
         {
             if (this.Report == null) return;
 
             int lewy = (int)this.Report.Margins.Left;
             int prawy = (int)this.Report.Margins.Right;
-            int potrzebnaSzerokosc = (int)Math.Ceiling(sumaSzerokosciKolumn) + lewy + prawy;
+            int potrzebna = (int)Math.Ceiling(sumaSzerokosciKolumn) + lewy + prawy + 20;
 
-            if (potrzebnaSzerokosc > this.Report.PageWidth)
+            if (potrzebna > this.Report.PageWidth)
             {
                 this.Report.PaperKind = DevExpress.Drawing.Printing.DXPaperKind.Custom;
-                this.Report.PageWidth = potrzebnaSzerokosc;
+                this.Report.PageWidth = potrzebna;
             }
         }
 
         void UstawWysokoscWierszy()
         {
-            if (tabelaDane != null)
-                foreach (XRTableRow w in tabelaDane.Rows) w.HeightF = WysokoscWiersza;
+            if (tabelaDane == null) return;
+            for (int r = 0; r < tabelaDane.Rows.Count; r++)
+                tabelaDane.Rows[r].HeightF = (r == 0) ? WysokoscWierszaNaglowka : WysokoscWiersza;
         }
     }
 }
