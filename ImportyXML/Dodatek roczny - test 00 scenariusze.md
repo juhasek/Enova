@@ -6,7 +6,7 @@ elementu „Dodatek roczny" (opis elementu i pełna lista scenariuszy:
 
 ## Środowisko
 
-Baza `Claude` na `localhost\SQL2025DEV` (= `ET-097\SQL2025DEV`), enova **2512.5.6** —
+Baza `Claude` na `localhost\SQLEXPRESS` (= `ET-097-vm2\SQLEXPRESS`), enova **2512.5.6** —
 prywatna piaskownica. Import:
 
 ```
