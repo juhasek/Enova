@@ -48,6 +48,15 @@
     <EmbeddedResource Include="Config.A1RaportPlacowy.pageform.xml">
       <LogicalName>A1.Rozszerzenia.Config.A1RaportPlacowy.pageform.xml</LogicalName>
     </EmbeddedResource>
+
+    <!--
+      Formularz parametrow czynnosci (haslo do pliku). W nazwie logicznej licza sie trzy
+      ostatnie czlony (po odcieciu ".xml"): <NazwaKlasy>.<NazwaStrony>.pageform - enova
+      szuka typu po samej nazwie klasy, wiec prefiks przestrzeni nazw jest dowolny.
+    -->
+    <EmbeddedResource Include="A1HasloPlikuParams.Ogolne.pageform.xml">
+      <LogicalName>A1.Rozszerzenia.A1HasloPlikuParams.Ogolne.pageform.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

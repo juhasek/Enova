@@ -43,6 +43,12 @@ namespace A1.Rozszerzenia
         [Context]
         public ListaPlac[] ZaznaczoneListyPlac { get; set; }
 
+        // Parametry czynnosci - okienko z haslem do pliku. Enova sama tworzy obiekt
+        // (ContextBase + ctor(Context)) i pokazuje dla niego formularz przed wykonaniem
+        // akcji; szczegoly w A1HasloPlikuParams.cs. Haslo nie jest nigdzie zapisywane.
+        [Context]
+        public A1HasloPlikuParams Haslo { get; set; }
+
         // Swiadomie BEZ IsVisible*/IsEnabled* - przycisk ma byc widoczny na widoku zawsze,
         // a brak zaznaczenia obslugujemy komunikatem w samej akcji (dla paska narzedzi
         // klient i tak nie wywoluje Action.InitData, wiec predykaty bywaja pomijane).
@@ -72,6 +78,18 @@ namespace A1.Rozszerzenia
                 {
                     Caption = "Pełna lista płac (XLSX)",
                     Text = "Zaznacz na liście co najmniej jedną listę płac.",
+                };
+
+            // 0a. Haslo do pliku z okienka parametrow. Gdyby framework nie wstrzyknal
+            //     parametrow (np. wywolanie akcji z pominieciem formularza), traktujemy
+            //     to jak "bez hasla" zamiast wywalac sie z NullReferenceException.
+            string hasloPliku = Haslo != null && Haslo.CzyChronic ? Haslo.Haslo : "";
+            if (Haslo != null && !Haslo.HaslaZgodne)
+                return new MessageBoxInformation
+                {
+                    Caption = "Pełna lista płac (XLSX)",
+                    Text = "Hasło i jego powtórzenie różnią się. Wpisz to samo hasło w obu polach "
+                         + "albo zostaw oba puste, żeby wygenerować plik bez zabezpieczenia.",
                 };
 
             // 0. Ustawienia z Narzedzia -> Opcje -> A1Testy -> Konfiguracja raportu placowego.
@@ -197,12 +215,13 @@ namespace A1.Rozszerzenia
             else
                 wiersze.Sort((a, b) => string.Compare(a.Nazwisko ?? "", b.Nazwisko ?? "", StringComparison.CurrentCulture));
 
-            byte[] plik = Buduj(naglowki, wiersze, liczbaKolumnTekst, ust.NazwaArkuszaEfekt);
+            byte[] plik = Buduj(naglowki, wiersze, liczbaKolumnTekst, ust.NazwaArkuszaEfekt, hasloPliku);
             string nazwa = ust.PrefiksNazwyPlikuEfekt + Date.Today.ToString("yyyyMMdd") + ".xlsx";
             return new NamedStream(nazwa, plik);
         }
 
-        static byte[] Buduj(List<string> naglowki, List<Wiersz> wiersze, int liczbaKolumnTekst, string nazwaArkusza)
+        static byte[] Buduj(List<string> naglowki, List<Wiersz> wiersze, int liczbaKolumnTekst,
+                            string nazwaArkusza, string hasloPliku)
         {
             int nKol = naglowki.Count;
             using (var wb = new Workbook())
@@ -266,7 +285,17 @@ namespace A1.Rozszerzenia
 
                 using (var ms = new MemoryStream())
                 {
-                    wb.SaveDocument(ms, DocumentFormat.Xlsx);
+                    if (string.IsNullOrEmpty(hasloPliku))
+                    {
+                        wb.SaveDocument(ms, DocumentFormat.Xlsx);
+                    }
+                    else
+                    {
+                        // Haslo do OTWARCIA pliku (szyfrowanie), nie blokada edycji.
+                        // EncryptionType.Strong = AES (Excel 2007+); Compatible to stary RC4.
+                        using (var enc = new EncryptionSettings(hasloPliku, EncryptionType.Strong))
+                            wb.SaveDocument(ms, DocumentFormat.Xlsx, enc);
+                    }
                     return ms.ToArray();
                 }
             }

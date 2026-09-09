@@ -1,7 +1,9 @@
 # A1PelnaListaPlacAddon — skompilowany dodatek enova365
 
-**Status: DZIAŁA — potwierdzone przez użytkownika 2026-09-08** (wgrany przez
-`ExtPath`, generuje poprawny plik XLSX z rozdzielonymi kolumnami).
+**Status: DZIAŁA — potwierdzone przez użytkownika** (wgrany przez `ExtPath`,
+generuje poprawny plik XLSX z rozdzielonymi kolumnami; wersja z 5 slotami kolumn
+przetestowana 2026-09-09). **Nowość 2026-09-09: okno pytające o hasło do pliku
+przy każdym generowaniu — nieprzetestowane na żywo** (szczegóły niżej).
 
 **Przycisk „Pełna lista płac (XLSX)" na pasku narzędzi** widoku **Płace → Listy
 płac** (lista wszystkich list płac; działa na zaznaczonych pozycjach) — od
@@ -77,6 +79,53 @@ Sortowanie działa niezależnie od tego, czy kod/nazwisko są w kolumnach.
 - `A1ZrodloKolumny` — enum źródeł z `[Caption]` (`Soneta.Types`), renderowany jako lista
   wyboru. W konfiguracji zapisywany jako **nazwa elementu enum (string)** — `CfgAttribute`
   nie zna typu enum, a konwersja `int → enum` przez `TypeConverter` nie działa.
+
+## Hasło do pliku (okno przy generowaniu)
+
+Po kliknięciu przycisku enova pokazuje **okno parametrów z dwoma polami hasła**
+(znaki maskowane). Zachowanie:
+
+| Co wpiszesz | Efekt |
+|---|---|
+| oba pola puste | plik `.xlsx` bez zabezpieczenia (jak dotąd) |
+| hasło + to samo powtórzenie | plik zaszyfrowany — Excel pyta o hasło przy otwarciu |
+| hasło ≠ powtórzenie | komunikat „Hasło i jego powtórzenie różnią się…", plik nie powstaje |
+
+**Hasło nie jest nigdzie zapisywane** — ani w konfiguracji bazy, ani przez
+`ContextBase.SaveProperty`; żyje tylko na czas wykonania czynności. Zgubionego
+hasła nie da się odzyskać — plik trzeba wygenerować od nowa.
+
+**Jak to jest zrobione:**
+
+- `A1HasloPlikuParams : Soneta.Business.ContextBase` (konstruktor przyjmujący
+  `Context`) wstrzykiwana do workera jako właściwość z `[Context]`. Enova przed
+  wykonaniem akcji sama tworzy taki obiekt i pokazuje dla niego formularz — wzór
+  z samej enovy: `Soneta.CRM.KontrahenciPrzypiszKategorieWorker+Params`,
+  `Soneta.CRM.Workers.LeadyZmienStanWorker+Params`.
+- `A1HasloPlikuParams.Ogolne.pageform.xml` — zasób osadzony; liczą się **trzy
+  ostatnie człony** nazwy zasobu (po odcięciu `.xml`):
+  `<NazwaKlasy>.<NazwaStrony>.pageform`. Typ jest szukany po **samej nazwie
+  klasy**, prefiks przestrzeni nazw jest dowolny (w enovie zasób
+  `Soneta.CRM.UI.UI.GusParams.DaneZGusParam.pageform.xml` opisuje klasę
+  `Soneta.CRM.Workers.GusParams`).
+- Pola mają `Class="PasswordEdit"` — maskowanie znaków; tak samo robi to enova w
+  `WebOperatorNewPasswordParams.NewPasswordForm.pageform.xml`. Bez tego zasobu
+  formularz zbudowałby się automatycznie, ale hasło byłoby widoczne jawnie.
+- Zapis: `wb.SaveDocument(ms, DocumentFormat.Xlsx, new EncryptionSettings(hasło,
+  EncryptionType.Strong))` (`DevExpress.Docs.v24.1`). `Strong` = szyfrowanie
+  zgodne z Excel 2007+; `Compatible` to stary RC4.
+
+**Zweryfikowane lokalnie** (test poza enovą, na DLL-ach z folderu serwera): plik
+zapisany z hasłem to kontener OLE (`D0 CF 11 E0`) ze strumieniami `EncryptionInfo`
+i `EncryptedPackage`, deskryptor `cipherAlgorithm="AES" hashAlgorithm="SHA512"
+keyBits="256" spinCount="100000"`, a treść komórek nie występuje w pliku jawnym
+tekstem. To standardowe szyfrowanie MS Office (agile), więc Excel zapyta o hasło.
+
+**Nieprzetestowane na żywej enovie:** czy okno parametrów pokazuje się dla akcji
+wywołanej **z paska narzędzi widoku listy** (wzory z enovy to czynności z menu).
+Gdyby okno się nie pojawiało, worker traktuje brak parametrów jak „bez hasła"
+(zamiast wywalać się `NullReferenceException`) — wtedy trzeba użyć tej samej
+czynności z menu *Czynności* albo dodać do akcji `Mode`.
 
 ## Gdzie ląduje przycisk (mechanika enova)
 
@@ -179,6 +228,11 @@ i zrestartuj usługi. Działa, jeśli enova skanuje katalog bazowy komponentu �
   pogrubiony i zamrożony, autofiltr.
 - Sumy w kolumnach ZUS/PPK/PIT zgodne z paskiem wypłaty (na realnie przeliczonej
   liście płac).
+- **Okno hasła:** po kliknięciu przycisku pojawia się okno z dwoma polami hasła
+  (maskowanymi). Test: (1) oba puste → plik otwiera się normalnie; (2) hasło
+  wpisane dwa razy tak samo → Excel przy otwarciu pyta o hasło i wpuszcza po jego
+  podaniu; (3) różne hasła w polach → komunikat o niezgodności, plik nie powstaje.
+  Jeśli okno w ogóle się nie pokazuje — patrz sekcja „Hasło do pliku”.
 - **Narzędzia → Opcje** → gałąź **A1Testy → Konfiguracja raportu płacowego** — zmiana
   parametru, zapis, ponowne wygenerowanie pliku pokazuje zmianę (np. wyłączona kolumna
   „Wydział” znika, własny nagłówek wchodzi zamiast domyślnego). Jeśli gałęzi nie ma:

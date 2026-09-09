@@ -10,6 +10,9 @@
 > ukrycie pozostałych bandów, `SingleFile`...). Wydruk zostaje do podglądu/PDF.
 > Excel: `Addon/A1PelnaListaPlacWorker.cs` — buduje xlsx od zera, 1 kolumna = 1
 > kolumna Excela.
+> Od 2026-09-09 dodatek pyta przy generowaniu o **hasło do pliku** (szyfrowanie
+> AES, Excel prosi o hasło przy otwarciu; puste pola = plik bez hasła) —
+> `Addon/README.md`, sekcja „Hasło do pliku”.
 
 **Przebudowa 2026-09-07/08 pod czytelny eksport do Excela (nieskuteczna — patrz wyżej).**
 Wcześniejszy eksport wychodził nieczytelny: kolumny mikroskopijne, arkusz rozbity na
