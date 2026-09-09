@@ -2,8 +2,7 @@
 
 **Status: DZIAŁA — potwierdzone przez użytkownika** (wgrany przez `ExtPath`,
 generuje poprawny plik XLSX z rozdzielonymi kolumnami; wersja z 5 slotami kolumn
-przetestowana 2026-09-09). **Nowość 2026-09-09: okno pytające o hasło do pliku
-przy każdym generowaniu — nieprzetestowane na żywo** (szczegóły niżej).
+oraz okno hasła do pliku przetestowane na żywo 2026-09-09).
 
 **Przycisk „Pełna lista płac (XLSX)" na pasku narzędzi** widoku **Płace → Listy
 płac** (lista wszystkich list płac; działa na zaznaczonych pozycjach) — od
@@ -121,11 +120,10 @@ i `EncryptedPackage`, deskryptor `cipherAlgorithm="AES" hashAlgorithm="SHA512"
 keyBits="256" spinCount="100000"`, a treść komórek nie występuje w pliku jawnym
 tekstem. To standardowe szyfrowanie MS Office (agile), więc Excel zapyta o hasło.
 
-**Nieprzetestowane na żywej enovie:** czy okno parametrów pokazuje się dla akcji
-wywołanej **z paska narzędzi widoku listy** (wzory z enovy to czynności z menu).
-Gdyby okno się nie pojawiało, worker traktuje brak parametrów jak „bez hasła"
-(zamiast wywalać się `NullReferenceException`) — wtedy trzeba użyć tej samej
-czynności z menu *Czynności* albo dodać do akcji `Mode`.
+**POTWIERDZONE 2026-09-09 na żywej enovie:** okno parametrów pokazuje się także dla
+akcji wywołanej **z paska narzędzi widoku listy** (nie tylko dla czynności z menu),
+a plik z hasłem otwiera się w Excelu po jego podaniu. Worker i tak traktuje brak
+wstrzykniętych parametrów jak „bez hasła" (zamiast `NullReferenceException`).
 
 ## Gdzie ląduje przycisk (mechanika enova)
 
