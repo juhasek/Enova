@@ -92,7 +92,39 @@
                 UrlopNaZadanie = false;
                 WniosekZa = Pracownik == Kierownik ? Soneta.KadryPlace.Kadry.EWnioski.WniosekOsoba.ZaSiebie : Soneta.KadryPlace.Kadry.EWnioski.WniosekOsoba.ZaPodwladnego;
                 podwladni = GetJestKierownikiem(Pracownik) && Pracownik.Module.Config.KadryNET.CzasPracy.WnioskiUrlopowe.WnioskiPracownikow;
+                // A1: wniosek otwarty od razu z okresem = dzisiaj (np. klik w kalendarzu Pulpitu)
+                UstawPrzyczyneWgOkresu();
                 }
+
+                #region A1: wniosek na dzień dzisiejszy = urlop na żądanie
+
+                // Czy przyczynę "Na żądanie" ustawił kod (a nie pracownik ręcznie) - tylko wtedy
+                // wolno ją cofnąć do "Planowy", gdy okres zostanie zmieniony na inny niż dzisiaj.
+                private bool naZadanieAutomatycznie;
+
+                // Etap 1: obsługiwany wyłącznie wniosek na JEDEN dzień, równy dzisiejszej dacie.
+                // Okres wielodniowy zaczynający się dzisiaj NIE jest (jeszcze) objęty regułą.
+                private bool JestWnioskiemNaDzisiaj() {
+                if (Wniosek_urlopowy == null) return false;
+                FromTo o = Wniosek_urlopowy.Okres;
+                return o.From == Date.Today && o.To == Date.Today;
+                }
+
+                private void UstawPrzyczyneWgOkresu() {
+                if (Wniosek_urlopowy == null) return;
+                if (JestWnioskiemNaDzisiaj()) {
+                if (!UrlopNaZadanie) {
+                UrlopNaZadanie = true;
+                naZadanieAutomatycznie = true;
+                }
+                }
+                else if (naZadanieAutomatycznie) {
+                UrlopNaZadanie = false;
+                naZadanieAutomatycznie = false;
+                }
+                }
+
+                #endregion
 
                 [AttributeInheritance]
                 public new Pracownik Pracownik {
@@ -151,7 +183,10 @@
                 [AttributeInheritance]
                 public new FromTo Okres {
                 get { return base.Wniosek_urlopowy.Okres; }
-                set { base.Wniosek_urlopowy.Okres = base.Okres = value; }
+                set {
+                base.Wniosek_urlopowy.Okres = base.Okres = value;
+                UstawPrzyczyneWgOkresu(); // A1: dzisiaj = na żądanie
+                }
                 }
 
                 [AttributeInheritance]
@@ -166,7 +201,8 @@
                 }
 
                 public bool IsReadOnlyUrlopNaZadanie() {
-                return base.IsReadOnly();
+                // A1: na dzisiaj przyczyna jest wymuszona (Na żądanie) - pracownik nie może jej zmienić
+                return base.IsReadOnly() || JestWnioskiemNaDzisiaj();
                 }
 
                 [AttributeInheritance]
