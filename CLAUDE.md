@@ -45,6 +45,10 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
   Katalog roboczy, a nie artefakt enova365 — wynik analizy trafia do
   właściwego folderu tematycznego powyżej. Gdy użytkownik mówi o pliku
   „do analizy” bez podania ścieżki, najpierw szukać go tutaj.
+  Zawartość jest wykluczona z gita (`.gitignore`, poza `README.md`) —
+  **nie commitować** plików z tego katalogu (np. przez `git add -f`), bo
+  mogą zawierać dane osobowe/płacowe. Wnioski i wynikowe artefakty zapisywać
+  w folderach tematycznych, bez kopiowania surowych danych.
 
 ### Ważne: format plików
 
