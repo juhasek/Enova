@@ -258,6 +258,9 @@ i zrestartuj usługi. Działa, jeśli enova skanuje katalog bazowy komponentu �
 - Kolumny w sekcjach (kolory nagłówków), **Brutto (przychód)** = suma elementów z sekcji
   „do brutto" w wierszu; potrącenia (np. „Składka PZU") dopiero za PPK, tuż przed
   **Kwotą do wypłaty**.
+- Wiersz nagłówków na tyle wysoki, że każda nazwa kolumny jest czytelna w całości
+  (zawinięta na spacjach, bez słów łamanych w środku). Wysokość liczona po ustaleniu
+  szerokości kolumn; kolumna jest poszerzana, aż zmieści najdłuższe słowo nagłówka.
 - **Okno hasła:** po kliknięciu przycisku pojawia się okno z dwoma polami hasła
   (maskowanymi). Test: (1) oba puste → plik otwiera się normalnie; (2) hasło
   wpisane dwa razy tak samo → Excel przy otwarciu pyta o hasło i wpuszcza po jego

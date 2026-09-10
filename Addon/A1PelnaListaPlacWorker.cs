@@ -62,6 +62,10 @@ namespace A1.Rozszerzenia
 
         const double MaxSzerokoscZnaki = 42;
         const double MinSzerokoscLiczbaZnaki = 12;
+        // Szerokosc kolumny w Excelu liczona jest w cyfrach zwyklej czcionki; litery pogrubione
+        // sa srednio szersze - przelicznik z zapasem.
+        const double ZnakPogrubiony = 1.15;
+        const double WysokoscLiniiPt = 15;
 
         // Sekcja kolumny - steruje kolorem naglowka i wyroznieniem kolumn sumarycznych.
         enum Sekcja { Opis, Przychod, Brutto, PozaPrzychodem, Skladki, Fundusze, PPK, Potracenia, DoWyplaty }
@@ -314,7 +318,6 @@ namespace A1.Rozszerzenia
                     k.FillColor = KolorSekcji(sekcje[c]);
                     k.Borders.SetAllBorders(obram, BorderLineStyle.Thin);
                 }
-                ws.Rows[0].Height = 42;
 
                 for (int i = 0; i < wiersze.Count; i++)
                 {
@@ -350,11 +353,26 @@ namespace A1.Rozszerzenia
                 for (int c = 0; c < nKol; c++)
                 {
                     DevExpress.Spreadsheet.Column col = ws.Columns[c];
+                    // Najdluzsze slowo naglowka ma sie miescic w linii - inaczej Excel lamie je w srodku.
+                    double min = NajdluzszeSlowo(naglowki[c]) * ZnakPogrubiony + 2;
+                    if (c >= liczbaKolumnTekst && min < MinSzerokoscLiczbaZnaki)
+                        min = MinSzerokoscLiczbaZnaki;
+                    if (col.WidthInCharacters < min)
+                        col.WidthInCharacters = min;
                     if (col.WidthInCharacters > MaxSzerokoscZnaki)
                         col.WidthInCharacters = MaxSzerokoscZnaki;
-                    if (c >= liczbaKolumnTekst && col.WidthInCharacters < MinSzerokoscLiczbaZnaki)
-                        col.WidthInCharacters = MinSzerokoscLiczbaZnaki;
                 }
+
+                // Wysokosc naglowka dopiero po ustaleniu szerokosci kolumn. Row.Height jest w jednostkach
+                // wb.Unit - domyslnie Document (1/300 cala), dlatego dawne "Height = 42" dawalo ok. 10 pt,
+                // mniej niz jedna linia. AutoFit liczy zawijanie wg czcionki; wlasne oszacowanie to zapas
+                // na wypadek, gdyby Excel zawinal pogrubiony tekst o linie wczesniej.
+                ws.Rows.AutoFit(0, 0);
+                wb.Unit = DevExpress.Office.DocumentUnit.Point;
+                int linie = 1;
+                for (int c = 0; c < nKol; c++)
+                    linie = Math.Max(linie, LiczbaLinii(naglowki[c], ws.Columns[c].WidthInCharacters / ZnakPogrubiony));
+                ws.Rows[0].Height = (float)Math.Max(ws.Rows[0].Height, linie * WysokoscLiniiPt + 6);
 
                 using (var ms = new MemoryStream())
                 {
@@ -372,6 +390,29 @@ namespace A1.Rozszerzenia
                     return ms.ToArray();
                 }
             }
+        }
+
+        static int NajdluzszeSlowo(string s)
+        {
+            int max = 0;
+            foreach (string w in (s ?? "").Split(' '))
+                if (w.Length > max) max = w.Length;
+            return max;
+        }
+
+        // Liczba linii po zawinieciu jak w Excelu: lamanie na spacjach, zbyt dlugie slowo w srodku.
+        static int LiczbaLinii(string s, double pojemnoscZnaki)
+        {
+            int cap = Math.Max(1, (int)Math.Floor(pojemnoscZnaki));
+            int linie = 1, dl = 0;
+            foreach (string w in (s ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (dl == 0) dl = w.Length;
+                else if (dl + 1 + w.Length <= cap) dl += 1 + w.Length;
+                else { linie++; dl = w.Length; }
+                while (dl > cap) { linie++; dl -= cap; }
+            }
+            return linie;
         }
 
         // Tresc jednej kolumny opisowej wg zrodla wybranego w konfiguracji.
