@@ -1,0 +1,117 @@
+public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs args)
+{
+    // 11-godzinny odpoczynek dobowy liczony W RAMACH JEDNEJ DOBY PRACOWNICZEJ (sztywne 24 h),
+    // a NIE względem realnego początku pracy w kolejnej dobie (jak standardowy weryfikator Sonety).
+    //
+    // Doba pracownicza: okno [D0 ; D0 + 24h].
+    //  D0 = początek "pracy w normie" w danym dniu;
+    //       gdy w dniu brak pracy w normie (święto / sobota / niedziela / wolny za święto -
+    //       jedyną strefą bywa wtedy Dyżur domowy) - początek najwcześniejszej strefy aktywności;
+    //       gdy i tego brak - OdGodziny dnia.
+    //  Strefy aktywności = strefy wliczane do doby wg Sonety (Wchodzi && Typ == Zwiększa)
+    //       oraz strefy oznaczone cechą "Weryfikator11h" (Dyżur domowy).
+    //  Naruszenie: największa ciągła przerwa w oknie doby jest < 11 h.
+    //
+    // Sprawdzamy dobę rozpoczętą w dniu bieżącym ORAZ w dniu poprzednim - komunikat o dobie
+    // np. soboty ma się pojawić także podczas wprowadzania zapisów na niedzielę.
+    //
+    // Poziom (Error / Warning) ustawiany jest na powiązaniu kalendarza z weryfikatorem
+    // (WeryfikatorKalendarza.Typ), nie w tym kodzie. Wg ustaleń z klientem: Error (blokuje zapis).
+
+    Pracownik pracownik = dp.Pracownik;
+    if (pracownik == null)
+        return null;
+
+    KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
+    Time prog = new Time(11, 0);
+    Time doba = new Time(24, 0);
+    string komunikat = null;
+
+    for (int krok = 0; krok < 2; krok++)
+    {
+        Date dataDoby = krok == 0 ? dp.Data : dp.Data - 1;
+
+        Dzien dzien = kp[dataDoby];
+        if (dzien == null)
+            continue;
+
+        // --- Kotwica doby oraz zebranie stref aktywności tego dnia ---
+        Time normaOd = Time.Empty;
+        Time aktywnoscOd = Time.Empty;
+        FromTimes strefy = FromTimes.Empty;
+
+        foreach (IStrefaExt s in (IEnumerable<IStrefaExt>)dzien)
+        {
+            if (s.Definicja == null)
+                continue;
+            if (s.OdGodziny == Time.Empty || s.Czas == Time.Zero)
+                continue;
+
+            bool wliczana = s.Definicja.Wchodzi && s.Definicja.Typ == TypStrefy.Zwieksza;
+            bool dyzur = s.Definicja.Features.GetBool("Weryfikator11h");
+            if (!wliczana && !dyzur)
+                continue;
+
+            if (wliczana && (normaOd == Time.Empty || s.OdGodziny < normaOd))
+                normaOd = s.OdGodziny;
+            if (aktywnoscOd == Time.Empty || s.OdGodziny < aktywnoscOd)
+                aktywnoscOd = s.OdGodziny;
+
+            strefy = strefy.Add(new FromTime(s.OdGodziny, s.Czas));
+        }
+
+        Time d0;
+        if (normaOd != Time.Empty)
+            d0 = normaOd;
+        else if (aktywnoscOd != Time.Empty)
+            d0 = aktywnoscOd;
+        else if (dzien.OdGodziny != Time.Empty)
+            d0 = dzien.OdGodziny;
+        else
+            continue; // brak jakiejkolwiek aktywności w tej dobie - nie ma czego sprawdzać
+
+        Time koniecDoby = d0 + doba;
+
+        strefy = strefy.ToFlat();
+
+        // --- Największa ciągła przerwa w oknie [D0 ; koniecDoby] ---
+        Time najwieksza = doba;   // gdy w oknie brak aktywności = pełny odpoczynek
+        Time kursor = d0;
+        bool byloCos = false;
+        foreach (FromTime i in strefy)
+        {
+            Time od = i.From < d0 ? d0 : i.From;
+            Time koniec = i.To > koniecDoby ? koniecDoby : i.To;
+            if (koniec <= od)
+                continue; // strefa poza oknem doby
+
+            Time luka = od > kursor ? od - kursor : Time.Zero;
+            if (!byloCos)
+            {
+                najwieksza = luka;   // przerwa wiodąca (od D0 do pierwszej strefy)
+                byloCos = true;
+            }
+            else if (luka > najwieksza)
+            {
+                najwieksza = luka;   // przerwa między strefami
+            }
+            kursor = koniec;
+        }
+        if (byloCos)
+        {
+            Time koncowa = koniecDoby > kursor ? koniecDoby - kursor : Time.Zero;
+            if (koncowa > najwieksza)
+                najwieksza = koncowa;   // przerwa końcowa (od ostatniej strefy do D0 + 24h)
+        }
+
+        if (najwieksza < prog)
+        {
+            string dataTekst = dataDoby.Day.ToString("00") + "." + dataDoby.Month.ToString("00") + "." + dataDoby.Year.ToString();
+            string m = "W dobie pracowniczej rozpoczętej {0} nie zachowano wymaganego przepisami prawa pracy 11-godzinnego odpoczynku dobowego (najdłuższa przerwa w dobie: {1}). {2}"
+                .TranslateFormat(dataTekst, najwieksza, pracownik);
+            komunikat = komunikat == null ? m : komunikat + System.Environment.NewLine + m;
+        }
+    }
+
+    return komunikat;
+}
