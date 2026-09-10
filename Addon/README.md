@@ -13,9 +13,38 @@ płac** (lista wszystkich list płac; działa na zaznaczonych pozycjach) — od
 kolumn**, którego nie dało się wyeliminować przy eksporcie report-snippetu z
 podglądu wydruku (zob. `Raporty/A1PelnaListaPlac.md`).
 
-Dane (kolumny: Kod / Imię i Nazwisko / Wydział + po jednej na każdą definicję
-elementu + 17 stałych kolumn ZUS/PPK/PIT + Kwota do wypłaty) — logika przeniesiona
-1:1 z `Raporty/A1PelnaListaPlacSnippet`.
+## Układ kolumn (od 2026-09-10)
+
+Kolumny idą sekcjami, każda sekcja ma własny kolor nagłówka:
+
+| # | Sekcja | Kolumny |
+|---|---|---|
+| 1 | Opis (szary) | 5 definiowalnych kolumn opisowych (niżej) |
+| 2 | Elementy do brutto (jasnozielony) | po jednej na każdą definicję elementu **wliczaną do przychodu** |
+| 3 | **Brutto (przychód)** (zielony, pogrubione) | suma elementów z sekcji 2 |
+| 4 | Poza przychodem (jasnoszary) | elementy, które nie są ani przychodem, ani potrąceniem (np. wypłata pożyczki KZP, zaliczka nieopodatkowana, świadczenie socjalne) — pojawia się tylko, gdy są na listach |
+| 5 | Składki i podatek (niebieski) | Emerytalna (pracownik), Emerytalna (pracodawca), Rentowa (pracownik), Rentowa (pracodawca), Chorobowa (pracownik), Wypadkowa (pracodawca), Zdrowotna (pracownik), Zaliczka na PIT |
+| 6 | Fundusze (fioletowy) | Fundusz Pracy, FGŚP, FEP |
+| 7 | PPK (pomarańczowy) | PPK (pracownik), PPK (pracodawca) |
+| 8 | Potrącenia (łososiowy) | po jednej na każdą definicję elementu będącą potrąceniem |
+| 9 | **Kwota do wypłaty** (żółty, pogrubione) | `Wyplata.Wartosc` |
+
+Sekcje 5–7 i 9 (14 kolumn) steruje przełącznik w Opcjach; kolumna Brutto jest zawsze.
+Nie ma kolumn „Chorobowa (pracodawca)", „Wypadkowa (pracownik)" i „Zdrowotna (pracodawca)" —
+tych składek druga strona nie płaci, więc zawsze byłyby zerowe.
+
+**Podział elementów** — wg definicji elementu:
+
+1. `Algorytm.Potracenie` zaznaczone → **potrącenie** (ma pierwszeństwo — np. „Spłata zaliczki
+   opodat." ma pozycję PIT, ale jest potrąceniem);
+2. w przeciwnym razie definicja ma **pozycję PIT** (`Deklaracje.PozycjaPIT`) → **do brutto**
+   (wynagrodzenia, zasiłki, dodatki, premie, nadgodziny, ekwiwalenty, także przychód od
+   składki pracodawcy PPK i ryczałty samochodowe, które nie są wypłacane, ale są przychodem);
+3. reszta → **poza przychodem**.
+
+W sekcji elementy są ułożone wg pola „Kolejność" definicji (jak na pasku), potem wg nazwy.
+Pomijanie storna, wydział historyczny wg daty wypłaty i kwota do wypłaty jak w
+`Raporty/A1PelnaListaPlacSnippet`.
 
 ## Konfiguracja: Narzędzia → Opcje → A1Testy → Konfiguracja raportu płacowego
 
@@ -46,7 +75,7 @@ Pusty nagłówek przy pozostałych źródłach = nazwa domyślna źródła.
 
 | Parametr | Domyślnie |
 |---|---|
-| Pokaż kolumny ZUS / PPK / PIT + kwotę do wypłaty (17 kolumn) | tak |
+| Pokaż składki ZUS, zaliczkę PIT, fundusze, PPK i kwotę do wypłaty (14 kolumn) | tak |
 | Prefiks nazwy pliku | `A1_Pelna_Lista_Plac_` (+ data + `.xlsx`) |
 | Nazwa arkusza | `Lista płac` |
 | Sortuj wg kodu pracownika (zamiast wg nazwiska) | nie |
@@ -226,6 +255,9 @@ i zrestartuj usługi. Działa, jeśli enova skanuje katalog bazowy komponentu �
   pogrubiony i zamrożony, autofiltr.
 - Sumy w kolumnach ZUS/PPK/PIT zgodne z paskiem wypłaty (na realnie przeliczonej
   liście płac).
+- Kolumny w sekcjach (kolory nagłówków), **Brutto (przychód)** = suma elementów z sekcji
+  „do brutto" w wierszu; potrącenia (np. „Składka PZU") dopiero za PPK, tuż przed
+  **Kwotą do wypłaty**.
 - **Okno hasła:** po kliknięciu przycisku pojawia się okno z dwoma polami hasła
   (maskowanymi). Test: (1) oba puste → plik otwiera się normalnie; (2) hasło
   wpisane dwa razy tak samo → Excel przy otwarciu pyta o hasło i wpuszcza po jego

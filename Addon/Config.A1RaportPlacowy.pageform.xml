@@ -50,7 +50,7 @@
     </Group>
 
     <Group CaptionHtml="Pozostałe kolumny" LabelWidth="45">
-      <Field CaptionHtml="Pokaż kolumny ZUS / PPK / PIT i kwotę do wypłaty" Width="8"
+      <Field CaptionHtml="Pokaż składki ZUS, zaliczkę PIT, fundusze, PPK i kwotę do wypłaty" Width="8"
              EditValue="{Ustawienia.PokazSkladki}" />
     </Group>
 

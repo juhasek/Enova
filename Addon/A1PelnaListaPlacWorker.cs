@@ -32,10 +32,17 @@ namespace A1.Rozszerzenia
     // ktory wystepowal przy eksporcie report-snippetu z podgladu wydruku (XRTable -> xlsx
     // scala kolumny tekstowe o zmiennej dlugosci; patrz Raporty/A1PelnaListaPlac.md).
     //
-    // Logika danych (kolumny: Kod / Imie i Nazwisko / Wydzial + po jednej na kazda
-    // definicje elementu + 17 stalych kolumn ZUS/PPK/PIT, pomijanie storna, wydzial
-    // historyczny wg daty wyplaty, kwota do wyplaty = Wyplata.Wartosc) przeniesiona
-    // 1:1 z Raporty/A1PelnaListaPlacSnippet.
+    // Uklad kolumn (od 2026-09-10), sekcje wyroznione kolorem naglowka:
+    //   kolumny opisowe (5 slotow z konfiguracji)
+    //   | elementy wliczane do przychodu | BRUTTO (suma tych elementow)
+    //   | elementy poza przychodem (nie potracenia, bez pozycji PIT)
+    //   | skladki ZUS i zaliczka PIT | fundusze FP/FGSP/FEP | PPK
+    //   | potracenia | KWOTA DO WYPLATY
+    // Podzial elementow wg definicji: Algorytm.Potracenie -> potracenie; w przeciwnym razie
+    // Deklaracje.PozycjaPIT != null -> przychod; reszta -> poza przychodem. W grupie
+    // kolejnosc wg DefinicjaElementu.Kolejnosc, potem nazwy.
+    // Pomijanie storna, wydzial historyczny wg daty wyplaty, kwota do wyplaty = Wyplata.Wartosc
+    // - jak w Raporty/A1PelnaListaPlacSnippet.
     public class A1PelnaListaPlacWorker
     {
         // Zaznaczone wiersze widoku - klient wklada je do kontekstu okna jako ListaPlac[]
@@ -55,6 +62,11 @@ namespace A1.Rozszerzenia
 
         const double MaxSzerokoscZnaki = 42;
         const double MinSzerokoscLiczbaZnaki = 12;
+
+        // Sekcja kolumny - steruje kolorem naglowka i wyroznieniem kolumn sumarycznych.
+        enum Sekcja { Opis, Przychod, Brutto, PozaPrzychodem, Skladki, Fundusze, PPK, Potracenia, DoWyplaty }
+
+        enum GrupaElementu { Przychod, PozaPrzychodem, Potracenie }
 
         // Jeden wiersz raportu: klucze sortowania osobno, bo kolumny opisowe moga byc
         // wylaczone w konfiguracji i nie da sie sortowac "po kolumnie nr 1".
@@ -101,56 +113,74 @@ namespace A1.Rozszerzenia
                 foreach (Wyplata w in lp.Wyplaty)
                     wyplaty.Add(w);
 
-            // 2. Kolumny dynamiczne - unikalne definicje elementow (bez storna), alfabetycznie.
-            var defs = new List<DefinicjaElementu>();
+            // 2. Kolumny dynamiczne - unikalne definicje elementow (bez storna) w trzech grupach.
+            var defsPrzychod = new List<DefinicjaElementu>();
+            var defsPozaPrzychodem = new List<DefinicjaElementu>();
+            var defsPotracenia = new List<DefinicjaElementu>();
+            var grupy = new Dictionary<DefinicjaElementu, GrupaElementu>();
             foreach (Wyplata w in wyplaty)
                 foreach (WypElement el in w.Elementy)
                 {
                     if (el.RozliczenieStorna) continue;
                     DefinicjaElementu d = el.Definicja;
-                    if (d != null && !defs.Contains(d)) defs.Add(d);
+                    if (d == null || grupy.ContainsKey(d)) continue;
+                    GrupaElementu g = Grupa(d);
+                    grupy[d] = g;
+                    if (g == GrupaElementu.Potracenie) defsPotracenia.Add(d);
+                    else if (g == GrupaElementu.Przychod) defsPrzychod.Add(d);
+                    else defsPozaPrzychodem.Add(d);
                 }
-            defs.Sort((a, b) => string.Compare(NazwaDef(a), NazwaDef(b), StringComparison.CurrentCulture));
+            defsPrzychod.Sort(PorownajDef);
+            defsPozaPrzychodem.Sort(PorownajDef);
+            defsPotracenia.Sort(PorownajDef);
 
             // 3. Naglowki. Kolumny opisowe = sloty z konfiguracji (zrodlo + parametr + naglowek);
             //    slot ze zrodlem "Brak" jest pomijany, kolejnosc slotow = kolejnosc kolumn.
             var zrodla = new List<A1ZrodloKolumny>();
             var parametry = new List<string>();
             var naglowki = new List<string>();
+            var sekcje = new List<Sekcja>();
             for (int slot = 1; slot <= A1RaportPlacUstawienia.LiczbaSlotow; slot++)
             {
                 A1ZrodloKolumny zr = ust.ZrodloSlotu(slot);
                 if (zr == A1ZrodloKolumny.Brak) continue;
                 zrodla.Add(zr);
                 parametry.Add(ust.ParametrSlotu(slot));
-                naglowki.Add(ust.NaglowekSlotu(slot));
+                Dodaj(naglowki, sekcje, Sekcja.Opis, ust.NaglowekSlotu(slot));
             }
             int liczbaKolumnTekst = zrodla.Count;
 
-            foreach (DefinicjaElementu d in defs) naglowki.Add(NazwaDef(d));
+            foreach (DefinicjaElementu d in defsPrzychod) Dodaj(naglowki, sekcje, Sekcja.Przychod, NazwaDef(d));
+            Dodaj(naglowki, sekcje, Sekcja.Brutto, "Brutto (przychód)");
+            foreach (DefinicjaElementu d in defsPozaPrzychodem) Dodaj(naglowki, sekcje, Sekcja.PozaPrzychodem, NazwaDef(d));
 
+            // Wypadkowa placi tylko pracodawca, chorobowa i zdrowotna tylko pracownik -
+            // kolumny "druga strona" zawsze bylyby zerowe, wiec ich nie ma.
             bool skladki = ust.PokazSkladki;
             if (skladki)
-                naglowki.AddRange(new[]
-                {
+            {
+                Dodaj(naglowki, sekcje, Sekcja.Skladki,
                     "Emerytalna (pracownik)", "Emerytalna (pracodawca)",
                     "Rentowa (pracownik)", "Rentowa (pracodawca)",
-                    "Chorobowa (pracownik)", "Chorobowa (pracodawca)",
-                    "Wypadkowa (pracownik)", "Wypadkowa (pracodawca)",
-                    "Zdrowotna (pracownik)", "Zdrowotna (pracodawca)",
-                    "Fundusz Pracy", "FGŚP", "FEP",
-                    "PPK (pracownik)", "PPK (pracodawca)",
-                    "Zaliczka na PIT", "Kwota do wypłaty",
-                });
+                    "Chorobowa (pracownik)", "Wypadkowa (pracodawca)",
+                    "Zdrowotna (pracownik)", "Zaliczka na PIT");
+                Dodaj(naglowki, sekcje, Sekcja.Fundusze, "Fundusz Pracy", "FGŚP", "FEP");
+                Dodaj(naglowki, sekcje, Sekcja.PPK, "PPK (pracownik)", "PPK (pracodawca)");
+            }
+            foreach (DefinicjaElementu d in defsPotracenia) Dodaj(naglowki, sekcje, Sekcja.Potracenia, NazwaDef(d));
+            if (skladki) Dodaj(naglowki, sekcje, Sekcja.DoWyplaty, "Kwota do wypłaty");
             int nKol = naglowki.Count;
-            if (nKol == 0)
-                return new MessageBoxInformation
-                {
-                    Caption = "Pełna lista płac (XLSX)",
-                    Text = "Konfiguracja wyłącza wszystkie kolumny raportu, a zaznaczone listy płac nie mają "
-                         + "elementów wynagrodzenia. Włącz kolumny w Narzędzia → Opcje → A1Testy → "
-                         + "Konfiguracja raportu płacowego.",
-                };
+
+            // Numer kolumny kazdej definicji - liczony raz, zgodnie z ukladem naglowkow.
+            var kolumnaDef = new Dictionary<DefinicjaElementu, int>();
+            int k = liczbaKolumnTekst;
+            foreach (DefinicjaElementu d in defsPrzychod) kolumnaDef[d] = k++;
+            int kolBrutto = k++;
+            foreach (DefinicjaElementu d in defsPozaPrzychodem) kolumnaDef[d] = k++;
+            int kolSkladki = k;
+            if (skladki) k += 13;
+            foreach (DefinicjaElementu d in defsPotracenia) kolumnaDef[d] = k++;
+            int kolDoWyplaty = skladki ? k : -1;
 
             // 4. Wiersze danych.
             var wiersze = new List<Wiersz>();
@@ -165,25 +195,27 @@ namespace A1.Rozszerzenia
 
                 for (int i = 0; i < zrodla.Count; i++)
                     row[i] = Wartosc(zrodla[i], parametry[i], w, pr);
+                for (int c = liczbaKolumnTekst; c < nKol; c++)
+                    row[c] = 0m;
 
-                var wart = new decimal[defs.Count];
-                decimal emP = 0, emF = 0, reP = 0, reF = 0, chP = 0, chF = 0, wyP = 0, wyF = 0,
-                        zdP = 0, zdF = 0, fp = 0, fgsp = 0, fep = 0, ppkP = 0, ppkF = 0, pit = 0;
+                decimal brutto = 0, emP = 0, emF = 0, reP = 0, reF = 0, chP = 0, wyF = 0,
+                        zdP = 0, fp = 0, fgsp = 0, fep = 0, ppkP = 0, ppkF = 0, pit = 0;
 
                 foreach (WypElement el in w.Elementy)
                 {
                     if (el.RozliczenieStorna) continue;
                     DefinicjaElementu d = el.Definicja;
-                    if (d != null)
+                    int kol;
+                    if (d != null && kolumnaDef.TryGetValue(d, out kol))
                     {
-                        int i = defs.IndexOf(d);
-                        if (i >= 0) wart[i] += el.Wartosc;
+                        row[kol] = (decimal)row[kol] + el.Wartosc;
+                        if (grupy[d] == GrupaElementu.Przychod) brutto += el.Wartosc;
                     }
                     emP += el.Podatki.Emerytalna.Prac; emF += el.Podatki.Emerytalna.Firma;
                     reP += el.Podatki.Rentowa.Prac; reF += el.Podatki.Rentowa.Firma;
-                    chP += el.Podatki.Chorobowa.Prac; chF += el.Podatki.Chorobowa.Firma;
-                    wyP += el.Podatki.Wypadkowa.Prac; wyF += el.Podatki.Wypadkowa.Firma;
-                    zdP += el.Podatki.Zdrowotna.Prac; zdF += el.Podatki.Zdrowotna.Firma;
+                    chP += el.Podatki.Chorobowa.Prac;
+                    wyF += el.Podatki.Wypadkowa.Firma;
+                    zdP += el.Podatki.Zdrowotna.Prac;
                     fp += el.Podatki.FP.Skladka;
                     fgsp += el.Podatki.FGSP.Skladka;
                     fep += el.Podatki.FEP.Skladka;
@@ -192,19 +224,17 @@ namespace A1.Rozszerzenia
                     ppkF += el.Podatki.PPK.Pracodawcy;
                 }
 
-                int c = liczbaKolumnTekst;
-                for (int i = 0; i < defs.Count; i++) row[c++] = wart[i];
+                row[kolBrutto] = brutto;
                 if (skladki)
                 {
+                    int c = kolSkladki;
                     row[c++] = emP; row[c++] = emF;
                     row[c++] = reP; row[c++] = reF;
-                    row[c++] = chP; row[c++] = chF;
-                    row[c++] = wyP; row[c++] = wyF;
-                    row[c++] = zdP; row[c++] = zdF;
+                    row[c++] = chP; row[c++] = wyF;
+                    row[c++] = zdP; row[c++] = pit;
                     row[c++] = fp; row[c++] = fgsp; row[c++] = fep;
                     row[c++] = ppkP; row[c++] = ppkF;
-                    row[c++] = pit;
-                    row[c++] = Dec(() => w.Wartosc.Value);
+                    row[kolDoWyplaty] = Dec(() => w.Wartosc.Value);
                 }
 
                 wiersze.Add(new Wiersz { Kod = kod, Nazwisko = nazwisko, Komorki = row });
@@ -215,13 +245,55 @@ namespace A1.Rozszerzenia
             else
                 wiersze.Sort((a, b) => string.Compare(a.Nazwisko ?? "", b.Nazwisko ?? "", StringComparison.CurrentCulture));
 
-            byte[] plik = Buduj(naglowki, wiersze, liczbaKolumnTekst, ust.NazwaArkuszaEfekt, hasloPliku);
+            byte[] plik = Buduj(naglowki, sekcje, wiersze, liczbaKolumnTekst, ust.NazwaArkuszaEfekt, hasloPliku);
             string nazwa = ust.PrefiksNazwyPlikuEfekt + Date.Today.ToString("yyyyMMdd") + ".xlsx";
             return new NamedStream(nazwa, plik);
         }
 
-        static byte[] Buduj(List<string> naglowki, List<Wiersz> wiersze, int liczbaKolumnTekst,
-                            string nazwaArkusza, string hasloPliku)
+        static void Dodaj(List<string> naglowki, List<Sekcja> sekcje, Sekcja sekcja, params string[] teksty)
+        {
+            foreach (string t in teksty)
+            {
+                naglowki.Add(t);
+                sekcje.Add(sekcja);
+            }
+        }
+
+        // Potracenie ma pierwszenstwo: np. "Splata zaliczki opodat." ma pozycje PIT,
+        // ale na liscie plac jest potraceniem.
+        static GrupaElementu Grupa(DefinicjaElementu d)
+        {
+            try { if (d.Algorytm.Potracenie) return GrupaElementu.Potracenie; }
+            catch { }
+            try { if (d.Deklaracje.PozycjaPIT != null) return GrupaElementu.Przychod; }
+            catch { }
+            return GrupaElementu.PozaPrzychodem;
+        }
+
+        static int PorownajDef(DefinicjaElementu a, DefinicjaElementu b)
+        {
+            int k = a.Kolejnosc.CompareTo(b.Kolejnosc);
+            return k != 0 ? k : string.Compare(NazwaDef(a), NazwaDef(b), StringComparison.CurrentCulture);
+        }
+
+        static Color KolorSekcji(Sekcja s)
+        {
+            switch (s)
+            {
+                case Sekcja.Przychod: return Color.FromArgb(0xE2, 0xEF, 0xDA);
+                case Sekcja.Brutto: return Color.FromArgb(0xC6, 0xE0, 0xB4);
+                case Sekcja.PozaPrzychodem: return Color.FromArgb(0xED, 0xED, 0xED);
+                case Sekcja.Skladki: return Color.FromArgb(0xDD, 0xEB, 0xF7);
+                case Sekcja.Fundusze: return Color.FromArgb(0xE4, 0xDF, 0xEC);
+                case Sekcja.PPK: return Color.FromArgb(0xFC, 0xE4, 0xD6);
+                case Sekcja.Potracenia: return Color.FromArgb(0xF8, 0xCB, 0xAD);
+                case Sekcja.DoWyplaty: return Color.FromArgb(0xFF, 0xE6, 0x99);
+                default: return Color.FromArgb(0xE6, 0xE6, 0xE6);
+            }
+        }
+
+        static byte[] Buduj(List<string> naglowki, List<Sekcja> sekcje, List<Wiersz> wiersze,
+                            int liczbaKolumnTekst, string nazwaArkusza, string hasloPliku)
         {
             int nKol = naglowki.Count;
             using (var wb = new Workbook())
@@ -230,7 +302,6 @@ namespace A1.Rozszerzenia
                 ws.Name = nazwaArkusza;
 
                 Color obram = Color.FromArgb(0xBF, 0xBF, 0xBF);
-                Color tloNaglowka = Color.FromArgb(0xE6, 0xE6, 0xE6);
 
                 for (int c = 0; c < nKol; c++)
                 {
@@ -240,7 +311,7 @@ namespace A1.Rozszerzenia
                     k.Alignment.WrapText = true;
                     k.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
                     k.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
-                    k.FillColor = tloNaglowka;
+                    k.FillColor = KolorSekcji(sekcje[c]);
                     k.Borders.SetAllBorders(obram, BorderLineStyle.Thin);
                 }
                 ws.Rows[0].Height = 42;
@@ -262,6 +333,8 @@ namespace A1.Rozszerzenia
                             cell.Value = (src[c] is decimal) ? (decimal)src[c] : 0m;
                             cell.NumberFormat = "#,##0.00";
                             cell.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Right;
+                            if (sekcje[c] == Sekcja.Brutto || sekcje[c] == Sekcja.DoWyplaty)
+                                cell.Font.Bold = true;
                         }
                         cell.Borders.SetAllBorders(obram, BorderLineStyle.Thin);
                     }
