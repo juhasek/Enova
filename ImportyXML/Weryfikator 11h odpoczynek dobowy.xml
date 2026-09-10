@@ -25,8 +25,8 @@
     // 11-godzinny odpoczynek dobowy liczony W RAMACH JEDNEJ DOBY PRACOWNICZEJ (sztywne 24 h),
     // a NIE względem realnego początku pracy w kolejnej dobie (jak standardowy weryfikator Sonety).
     //
-    // Doba pracownicza: okno [D0 ; D0 + 24h].
-    //  D0 = początek "pracy w normie" w danym dniu;
+    // Doba pracownicza: okno [poczatekDoby ; poczatekDoby + 24h].
+    //  poczatekDoby = początek "pracy w normie" w danym dniu;
     //       gdy w dniu brak pracy w normie (święto / sobota / niedziela / wolny za święto -
     //       jedyną strefą bywa wtedy Dyżur domowy) - początek najwcześniejszej strefy aktywności;
     //       gdy i tego brak - OdGodziny dnia.
@@ -44,94 +44,95 @@
     if (pracownik == null)
         return null;
 
-    KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
-    Time prog = new Time(11, 0);
-    Time doba = new Time(24, 0);
+    KalkulatorPlanu kalkulatorPlanu = new KalkulatorPlanu(pracownik);
+    Time wymaganyOdpoczynek = new Time(11, 0);
+    Time dlugoscDoby = new Time(24, 0);
     string komunikat = null;
 
-    for (int krok = 0; krok &lt; 2; krok++)
+    // przesuniecieDni = 0 -&gt; doba rozpoczeta dzisiaj; -1 -&gt; doba rozpoczeta wczoraj
+    for (int przesuniecieDni = 0; przesuniecieDni &gt;= -1; przesuniecieDni--)
     {
-        Date dataDoby = krok == 0 ? dp.Data : dp.Data - 1;
+        Date dataDoby = dp.Data + przesuniecieDni;
 
-        Dzien dzien = kp[dataDoby];
+        Dzien dzien = kalkulatorPlanu[dataDoby];
         if (dzien == null)
             continue;
 
         // --- Kotwica doby oraz zebranie stref aktywności tego dnia ---
-        Time normaOd = Time.Empty;
-        Time aktywnoscOd = Time.Empty;
-        FromTimes strefy = FromTimes.Empty;
+        Time poczatekPracyWNormie = Time.Empty;
+        Time poczatekPierwszejAktywnosci = Time.Empty;
+        FromTimes strefyAktywnosci = FromTimes.Empty;
 
-        foreach (IStrefaExt s in (IEnumerable&lt;IStrefaExt&gt;)dzien)
+        foreach (IStrefaExt strefa in (IEnumerable&lt;IStrefaExt&gt;)dzien)
         {
-            if (s.Definicja == null)
+            if (strefa.Definicja == null)
                 continue;
-            if (s.OdGodziny == Time.Empty || s.Czas == Time.Zero)
-                continue;
-
-            bool wliczana = s.Definicja.Wchodzi &amp;&amp; s.Definicja.Typ == TypStrefy.Zwieksza;
-            bool dyzur = s.Definicja.Features.GetBool("Weryfikator11h");
-            if (!wliczana &amp;&amp; !dyzur)
+            if (strefa.OdGodziny == Time.Empty || strefa.Czas == Time.Zero)
                 continue;
 
-            if (wliczana &amp;&amp; (normaOd == Time.Empty || s.OdGodziny &lt; normaOd))
-                normaOd = s.OdGodziny;
-            if (aktywnoscOd == Time.Empty || s.OdGodziny &lt; aktywnoscOd)
-                aktywnoscOd = s.OdGodziny;
+            bool pracaWliczanaDoDoby = strefa.Definicja.Wchodzi &amp;&amp; strefa.Definicja.Typ == TypStrefy.Zwieksza;
+            bool dyzur = strefa.Definicja.Features.GetBool("Weryfikator11h");
+            if (!pracaWliczanaDoDoby &amp;&amp; !dyzur)
+                continue;
 
-            strefy = strefy.Add(new FromTime(s.OdGodziny, s.Czas));
+            if (pracaWliczanaDoDoby &amp;&amp; (poczatekPracyWNormie == Time.Empty || strefa.OdGodziny &lt; poczatekPracyWNormie))
+                poczatekPracyWNormie = strefa.OdGodziny;
+            if (poczatekPierwszejAktywnosci == Time.Empty || strefa.OdGodziny &lt; poczatekPierwszejAktywnosci)
+                poczatekPierwszejAktywnosci = strefa.OdGodziny;
+
+            strefyAktywnosci = strefyAktywnosci.Add(new FromTime(strefa.OdGodziny, strefa.Czas));
         }
 
-        Time d0;
-        if (normaOd != Time.Empty)
-            d0 = normaOd;
-        else if (aktywnoscOd != Time.Empty)
-            d0 = aktywnoscOd;
+        Time poczatekDoby;
+        if (poczatekPracyWNormie != Time.Empty)
+            poczatekDoby = poczatekPracyWNormie;
+        else if (poczatekPierwszejAktywnosci != Time.Empty)
+            poczatekDoby = poczatekPierwszejAktywnosci;
         else if (dzien.OdGodziny != Time.Empty)
-            d0 = dzien.OdGodziny;
+            poczatekDoby = dzien.OdGodziny;
         else
             continue; // brak jakiejkolwiek aktywności w tej dobie - nie ma czego sprawdzać
 
-        Time koniecDoby = d0 + doba;
+        Time koniecDoby = poczatekDoby + dlugoscDoby;
 
-        strefy = strefy.ToFlat();
+        strefyAktywnosci = strefyAktywnosci.ToFlat();
 
-        // --- Największa ciągła przerwa w oknie [D0 ; koniecDoby] ---
-        Time najwieksza = doba;   // gdy w oknie brak aktywności = pełny odpoczynek
-        Time kursor = d0;
-        bool byloCos = false;
-        foreach (FromTime i in strefy)
+        // --- Największa ciągła przerwa w oknie [poczatekDoby ; koniecDoby] ---
+        Time najwiekszaPrzerwa = dlugoscDoby;   // gdy w oknie brak aktywności = pełny odpoczynek
+        Time koniecPoprzedniejStrefy = poczatekDoby;
+        bool bylaAktywnoscWOknie = false;
+        foreach (FromTime strefa in strefyAktywnosci)
         {
-            Time od = i.From &lt; d0 ? d0 : i.From;
-            Time koniec = i.To &gt; koniecDoby ? koniecDoby : i.To;
-            if (koniec &lt;= od)
+            Time strefaOd = strefa.From &lt; poczatekDoby ? poczatekDoby : strefa.From;
+            Time strefaDo = strefa.To &gt; koniecDoby ? koniecDoby : strefa.To;
+            if (strefaDo &lt;= strefaOd)
                 continue; // strefa poza oknem doby
 
-            Time luka = od &gt; kursor ? od - kursor : Time.Zero;
-            if (!byloCos)
+            Time przerwa = strefaOd &gt; koniecPoprzedniejStrefy ? strefaOd - koniecPoprzedniejStrefy : Time.Zero;
+            if (!bylaAktywnoscWOknie)
             {
-                najwieksza = luka;   // przerwa wiodąca (od D0 do pierwszej strefy)
-                byloCos = true;
+                najwiekszaPrzerwa = przerwa;   // przerwa wiodąca (od poczatekDoby do pierwszej strefy)
+                bylaAktywnoscWOknie = true;
             }
-            else if (luka &gt; najwieksza)
+            else if (przerwa &gt; najwiekszaPrzerwa)
             {
-                najwieksza = luka;   // przerwa między strefami
+                najwiekszaPrzerwa = przerwa;   // przerwa między strefami
             }
-            kursor = koniec;
+            koniecPoprzedniejStrefy = strefaDo;
         }
-        if (byloCos)
+        if (bylaAktywnoscWOknie)
         {
-            Time koncowa = koniecDoby &gt; kursor ? koniecDoby - kursor : Time.Zero;
-            if (koncowa &gt; najwieksza)
-                najwieksza = koncowa;   // przerwa końcowa (od ostatniej strefy do D0 + 24h)
+            Time przerwaKoncowa = koniecDoby &gt; koniecPoprzedniejStrefy ? koniecDoby - koniecPoprzedniejStrefy : Time.Zero;
+            if (przerwaKoncowa &gt; najwiekszaPrzerwa)
+                najwiekszaPrzerwa = przerwaKoncowa;   // przerwa końcowa (od ostatniej strefy do poczatekDoby + 24h)
         }
 
-        if (najwieksza &lt; prog)
+        if (najwiekszaPrzerwa &lt; wymaganyOdpoczynek)
         {
             string dataTekst = dataDoby.Day.ToString("00") + "." + dataDoby.Month.ToString("00") + "." + dataDoby.Year.ToString();
-            string m = "W dobie pracowniczej rozpoczętej {0} nie zachowano wymaganego przepisami prawa pracy 11-godzinnego odpoczynku dobowego (najdłuższa przerwa w dobie: {1}). {2}"
-                .TranslateFormat(dataTekst, najwieksza, pracownik);
-            komunikat = komunikat == null ? m : komunikat + System.Environment.NewLine + m;
+            string linia = "W dobie pracowniczej rozpoczętej {0} nie zachowano wymaganego przepisami prawa pracy 11-godzinnego odpoczynku dobowego (najdłuższa przerwa w dobie: {1}). {2}"
+                .TranslateFormat(dataTekst, najwiekszaPrzerwa, pracownik);
+            komunikat = komunikat == null ? linia : komunikat + System.Environment.NewLine + linia;
         }
     }
 

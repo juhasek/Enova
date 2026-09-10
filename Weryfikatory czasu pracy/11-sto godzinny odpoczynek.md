@@ -27,7 +27,7 @@ w kolejnej dobie** (patrzy na dzień następny). Tutaj odpoczynek jest analizowa
 **w ramach jednej doby pracowniczej = sztywne 24 h**:
 
 ```
-okno doby = [ D0 ; D0 + 24h ]
+okno doby = [ D0 ; D0 + 24h ]        (D0 w kodzie: zmienna poczatekDoby)
 ```
 
 ### Kotwica doby `D0`
