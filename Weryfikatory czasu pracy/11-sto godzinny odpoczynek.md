@@ -9,13 +9,13 @@ Uruchamia się przy każdej zmianie dnia planu pracy (`KontrolaDniaVerifier` w
 - **Poziom:** `Error` (blokuje zapis planu) – ustawiany na powiązaniu kalendarza
   z weryfikatorem (`WeryfikatorKalendarza.Typ`), **nie** w kodzie. Ustalenie z klientem.
 - Zweryfikowano na żywo: **Nie** – środowisko robocze repo nie ma dostępu do
-  bazy/DLL Skanska. Odbiór po teście w GUI (scenariusze niżej).
+  bazy/DLL klienta. Odbiór po teście w GUI (scenariusze niżej).
 
 ## Po co, skoro Soneta ma własny weryfikator 11 h
 
 Wbudowany `WymaganaPrzerwaVerifier` Sonety **nie uruchamia się dla kalendarzy
 równoważnych** (`DzienPlanu.OnVerify` dodaje go tylko, gdy `!RównoważnyCzasPracy`).
-Kalendarz Skanska „4msc” jest równoważny, więc ten customowy weryfikator jest
+Kalendarz klienta „4msc” jest równoważny, więc ten customowy weryfikator jest
 **jedyną** kontrolą 11 h odpoczynku dla planu.
 
 Dodatkowo klient wymaga **innej semantyki niż standard Sonety** (patrz niżej).
