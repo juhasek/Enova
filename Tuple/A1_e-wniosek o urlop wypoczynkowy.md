@@ -43,6 +43,25 @@ reguła go nie obejmuje, przyczyna zostaje domyślna (Planowy).
   kierownika), a przełożony dostaje tylko wiadomość po realizacji. Automatyczne ustawienie
   przyczyny zmienia więc ścieżkę obiegu dla wniosków na dziś.
 
+## Prawa na pulpicie (definicja jest źródłem praw)
+
+Objaw przy zapisie e-wniosku na pulpicie: „Brak prawa do zapisu danych. Typ zapisu:
+Soneta.Core.DbTuples.DbTupleRel … Program\Systemowe\Core\Dokument dodatkowy\Relacja dokumentu
+dodatkowego”. **Ścieżka z komunikatu jest myląca** — w rolach pulpitu ta gałąź jest ustawiona na pełne prawo.
+
+Faktyczna przyczyna (kod enova 2512.5.6): `DbTupleRel` dziedziczy prawo obiektowe po `DbTuple`,
+a ten po **definicji** dokumentu dodatkowego (`DbTuple.CalcParentsObjectRight` → `Definicja.GetObjectRight()`).
+Definicja jest źródłem praw: gdy nie ma na niej wpisu dla uprawnienia operatora ani żadnej z jego ról,
+`Login.GetObjectRight` zwraca **Denied**. W standardowych danych startowych enova e-wniosek o urlop
+wypoczynkowy ma prawa tylko dla ról KiP — nie dla ról pulpitu.
+
+Naprawa: definicja dokumentu dodatkowego → zakładka **„Prawa do danych”** (albo rola → „Prawa do danych”)
+→ pełne prawo dla pulpitKadryPlace / pulpitKierownik lub ról „Pulpit pracownika” / „Pulpit kierownika”;
+potem ponowne logowanie na pulpit.
+
+Baza Claude, 2026-09-10: kopia A1 (ID 201) miała już prawa dla pulpitu; standardowa definicja (ID 118)
+dostała je ręcznie w GUI (pełne prawo dla wszystkich uprawnień i ról, 50 wpisów) — wniosek zapisuje się.
+
 ## Wdrożenie
 
 1. Konfiguracja → Definicje krotek → „A1_e-wniosek o urlop wypoczynkowy” → edycja kodu.
