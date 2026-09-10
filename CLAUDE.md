@@ -40,6 +40,11 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
   (`dbmgr importxml`) na bazie testowej przed użyciem produkcyjnym —
   środowisko robocze tego repo nie ma dostępu do DLL/live-testu, więc
   takie pliki nie są tworzone jako w pełni zweryfikowane.
+- **Pobrane/** — pliki wejściowe przekazywane przez użytkownika do analizy
+  (eksporty z enova365, wydruki, zrzuty ekranu, DLL-e klientów, logi).
+  Katalog roboczy, a nie artefakt enova365 — wynik analizy trafia do
+  właściwego folderu tematycznego powyżej. Gdy użytkownik mówi o pliku
+  „do analizy” bez podania ścieżki, najpierw szukać go tutaj.
 
 ### Ważne: format plików
 
