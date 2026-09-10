@@ -75,15 +75,18 @@ zapisuje się z datą `1900-01-01` i w GUI figuruje jako niezaznaczone.
 
 ## Odwzorowane scenariusze
 
-| Kod | Pracownik | Scenariusz | Warunek wejściowy | Oczekiwany wynik wypłaty 01/2027 |
-|---|---|---|---|---|
-| `TS-01` | Kowalska Anna | TS-01 | cały 2026, brak nieobecności | Dodatek = **1500** |
-| `TS-02` | Wiśniewski Piotr | TS-02 | + Nieob. nieusprawiedliwiona 11.05.2026 | Dodatek = **0** |
-| `TS-03` | Wójcik Katarzyna | TS-03 | + Zwolnienie chorobowe 14–18.09.2026 | Dodatek = **0** |
-| `TS-05` | Lewandowski Marek | TS-05 | + Urlop wypoczynkowy planowy 8–19.06.2026 (dozwolony) | Dodatek = **1500** |
-| `TS-09` | Zielińska Agnieszka | TS-09 | zatrudniona od 1.03.2026 (niepełny rok) | Dodatek = **0** |
+Scenariusze testowe i to, którzy pracownicy z bazy `Claude` je odwzorowują, są w arkuszu
+[`ElementyPlac/Dodatek roczny - scenariusze testowe.xlsx`](../ElementyPlac/Dodatek%20roczny%20-%20scenariusze%20testowe.xlsx)
+— arkusze **Scenariusze** (kolumna „Pracownik w bazie Claude") i **Dane testowe (Claude)**
+(pracownik, nieobecności, oczekiwany wynik wypłaty 01/2027).
 
+W skrócie: `TS-01` Kowalska Anna (1500), `TS-02` Wiśniewski Piotr (0), `TS-03` Wójcik Katarzyna (0),
+`TS-05` Lewandowski Marek (1500; odwzorowuje też TS-06), `TS-09` Zielińska Agnieszka (0).
 Wszyscy: pełny etat, kalendarz Standard, wydział „Główny wydział firmy", umowa na czas nieokreślony.
+
+**Definicja elementu w bazie `Claude`** — od 2026-09-10 wczytana z eksportu bazy `Al`
+(identyczna kolumna po kolumnie, w tym okres naliczania „co 12 miesięcy"); plik
+`Dodatek roczny.dbinit.xml` doprowadzony do tego stanu.
 
 ## Stan weryfikacji
 

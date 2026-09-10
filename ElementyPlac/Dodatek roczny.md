@@ -17,10 +17,15 @@ Plik importu XML (definicja gotowa do wczytania przez `dbmgr importxml`):
 [`ImportyXML/Dodatek roczny.dbinit.xml`](../ImportyXML/Dodatek%20roczny.dbinit.xml)
 (GUID rekordu: `c973afe6-a410-4cb8-9428-030ab2213957`).
 
+Scenariusze testowe:
+[`ElementyPlac/Dodatek roczny - scenariusze testowe.xlsx`](Dodatek%20roczny%20-%20scenariusze%20testowe.xlsx)
+(p. 6).
+
 ## 2. Charakterystyka
 
-- **Rodzaj:** Dodatek, naliczany **jednorazowo**, płatny z dołu. Wypłacany na liście płac
-  w miesiącu następującym po zakończeniu wskazanego okresu (dla okresu 2026 → wypłata 01/2027).
+- **Rodzaj:** Dodatek, okres naliczania **co 12 miesięcy**, płatny z dołu. Wypłacany na liście
+  płac w miesiącu następującym po zakończeniu wskazanego okresu (dla okresu 2026 → wypłata 01/2027).
+  (Do 2026-09-10 dokumentacja błędnie podawała „jednorazowo" — patrz p. 7.)
 - **Kwota:** wpisywana ręcznie przez operatora (pole „Podstawa"/„Kwota" dodatku) — regulamin
   przewiduje stałe 1500,00 PLN brutto, ale element nie ma tego zaszytego na sztywno w kodzie.
 - **Okres:** operator ustawia pole „Okres" dodatku na przedział, za jaki dodatek przysługuje
@@ -47,20 +52,28 @@ Plik importu XML (definicja gotowa do wczytania przez `dbmgr importxml`):
 
 ## 4. Ustawienia elementu
 
+Stan z eksportu definicji z bazy `Al` (rekord ID 262, eksport 2026-09-10); ten sam stan jest
+w bazie `Claude` (ID 263) — porównane kolumna po kolumnie i kod algorytmu.
+
 | Pole | Wartość |
 |---|---|
 | Nazwa | `Dodatek roczny` |
 | Skrót | `Dod.roczny` |
 | Rodzaj | Dodatek |
 | Rodzaj wypłaty | Etat |
-| Naliczanie | Płatna z dołu, jednorazowo |
+| Naliczanie | Płatna z dołu, **co N miesięcy, N = 12** (`OkresNaliczania`: `Typ=CoNMiesięcy`, `Ilosc=12`, opóźnienie 0) |
 | Lista płac | Lista płac-etaty (LPE) |
 | Generuj zerowy element | **Tak** (element widoczny na wypłacie także z kwotą 0) |
 | Korygowany | **Tak** |
+| Do wypłaty | Tak |
 | PIT | `PIT-11 1/PIT-4R 1` — Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej (stan bazy `Al` 2026-09-07; wcześniej „PIT-11 1a") |
+| Koszty uzyskania przychodu | Ze stosunku pracy |
+| Zaliczka podatku | Naliczać wg skali podatkowej, pomniejszona o ZUS; ulga podatkowa — naliczać |
 | ZUS społeczne / zdrowotne | Naliczać (standardowo) |
 | Podstawa urlopu wypoczynkowego | Nie wliczać (§6 ust.1 regulaminu) |
 | Podstawa ekwiwalentu za urlop | Nie wliczać (§6 ust.1 regulaminu) |
+| Podstawa zasiłków (pracownicy / inni) | Nie wliczać |
+| Algorytm | Edytor algorytmu (kod w p. 5), zapis obliczeń: „Algorytmy płacowe" |
 
 ## 5. Algorytm (Edytor algorytmu)
 
@@ -75,7 +88,11 @@ nie jest spełniona:
    („Zapis obliczeń"), dalsze bramki się nie wykonują.
 1. **Zatrudnienie przez cały wskazany okres** (§3 ust.1b) — `Etat.OkresZatrudnienia`
    pokrywa cały `rocznyOkres`.
-2. **Zatrudnienie trwa na dzień wypłaty** (§5 ust.7) — porównanie z `Składnik.Okres.To`.
+2. **Zatrudnienie trwa na dzień wypłaty** (§5 ust.7) — porównanie końca zatrudnienia
+   z `Składnik.Okres.To`. **Do potwierdzenia (scenariusz TS-19):** przy okresie naliczania
+   „co 12 miesięcy, płatna z dołu" `Składnik.Okres` może oznaczać okres naliczania
+   (do 31.12.2026), a nie miesiąc wypłaty. Wtedy umowa rozwiązana z dniem 31.12.2026
+   przejdzie tę bramkę, choć regulamin każe dać 0.
 3. **Frekwencja 100% w każdym miesiącu wskazanego okresu** (§2 ust.3-4, §5 ust.5) — dla
    każdego miesiąca sprawdzane są nieobecności pracownika (`Pracownik.Nieobecnosci[miesiąc]`);
    każda nieobecność musi być na liście dozwolonych wyjątków (`CzyDozwolonaNieobecnosc`),
@@ -86,9 +103,9 @@ formularzu elementu, zakładka **Zapis obliczeń**: wskazany okres, zatrudnienie
 okres (tak/nie + okres zatrudnienia), aktywność na dzień wypłaty, frekwencja (tak/nie +
 lista łamiących nieobecności z nazwą i okresem), wpisana kwota, wynik końcowy.
 
-### Nazwy definicji nieobecności — zweryfikowane w bazie `Al`
+### Nazwy definicji nieobecności — zweryfikowane w bazach `Al` i `Claude`
 
-Wprost z tabeli `DefNieobecnosci` (61 definicji na bazie `Al`), pięć wyjątków z §2 ust.4:
+Wprost z tabeli `DefNieobecnosci` (61 definicji, te same nazwy w obu bazach), pięć wyjątków z §2 ust.4:
 
 | Wyjątek regulaminowy | Definicja `Nazwa` w `DefNieobecnosci` |
 |---|---|
@@ -107,41 +124,31 @@ używa definicji „Urlop opiekuńczy", nie „Zwolnienie opieka".
 odpowiednika w `DefNieobecnosci` tej bazy — prawdopodobnie w tym systemie realizowany jest
 jako korekta harmonogramu/grafiku pracy (nie generuje rekordu `Nieobecność`), więc **nie
 pojawi się** w pętli po `Pracownik.Nieobecnosci` i nie złamie frekwencji — co jest zgodne
-z intencją regulaminu, ale nie zostało potwierdzone testem na żywym przypadku (TS-07 poniżej).
+z intencją regulaminu, ale nie zostało potwierdzone testem na żywym przypadku (TS-07).
 Jeśli w Twoim systemie taki dzień JEST jednak rejestrowany jako `Nieobecność` pod inną nazwą,
 trzeba dopisać dla niej osobny `case`.
 
 ## 6. Scenariusze testowe
 
-Testy wymagają przeliczenia wypłaty na przykładowym pracowniku w GUI (element sam w sobie
-nie jest walidowany przez `dbmgr importxml`/`compile` — to potwierdzone empirycznie, patrz
-p. 7). Nazwy definicji nieobecności są już uzupełnione (p. 5) — **TS-07 (odbiór nadgodzin)
-weryfikuje założenie**, że taki dzień nie generuje rekordu `Nieobecność` w tym systemie.
+**Scenariusze prowadzone są w arkuszu Excel:**
+[`Dodatek roczny - scenariusze testowe.xlsx`](Dodatek%20roczny%20-%20scenariusze%20testowe.xlsx)
+(obok tego pliku). Arkusze:
 
-W scenariuszach przyjęto przykładowo **okres = rok 2026, wypłata 01/2027**; operator wskazuje
-okres w polu „Okres" dodatku. „Dodatek = 0" oznacza element widoczny na wypłacie z kwotą 0
+- **Scenariusze** — TS-01…TS-19: obszar (bramka algorytmu), warunki wejściowe, kroki testu,
+  oczekiwany wynik, oczekiwana treść „Zapisu obliczeń", pracownik w bazie `Claude`, pliki
+  danych testowych oraz kolumny do wypełnienia przy teście: **Status** (lista: Nieprzeprowadzony /
+  OK / Błąd / Zablokowany), **Data testu**, **Wynik rzeczywisty / uwagi**.
+- **Dane testowe (Claude)** — pięciu pracowników z bazy `Claude` (`Kod` = numer scenariusza),
+  ich nieobecności w 2026 i oczekiwany wynik wypłaty 01/2027.
+- **Informacje** — konfiguracja istotna dla testów, bramki algorytmu, sposób testowania, legenda.
+
+Testy wymagają przeliczenia wypłaty w GUI (element nie jest walidowany przez
+`dbmgr importxml`/`compile` — patrz p. 7). W scenariuszach przyjęto **okres = rok 2026,
+wypłata 01/2027**. „Dodatek = 0" oznacza element widoczny na wypłacie z kwotą 0
 (`GenerujZerowy=Tak`) wraz z powodem w „Zapisie obliczeń".
 
-| ID | Scenariusz | Warunki wejściowe | Oczekiwany wynik |
-|---|---|---|---|
-| TS-01 | Pełne uprawnienie | Zatrudniony cały 2026, brak nieobecności naruszających frekwencję, aktywny w 01/2027 | Dodatek = kwota wpisana operatorowi |
-| TS-02 | Nieusprawiedliwiona nieobecność | Jak TS-01, plus 1 dzień nieobecności nieusprawiedliwionej w dowolnym miesiącu 2026 | Dodatek = 0, log wskazuje łamiącą nieobecność |
-| TS-03 | Choroba (L4) | Jak TS-01, plus zwolnienie lekarskie w dowolnym miesiącu | Dodatek = 0 (choroba nie jest na liście wyjątków §2 ust.4) |
-| TS-04 | Urlop na żądanie | Jak TS-01, plus 1 dzień urlopu wypoczynkowego „na żądanie" | Dodatek = 0 (wyjątek §2 ust.4a.i wyklucza „na żądanie") |
-| TS-05 | Urlop planowy | Jak TS-01, plus urlop wypoczynkowy planowany (nie na żądanie) | Dodatek = kwota wpisana (dozwolony wyjątek) |
-| TS-06 | Urlop okolicznościowy | Jak TS-01, plus urlop okolicznościowy | Dodatek = kwota wpisana |
-| TS-07 | Odbiór nadgodzin | Jak TS-01, plus dzień wolny za nadgodziny | Dodatek = kwota wpisana — **weryfikuje założenie z p. 5**: jeśli w Twoim systemie taki dzień jednak generuje rekord `Nieobecność`, test wykaże 0 zamiast kwoty (sygnał, że trzeba dopisać `case`) |
-| TS-08 | Opieka / badania | Jak TS-01, plus `Urlop opiekuńczy (art 188 kp, dni)` **albo** `(art 188 kp, godz.)` **albo** `Badania lekarskie` | Dodatek = kwota wpisana |
-| TS-09 | Niepełny rok zatrudnienia | Zatrudniony od marca 2026, 100% frekwencji w okresie zatrudnienia | Dodatek = 0 (brak pełnego roku kalendarzowego) |
-| TS-10 | Zwolnienie przed wypłatą | Rozwiązanie umowy w grudniu 2026, przed terminem wypłaty 01/2027 | Dodatek = 0, niezależnie od trybu/przyczyny zwolnienia |
-| TS-11 | Zwolnienie po wypłacie | Rozwiązanie umowy w lutym 2027 (po wypłacie 01/2027), reszta warunków spełniona | Dodatek = kwota wpisana |
-| TS-12 | Kategoria B — brak elementu | Pracownik ukarany karą porządkową w 2026 | Operator **nie dodaje** elementu — dodatek nieobecny na liście płac (test proceduralny, nie algorytmu) |
-| TS-13 | Kwota zerowa wpisana operatorowi | Jak TS-01, ale operator wpisał 0,00 | Dodatek = 0, brak błędu obliczeń |
-| TS-14 | Podstawa urlopu/ekwiwalentu | Naliczenie urlopu wypoczynkowego / ekwiwalentu w okresie, gdy dodatek był wypłacony | Dodatek roczny **nie wchodzi** do podstawy (§6 ust.1) |
-| TS-15 | Log obliczeń — kompletność | Dowolny z powyższych scenariuszy | Zakładka „Zapis obliczeń" zawiera wszystkie linie (pełny rok, aktywność, frekwencja + ew. łamiące nieobecności, kwota, wynik) ze zgodnymi wartościami |
-| TS-16 | Idempotencja importu | Dwukrotny `dbmgr importxml` tym samym plikiem na tej samej bazie | Jeden rekord definicji (bez duplikatu) — zweryfikowane, patrz p. 7 |
-| TS-17 | Brak wskazanego okresu | Jak TS-01, ale operator nie wypełnił pola „Okres" na dodatku | Dodatek = 0; „Zapis obliczeń" zawiera linię „BŁĄD: nie wskazano okresu dodatku" |
-| TS-18 | Okres inny niż 2026 | Operator ustawia „Okres" = 1.01.2025–31.12.2025, pracownik spełnia warunki w 2025 | Dodatek = kwota wpisana; log odwołuje się do okresu 2025 (nie 2026) |
+Nowe scenariusze dopisuje się w arkuszu, nie w tym pliku. TS-19 (zwolnienie z dniem 31.12.2026)
+dodano 2026-09-10 w związku z korektą okresu naliczania (p. 5, bramka 2).
 
 ## 7. Stan weryfikacji (na dziś)
 
@@ -175,18 +182,36 @@ Nazwy definicji nieobecności (p. 5) zweryfikowane wprost w tabeli `DefNieobecno
   „na żądanie" (`PrzyczynaUrlopu.NaŻądanie`). Baza trzyma wariant z tokenami `%NAZWA%`/`%TYP%`
   (podstawiane przez enova) i bez komentarzy; plik XML zachowuje wersję opisaną komentarzami.
 - pozostałe kolumny konfiguracji (`RodzajZrodla`=Dodatek, `Zatrudnienie`=Etat,
-  `DefinicjaListyPlac`=LPE, `OkresNaliczania` Jednorazowa/PłatnaZDołu, `GenerujZerowy`=True,
-  `Korygowany`=True, ZUS społeczne/zdrowotne=Naliczać, zaliczka wg skali,
-  `Nieobecnosci.Urlop/Ekwiwalent`=NieWliczać) — bez zmian względem 2026-09-02.
+  `DefinicjaListyPlac`=LPE, `OkresNaliczania` (opisany wtedy błędnie jako Jednorazowa — patrz
+  2026-09-10)/PłatnaZDołu, `GenerujZerowy`=True, `Korygowany`=True, ZUS społeczne/zdrowotne=Naliczać,
+  zaliczka wg skali, `Nieobecnosci.Urlop/Ekwiwalent`=NieWliczać) — bez zmian względem 2026-09-02.
+
+**Aktualizacja 2026-09-10 (baza `Claude` zsynchronizowana z `Al`):**
+- użytkownik wyeksportował definicję z bazy `Al` (plik `DefElementow_20260910082825.xml`,
+  rekord `DefinicjaElementu_262`) i wczytał ją do bazy `Claude` (zapis 2026-09-10 8:29).
+  Wcześniej `Claude` miał definicję z importu pliku repo (2026-09-03).
+- porównanie programowe: wszystkie 193 kolumny `DefElementow` i kod `Tekst` w `Claude` (ID 263)
+  są identyczne z `Al` (ID 262) oraz ze stanem odczytanym 2026-09-07. **Logika algorytmu
+  bez zmian** (bramki 0–3, lista wyjątków, warunek „na żądanie").
+- **korekta dokumentacji i pliku XML — okres naliczania:** kolumna `OkresNaliczaniaTyp = 3`
+  to `CoNMiesięcy` (enum `Soneta.Place.TypOkresuNaliczania`: `Jednorazowa` = 1,
+  `CoNMiesięcy` = 3), `OkresNaliczaniaIlosc = 12`. Eksport enova potwierdza to wprost
+  (`<Typ>CoNMiesięcy</Typ><Ilosc>12</Ilosc>`). Od 2026-09-02 dokumentacja i `dbinit.xml`
+  błędnie podawały `Jednorazowa` — ponowny import starego pliku cofnąłby ustawienie w bazie.
+  Plik XML poprawiony; opis w p. 2 i 4 poprawiony; dopisany scenariusz TS-19.
+- scenariusze testowe przeniesione z tabeli w tym pliku do arkusza Excel (p. 6).
 
 **Niezweryfikowane / do zrobienia przed produkcją:**
 - **dynamiczny `rocznyOkres`** — `Element.DodHistoria.Okres` jako źródło okresu wymaga
   potwierdzenia realnym przeliczeniem (TS-17, TS-18); pole `DodHistoria.Okres` (`FromTo`)
   potwierdzone w props `soneta-programming`, ale nie na żywym naliczeniu.
+- **bramka 2 przy okresie „co 12 miesięcy, z dołu"** — nie wiadomo, jaki okres enova podaje
+  w `Składnik.Okres` (okres naliczania czy miesiąc wypłaty); rozstrzyga TS-19.
 - import/kompilacja bazy (`dbmgr importxml`/`compile`) **nie waliduje poprawności kodu C#**
   algorytmu Edytora — potwierdzone eksperymentalnie (celowo zepsuty kod dał identyczny wynik
   sukcesu). Jedyna wiarygodna weryfikacja to realne przeliczenie wypłaty w GUI.
 - założenie o „odbiorze dnia za nadgodziny" bez rekordu `Nieobecność` (p. 5) — wynika
   z braku pasującej definicji w `DefNieobecnosci`, ale nie zostało potwierdzone realnym
   przeliczeniem (TS-07).
-- scenariusze TS-01 do TS-16 nieprzeprowadzone na żywym systemie.
+- scenariusze TS-01…TS-19 (poza TS-16) nieprzeprowadzone na żywym systemie — statusy
+  prowadzone w arkuszu `Dodatek roczny - scenariusze testowe.xlsx`.

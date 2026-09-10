@@ -17,6 +17,11 @@
   z poniższą (baza trzyma wariant z tokenami %NAZWA%/%TYP% i bez komentarzy). Pozostałe pola
   konfiguracji bez zmian.
 
+  Aktualizacja 2026-09-10: baza Claude dostała definicję z eksportu bazy Al
+  (DefElementow_20260910082825.xml) — kolumny i kod identyczne ze stanem 2026-09-07. Korekta tego
+  pliku: OkresNaliczania Typ=CoNMiesięcy, Ilosc=12 (wcześniej błędnie Jednorazowa). Kod algorytmu
+  poniżej bez zmian logiki.
+
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
 -->
@@ -45,9 +50,15 @@
          Standardowy, przenośny GUID listy "Lista płac-etaty" (LPE). -->
     <DefinicjaListyPlac>00000000-0007-0001-0001-000000000000</DefinicjaListyPlac>
 
+    <!-- KOREKTA 2026-09-10: w bazach Al i Claude element ma okres naliczania "Co N miesięcy",
+         N = 12 (OkresNaliczaniaTyp=3, OkresNaliczaniaIlosc=12) — wartości wprost z eksportu enova
+         (DefElementow_20260910082825.xml). Wcześniej plik błędnie miał Typ=Jednorazowa (=1),
+         więc ponowny import cofał ustawienie z bazy. -->
     <OkresNaliczania>
-      <Typ>Jednorazowa</Typ>
       <Naliczanie>PłatnaZDołu</Naliczanie>
+      <Opoznienie>0</Opoznienie>
+      <Typ>CoNMiesięcy</Typ>
+      <Ilosc>12</Ilosc>
     </OkresNaliczania>
 
     <Algorytm>
