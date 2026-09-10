@@ -118,6 +118,10 @@ matematycznie osiągalna (tryb tolerancyjny).
 
 ## 5. Scenariusze testowe
 
+Pełna lista (z kolumnami na wynik testu w GUI) w arkuszu:
+[Scenariusze testowe weryfikatorow czasu pracy.xlsx](Scenariusze%20testowe%20weryfikatorow%20czasu%20pracy.xlsx),
+arkusz **Ilość dni wolnych**. Poniższa tabela jest kopią poglądową.
+
 | # | Scenariusz | Oczekiwany wynik | Zweryfikowano na żywo |
 |---|---|---|---|
 | 5.1 | Okres miesięczny, sobota + niedziela zamienione na dni pracujące, nic więcej | Błąd „za mało dni wolnych", brakuje 2 — mimo że w miesiącu są jeszcze dni robocze do oddania. | Nie |
