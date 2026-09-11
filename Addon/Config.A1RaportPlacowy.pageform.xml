@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Strona okna Narzedzia -> Opcje (drzewo "Ustawienia").
+
+  Zasob musi konczyc sie na "Config.<Nazwa>.pageform.xml" - pierwszy z trzech ostatnich
+  czlonow nazwy zasobu ("Config") powoduje, ze strona wiaze sie z typem Session i trafia
+  do okna Opcji (PageInfoCache.Item; ConfigurationFolderViewAttribute sklada z takich stron
+  drzewo "Ustawienia"). Czlony CaptionHtml rozdzielone "/" buduja galezie tego drzewa.
+-->
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+
+  <Page Name="A1RaportPlacowyPage"
+        CaptionHtml="A1Testy/Konfiguracja raportu płacowego"
+        DataContext="{New A1RaportPlacConfigExtender}">
+
+    <!--
+      5 definiowalnych kolumn opisowych na poczatku raportu. Kazdy slot: zrodlo tresci
+      (lista wyboru), parametr (nazwa cechy - tylko dla zrodel cechowych) i wlasny naglowek
+      (pusty = nazwa domyslna zrodla). Zrodlo "(kolumna nieuzywana)" pomija slot.
+    -->
+    <Group CaptionHtml="Kolumny opisowe" LabelWidth="45">
+      <Row>
+        <Field CaptionHtml="Kolumna 1 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo1}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr1}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek1}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna 2 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo2}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr2}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek2}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna 3 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo3}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr3}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek3}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna 4 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo4}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr4}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek4}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kolumna 5 — źródło" Width="30" EditValue="{Ustawienia.Zrodlo5}" />
+        <Field CaptionHtml="parametr (nazwa cechy)" Width="22" EditValue="{Ustawienia.Parametr5}" />
+        <Field CaptionHtml="nagłówek" Width="22" EditValue="{Ustawienia.Naglowek5}" />
+      </Row>
+    </Group>
+
+    <Group CaptionHtml="Pozostałe kolumny" LabelWidth="45">
+      <Field CaptionHtml="Pokaż składki ZUS, zaliczkę PIT, fundusze, PPK i kwotę do wypłaty" Width="8"
+             EditValue="{Ustawienia.PokazSkladki}" />
+    </Group>
+
+    <Group CaptionHtml="Plik wynikowy" LabelWidth="45">
+      <Field CaptionHtml="Prefiks nazwy pliku" Width="30" EditValue="{Ustawienia.PrefiksNazwyPliku}" />
+      <Field CaptionHtml="Nazwa arkusza" Width="30" EditValue="{Ustawienia.NazwaArkusza}" />
+    </Group>
+
+    <Group CaptionHtml="Sortowanie wierszy" LabelWidth="45">
+      <Field CaptionHtml="Sortuj wg kodu pracownika (zamiast wg nazwiska)" Width="8"
+             EditValue="{Ustawienia.SortujWgKodu}" />
+    </Group>
+
+  </Page>
+</DataForm>

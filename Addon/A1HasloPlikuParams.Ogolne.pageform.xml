@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Formularz parametrow czynnosci "Pelna lista plac (XLSX)" - pyta o haslo do pliku.
+  Wiazanie z klasa A1HasloPlikuParams idzie przez nazwe zasobu (patrz LogicalName
+  w .csproj i komentarz w A1HasloPlikuParams.cs).
+
+  Class="PasswordEdit" maskuje wpisywane znaki - tak samo robi to enova w
+  Soneta.Core.UI.EnovaNet.UI.WebOperatorNewPasswordParams.NewPasswordForm.pageform.xml.
+-->
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+
+  <Page Name="Ogolne" CaptionHtml="Ogólne" DataContext="{DataSource}">
+
+    <Group CaptionHtml="Zabezpieczenie pliku hasłem" LabelWidth="40">
+      <Label CaptionHtml="Plik zostanie zaszyfrowany (AES) — Excel zapyta o hasło przy otwarciu. Zostaw oba pola puste, aby wygenerować plik bez hasła. Zapamiętaj hasło: bez niego pliku nie da się otworzyć."
+             Width="64" LabelHeight="3" />
+      <Field CaptionHtml="Hasło do otwarcia pliku" Width="25" EditValue="{Haslo}" Class="PasswordEdit" />
+      <Field CaptionHtml="Powtórz hasło" Width="25" EditValue="{Potwierdzenie}" Class="PasswordEdit" />
+    </Group>
+
+  </Page>
+</DataForm>

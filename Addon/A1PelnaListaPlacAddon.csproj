@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Skompilowany dodatek enova365 (net8.0) - przycisk "Pelna lista plac (XLSX)"
+    na pasku narzedzi widoku Place -> Listy plac (worker zarejestrowany na TABELI
+    ListyPlac + ActionTarget.ToolbarWithText; wczesniej: worker na wierszu ListaPlac
+    i pozycja menu Czynnosci). Powstal, bo report-snippet + eksport z podgladu
+    DevExpress uporczywie scala kolumny tekstowe w Excelu (patrz Raporty/A1PelnaListaPlac.md).
+
+    BUDOWANIE (na maszynie z DLL-ami serwera enova 2512.5.6):
+      dotnet build -c Release
+    Wynik: bin\Release\A1PelnaListaPlacAddon.dll
+
+    WGRANIE:
+      1. Skopiuj A1PelnaListaPlacAddon.dll do folderow komponentow enova:
+         C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard\
+         C:\enovaServer\2512.5.6\Soneta.Products.Web.Standard\
+      2. Zrestartuj uslugi enova (orchestrator / server / web / webapi).
+      3. Place -> Listy plac -> zaznacz pozycje -> przycisk "Pelna lista plac (XLSX)"
+         na pasku narzedzi listy.
+
+    UWAGA: dodatek celuje w net8.0 (serwer enova = net8.0). Referencje sa do DLL-i
+    z folderu serwera (Private=false - NIE kopiujemy ich do bin, sa juz na serwerze).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>A1PelnaListaPlacAddon</AssemblyName>
+    <RootNamespace>A1.Rozszerzenia</RootNamespace>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Deterministic>true</Deterministic>
+    <DebugType>portable</DebugType>
+    <SonetaDir>C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard</SonetaDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Strona okna Narzedzia -> Opcje. Nazwa logiczna zasobu MUSI konczyc sie na
+      "Config.<Nazwa>.pageform.xml" - enova bierze 3 ostatnie czlony nazwy
+      (FormXmlParser.Parse + PageInfoCache.Item: czlon "Config" => strona wiaze sie
+      z Session i trafia do drzewa "Ustawienia").
+    -->
+    <EmbeddedResource Include="Config.A1RaportPlacowy.pageform.xml">
+      <LogicalName>A1.Rozszerzenia.Config.A1RaportPlacowy.pageform.xml</LogicalName>
+    </EmbeddedResource>
+
+    <!--
+      Formularz parametrow czynnosci (haslo do pliku). W nazwie logicznej licza sie trzy
+      ostatnie czlony (po odcieciu ".xml"): <NazwaKlasy>.<NazwaStrony>.pageform - enova
+      szuka typu po samej nazwie klasy, wiec prefiks przestrzeni nazw jest dowolny.
+    -->
+    <EmbeddedResource Include="A1HasloPlikuParams.Ogolne.pageform.xml">
+      <LogicalName>A1.Rozszerzenia.A1HasloPlikuParams.Ogolne.pageform.xml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Soneta.Business">        <HintPath>$(SonetaDir)\Soneta.Business.dll</HintPath>        <Private>false</Private></Reference>
+    <Reference Include="Soneta.Types">           <HintPath>$(SonetaDir)\Soneta.Types.dll</HintPath>           <Private>false</Private></Reference>
+    <Reference Include="Soneta.Core">            <HintPath>$(SonetaDir)\Soneta.Core.dll</HintPath>            <Private>false</Private></Reference>
+    <Reference Include="Soneta.KadryPlace">      <HintPath>$(SonetaDir)\Soneta.KadryPlace.dll</HintPath>      <Private>false</Private></Reference>
+
+    <Reference Include="DevExpress.Printing.v24.1.Core">     <HintPath>$(SonetaDir)\DevExpress.Printing.v24.1.Core.dll</HintPath>     <Private>false</Private></Reference>
+    <Reference Include="DevExpress.Docs.v24.1">              <HintPath>$(SonetaDir)\DevExpress.Docs.v24.1.dll</HintPath>              <Private>false</Private></Reference>
+    <Reference Include="DevExpress.Spreadsheet.v24.1.Core">  <HintPath>$(SonetaDir)\DevExpress.Spreadsheet.v24.1.Core.dll</HintPath>  <Private>false</Private></Reference>
+    <Reference Include="DevExpress.Data.v24.1">              <HintPath>$(SonetaDir)\DevExpress.Data.v24.1.dll</HintPath>              <Private>false</Private></Reference>
+    <Reference Include="DevExpress.Office.v24.1.Core">       <HintPath>$(SonetaDir)\DevExpress.Office.v24.1.Core.dll</HintPath>       <Private>false</Private></Reference>
+  </ItemGroup>
+
+</Project>
