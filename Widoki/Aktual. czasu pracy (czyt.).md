@@ -57,6 +57,29 @@ resztą aplikacji, nie było powodu ich ruszać.
 
 Wstawiony jako nowy rekord w `DefZestawCzasu` w bazie **Claude** (sandbox
 localhost\SQLEXPRESS), obok oryginału — nie podmienia systemowego widoku.
-**Niesprawdzony w GUI** — środowisko robocze tego repo nie ma dostępu do
-buscall/testu na żywej aplikacji; przed użyciem produkcyjnym wymaga
-obejrzenia w enova i akceptacji użytkownika.
+
+**Zgłoszony błąd (11.09.2026)** — po otwarciu dokumentu aktualizacji
+kalendarza i przejściu na zakładkę tego zestawienia: `[MultiSources[0].
+Zestawienie.GetSource() GET]: Object reference not set to an instance of
+an object.` Przyczyna: pierwszy insert do bazy (`sqlcmd -i plik.sql -f
+65001`) uszkodził rzadsze polskie znaki w polu `Algorytm` (np. `Źródło` →
+zniekształcone bajty), mimo że plik źródłowy na dysku miał poprawny UTF-8
+— zniekształcony tekst C# najwyraźniej nie kompilował się poprawnie w
+silniku skryptowym enova, co ujawniło się dopiero jako myląca
+`NullReferenceException` przy renderowaniu zakładki, nie jako błąd
+składni. Szczegóły mechanizmu: [[reference_sqlcmd_f65001_mangles_niektore_znaki]]
+w pamięci.
+
+**Poprawka:** tekst algorytmu wstawiony ponownie przez PowerShell +
+`System.Data.SqlClient` (`SqlParameter` typu `NText`, wartość z
+`Get-Content -Raw -Encoding UTF8`) — bez pośredniej konwersji przez
+tekstowy SQL. Zweryfikowano odczytem z powrotem przez ADO.NET: treść w
+bazie jest teraz bajt-w-bajt identyczna z plikiem w repo. Rekord
+zaktualizowany (`UPDATE ... WHERE ID = 9`), nie usunięty i wstawiony na
+nowo — usunięcie blokował klucz obcy z tabeli `ZestAktKalend` (enova
+najwyraźniej sama utworzyła tam wiersz łączący zakładkę dokumentu z tym
+`DefZestawCzasu` przy pierwszym otwarciu).
+
+**Do potwierdzenia przez użytkownika:** czy po poprawce zakładka otwiera
+się bez błędu w GUI — środowisko robocze tego repo nie ma dostępu do
+buscall/testu na żywej aplikacji.
