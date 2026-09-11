@@ -44,6 +44,9 @@ okno doby = [ D0 ; D0 + 24h ]        (D0 w kodzie: zmienna poczatekDoby)
   (np. „praca w normie”, „praca poza normą”),
 - **oraz** strefy oznaczone cechą **`Weryfikator11h`** (u klienta: „Dyżur domowy”,
   która ma `Typ == NieWpływa`, więc Sonecie „nie liczy się” – cecha dodaje ją z powrotem),
+- **oraz** wczesnoranne strefy **dnia następnego**, których początek wpada jeszcze
+  w okno doby bieżącej – dociągane z `kalkulatorPlanu[dataDoby + 1]`, przesunięte
+  o +24h na wspólną oś czasu doby, a następnie przycinane do okna jak reszta stref,
 - pomijane: strefy z `OdGodziny` puste lub `Czas == 0`.
 
 ### Naruszenie
@@ -76,6 +79,7 @@ Doba w komentarzach zapisana jako `D0–(D0+24h)`.
 | 3 | Dzień roboczy: Praca w normie 7:00–16:00 + Dyżur 21:00–23:00 | 7:00 | trailing 23:00 → 7:00 = **8:00** | **błąd** – „…nie zachowano … 11-godzinnego odpoczynku …” |
 | 4 | Święto / sobota / niedziela / wolny za św.: Dyżur domowy jedyną strefą | początek Dyżuru | wg długości Dyżuru | błąd, gdy Dyżur zostawia < 11 h wolnego w dobie 24 h |
 | 5 | Sobota z Dyżurem kończącym się za późno; komunikat ma się pokazać przy edycji **niedzieli** | wg soboty | wg soboty | **błąd** wyświetlany także przy zapisie niedzieli (kontrola dnia poprzedniego) |
+| 6 | Sobota: Praca w normie 8:00–21:00; Niedziela: Praca w normie 7:00–20:00 | 8:00 (sob.) | fragment niedzieli 7:00–8:00 dociągnięty do doby sobotniej → przerwa 21:00→7:00 = **10:00** | **błąd** – realny odpoczynek 10h mimo że każda doba licząc „od siebie” dawałaby 11:00 |
 
 Pełna lista wraz z kolumnami „Wynik testu / Uwagi” →
 [Scenariusze testowe weryfikatorow czasu pracy.xlsx](Scenariusze%20testowe%20weryfikatorow%20czasu%20pracy.xlsx), arkusz „Odpoczynek dobowy 11h”.
@@ -99,6 +103,7 @@ Import: [ImportyXML/Weryfikator 11h odpoczynek dobowy.xml](../ImportyXML/Weryfik
 
 - `dp.Pracownik` (== `dp.Kalendarz.Pracownik`), `dp.Data`
 - `new KalkulatorPlanu(pracownik)`, indekser `kp[Date]` → `Dzien` (auto-`LoadOkres`; może zwrócić `null`)
+- `Date + int` → `Date` (kolejny dzień; używane do dociągnięcia doby następnej: `kp[dataDoby + 1]`)
 - `Dzien : IEnumerable<IStrefaExt>` – iteracja po strefach doby; `Dzien.OdGodziny`
 - `IStrefaExt.Definicja` (`DefinicjaStrefy`): `.Wchodzi`, `.Typ` (`TypStrefy.Zwieksza`), `.Features.GetBool(...)`
 - `IStrefaExt.OdGodziny`, `.Czas`
@@ -114,11 +119,6 @@ wbudowany edytor skryptów enova bywa zawodny przy takich konstrukcjach.
 
 ## Znane ograniczenia / do potwierdzenia w GUI
 
-- **Strefy wczesnoranne dnia następnego** wpadające w okno doby bieżącej **nie są**
-  wliczane (każda doba liczona z własnych stref). Jeśli np. sobotni Dyżur kończy się
-  o 20:00 (odpoczynek do 8:00 niedz. = 12 h, OK), a w niedzielę dodano Dyżur 6:00–8:00,
-  faktyczny odpoczynek soboty spada do 10 h – **ta sytuacja nie zostanie wykryta**.
-  Do decyzji, czy rozszerzać (drobna zmiana).
 - Zachowanie przy **nieobecności części dnia** + Dyżur – nie objęte scenariuszami klienta.
 - `kp[dp.Data - 1]` dla dni sprzed zatrudnienia zwraca `null` → doba poprzednia pomijana
   (bez błędu).

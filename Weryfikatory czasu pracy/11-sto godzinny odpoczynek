@@ -10,6 +10,8 @@ public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs
     //       gdy i tego brak - OdGodziny dnia.
     //  Strefy aktywności = strefy wliczane do doby wg Sonety (Wchodzi && Typ == Zwiększa)
     //       oraz strefy oznaczone cechą "Weryfikator11h" (Dyżur domowy).
+    //       Uwzględniane są też wczesnoranne strefy dnia NASTĘPNEGO, jeśli ich początek
+    //       wpada jeszcze w okno doby bieżącej (przesunięte o +24h na wspólną oś czasu).
     //  Naruszenie: największa ciągła przerwa w oknie doby jest < 11 h.
     //
     // Sprawdzamy dobę rozpoczętą w dniu bieżącym ORAZ w dniu poprzednim - komunikat o dobie
@@ -72,6 +74,30 @@ public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs
             continue; // brak jakiejkolwiek aktywności w tej dobie - nie ma czego sprawdzać
 
         Time koniecDoby = poczatekDoby + dlugoscDoby;
+
+        // --- Wczesnoranne strefy dnia następnego, wpadające w okno doby bieżącej ---
+        // (np. sobota 8:00-21:00, niedziela od 7:00 -> fragment niedzieli 7:00-8:00
+        // mieści się jeszcze w oknie doby sobotniej [8:00 sob ; 8:00 niedz]).
+        // Przesunięte o +24h na wspólną oś czasu doby; przycięcie do [poczatekDoby;koniecDoby]
+        // robi już logika klipowania poniżej.
+        Dzien dzienNastepny = kalkulatorPlanu[dataDoby + 1];
+        if (dzienNastepny != null)
+        {
+            foreach (IStrefaExt strefa in (IEnumerable<IStrefaExt>)dzienNastepny)
+            {
+                if (strefa.Definicja == null)
+                    continue;
+                if (strefa.OdGodziny == Time.Empty || strefa.Czas == Time.Zero)
+                    continue;
+
+                bool pracaWliczanaDoDobyNast = strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza;
+                bool dyzurNast = strefa.Definicja.Features.GetBool("Weryfikator11h");
+                if (!pracaWliczanaDoDobyNast && !dyzurNast)
+                    continue;
+
+                strefyAktywnosci = strefyAktywnosci.Add(new FromTime(strefa.OdGodziny + dlugoscDoby, strefa.Czas));
+            }
+        }
 
         strefyAktywnosci = strefyAktywnosci.ToFlat();
 
