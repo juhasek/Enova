@@ -46,12 +46,49 @@ resztą aplikacji, nie było powodu ich ruszać.
 
 - Format godzin „Od"/„Czas" jako wolny tekst (parsowany przez `Time.Parse`)
   — zgłoszenie dotyczyło wyglądu, nie sposobu edycji.
-- Brak osobnej kolumny „Do" (godzina końcowa) — wymagałoby zmiany logiki,
-  nie tylko wyglądu.
 - Zakomentowana kolumna „Typ dnia" — pozostawiona wyłączona jak w oryginale.
 - Legenda kolorów jako osobny element UI — enova nie daje prostego
   mechanizmu na statyczną legendę w tego typu siatce; do rozważenia jako
   osobne zgłoszenie, jeśli nadal potrzebne po tej poprawce.
+
+## 5. Druga iteracja (11.09.2026) — przebudowa układu, nie tylko kolorystyka
+
+**Zgłoszenie klienta:** po naprawie błędu NRE (patrz punkt 4) widok
+wizualnie „nic się nie zmienił" względem oryginału — same tylko kolory
+fallbacku były zbyt subtelną zmianą, żeby to zauważyć. Klient poprosił o
+zupełnie nowy, lepszy układ, nie kosmetykę.
+
+**Zmiany strukturalne (nie tylko kolory):**
+
+- **„Praca / Plan (okres)" i „(rozl)"** — sklejony string `"8:00 / 8:00"`
+  rozbity na **cztery osobne kolumny**: Praca (okres), Plan (okres), Praca
+  (rozl), Plan (rozl). Typ zmieniony ze `string` na `Time` (natywne
+  formatowanie/wyrównanie enova zamiast ręcznej konkatenacji).
+- **Nowa kolumna „Do"** (godzina zakończenia) — wyliczana jako `Od + Czas`,
+  tylko do odczytu (nie duplikuje logiki edycji Od/Czas). Wcześniej trzeba
+  było liczyć koniec pracy w głowie.
+- **Kolorowanie porównawcze Praca vs Plan** (`GetAppearancePracaOkres`/
+  `...Rozl`) — czerwony tekst gdy norma niespełniona, zielony gdy
+  spełniona/przekroczona. To zastępuje ręczne porównywanie dwóch liczb po
+  obu stronach „/" w starym formacie.
+- **Kolorowanie kolumny „Info" per status** — każdy status (`Deleg.`,
+  `Nieob.`, `Wniosek`, `Zdalna`) ma inny kolor tekstu (fiolet/pomarańcz/
+  ciemny żółty/niebieski), rozpoznawalny bez czytania słowa. Tło komórki
+  zostaje takie samo jak reszta dnia (spójność wiersza).
+
+**Założenia wymagające potwierdzenia w GUI (niesprawdzone tutaj):**
+
+- Operator `+` na typie `Time` (`od + czas` w `DoGodziny`) — założenie
+  oparte na analogicznych operacjach na `Time` widocznych gdzie indziej w
+  kodzie (np. `sp.OdGodziny + sp.Czas` w `Widoki/Zestawienie aktualizacji
+  czasu pracy SKA`), ale nie skompilowane/uruchomione tutaj.
+- Operatory porównania `<`/`==` na `Time` w `GetAppearanceNorma` — również
+  oparte na precedensie z istniejącego kodu (`>=` używane w SKA), nie
+  zweryfikowane w tym pliku.
+- Czy `[YAxis]` obsługuje `GetAppearance<Nazwa>` tak samo jak `[Field]` —
+  oryginalny plik nigdy nie kolorował kolumn YAxis (Umowa/NormaO/NormaR),
+  więc wzorzec `GetAppearancePracaOkres`/`...Rozl` jest zastosowany przez
+  analogię, nie potwierdzony precedensem w tym kodzie.
 
 ## 4. Status
 

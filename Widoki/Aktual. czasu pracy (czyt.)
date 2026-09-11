@@ -335,22 +335,33 @@
             return Pracownik.Kod; }
             }
 
+            // Poprzednio jedna kolumna ze sklejonym stringiem "8:00 / 8:00" - rozdzielone na
+            // cztery osobne kolumny (Praca/Plan x okres/rozliczeniowy), żeby dało się je czytać
+            // bez rozszyfrowywania separatora, i skolorowane przez GetAppearancePracaOkres/Rozl
+            // (czerwony = norma niespełniona, zielony = spełniona/przekroczona).
             [YAxis]
             [Priority(102)]
-            [Caption("Praca / Plan (okres)")]
-            [DefaultWidth(16)]
-            public string NormaO => NormaOkres(okres);
+            [Caption("Praca (okres)")]
+            [DefaultWidth(9)]
+            public Time PracaOkres => getKalk(pak).Praca(okres).Czas;
 
             [YAxis]
             [Priority(103)]
-            [Caption("Praca / Plan (rozl)")]
-            [DefaultWidth(16)]
-            public string NormaR => NormaOkres(Pracownik.WyliczOkresRoliczeniowyNadgodzin(Data));
+            [Caption("Plan (okres)")]
+            [DefaultWidth(9)]
+            public Time PlanOkres => getKalk(pak).Plan.Norma(okres).Czas;
 
-            string NormaOkres(FromTo okres){
-            var kalk = getKalk(pak);
-            return kalk.Praca(okres).Czas + " / " + kalk.Plan.Norma(okres).Czas;
-            }
+            [YAxis]
+            [Priority(104)]
+            [Caption("Praca (rozl)")]
+            [DefaultWidth(9)]
+            public Time PracaRozl => getKalk(pak).Praca(Pracownik.WyliczOkresRoliczeniowyNadgodzin(Data)).Czas;
+
+            [YAxis]
+            [Priority(105)]
+            [Caption("Plan (rozl)")]
+            [DefaultWidth(9)]
+            public Time PlanRozl => getKalk(pak).Plan.Norma(Pracownik.WyliczOkresRoliczeniowyNadgodzin(Data)).Czas;
 
             // Kolumna "Info" - czytelniejsze, samotłumaczące się skróty zamiast pierwotnych
             // kryptonimów (Del/Nb/OWn/PZ), których znaczenia nie dało się zgadnąć bez dokumentacji.
@@ -424,6 +435,23 @@
             }
             }
 
+            // Nowa kolumna - w oryginale było tylko "Od" (start) i "Czas" (czas trwania), więc
+            // godzinę zakończenia trzeba było liczyć w głowie. Tylko do odczytu (wyliczana z
+            // Od+Czas), żeby nie dublować logiki edycji z "Od"/"Czas".
+            [Field]
+            [Priority(25)]
+            [Caption("Do")]
+            [DefaultWidth(4)]
+            public string DoGodziny {
+            get {
+            Time od = getKalk(pak)[Data].OdGodziny;
+            Time czas = getKalk(pak)[Data].Czas;
+            if (od == Time.Empty || czas == Time.Empty)
+            return string.Empty;
+            return (od + czas).ToString();
+            }
+            }
+
             [Field]
             [Priority(30)]
             [Caption("Czas")]
@@ -452,8 +480,29 @@
             }
             }
 
+            // Kolorowanie treści statusu (nie tła, żeby dzień nadal pokazywał swój normalny
+            // kolor tła jak reszta wiersza) - każdy status ma inny kolor tekstu, żeby dało się
+            // go rozpoznać kątem oka bez czytania słowa.
             public DataAppearance GetAppearanceInfo() {
-            return GetAppearance();
+            var baza = GetAppearance();
+            System.Drawing.Color? fg = null;
+            switch (Info) {
+            case "Deleg.":
+            fg = System.Drawing.Color.FromArgb(106, 27, 154);
+            break;
+            case "Nieob.":
+            fg = System.Drawing.Color.FromArgb(230, 81, 0);
+            break;
+            case "Wniosek":
+            fg = System.Drawing.Color.FromArgb(158, 119, 0);
+            break;
+            case "Zdalna":
+            fg = System.Drawing.Color.FromArgb(2, 119, 189);
+            break;
+            }
+            if (fg.HasValue)
+            return new DataAppearance { BackColor = baza.BackColor, ForeColor = fg.Value };
+            return baza;
             }
 
             public DataAppearance GetAppearanceDefinicja() {
@@ -464,8 +513,31 @@
             return GetAppearance();
             }
 
+            public DataAppearance GetAppearanceDoGodziny() {
+            return GetAppearance();
+            }
+
             public DataAppearance GetAppearanceCzas() {
             return GetAppearance();
+            }
+
+            // Kolorowanie porównania Praca vs Plan - czerwony gdy norma niespełniona, zielony
+            // gdy spełniona/przekroczona. To zastępuje pierwotny nieczytelny sklejony string,
+            // w którym trzeba było samemu porównać dwie liczby po obu stronach "/".
+            public DataAppearance GetAppearancePracaOkres() {
+            return GetAppearanceNorma(PracaOkres, PlanOkres);
+            }
+
+            public DataAppearance GetAppearancePracaRozl() {
+            return GetAppearanceNorma(PracaRozl, PlanRozl);
+            }
+
+            private DataAppearance GetAppearanceNorma(Time praca, Time plan) {
+            if (plan == Time.Zero)
+            return new DataAppearance { ForeColor = System.Drawing.Color.Black };
+            if (praca < plan)
+            return new DataAppearance { ForeColor = System.Drawing.Color.FromArgb(178, 34, 34) };
+            return new DataAppearance { ForeColor = System.Drawing.Color.FromArgb(27, 94, 32) };
             }
 
             private DataAppearance GetAppearance() {
