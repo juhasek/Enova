@@ -1,0 +1,2099 @@
+
+                                            //** Begin: Source **
+           public override IEnumerable<DefinicjaZestawieniaCzasu.Cell> GetCells(Pracownik pracownik, FromTo okres) {
+            if (this.okres != okres) {
+            this.indeks = 0;
+            this.okres = okres;
+            this.dct = null;
+            }
+						 
+						strefa = poprzedni != pracownik ? 0 : strefa+1;//
+            indeks = 0;// poprzedni != pracownik ? 0 : indeks + 1;
+            foreach (Date d in okres)
+            yield return new %NAZWA%Cell(pracownik, d, GetKalk, kalendarze.Where(_ => _.Value == pracownik).ElementAt(indeks).Key, okres, ext.Context, strefa, strefy[pracownik]);
+
+            poprzedni = pracownik;
+            }          
+					//	public Log log = new Log("Zestawienie czasu pracy SKA", true);
+						int strefa;//
+						Dictionary<Pracownik, int> strefy;//
+						ArrayList pracownicy;//
+
+ 					 %NAZWA%Extender ext = null;
+
+            public override object GetRows(DefinicjaZestawieniaCzasu.Extender pars) {
+						//	log.WriteLine("GEtROWS");
+            ext = (%NAZWA%Extender)pars;
+            var prac = ext.ListaPracownicy(true).ToArray();
+									pracownicy = new ArrayList();//
+						strefy = new Dictionary<Pracownik, int>(); //
+						FromTo okres = (FromTo)pars.Context[typeof(FromTo)];//	
+					//	foreach (Pracownik p in ext.ListaPracownicy(false)) {//
+			    //			int ilosc = 1;//
+			    //			KalkulatorPracy kalk = new KalkulatorPracy(p);//
+				  //  		kalk.LoadOkres(okres);//
+				 //   		foreach (Date data in okres) {//
+					//					int sp = kalk[data].Count();//
+					//					if (sp > ilosc) ilosc = sp;//
+			   // 			}
+				//		}
+							
+							
+            dokument = ext.Dokument;
+            kalendarze.Clear();
+            foreach(var poz in dokument.PozycjeCzas)
+            {
+            var p = poz.ZrodloPlanu.GetPracownik();
+						int ilosc = 1;
+			    	KalkulatorAktualizacjiPracy kalk = new KalkulatorAktualizacjiPracy(poz);//
+				    kalk.LoadOkres(okres);//
+				    		foreach (Date data in okres) {//
+										int sp = kalk[data].Count();//
+										if (sp > ilosc) ilosc = sp;//
+			    			}//
+			    			for (int i = 0; i < ilosc; i++)//
+				    				pracownicy.Add(p);//
+				   		 strefy.Add(p, ilosc);	//
+							
+
+            if(prac.Contains(p))
+            kalendarze.Add(poz, p);
+            }
+						//	log.WriteLine("GEtROWS koniec");	
+           // return kalendarze.Values.ToArray<Pracownik>();
+								return pracownicy;
+            }
+
+
+            int indeks = 0;
+            Pracownik poprzedni;
+            int tc;
+            FromTo okres;
+            Dictionary<PozycjaAktualizacjiCzasu, KalkulatorAktualizacjiPracy> dct;
+            DokumentAktualizacjiKalendarza dokument;
+            Dictionary<PozycjaAktualizacjiCzasu, Pracownik> kalendarze = new Dictionary<PozycjaAktualizacjiCzasu, Pracownik>();
+
+            KalkulatorAktualizacjiPracy GetKalk(PozycjaAktualizacjiCzasu pak) {
+            if (dct==null || dokument.Session.TouchCounter!=tc) {
+            dct = new Dictionary<PozycjaAktualizacjiCzasu, KalkulatorAktualizacjiPracy>();
+            tc = dokument.Session.TouchCounter;
+            }
+            KalkulatorAktualizacjiPracy kalk;
+            if (!dct.TryGetValue(pak, out kalk)) {
+            dct.Add(pak, kalk = new KalkulatorAktualizacjiPracy(pak));
+            kalk.LoadOkres(okres);
+            }
+            return kalk;
+            }//** End: Source **
+//** Begin: Cell **
+            Func<PozycjaAktualizacjiCzasu, KalkulatorAktualizacjiPracy> getKalk;
+            PozycjaAktualizacjiCzasu pak;
+            FromTo okres = FromTo.Empty;
+            Context context = null;
+
+						//Func<Pracownik, KalkulatorPracy> GetKalk;
+						int Strefa;//
+						int Strefy;//
+
+            public %NAZWA%Cell(Pracownik pracownik, Date data, Func<PozycjaAktualizacjiCzasu, KalkulatorAktualizacjiPracy> getKalk, PozycjaAktualizacjiCzasu pak, FromTo okres, Context context,int strefa, int strefy): base(pracownik, data) {
+            this.getKalk = getKalk;
+            this.pak = pak;
+            this.okres = okres;
+            this.context = context;
+						this.Strefa = strefa;//
+						this.Strefy = strefy;//
+            }
+
+            public PozycjaAktualizacjiCzasu GetPAK(){ return pak;}
+
+            object Get(Dzien d) {
+            var dp = d.ŹródłoCzasu as DzienPracyAktualizacja;
+            return dp != null ? dp : (object)d;
+            }
+
+            DzienPracyAktualizacja DzienPracy(bool add) {  //DzienPracy przejrzany i akceptowany
+            		var dzienPracy = Get(getKalk(pak)[Data]);
+
+            		if (dzienPracy is DzienPracyAktualizacja dp && dp.Pozycja == pak)
+            				return dp;
+            		else if(add)
+           		 {
+           				 if (!pak.Dokument.Okres.Contains(Data))
+            						throw new Exception("Nie można modyfikować dni poza okresem dokumentu: {0}".TranslateFormat(pak.Dokument.Okres));
+            				var dzień = pak.Session.AddRow(new DzienPracyAktualizacja(pak, Data));
+
+            				if(dzienPracy is DzienPracyAktualizacja da)
+           						 dzień.Copy(da);
+            				else if (dzienPracy is Dzien d && d.Praca != FromTimes.Empty)
+            						dzień.Copy(d);
+            				else
+            						pak.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja(dzień);
+
+            				return dzień;
+           		 }
+						
+            		return null;
+            }
+
+						// zmodyfikowno
+            DzienPracyAktualizacja DzienPracyData(Date data, bool add) {  //DzienPracy przejrzany i akceptowany
+            		var dzienPracy = Get(getKalk(pak)[data]);
+
+            		if (dzienPracy is DzienPracyAktualizacja dp && dp.Pozycja == pak)
+            				return dp;
+            		else if(add)
+           		 {
+           				 if (!pak.Dokument.Okres.Contains(data))
+            						throw new Exception("Nie można modyfikować dni poza okresem dokumentu: {0}".TranslateFormat(pak.Dokument.Okres));
+            				var dzień = pak.Session.AddRow(new DzienPracyAktualizacja(pak, Data));
+
+            				if(dzienPracy is DzienPracyAktualizacja da)
+           						 dzień.Copy(da);
+            				else if (dzienPracy is Dzien d && d.Praca != FromTimes.Empty)
+            						dzień.Copy(d);
+            				else
+            						pak.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja(dzień);
+
+            				return dzień;
+           		 }
+						
+            		return null;
+            }
+
+            bool Blokada() {
+            int liczbaDni = KadryModule.GetInstance(pak).Config.KadryNET.CzasPracy.EdycjaCzasuPracy.LiczbaDni;
+            if (liczbaDni > 0)
+            switch (KadryModule.GetInstance(pak).Config.KadryNET.CzasPracy.EdycjaCzasuPracy.Interpretacja) {
+            case Soneta.Kadry.Config.Interpretacja.OdPoczątku:
+            return (Data.FirstDayMonth() + liczbaDni) <= Data;
+            case Soneta.Kadry.Config.Interpretacja.PrzedKońcem:
+            return (Data.LastDayMonth() - liczbaDni) <= Data;
+            case Soneta.Kadry.Config.Interpretacja.OdPoczątkuNastępnego:
+            return (Data.AddMonths(1).FirstDayMonth() + liczbaDni) <= Data;
+            }
+            return false;
+            }
+						
+						enum TypDanych {//dodany Enum
+							Definicja = 0,
+							OdGodziny = 1,
+							Czas 		 = 2,
+							DoGodziny = 3,
+							CechaProjekt = 4,
+							CechaTask = 5,
+							CechaBryg = 6,
+							CechaEkwiwalent = 7,
+							CechaExpenditure = 8
+						};						
+
+						
+						object DaneStrefy(TypDanych typ) {
+							/*
+							List<object> list = new List<object>();
+						
+							DzienPracy dp = DzienPracy(false);
+							if (dp != null) {
+					        foreach (StrefaPracy sp in dp.Strefy)
+											list.Add(sp);
+							else {
+					        Dzien dzien = GetKalk(Pracownik)[Data];
+					        foreach (Dzien.Strefa sp in dzien)
+											list.Add(sp);
+							}
+								
+							//int strefa = -1;
+							for (int strefa = 0; strefa < list.Count; strefa++) 
+							{
+							}
+						*/
+							
+							var kalkPrac = (pak.ZrodloPlanu as Pracownik).Czasy.KalkPracy;
+							var dzien = kalkPrac[Data];
+	
+							int strefa = -1;
+							DzienPracyAktualizacja dp = DzienPracy(false);  //zmienione
+							if (dp != null) {
+					        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+											if (sp.ID >= 0)
+												if (++strefa == Strefa)
+														switch (typ) {
+																case TypDanych.Definicja:
+						            						return sp.Definicja;
+																case TypDanych.OdGodziny:
+																		return sp.OdGodziny;
+																case TypDanych.Czas:
+																		return sp.Czas;
+																case TypDanych.DoGodziny:	
+																		return sp.OdGodziny + sp.Czas;
+																case TypDanych.CechaProjekt:
+																		return sp.Features["Projekt"];
+																case TypDanych.CechaTask:
+																		return sp.Features["Task"];
+																case TypDanych.CechaBryg:
+																		return sp.Features["DodatekBryg"];
+																case TypDanych.CechaEkwiwalent:
+																		return sp.Features["EkwiwalentZaPranie"];
+																case TypDanych.CechaExpenditure:
+																		return sp.Features["Expenditure_organization"];
+														}
+					        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+											if (sp.ID < 0)
+												if (++strefa == Strefa)
+														switch (typ) {
+																case TypDanych.Definicja:
+						            						return sp.Definicja;
+																case TypDanych.OdGodziny:
+																		return sp.OdGodziny;
+																case TypDanych.Czas:
+																		return sp.Czas;
+																case TypDanych.DoGodziny:
+																		return sp.OdGodziny + sp.Czas;
+																case TypDanych.CechaProjekt:
+																		return sp.Features["Projekt"];
+																case TypDanych.CechaTask:
+																		return sp.Features["Task"];
+															  case TypDanych.CechaBryg:
+																		return sp.Features["DodatekBryg"];
+																case TypDanych.CechaEkwiwalent:
+																		return sp.Features["EkwiwalentZaPranie"];
+																case TypDanych.CechaExpenditure:
+																		return sp.Features["Expenditure_organization"];
+														}
+							}
+							else if ((pak.ZrodloPlanu as Pracownik).Module.Kalend.DniPracy.WgPracownik[pak.ZrodloPlanu as Pracownik].FirstOrDefault(d => d.Data == dzien.Data) is DzienPracy dzien2)
+							{
+								
+								var strefy = dzien2.Strefy ?? Enumerable.Empty<StrefaPracy>();
+					      //Dzien dzien =  getKalk(pak)[Data];// Dzien dzien = GetKalk(Pracownik)[Data];
+								//log2.WriteLine($"dzien {dzien} != null:" + (dzien != null));
+					        foreach (var sp in strefy)
+											if (++strefa == Strefa)
+													switch (typ) {
+															case TypDanych.Definicja:
+					            						return sp.Definicja;
+															case TypDanych.OdGodziny:
+																	return sp.OdGodziny;
+															case TypDanych.Czas:
+																	return sp.Czas;
+															case TypDanych.DoGodziny:
+																		return sp.OdGodziny + sp.Czas;
+															case TypDanych.CechaProjekt:
+															{
+																		return sp.Features["Projekt"] ;
+															}
+															case TypDanych.CechaTask:
+															{
+																		return sp.Features["Task"];
+															}
+															case TypDanych.CechaBryg:
+															{
+																		return sp.Features["DodatekBryg"];  
+															}//--
+															case TypDanych.CechaEkwiwalent:
+															{
+																		return sp.Features["EkwiwalentZaPranie"];
+															}
+															case TypDanych.CechaExpenditure:
+															{
+																		return sp.Features["Expenditure_organization"];
+															}
+													}
+							}
+									else {
+								
+								//var kalkPrac = (pak.ZrodloPlanu as Pracownik).Czasy.KalkPracy;
+								//var dzien = kalkPrac[Data];
+								//var dzien2 = (pak.ZrodloPlanu as Pracownik).Module.Kalend.DniPracy.WgPracownik[pak.ZrodloPlanu as Pracownik].FirstOrDefault(d => d.Data == dzien.Data);
+								//var strefy = dzien2?.Strefy ?? Enumerable.Empty<StrefaPracy>();
+					      Dzien dzienx =  getKalk(pak)[Data];// Dzien dzien = GetKalk(Pracownik)[Data];
+								//var log2 = new Log("testabc", true);
+								//log2.WriteLine($"dzien {dzien} != null:" + (dzien != null));
+					        foreach (Dzien.Strefa sp in dzienx)
+											if (++strefa == Strefa)
+													switch (typ) {
+															case TypDanych.Definicja:
+					            						return sp.Definicja;
+															case TypDanych.OdGodziny:
+																	return sp.OdGodziny;
+															case TypDanych.Czas:
+																	return sp.Czas;
+															case TypDanych.DoGodziny:
+																		return sp.OdGodziny + sp.Czas;
+															case TypDanych.CechaProjekt:
+															{
+																		return null;
+															}
+															case TypDanych.CechaTask:
+															{
+																		return null;
+															}
+															case TypDanych.CechaBryg:
+															{
+																		return false;  
+															}
+															case TypDanych.CechaEkwiwalent:
+															{
+																		return null;
+															}
+															case TypDanych.CechaExpenditure:
+															{
+																		return null;
+															}
+													}
+							}
+
+					    return null;
+					}
+
+
+
+//public Log log= new Log("ZestawienieAlgorytmKomorki", true);
+//public Log log2= new Log("ZestawienieAlgorytmKomorkiOD", true);
+
+
+[YAxis]
+[Priority(0)]
+[Caption("Kod")]
+[DefaultWidth(8)]
+public string Kod {
+		get { return Pracownik.Kod; }
+}
+
+[YAxis]
+[Priority(110)]
+[Caption("Pracownik")]
+[DefaultWidth(25)]
+public string Osoba {
+		get { return Strefa == 0 ? Pracownik.NazwiskoImię.ToString() : " "; }
+}
+
+[YAxis]
+[Priority(120)]
+[Caption("Strefa")]
+[DefaultWidth(5)]
+public string Numer {
+		get { return (Strefa+1).ToString(); }
+}
+
+
+[Field]
+[Priority(10)]
+[Caption("Definicja")]
+[DefaultWidth(12)]
+public DefinicjaStrefy Definicja { 
+    get {
+
+        // Poprawka 31.08.2026 - zgłoszenie klienta: dzień z nieobecnością pokazywał strefę
+        // "Nieobecność" zduplikowaną we wszystkich kolumnach siatki (Strefa 0,1,2...), bo warunek
+        // na nb sprawdzał się PRZED sięgnięciem po realne dane i ignorował, która kolumna jest
+        // renderowana. Poprawka 31.08.2026 (2) - to samo ograniczone do Strefa == 0 nadal było
+        // błędne dla dnia mieszanego (praca + nieobecność): kolumna 0 bywa realną strefą pracy
+        // (np. "Praca zdalna regulaminowa"), a wymuszone "NB" ją przesłaniało. Realne dane
+        // (DaneStrefy) mają zawsze pierwszeństwo - "NB" pokazujemy tylko jako fallback dla
+        // kolumny 0, gdy dla niej NIE ma żadnej realnej strefy (np. dzień jeszcze
+        // niezainicjowany).
+				object ds = DaneStrefy(TypDanych.Definicja);
+        if (ds != null)
+            return (DefinicjaStrefy)ds;
+
+			  INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+        if (nb != null && Strefa == 0)
+            return KalendModule.GetInstance(Pracownik).DefinicjeStref.WgKodu["NB"].First();
+
+        return null;
+    }
+    set {// log.WriteLine($"Def Rozpoczęcie dodawania");
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+				//log.WriteLine($"Def Rozpoczęcie dodawania1");
+				DzienPracyAktualizacja dp = DzienPracy(true);
+				//log.WriteLine($"Def Rozpoczęcie dodawania2");
+	
+			
+			
+				if (value == null)
+			  {  	//log.WriteLine($" Def USUwanie--------CZy naPewno");
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa)
+										sp.Delete();
+        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);//Nieobecnosc nb = (Nieobecnosc)getKalk(Pracownik).Nieobecnosc(Data);
+        		if (nb != null)
+					{
+								nb.Delete();
+						
+					}
+						return;
+				}
+				//log.WriteLine($"Def Rozpoczęcie dodawania3");
+				if (dp.Strefy.Count == Strefa) 
+				{ 			//log.WriteLine($"Def Rozpoczęcie dodawania gdy nie ma 31");
+						StrefaPracyAktualizacja sp = new StrefaPracyAktualizacja(dp);
+					//	log.WriteLine($"Def Rozpoczęcie dodawania gdy nie ma 31");
+						KalendModule.GetInstance(Pracownik).StrefyPracyAkt.AddRow(sp);//KalendModule.GetInstance(Pracownik).StrefyPracy.AddRow(sp);/
+						sp.Definicja = value;
+						return;
+				
+				}
+        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+						if (++strefa == Strefa) 
+						{
+								//log.WriteLine($"Def Zamiana dodawania właściwe");	
+            		if (!sp.IsReadOnly())
+								{
+									//	log.WriteLine($"Def Zamiana bez readOnly dodawania właściwe");		
+                		sp.Definicja = value;
+								}
+            		break;
+						}
+		//	log.WriteLine($"Def Dodawanie koniec");
+    }
+}
+
+// TK - wybór strefy tylko z oznaczonych cechą WidocznaWZestawieniach
+
+public object GetListDefinicja()
+{
+	List<DefinicjaStrefy> lista = new List<DefinicjaStrefy>();
+	foreach(DefinicjaStrefy st in KalendModule.GetInstance(Pracownik).DefinicjeStref)
+		if(st.Features.GetBool("WidocznaWZestawieniach"))
+			lista.Add(st);
+		return lista.ToArray();
+}
+
+[Field]
+[Priority(20)]
+[Caption("Od")]
+[DefaultWidth(4)]
+public string OdGodziny { 
+    get {
+        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
+        // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
+        //
+        // Poprawka 31.08.2026 (2) - zgłoszenie klienta: dla realnej strefy "Nieobecność" (nie
+        // tylko dla fallbacku kolumny 0) w Od/Do/Czas ma być widoczne, jakiego rodzaju to
+        // nieobecność (np. "OPIEKA"), zamiast pustych/zerowych godzin tej strefy.
+        object dsDef = DaneStrefy(TypDanych.Definicja);
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.Kod == "NB") {
+            INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
+            if (nbStrefa != null)
+                return nbStrefa.Definicja.Kod;
+        }
+
+				object ds = DaneStrefy(TypDanych.OdGodziny);
+			if(ds != null)
+			{
+				if(ds is Time from && from >= new Time(24,0))
+					return "+" + (from - new Time(24,0)).ToString();
+				return ds.ToString();
+			}
+
+        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+        if (nb != null && Strefa == 0)
+            return nb.Definicja.Kod;
+
+			return string.Empty;
+    }
+    set {
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+				if (value == string.Empty) {
+						DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa)
+										sp.Delete();
+        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);
+        		if (nb != null)
+								nb.Delete();
+						return;
+				}
+        if (Char.IsNumber(value, 0)) {
+            Time val = Time.Parse(value);
+            DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa) {
+		            		if (!sp.Praca.IsReadOnlyOdGodziny())
+		                		sp.Praca.OdGodziny = val;
+		            		break;
+								}
+        }
+        else {
+            DefinicjaNieobecnosci dn = null;
+            foreach (DefinicjaNieobecnosci d in KalendModule.GetInstance(Pracownik).DefNieobecnosci.WgKodu[value]) {
+                dn = d;
+                break;
+            }
+            if (dn == null)
+                return;
+            DzienPracyAktualizacja dp = DzienPracy(false);
+            if (dp != null) 
+                dp.Delete();
+            NieobecnośćPracownika np = new NieobecnośćPracownika(Pracownik);
+            KalendModule.GetInstance(Pracownik).Nieobecnosci.AddRow(np);
+            np.Definicja = dn;
+            np.Okres = new FromTo(Data, Data);
+        }
+    }
+}
+//--------------
+[Field]
+[Priority(21)]
+[Caption("Do")]
+[DefaultWidth(4)]
+public string DoGodziny { 
+    get {
+        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
+        // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
+        //
+        // Poprawka 31.08.2026 (2) - patrz komentarz przy OdGodziny.get (informacja o rodzaju
+        // nieobecności w Od/Do/Czas dla realnej strefy "Nieobecność", nie tylko dla fallbacku)
+        object dsDef = DaneStrefy(TypDanych.Definicja);
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.Kod == "NB") {
+            INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
+            if (nbStrefa != null)
+                return nbStrefa.Definicja.Kod;
+        }
+
+				object ds = DaneStrefy(TypDanych.DoGodziny);
+			if(ds != null)
+			{
+				if(ds is Time to && to >= new Time(24,0))
+					return "+" + (to - new Time(24,0)).ToString();
+				return ds.ToString();
+			}
+
+        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+        if (nb != null && Strefa == 0)
+            return nb.Definicja.Kod;
+
+			var od = this.OdGodziny;
+			if (od == string.Empty)
+			  return "\u00A0";
+
+			return string.Empty;
+
+    } 
+    set {
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+				if (value == string.Empty) {
+						DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa)
+										sp.Delete();
+        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);
+        		if (nb != null)
+								nb.Delete();
+						return;
+				}
+        if (Char.IsNumber(value, 0)) {
+            Time val = Time.Parse(value);
+            DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa) {
+		            		if (!sp.Praca.IsReadOnlyOdGodziny())
+		                		sp.Praca.DoGodziny = val;
+		            		break;
+								}
+        }
+        else {
+            DefinicjaNieobecnosci dn = null;
+            foreach (DefinicjaNieobecnosci d in KalendModule.GetInstance(Pracownik).DefNieobecnosci.WgKodu[value]) {
+                dn = d;
+                break;
+            }
+            if (dn == null)
+                return;
+            DzienPracyAktualizacja dp = DzienPracy(false);
+            if (dp != null) 
+                dp.Delete();
+            NieobecnośćPracownika np = new NieobecnośćPracownika(Pracownik);
+            KalendModule.GetInstance(Pracownik).Nieobecnosci.AddRow(np);
+            np.Definicja = dn;
+            np.Okres = new FromTo(Data, Data);
+        }
+    }
+}
+
+[Field]
+[Priority(30)]
+[Caption("Czas")]
+[DefaultWidth(4)]
+public string Czas { 
+    get {
+        // Poprawka 31.08.2026 - patrz komentarz przy Definicja.get powyżej (kolejność: realne dane
+        // strefy mają pierwszeństwo, "NB" tylko jako fallback dla kolumny 0 bez realnych danych)
+        //
+        // Poprawka 31.08.2026 (2) - patrz komentarz przy OdGodziny.get (informacja o rodzaju
+        // nieobecności w Od/Do/Czas dla realnej strefy "Nieobecność", nie tylko dla fallbacku)
+        object dsDef = DaneStrefy(TypDanych.Definicja);
+        if (dsDef is DefinicjaStrefy defStrefy && defStrefy.Kod == "NB") {
+            INieobecnosc nbStrefa = getKalk(pak).Nieobecnosc(Data);
+            if (nbStrefa != null)
+                return nbStrefa.Definicja.Kod;
+        }
+
+				object ds = DaneStrefy(TypDanych.Czas);
+				if (ds != null)
+					return ds.ToString();
+
+        INieobecnosc nb = getKalk(pak).Nieobecnosc(Data);
+        if (nb != null && Strefa == 0)
+            return nb.Definicja.Kod;
+
+				return string.Empty;
+    }
+    set {
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+				if (value == string.Empty) {
+						DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa)
+										sp.Delete();
+        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);
+        		if (nb != null)
+								nb.Delete();
+						return;
+				}
+        if (Char.IsNumber(value, 0)) {
+            Time val = Time.Parse(value);
+            DzienPracyAktualizacja dp = DzienPracy(true);
+						dp.SetEdit();
+						dp.Pozycja.SetEdit();
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa) {
+		            		if (!sp.Praca.IsReadOnlyCzas())
+		                		sp.Praca.Czas = val;
+		            		break;
+								}
+        }
+        else {
+            DefinicjaNieobecnosci dn = null;
+            foreach (DefinicjaNieobecnosci d in KalendModule.GetInstance(Pracownik).DefNieobecnosci.WgKodu[value]) {
+                dn = d;
+                break;
+            }
+            if (dn == null)
+                return;
+            DzienPracyAktualizacja dp = DzienPracy(false);
+            if (dp != null) 
+                dp.Delete();
+            NieobecnośćPracownika np = new NieobecnośćPracownika(Pracownik);
+            KalendModule.GetInstance(Pracownik).Nieobecnosci.AddRow(np);
+            np.Definicja = dn;
+            np.Okres = new FromTo(Data, Data);
+        }
+    }
+}
+
+public bool IsReadOnlyCzas() {
+    return Czas != "" && !Char.IsNumber(Czas, 0);
+}
+
+
+//--------
+
+public object GetListCechaProjekt(){
+	
+	var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["Projekt"].ElementySlownika.Cast<ElemSlownika>().ToList();
+	
+	//var lu = ElemSlownikow.GetElementySlownikaLookup(this.Pracownik, "SlownikProjektow");
+	//lu.ComboBox = true;
+	//return lu;
+	
+  return new LookupInfo.EnumerableItem("Wow", elementy, "Symbol") { ComboBox = true };
+}
+
+
+//CechaSPSlownik
+[Field]
+[Priority(41)]
+[Caption("Projekt")]
+[DefaultWidth(5)]
+public Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy CechaProjektProxy 
+{ 
+    get 
+		{
+			return Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy.Get(this.CechaProjekt);
+		}
+		set
+		{
+			this.CechaProjekt = Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy.Set(value);
+		}
+}
+public object GetListCechaProjektProxy(){
+	var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["Projekt"].ElementySlownika.Cast<ElemSlownika>().ToList();
+  return new LookupInfo.EnumerableItem("Wow", elementy.Select(e=>new Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy(e)).ToArray(), new[]{"Symbol"}) { ComboBox = true };
+}
+
+
+public ElemSlownika CechaProjekt { 
+    get {
+       
+				var ds = (ElemSlownika)DaneStrefy(TypDanych.CechaProjekt);
+			return ds;
+			//	return (ElemSlownika)ds;
+				//return ElemSlownikow.GetElementySlownika(Pracownik.Session, "SlownikProjektow").Cast<ElemSlownika>().Where(e => e == ds).FirstOrDefault();
+			
+			
+    } 
+    set {
+			
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+			
+			
+			
+			
+				if (value == null) {
+					
+						DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa)
+										sp.Features["Projekt"] = null;
+        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);
+        		if (nb != null)
+								nb.Delete();
+						return;
+				}
+        if (value != null) {
+					
+            DzienPracyAktualizacja dp = DzienPracy(true);
+					
+					/*if(Pracownik.Kod == "SCE10997" && dp.Data == new Date(2026,6,24))
+						throw new Exception("str TEST " + dp.Strefy.Count);*/
+					
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa) {
+		            		if (!sp.IsReadOnly())
+		                		sp.Features["Projekt"] = value;
+		            		break;
+								}
+        }
+    }
+}
+
+public object GetListCechaTask(){
+	// Poprawka 31.08.2026 - zgłoszenie klienta: wyszukiwanie w liście Task miało być po kodzie
+	// (Symbol), a nie po nazwie - analogicznie do Projektu (GetListCechaProjektProxy, "Symbol").
+	var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["Task"].ElementySlownika.Cast<ElemSlownika>().ToList();
+  return new LookupInfo.EnumerableItem("Wow", elementy, "Symbol") { ComboBox = true };
+}
+
+//CechaSPSlownik
+[Field]
+[Priority(42)]
+[Caption("Task")]
+[DefaultWidth(4)]
+public ElemSlownika CechaTask { 
+    get {
+       
+				var ds = (ElemSlownika)DaneStrefy(TypDanych.CechaTask);
+			return ds;			
+    } 
+    set {
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+				if (value == null) {
+						DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa)
+										sp.Features["Task"] = null;
+        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);
+        		if (nb != null)
+								nb.Delete();
+						return;
+				}
+        if (value != null) {
+        	DzienPracyAktualizacja dp = DzienPracy(true);
+		      foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+						if (++strefa == Strefa) {
+	        		if (!sp.IsReadOnly())
+	            		sp.Features["Task"] = value;
+	        		break;
+						}
+        }
+    }
+}
+
+//________________
+
+
+public object GetListCechaExpenditure(){
+	
+	var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["Expenditure organization"].ElementySlownika.Cast<ElemSlownika>().ToList();	
+  return new LookupInfo.EnumerableItem("Wow", elementy, "Nazwa") { ComboBox = true };
+}
+
+[Field]
+[Priority(43)]
+[Caption("Expenditure")]
+[DefaultWidth(6)]
+public ElemSlownika CechaExpenditure { 
+    get {
+       
+				var ds = (ElemSlownika)DaneStrefy(TypDanych.CechaExpenditure);
+			return ds;			
+    } 
+    set {
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+				if (value == null) {
+						DzienPracyAktualizacja dp = DzienPracy(true);
+		        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa)
+										sp.Features["Expenditure_organization"] = null;
+        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);
+        		if (nb != null)
+								nb.Delete();
+						return;
+				}
+        if (value != null) {
+        	DzienPracyAktualizacja dp = DzienPracy(true);
+		      foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+						if (++strefa == Strefa) {
+	        		if (!sp.IsReadOnly())
+	            		sp.Features["Expenditure_organization"] = value;
+	        		break;
+						}
+        }
+    }
+}
+
+
+[Field]
+[Priority(44)]
+[Caption("DodatekBryg")]
+[DefaultWidth(4)]
+public bool CechaBryg { 
+    get {
+       // log.WriteLine($"CechaBryg Get");
+				var ds = DaneStrefy(TypDanych.CechaBryg);
+			//log.WriteLine($"CechaBryg Get {ds}");
+				return ds == null ? false : (bool)ds;
+
+    } 
+    set {
+        if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				int strefa = -1;
+
+        if (value != null) {
+        DzienPracyAktualizacja dp = DzienPracy(true);
+	      foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+					if (++strefa == Strefa) {
+	          		if (!sp.IsReadOnly() && !sp.Definicja.Nazwa.Contains("Akord"))
+	              		sp.Features["DodatekBryg"] = value;
+	          		break;
+					}
+        }
+    }
+}
+
+
+
+public object GetListCechaEkwiwalent(){
+	
+	var elementy = Pracownik.Session.GetKsiega().DefSlownikow.WgNazwy["EkwiwalentZaPranie"].ElementySlownika.Cast<ElemSlownika>().ToList();	
+  return new LookupInfo.EnumerableItem("Wow", elementy, "Nazwa") { ComboBox = true };
+}
+
+//CechaSPSlownik
+[Field]
+[Priority(45)]
+[Caption("Ekwiwalent")]
+[DefaultWidth(4)]
+public ElemSlownika CechaEkwiwalent { 
+    get {
+       
+				var ds = (ElemSlownika)DaneStrefy(TypDanych.CechaEkwiwalent);
+			return ds;			
+    } 
+    set {
+        if(Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+				foreach(Date data in pak.Dokument.Okres)
+				{
+					DzienPracyAktualizacja dp = DzienPracyData(data,true);
+					if(dp == null)
+						continue;
+					
+					int strefa = -1;
+					if (value == null) {
+							//DzienPracyAktualizacja dp = DzienPracy(true);
+			        foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+									if (++strefa == Strefa)
+											sp.Features["EkwiwalentZaPranie"] = null;
+	        		Nieobecnosc nb = (Nieobecnosc)getKalk(pak).Nieobecnosc(Data);
+	        		if (nb != null)
+									nb.Delete();
+							return;
+					}
+					else
+					{
+		        //if (value != null) {
+		        	//DzienPracyAktualizacja dp = DzienPracy(true);
+				      foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+								if (++strefa == Strefa) {
+			        		if (!sp.IsReadOnly())
+			            		sp.Features["EkwiwalentZaPranie"] = value;
+			        		break;
+								}
+		       }
+				}
+    }
+}
+
+
+//________________
+
+
+
+/*
+
+            [YAxis]
+            [Priority(101)]
+            [Caption("Umowa")]
+            [DefaultWidth(20)]
+            public string Umowa {
+            get {
+            switch(pak.ZrodloPlanu){
+            case Pracownik prac:
+            return "Etat";
+            case UmowaZewnetrzna uz:
+            return uz.Numer.ToString();
+            case Umowa um:
+            return um.Numer.ToString();
+            default:
+            break;
+            }
+
+            return Pracownik.Kod; }
+            }
+
+            [YAxis]
+            [Priority(102)]
+            [Caption("Praca / Plan (okres)")]
+            [DefaultWidth(14)]
+            public string NormaO => NormaOkres(okres);
+
+            [YAxis]
+            [Priority(103)]
+            [Caption("Praca / Plan (rozl)")]
+            [DefaultWidth(13)]
+            public string NormaR => NormaOkres(Pracownik.WyliczOkresRoliczeniowyNadgodzin(Data));
+
+            string NormaOkres(FromTo okres){
+            var kalk = getKalk(pak);
+            return kalk.Praca(okres).Czas + " / " + kalk.Plan.Norma(okres).Czas;
+            }
+*/
+            /*
+            [Field]
+            [Priority(10)]
+            [Caption("Typ dnia")]
+            [DefaultWidth(8)]
+            public DefinicjaDnia Definicja {
+            get { return getKalk(pak)[Data].Definicja; }
+            set {
+            if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+            if (value!=null) {
+            var dp = DzienPracy(true);
+            dp.Definicja = value;
+            }
+            }
+            }
+            */
+/*
+            [Field]
+            [Priority(15)]
+            [Caption("Info")]
+            [DefaultWidth(3)]
+            public string Info {
+            get {
+            var prac = pak.ZrodloPlanu.GetPracownik();
+            foreach (Nieobecnosc nb in prac.Nieobecnosci.GetIntersectedRows(FromTo.Day(Data)))
+            {
+            if(nb.Definicja.Przyczyna == PrzyczynaNieobecnosci.DelegacjaSłużbowa)
+            return string.IsNullOrEmpty(nb.Definicja.Kod) ? "Del" : nb.Definicja.Kod;
+
+            return string.IsNullOrEmpty(nb.Definicja.Kod) ? "Nb" : nb.Definicja.Kod;
+            }
+
+            var rc = RowCondition.Empty;
+            rc &= RowCondition.IsIntersected("Okres", FromTo.Day(Data));
+            foreach(WniosekUrlopowy wn in prac.WnioskiUrlopowe[rc].ToArray()){
+            switch (wn.Stan)
+            {
+            case StanWnioskuUrlopowego.Oczekujący:
+            return "OWn";
+            default:
+            break;
+            }
+            }
+
+            var dp = DzienPracy(false);
+            if (dp!=null)
+            if(dp.Strefy.Any(_ => _.Definicja.PracaZdalna))
+            return "PZ";
+            else if(dp.Strefy.Any(_ => _.Definicja.Guid == DefinicjaStrefy.DelegacjaSluzbowa))
+            return "Del";
+
+            var plan = getKalk(pak).Plan[Data]?.Źródło;
+            if(plan!=null && plan is DzienKalendarzaBase dk){
+            if(dk.Strefy.Any(_ => _.Definicja.PracaZdalna))
+            return "PZ";
+            else if(dk.Strefy.Any(_ => _.Definicja.Guid == DefinicjaStrefy.DelegacjaSluzbowa))
+            return "Del";
+            }
+
+            return "";
+            }
+            }
+
+
+            [Field]
+            [Priority(20)]
+            [Caption("Od")]
+            [DefaultWidth(4)]
+            public string OdGodziny {
+            get { return getKalk(pak)[Data].OdGodziny.ToString(); }
+            set {
+            if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+            Time val = Time.Parse(value);
+            if (val==Time.Empty || val<Time.Zero) {
+            var dp = DzienPracy(false);
+            if (dp!=null)
+            dp.Delete();
+            }
+            else {
+            var dp = DzienPracy(true);
+            if (!dp.Praca.IsReadOnlyOdGodziny())
+            dp.Praca.OdGodziny = val;
+            }
+            }
+            }
+
+            [Field]
+            [Priority(30)]
+            [Caption("Czas")]
+            [DefaultWidth(5)]
+            public string Czas {
+            get { return getKalk(pak)[Data].Czas.ToString(); }
+            set {
+            if (Blokada())
+            throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+            Time val = Time.Parse(value);
+            if (val==Time.Empty || val<Time.Zero) {
+            var dp = DzienPracy(false);
+            if (dp!=null)
+            dp.Delete();
+            }
+            if (val==Time.Zero)
+            Soneta.Core.Tools.KillAll(DzienPracy(true).Strefy);
+
+            else {
+            var dp = DzienPracy(true);
+            if (!dp.Praca.IsReadOnlyCzas())
+            dp.Praca.Czas = val;
+            }
+            DefinicjaZestawieniaCzasu.Extender.ForceReloadRows = true;
+            pak.Session.InvokeChanged();
+            }
+            }
+*/
+
+            public DataAppearance GetAppearanceInfo() {
+            return GetAppearance();
+            }
+
+            public DataAppearance GetAppearanceDefinicja() {
+            return GetAppearance();
+            }
+
+            public DataAppearance GetAppearanceOdGodziny() {
+            return GetAppearance();
+            }
+
+            public DataAppearance GetAppearanceCzas() {
+            return GetAppearance();
+            }
+
+						public DataAppearance GetAppearanceDoGodziny() {
+            return GetAppearance();
+            }
+							
+						public DataAppearance GetAppearanceCechaProjekt() {
+            return GetAppearance();
+            }							
+
+					  public DataAppearance GetAppearanceCechaTask() {
+            return GetAppearance();
+            }		
+					  public DataAppearance GetAppearanceCechaBryg() {
+            return GetAppearance();
+            }	
+
+
+            private DataAppearance GetAppearance() {
+            return new DataAppearance { BackColor = GetBackColor(), ForeColor = GetForeColor() };
+            }
+
+            private System.Drawing.Color GetBackColor() {
+	            if (!pak.Dokument.Okres.Contains(Data) ||
+	            !pak.ZrodloPlanu.GetPlanOkresZatrudnienia(FromTo.Day(Data)).Contains(Data))
+	            return Soneta.Kalend.KoloryKalendarza.DzieńPozaOkresemEdycji;
+	
+	            var dzienPlanu = Get(getKalk(pak)[Data]);
+	            if(dzienPlanu is Dzien dz){
+		            var strefyNb = dz?.Where(_ => _.Definicja.OznaczaNieobecnosc).ToArray();
+		            if((strefyNb?.Length ?? 0) > 0){
+		            int c = strefyNb.First().Definicja.BackColor;
+		            if (c != 0)
+		            return System.Drawing.Color.FromArgb(c);
+		            else
+		            return System.Drawing.Color.Orange;
+		            }
+		            if (dz != null && dz.Definicja != null) {
+		            int c = dz.Definicja.BackColor;
+		            if (c != 0)
+		            return System.Drawing.Color.FromArgb(c);
+		
+			            switch (dz.Definicja.Typ) {
+			            case TypDnia.Wolny:
+			            return System.Drawing.Color.Pink; //Soneta.Kalend.KoloryKalendarza.DzieńWolnyTło;
+			            case TypDnia.Świąteczny:
+			            return System.Drawing.Color.Red; // Soneta.Kalend.KoloryKalendarza.DzieńŚwiątecznyTło;
+			            }
+		            }
+            	}
+
+	            if (dzienPlanu is DzienPracyAktualizacja dp){
+								
+								KalkulatorAktualizacjiPracy kap = new KalkulatorAktualizacjiPracy(dp.Pozycja);
+								Dzien dzien = kap.Plan[dp.Data];
+								var weekend = dp.Data.DayOfWeek;
+								//if(weekend == DayOfWeek.Saturday || weekend == DayOfWeek.Sunday)
+								if(dzien.Definicja.Typ == TypDnia.Świąteczny)
+									return System.Drawing.Color.Red;
+								
+		            var strefyNb = dp.Strefy.Where(_ => _.Definicja.OznaczaNieobecnosc).ToArray();
+		            if(strefyNb.Length > 0){
+		            int c = strefyNb.First().Definicja.BackColor;
+		            if (c != 0)
+		            	return System.Drawing.Color.FromArgb(c);
+		            else
+		            	return System.Drawing.Color.Orange;
+		            }
+		            if(dp.Pozycja == pak)
+								{
+		            	return KoloryKalendarza.DzieńPracyZmiana;
+								}
+		            else
+		            	return KoloryKalendarza.DzieńPracyZmianaInnyKalendarz;
+	            }
+							
+	            	return System.Drawing.Color.White;
+            }
+
+            private System.Drawing.Color GetForeColor() {
+            Dzien dz = getKalk(pak)[Data];
+            var strefyNb = dz?.Where(_ => _.Definicja.OznaczaNieobecnosc).ToArray();
+            if((strefyNb?.Length ?? 0) > 0){
+            int c = strefyNb.First().Definicja.ForeColor;
+            if (c != 0)
+            return System.Drawing.Color.FromArgb(c);
+            }
+            if (dz != null && dz.Definicja != null) {
+            int c = dz.Definicja.ForeColor;
+            if (c != 0)
+            return System.Drawing.Color.FromArgb(c);
+            switch (dz.Definicja.Typ) {
+            case TypDnia.Wolny:
+            return System.Drawing.Color.Red; // System.Drawing.Color.Black;
+            case TypDnia.Świąteczny:
+            return System.Drawing.Color.Black;
+            default:
+            return System.Drawing.Color.Navy;
+            }
+            }
+            return System.Drawing.Color.DeepPink;
+            }//** End: Cell **
+//** Begin: Extender **
+							public Pracownik Pracownicy;//
+	            Pracownik pracownicy;
+	           // [DefaultWidth(30)]
+	           // [Flow]
+	          //  public Pracownik Pracownicy {
+	          //  get { return pracownicy; }
+	          //  set {
+	          //  pracownicy = value;
+	          //  OnChanged(EventArgs.Empty);
+	           // }
+	          //  }
+							public Wydzial Wdz;//
+	            Wydzial wdz;
+	           // [DefaultWidth(40)]
+	          //  [Flow]
+	          //  public Wydzial Wdz {
+	         //   get { return wdz; }
+	         //   set {
+	          //  wdz = value;
+	          //  OnChanged(EventArgs.Empty);
+	          //  }
+	          //  }
+	
+							//public Log lg= new Log("CechaZasilanie", true);
+	
+	            Dictionary<string, List<string>> pracownicyLista = new Dictionary<string, List<string>>();
+	            DokumentAktualizacjiKalendarza.CzasuPracy dokument;
+	            public DokumentAktualizacjiKalendarza Dokument => dokument;
+	
+	
+							
+	            public View ListaPracownicy(bool wybrany) {
+	            Context.Get(out dokument);
+	            pracownicyLista.Clear();
+	
+	            foreach(var zrodlo in dokument.PozycjeCzas.Select(_ => _.ZrodloPlanu).ToArray()){
+	            Wydzial w = zrodlo.GetWydzial();
+	            string key = zrodlo.GetPracownik().Guid.ToString();
+	            if(!pracownicyLista.ContainsKey(key))
+	            pracownicyLista.Add(key, new List<string>());
+	            string val = w != null ? w.Guid.ToString() : "";
+	            if(!pracownicyLista[key].Contains(val))
+	            pracownicyLista[key].Add(val);
+	            }
+	
+	            View v = KadryModule.GetInstance(this).Pracownicy.CreateView();
+	            v.Condition &= new FieldCondition.In("Guid", pracownicyLista.Keys.ToArray());
+	            if (wybrany && Pracownicy!=null)
+	            v.Condition &= new FieldCondition.Equal("Guid", Pracownicy.Guid);
+	            if (wdz!=null){
+	            List<string> wydzialy = new List<string> { wdz.Guid.ToString() };
+	            wydzialy.AddRange(wdz.WszystkiePodwydziały.Cast<Wydzial>().Where(w => !w.Blokada).Select(w => w.Guid.ToString()));
+	            v.Condition &= new FieldCondition.In("Guid", pracownicyLista.Where(p => wydzialy.Any(wwww => p.Value.Contains(wwww))).Select(p => p.Key).Distinct().ToArray());
+	            }
+	            return v;
+	            }
+	
+	            public LookupInfo GetListPracownicy() {
+	            LookupInfo li = new LookupInfo(ListaPracownicy(false));
+	            li.ComboBox = true;
+	            return li;
+	            }
+							
+	            bool Blokada(Context context, Date Data) {
+	            int liczbaDni = KadryModule.GetInstance(context).Config.KadryNET.CzasPracy.EdycjaCzasuPracy.LiczbaDni;
+	            if (liczbaDni > 0)
+	            switch (KadryModule.GetInstance(context).Config.KadryNET.CzasPracy.EdycjaCzasuPracy.Interpretacja) {
+	            case Soneta.Kadry.Config.Interpretacja.OdPoczątku:
+	            return (Data.FirstDayMonth() + liczbaDni) <= Data;
+	            case Soneta.Kadry.Config.Interpretacja.PrzedKońcem:
+	            return (Data.LastDayMonth() - liczbaDni) <= Data;
+	            case Soneta.Kadry.Config.Interpretacja.OdPoczątkuNastępnego:
+	            return (Data.AddMonths(1).FirstDayMonth() + liczbaDni) <= Data;
+	            }
+	            return false;
+	            }
+	
+	
+	
+	//-----------------------------------
+	
+	FromTo okres = FromTo.Empty;
+	[Priority(110)]
+	[Group("Strefa")]
+	[Caption("Okres")]
+	[DefaultWidth(20)]
+	[Field]
+	public FromTo Okres {
+	    get { return okres; }
+	    set {
+	        okres = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	DefinicjaStrefy definicja;
+	[Priority(120)]
+	[Group("Strefa")]
+	[Caption("Definicja")]
+	[DefaultWidth(30)]
+	[Field]
+	public DefinicjaStrefy Definicja {
+	    get { return definicja; }
+	    set {
+	        definicja = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	public LookupInfo GetListDefinicja() {
+	    Soneta.Business.View v = Soneta.Kalend.KalendModule.GetInstance(this).DefinicjeStref.CreateView();
+			v.Condition &= new FieldCondition.Equal("Features.WidocznaWZestawieniach", true); // TK - wybór stref oznaczonych cechą
+	    LookupInfo li = new LookupInfo(v);
+	    li.ComboBox = true;
+	    return li;
+	}
+	
+	Time odGodziny = Time.Empty;
+	[Priority(130)]
+	[Group("Strefa")]
+	[Caption("Od godziny")]
+	[Field]
+	public Time OdGodziny {
+	    get { return odGodziny; }
+	    set {
+	        odGodziny = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	Time czas;
+	[Priority(140)]
+	[Group("Strefa")]
+	[Caption("Czas")]
+	[DefaultWidth(15)]
+	[Field]
+	public Time Czas {
+	    get { return czas; }
+	    set {
+	        czas = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	bool pomin;
+	[Priority(150)]
+	[Group("Strefa")]
+	[Caption("Pomiń wolne")]
+	[Field]
+	public bool Pomin {
+	    get { return pomin; }
+	    set {
+	        pomin = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	public Log log = new Log("Zestawienie", true);
+	
+	
+	 object Get(Dzien d) {
+	            var dp = d.ŹródłoCzasu as DzienPracyAktualizacja;
+	            return dp != null ? dp : (object)d;
+	            }
+	
+	 public bool IsEnabledWstawStrefe() => dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Wypełniany;
+	
+	[Priority(160)]
+	[Command]
+	[Group("Strefa")]
+	[Caption("Przypisz")]
+	[Action("Przypisz2", Mode =ActionMode.NonAccept)]
+	public object WstawStrefe([Context]Context context) {
+			if(dokument.Stan != StanyDokumentuAktulizacjiKalendarza.Wypełniany) return null;
+		
+	    using (ITransaction t = context.Session.Logout(true)) {
+				List<Pracownik> pojedynczyPracownicy = new List<Pracownik>();
+			  pojedynczyPracownicy.Clear();
+				
+			 foreach (Soneta.Business.UI.PivotData.PivotRecord selectedRow in SelectedRows)
+	     {	
+					PozycjaAktualizacjiCzasu pak = null;
+	        foreach(%NAZWA%Cell cell in selectedRow.GetCells())
+				  {
+	          pak = cell.GetPAK();
+	          break;
+	   		 }
+	        if(pak == null) continue;
+				 		
+				  Pracownik prac = pak.ZrodloPlanu.GetPracownik();
+				 	if(prac != null)
+				 	{
+						 
+						 if(!pojedynczyPracownicy.Contains(prac))
+							{	
+								pojedynczyPracownicy.Add(prac);
+							}
+						 else
+						 {
+							 continue; //pominięcie bo już raz został zanzaczony - niechcemy dwa razy dodawac temu samemu jeśli user zaznaczy omyłkowo 
+						 }
+					 }
+				 	
+				 
+				  KalkulatorAktualizacjiPracy kalk = new KalkulatorAktualizacjiPracy(pak);
+	        kalk.LoadOkres(okres);
+				 
+				  foreach (Date d in Okres) 
+				  {
+						if (Blokada(context, d))
+	            					throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+						TypDnia td = kalk.Plan[d].Definicja.Typ;
+	            			if (pomin && (td == TypDnia.Świąteczny || td == TypDnia.Wolny))
+	            					continue;
+						if (!pak.Dokument.Okres.Contains(d))
+	            					throw new Exception("Nie można modyfikować dni poza okresem dokumentu: {0}".TranslateFormat(pak.Dokument.Okres));
+						
+						 var dzienPracy = Get(kalk[d]);
+							
+						 var dp = dzienPracy as DzienPracyAktualizacja;
+	         //  if (dp != null && dp.Pozycja == pak && !nadpisz)
+	         // 			continue;	
+						
+						bool added = false;
+	          Session session = pak.Session;
+						if(dp == null || dp.Pozycja != pak)
+						{
+	          					  dp = session.AddRow(new DzienPracyAktualizacja(pak, d));
+	
+	           			 		if(dzienPracy is DzienPracyAktualizacja da)
+	            							dp.Copy(da);
+	           					 else if (dzienPracy is Dzien dd && dd.Praca != FromTimes.Empty)
+	           							 dp.Copy(dd);
+	          			  		else
+	           							 pak.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja(dp);
+	
+	         			  		 added = true;
+	           }
+							
+						 var km = session.GetKalend();
+	           //if(added){
+							 
+							StrefaPracyAktualizacja sp = new StrefaPracyAktualizacja(dp);
+							
+							KalendModule.GetInstance(session).StrefyPracyAkt.AddRow(sp);
+							if (definicja != null)
+								sp.Definicja = definicja;
+							if (!sp.Praca.IsReadOnlyOdGodziny() && odGodziny != Time.Empty)
+								sp.Praca.OdGodziny = odGodziny;
+							if (!sp.Praca.IsReadOnlyCzas() && czas != Time.Empty)
+									sp.Praca.Czas = czas;
+							 
+	           // }
+	        }
+						
+				}
+	      t.CommitUI();
+	    }
+		//return Soneta.Business.UI.FormAction.Save | Soneta.Business.UI.FormAction.Refresh ;
+		OnChanged(EventArgs.Empty);
+		//return Soneta.Business.UI.FormAction.RefreshOwner;
+		return null;
+	  }		
+		
+	
+	//--------------------------------Cecha
+	FromTo okresCechyProjekt = FromTo.Empty;
+	[Priority(210)]
+	[Group("Przypisz wymiary")]
+	[Caption("Okres")]
+	[DefaultWidth(20)]
+	[Field]
+	public FromTo OkresCechyProjekt {
+	    get { return okresCechyProjekt; }
+	    set {
+	        okresCechyProjekt = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	ElemSlownika slownikProjekt;
+	[Priority(220)]
+	[Group("Przypisz wymiary")]
+	[Caption("Projekt")]
+	[DefaultWidth(15)]
+	[Field]
+	public Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy SlownikProjektProxy {
+	    get { return Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy.Get(this.SlownikProjekt); }
+	    set {
+	        this.SlownikProjekt = Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy.Set(value);
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	public ElemSlownika SlownikProjekt {
+	    get { return slownikProjekt; }
+	    set {
+	        slownikProjekt = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	public LookupInfo.EnumerableItem GetListSlownikProjektProxy() {
+	  var elementy =this.Session.GetKsiega().DefSlownikow.WgNazwy["Projekt"].ElementySlownika.Where(e=>!e.Zablokowany).OrderBy(e=>e.Symbol).ToArray();
+		return new LookupInfo.EnumerableItem("Projekt", elementy.Select(e=>new Soneta.Runtime.Database.Business.TblCodeFiles.ElemSlownikaProxy(e)).ToArray(), new[]{"Nazwa"}) { ComboBox = true };
+	
+	}
+	
+	//public LookupInfo GetListSlownikProjekt() {
+	 //   var lu = ElemSlownikow.GetElementySlownikaLookup(this, "Projekt");
+	//	lu.ComboBox = true;
+	//	return lu;
+	//}
+	
+	
+	ElemSlownika slownikTask;
+	[Priority(230)]
+	[Group("Przypisz wymiary")]
+	[Caption("Task")]
+	[DefaultWidth(15)]
+	[Field]
+	public ElemSlownika SlownikTask {
+	    get { return slownikTask; }
+	    set {
+	        slownikTask = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	public LookupInfo GetListSlownikTask() {
+	    var lu = ElemSlownikow.GetElementySlownikaLookup(this, "Task");
+		lu.ComboBox = true;
+		return lu;
+	}
+	
+	
+	ElemSlownika slownikExpenditure;
+	[Priority(240)]
+	[Group("Przypisz wymiary")]
+	[Caption("Expenditure org.")]
+	[DefaultWidth(15)]
+	[Field]
+	public ElemSlownika SlownikExpenditure {
+	    get { return slownikExpenditure; }
+	    set {
+	        slownikExpenditure = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	public LookupInfo GetListSlownikExpenditure() {
+	    var lu = ElemSlownikow.GetElementySlownikaLookup(this, "Expenditure organization");
+		lu.ComboBox = true;
+		return lu;
+	}
+	
+	public bool IsEnabledUstawCecheTask() => dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Wypełniany;
+	public bool IsEnabledUstawCecheProjekt() => dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Wypełniany;
+	public bool IsEnabledUstawCecheExpenditure() => dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Wypełniany;
+	
+	[Priority(250)]
+	[Command]
+	[Group("Przypisz wymiary")]
+	[Caption("Przypisz")]
+	public object WstawCecheProjekt([Context]Context context) {
+		
+	    if(dokument.Stan != StanyDokumentuAktulizacjiKalendarza.Wypełniany) return null;
+	    using (ITransaction t = context.Session.Logout(true)) 
+			{
+				List<string> kodyPracownikow = new List<string>();
+				Dictionary<string, List<int>> dctstref = new Dictionary<string, List<int>>();
+				kodyPracownikow.Clear();
+				
+				foreach (Soneta.Business.UI.PivotData.PivotRecord selectedRow in SelectedRows)
+	     {	
+	
+					PozycjaAktualizacjiCzasu pak = null;
+		
+	        foreach(%NAZWA%Cell cell in selectedRow.GetCells())
+				  {
+	          pak = cell.GetPAK();
+	          break;
+	   		 }
+	        if(pak == null) continue;
+				 	
+				  Pracownik prac = pak.ZrodloPlanu.GetPracownik();
+				  //if(prac != null)
+					//	 lg.WriteLine($"Zaznaczony Pracownik : {prac} numer");
+					
+				  string numerstrefy = (string)selectedRow.GetSelector(0);
+					int strefaint = int.Parse(numerstrefy);
+					string kodPracownika = (string)selectedRow.GetSelector(2); 
+				  //lg.WriteLine($"Dane z selectedRow - numer strefy : {strefaint} kod Praownika {kodPracownika}");
+				 
+				   
+					if(!kodyPracownikow.Contains(kodPracownika))
+					{
+						kodyPracownikow.Add(kodPracownika);
+					}
+					
+					if(!dctstref.ContainsKey(kodPracownika))
+					{
+						List<int> numeryStref = new List<int>();
+						numeryStref.Clear();
+						numeryStref.Add(strefaint);
+						dctstref.Add(kodPracownika,numeryStref);
+						
+					}
+					else
+					{
+						List<int> rob = new List<int>();
+						 rob = dctstref[kodPracownika];
+						rob.Add(strefaint);
+						dctstref[kodPracownika] = rob;
+						
+					}
+				 
+				  KalkulatorAktualizacjiPracy kalk = new KalkulatorAktualizacjiPracy(pak);
+	        kalk.LoadOkres(okresCechyProjekt);
+				 
+				  foreach (Date d in OkresCechyProjekt) 
+				  {
+						int strefa =0;  //-1
+						if (Blokada(context, d))
+	            					throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+						//TypDnia td = kalk.Plan[d].Definicja.Typ;
+	          //  			if (pomin && (td == TypDnia.Świąteczny || td == TypDnia.Wolny))
+	          //  					continue;
+						if (!pak.Dokument.Okres.Contains(d))
+	            					throw new Exception("Nie można modyfikować dni poza okresem dokumentu: {0}".TranslateFormat(pak.Dokument.Okres));
+						
+						 var dzienPracy = Get(kalk[d]);
+							
+						 var dp = dzienPracy as DzienPracyAktualizacja;
+	         //  if (dp != null && dp.Pozycja == pak && !nadpisz)
+	         // 			continue;	
+						
+						bool added = false;
+	          Session session = pak.Session;
+						if(dp == null || dp.Pozycja != pak)
+						{
+	          					  dp = session.AddRow(new DzienPracyAktualizacja(pak, d));
+	
+	           			 		if(dzienPracy is DzienPracyAktualizacja da)
+	            							dp.Copy(da);
+	           					 else if (dzienPracy is Dzien dd && dd.Praca != FromTimes.Empty)
+	           							 dp.Copy(dd);
+	          			  		else
+	           							 pak.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja(dp);
+	
+	         			  		 added = true;
+	           }
+					
+				 		//lg.WriteLine($"Rozpoczecie uzupelniania cechy dp.Strefy.Count {dp.Strefy.Count} strefaint {strefaint}, tymczasem strefa {strefa}");
+						 /*if (dp.Strefy.Count == strefaint) 
+						 { 			
+							 //lg.WriteLine($"---Def Rozpoczęcie dodawania gdy 1");
+							 			foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+									 	{
+										 	if (!sp.IsReadOnly())
+											 {
+													//lg.WriteLine($"Def Zamiana bez readOnly dodawania właściwe gdy1");		
+	                				sp.Features["Projekt"] = slownikProjekt;
+													sp.Features["Task"] = slownikTask;
+													sp.Features["Expenditure_organization"] = slownikExpenditure;
+												}
+	            					break;
+										 }
+						
+						 }*/
+						//	lg.WriteLine($"Pytanie strefa jaki ma numer : {strefa} a strefaint {strefaint}");
+	
+	       	int strefaLp = 0;
+	        	 foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+						 {
+							 strefaLp++;
+						// if (++strefa == strefaint) 
+							 if(strefaLp == strefaint)
+							{
+								
+									//lg.WriteLine($"Ustawianie cechy dodawania właściwe dla strefy numer {strefa}");	
+	            		if (!sp.IsReadOnly())
+									{
+											//lg.WriteLine($"Def Zamiana bez readOnly dodawania właściwe");		
+	                				sp.Features["Projekt"] = slownikProjekt;
+													sp.Features["Task"] = slownikTask;
+													sp.Features["Expenditure_organization"] = slownikExpenditure;
+									}
+	            		//break;
+							}
+							//lg.WriteLine($"{d}Uzupelnianie cechy koniec numer strefy {strefa} a strefyInt {strefaint}");
+						 }
+					//	lg.WriteLine($"{d}Uzupelnianie cechy koniec -------------  numer strefy {strefa} a strefyInt {strefaint}");
+					}
+				 
+				 
+				 
+				}
+	      t.CommitUI();
+	    }
+		//return Soneta.Business.UI.FormAction.Save | Soneta.Business.UI.FormAction.Refresh ;
+		OnChanged(EventArgs.Empty);
+		//return Soneta.Business.UI.FormAction.RefreshOwner;
+		return null;
+	  }		
+	
+	
+							
+	//--------------------------------Cecha
+	FromTo okresCechyEkwiwalent = FromTo.Empty;
+	[Priority(310)]
+	[Group("Dodatkowe")]
+	[Caption("Okres")]
+	[DefaultWidth(20)]
+	[Field]
+	public FromTo OkresCechyEkwiwalent {
+	    get { return okresCechyEkwiwalent; }
+	    set {
+	        okresCechyEkwiwalent = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	ElemSlownika slownikEkwiwalent;
+	[Priority(320)]
+	[Group("Dodatkowe")]
+	[Caption("Ekwiwalent")]
+	[DefaultWidth(15)]
+	[Field]
+	public ElemSlownika SlownikEkwiwalent {
+	    get { return slownikEkwiwalent; }
+	    set {
+	        slownikEkwiwalent = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	public LookupInfo GetListSlownikEkwiwalent() {
+	    var lu = ElemSlownikow.GetElementySlownikaLookup(this, "EkwiwalentZaPranie");
+		lu.ComboBox = true;
+		return lu;
+	}
+	
+	public bool IsEnabledUstawCecheEkwiwalent() => dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Wypełniany;
+	
+	[Priority(330)]
+	[Command]
+	[Group("Dodatkowe")]
+	[Caption("Przypisz   ")]
+	public object WstawCecheEkwiwalent([Context]Context context) {
+	    if(dokument.Stan != StanyDokumentuAktulizacjiKalendarza.Wypełniany) return null;
+	    using (ITransaction t = context.Session.Logout(true)) 
+			{
+				List<string> kodyPracownikow = new List<string>();
+				Dictionary<string, List<int>> dctstref = new Dictionary<string, List<int>>();
+				kodyPracownikow.Clear();
+				
+				foreach (Soneta.Business.UI.PivotData.PivotRecord selectedRow in SelectedRows)
+	     {	
+					PozycjaAktualizacjiCzasu pak = null;
+	        foreach(%NAZWA%Cell cell in selectedRow.GetCells())
+				  {
+						
+	          pak = cell.GetPAK();
+	          break;
+	   		 }
+	        if(pak == null) continue;
+				 	
+				  Pracownik prac = pak.ZrodloPlanu.GetPracownik();
+				  //if(prac != null)
+					//	 lg.WriteLine($"Zaznaczony Pracownik : {prac} numer");
+					
+					
+				  string numerstrefy = (string)selectedRow.GetSelector(0);
+					int strefaint = int.Parse(numerstrefy);
+					string kodPracownika = (string)selectedRow.GetSelector(2); 
+				  //lg.WriteLine($"Dane z selectedRow - numer strefy : {strefaint} kod Praownika {kodPracownika}");
+				 
+				   
+					if(!kodyPracownikow.Contains(kodPracownika))
+					{
+						kodyPracownikow.Add(kodPracownika);
+					}
+					
+					if(!dctstref.ContainsKey(kodPracownika))
+					{
+						List<int> numeryStref = new List<int>();
+						numeryStref.Clear();
+						numeryStref.Add(strefaint);
+						dctstref.Add(kodPracownika,numeryStref);
+						
+					}
+					else
+					{
+						List<int> rob = new List<int>();
+						 rob = dctstref[kodPracownika];
+						rob.Add(strefaint);
+						dctstref[kodPracownika] = rob;
+						
+					}
+				 
+				  KalkulatorAktualizacjiPracy kalk = new KalkulatorAktualizacjiPracy(pak);
+	        kalk.LoadOkres(okresCechyEkwiwalent);
+				 
+				  foreach (Date d in OkresCechyEkwiwalent) 
+				  {
+						int strefa =0;  //-1
+						if (Blokada(context, d))
+	            					throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+						//TypDnia td = kalk.Plan[d].Definicja.Typ;
+	          //  			if (pomin && (td == TypDnia.Świąteczny || td == TypDnia.Wolny))
+	          //  					continue;
+						if (!pak.Dokument.Okres.Contains(d))
+	            					throw new Exception("Nie można modyfikować dni poza okresem dokumentu: {0}".TranslateFormat(pak.Dokument.Okres));
+						
+						 var dzienPracy = Get(kalk[d]);
+							
+						 var dp = dzienPracy as DzienPracyAktualizacja;
+	         //  if (dp != null && dp.Pozycja == pak && !nadpisz)
+	         // 			continue;	
+						
+						bool added = false;
+	          Session session = pak.Session;
+						if(dp == null || dp.Pozycja != pak)
+						{
+	          					  dp = session.AddRow(new DzienPracyAktualizacja(pak, d));
+	
+	           			 		if(dzienPracy is DzienPracyAktualizacja da)
+	            							dp.Copy(da);
+	           					 else if (dzienPracy is Dzien dd && dd.Praca != FromTimes.Empty)
+	           							 dp.Copy(dd);
+	          			  		else
+	           							 pak.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja(dp);
+	
+	         			  		 added = true;
+	           }
+				 		//lg.WriteLine($"Rozpoczecie uzupelniania cechy dp.Strefy.Count {dp.Strefy.Count} strefaint {strefaint}, tymczasem strefa {strefa}");
+						 if (dp.Strefy.Count == strefaint) 
+						 { 			//lg.WriteLine($"---Def Rozpoczęcie dodawania gdy 1");
+							 			foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+									 	{
+										
+							 
+												if (!sp.IsReadOnly())
+												{
+													//lg.WriteLine($"Def Zamiana bez readOnly dodawania właściwe gdy1");		
+	                				sp.Features["EkwiwalentZaPranie"] = slownikEkwiwalent;
+												}
+	            					break;
+										 }
+						
+						 }
+						//	lg.WriteLine($"Pytanie strefa jaki ma numer : {strefa} a strefaint {strefaint}");
+	        	 foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+						 {
+						 if (++strefa == strefaint) 
+							{
+									//lg.WriteLine($"Ustawianie cechy dodawania właściwe dla strefy numer {strefa}");	
+	            		if (!sp.IsReadOnly())
+									{
+											//lg.WriteLine($"Def Zamiana bez readOnly dodawania właściwe");		
+	                		sp.Features["EkwiwalentZaPranie"] = slownikEkwiwalent;
+									}
+	            		break;
+							}
+							//lg.WriteLine($"{d}Uzupelnianie cechy koniec numer strefy {strefa} a strefyInt {strefaint}");
+						 }
+					//	lg.WriteLine($"{d}Uzupelnianie cechy koniec -------------  numer strefy {strefa} a strefyInt {strefaint}");
+					}
+				 
+				 
+				 
+				}
+	      t.CommitUI();
+	    }
+		//return Soneta.Business.UI.FormAction.Save | Soneta.Business.UI.FormAction.Refresh ;
+		OnChanged(EventArgs.Empty);
+		//return Soneta.Business.UI.FormAction.RefreshOwner;
+		return null;
+	}			
+	
+	
+	FromTo okresCechyBryg = FromTo.Empty;
+	[Priority(340)]
+	[Group("Dodatkowe")]
+	[Caption("Okres")]
+	[DefaultWidth(17)]
+	[Field]
+	public FromTo OkresCechyBryg {
+	    get { return okresCechyBryg; }
+	    set {
+	        okresCechyBryg = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	bool wartoscBryg = false;
+	[Priority(350)]
+	[Group("Dodatkowe")]
+	[Caption("Dodatek")]
+	[DefaultWidth(15)]
+	[Field]
+	public bool WartoscBryg {
+	    get { return wartoscBryg; }
+	    set {
+	        wartoscBryg = value;
+	        OnChanged(EventArgs.Empty);
+	    }
+	}
+	
+	public bool IsEnabledWstawCecheBryg() => dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Wypełniany;
+	
+	
+	[Priority(360)]
+	[Command]
+	[Group("Dodatkowe")]
+	[Caption("Przypisz    ")]
+	public object WstawCecheBryg([Context]Context context) {
+	    if(dokument.Stan != StanyDokumentuAktulizacjiKalendarza.Wypełniany) return null;
+	    using (ITransaction t = context.Session.Logout(true)) 
+			{
+				List<string> kodyPracownikow = new List<string>();
+				Dictionary<string, List<int>> dctstref = new Dictionary<string, List<int>>();
+				kodyPracownikow.Clear();
+				
+				foreach (Soneta.Business.UI.PivotData.PivotRecord selectedRow in SelectedRows)
+	     {	
+					PozycjaAktualizacjiCzasu pak = null;
+	        foreach(%NAZWA%Cell cell in selectedRow.GetCells())
+				  {
+						
+	          pak = cell.GetPAK();
+	          break;
+	   		 }
+	        if(pak == null) continue;
+				 	
+				  Pracownik prac = pak.ZrodloPlanu.GetPracownik();
+				  //if(prac != null)
+					//	 lg.WriteLine($"Zaznaczony Pracownik : {prac} numer");
+					
+					
+				  string numerstrefy = (string)selectedRow.GetSelector(0);
+					int strefaint = int.Parse(numerstrefy);
+					string kodPracownika = (string)selectedRow.GetSelector(2); 
+				  //lg.WriteLine($"Dane z selectedRow - numer strefy : {strefaint} kod Praownika {kodPracownika}");
+				 
+				   
+					if(!kodyPracownikow.Contains(kodPracownika))
+					{
+						kodyPracownikow.Add(kodPracownika);
+					}
+					
+					if(!dctstref.ContainsKey(kodPracownika))
+					{
+						List<int> numeryStref = new List<int>();
+						numeryStref.Clear();
+						numeryStref.Add(strefaint);
+						dctstref.Add(kodPracownika,numeryStref);
+						
+					}
+					else
+					{
+						List<int> rob = new List<int>();
+						 rob = dctstref[kodPracownika];
+						rob.Add(strefaint);
+						dctstref[kodPracownika] = rob;
+						
+					}
+				 
+				  KalkulatorAktualizacjiPracy kalk = new KalkulatorAktualizacjiPracy(pak);
+	        kalk.LoadOkres(okresCechyBryg);
+				 
+				  foreach (Date d in OkresCechyBryg) 
+				  {
+						int strefa =0;  //-1
+						if (Blokada(context, d))
+	            					throw new Exception("Została ustawiona blokada która nie pozwala na edycję dnia");
+						//TypDnia td = kalk.Plan[d].Definicja.Typ;
+	          //  			if (pomin && (td == TypDnia.Świąteczny || td == TypDnia.Wolny))
+	          //  					continue;
+						if (!pak.Dokument.Okres.Contains(d))
+	            					throw new Exception("Nie można modyfikować dni poza okresem dokumentu: {0}".TranslateFormat(pak.Dokument.Okres));
+						
+						 var dzienPracy = Get(kalk[d]);
+							
+						 var dp = dzienPracy as DzienPracyAktualizacja;
+	         //  if (dp != null && dp.Pozycja == pak && !nadpisz)
+	         // 			continue;	
+						
+						bool added = false;
+	          Session session = pak.Session;
+						if(dp == null || dp.Pozycja != pak)
+						{
+	          					  dp = session.AddRow(new DzienPracyAktualizacja(pak, d));
+	
+	           			 		if(dzienPracy is DzienPracyAktualizacja da)
+	            							dp.Copy(da);
+	           					 else if (dzienPracy is Dzien dd && dd.Praca != FromTimes.Empty)
+	           							 dp.Copy(dd);
+	          			  		else
+	           							 pak.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja(dp);
+	
+	         			  		 added = true;
+	           }
+				 		//lg.WriteLine($"Rozpoczecie uzupelniania cechy dp.Strefy.Count {dp.Strefy.Count} strefaint {strefaint}, tymczasem strefa {strefa}");
+						 if (dp.Strefy.Count == strefaint) 
+						 { 			//lg.WriteLine($"---Def Rozpoczęcie dodawania gdy 1");
+							 			foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+									 	{
+										
+							 
+												if (!sp.IsReadOnly())
+												{
+													//lg.WriteLine($"Def Zamiana bez readOnly dodawania właściwe gdy1");		
+	                				sp.Features["DodatekBryg"] = wartoscBryg;
+												}
+	            					break;
+										 }
+						
+						 }
+						//	lg.WriteLine($"Pytanie strefa jaki ma numer : {strefa} a strefaint {strefaint}");
+	        	 foreach (StrefaPracyAktualizacja sp in dp.Strefy)
+						 {
+						 if (++strefa == strefaint) 
+							{
+									//lg.WriteLine($"Ustawianie cechy dodawania właściwe dla strefy numer {strefa}");	
+	            		if (!sp.IsReadOnly())
+									{
+											//lg.WriteLine($"Def Zamiana bez readOnly dodawania właściwe");		
+	                		sp.Features["DodatekBryg"] = wartoscBryg;
+									}
+	            		break;
+							}
+							//lg.WriteLine($"{d}Uzupelnianie cechy koniec numer strefy {strefa} a strefyInt {strefaint}");
+						 }
+					//	lg.WriteLine($"{d}Uzupelnianie cechy koniec -------------  numer strefy {strefa} a strefyInt {strefaint}");
+					}
+				 
+				 
+				 
+				}
+	      t.CommitUI();
+	    }
+		//return Soneta.Business.UI.FormAction.Save | Soneta.Business.UI.FormAction.Refresh ;
+		OnChanged(EventArgs.Empty);
+		//return Soneta.Business.UI.FormAction.RefreshOwner;
+		return null;
+	}					
+				
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+//** End: Extender **

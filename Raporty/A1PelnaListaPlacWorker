@@ -1,0 +1,266 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using Soneta.Business;
+using Soneta.Business.UI;
+using Soneta.Kadry;
+using Soneta.Place;
+using Soneta.Types;
+using DevExpress.Spreadsheet;
+
+[assembly: Worker<A1PelnaListaPlacWorker, ListaPlac>]
+
+namespace x.x.Reports
+{
+    // Czynnosc "Pelna lista plac -> XLSX" na liscie Place -> Listy plac, dzialajaca na
+    // ZAZNACZONYCH pozycjach. Buduje plik .xlsx OD ZERA biblioteka DevExpress.Spreadsheet -
+    // czysta siatka komorek, wiec NIE MA problemu z rozjezdzaniem sie kolumn, ktory
+    // wystepowal przy eksporcie wydruku A1PelnaListaPlacSnippet z podgladu (tam XRTable ->
+    // Excel tworzy pofragmentowana siatke i scalone komorki, a pseudo-autofit tego nie
+    // naprawia - potwierdzone zrzutem 2026-09-07: kolumny szerokie na 1 znak).
+    //
+    // Logika danych (kolumny dynamiczne per definicja elementu + 17 stalych kolumn
+    // ZUS/PPK/PIT, pomijanie storna, wydzial historyczny wg daty wyplaty) jest przeniesiona
+    // z A1PelnaListaPlacSnippet 1:1 - ten sam kontrakt kolumn, inny tylko silnik zapisu.
+    //
+    // ---------------------------------------------------------------------------
+    // ZWERYFIKOWANE NA DLL-ach serwera (enova 2512.5.6, ilspycmd, 2026-09-07):
+    //  - DevExpress.Spreadsheet: klasa Workbook (public ctor, SaveDocument(Stream,
+    //    DocumentFormat)) -> DevExpress.Docs.v24.1.dll; Worksheet/Cell/CellRange/Column/
+    //    Formatting (Cell : CellRange : Formatting - Font/Alignment/Borders/NumberFormat
+    //    bezposrednio na komorce), WorksheetCollection.ActiveWorksheet, Columns.AutoFit,
+    //    Column.WidthInCharacters, Worksheet.FreezeRows, SheetAutoFilter.Apply,
+    //    IRangeProvider.FromLTRB -> DevExpress.Spreadsheet.v24.1.Core.dll. Oba pliki sa
+    //    w folderze serwera obok uzywanego DevExpress.XtraReports.
+    //  - CellValue ma implicit operator z decimal / string / DateTime.
+    //  - Borders.SetAllBorders(System.Drawing.Color, BorderLineStyle).
+    //
+    // DO POTWIERDZENIA NA ZYWEJ BAZIE:
+    //  1. Czy kompilator "Projektow w bazie" (RuntimeProjects/CodeFiles - patrz
+    //     A1PelnaListaPlacWorker.md, "Jak wgrac") referencjonuje DevExpress.Docs +
+    //     DevExpress.Spreadsheet. Blad "nie znaleziono typu DevExpress.Spreadsheet" ->
+    //     wariant awaryjny w .md.
+    //  2. Nazwy pol Wyplata/WypElement/Podatki - przeniesione z dzialajacego snippetu,
+    //     ale runtime-project moze miec inny zestaw referencji niz edytor "Kod zrodlowy"
+    //     wydruku.
+    //  3. Czy [Context] ListaPlac[] faktycznie dostaje zaznaczenie z listy "Listy plac".
+    public class A1PelnaListaPlacWorker
+    {
+        [Context]
+        public ListaPlac[] ZaznaczoneListyPlac { get; set; }
+
+        public bool IsVisibleGenerujXlsx() => ZaznaczoneListyPlac != null && ZaznaczoneListyPlac.Length > 0;
+        public bool IsEnabledGenerujXlsx() => ZaznaczoneListyPlac != null && ZaznaczoneListyPlac.Length > 0;
+
+        const int LiczbaKolumnTekst = 3;        // Kod, Imie i Nazwisko, Wydzial
+        const double MaxSzerokoscZnaki = 42;
+        const double MinSzerokoscLiczbaZnaki = 12;
+
+        [Action("Pełna lista płac → XLSX")]
+        public object GenerujXlsx()
+        {
+            // 1. Zebranie wszystkich wyplat z zaznaczonych list plac.
+            var wyplaty = new List<Wyplata>();
+            foreach (ListaPlac lp in ZaznaczoneListyPlac)
+                foreach (Wyplata w in lp.Wyplaty)
+                    wyplaty.Add(w);
+
+            // 2. Kolumny dynamiczne - unikalne definicje elementow (bez storna), alfabetycznie.
+            var defs = new List<DefinicjaElementu>();
+            foreach (Wyplata w in wyplaty)
+                foreach (WypElement el in w.Elementy)
+                {
+                    if (el.RozliczenieStorna) continue;
+                    DefinicjaElementu d = el.Definicja;
+                    if (d != null && !defs.Contains(d)) defs.Add(d);
+                }
+            defs.Sort((a, b) => string.Compare(NazwaDef(a), NazwaDef(b), StringComparison.CurrentCulture));
+
+            // 3. Naglowki: 3 kolumny tekstowe + kolumny elementow + 17 stalych kolumn.
+            var naglowki = new List<string> { "Kod", "Imię i Nazwisko", "Wydział" };
+            foreach (DefinicjaElementu d in defs) naglowki.Add(NazwaDef(d));
+            naglowki.AddRange(new[]
+            {
+                "Emerytalna (pracownik)", "Emerytalna (pracodawca)",
+                "Rentowa (pracownik)", "Rentowa (pracodawca)",
+                "Chorobowa (pracownik)", "Chorobowa (pracodawca)",
+                "Wypadkowa (pracownik)", "Wypadkowa (pracodawca)",
+                "Zdrowotna (pracownik)", "Zdrowotna (pracodawca)",
+                "Fundusz Pracy", "FGŚP", "FEP",
+                "PPK (pracownik)", "PPK (pracodawca)",
+                "Zaliczka na PIT", "Kwota do wypłaty",
+            });
+            int nKol = naglowki.Count;
+
+            // 4. Wiersze danych.
+            var wiersze = new List<object[]>();
+            foreach (Wyplata w in wyplaty)
+            {
+                Pracownik pr = w.Pracownik as Pracownik;
+                var row = new object[nKol];
+                row[0] = Txt(() => pr != null ? pr.Kod : "");
+                row[1] = Txt(() => pr != null ? pr.NazwiskoImię : "");
+                row[2] = Txt(() => Wydzial(pr, w));
+
+                var wart = new decimal[defs.Count];
+                decimal emP = 0, emF = 0, reP = 0, reF = 0, chP = 0, chF = 0, wyP = 0, wyF = 0,
+                        zdP = 0, zdF = 0, fp = 0, fgsp = 0, fep = 0, ppkP = 0, ppkF = 0, pit = 0;
+
+                foreach (WypElement el in w.Elementy)
+                {
+                    if (el.RozliczenieStorna) continue;
+                    DefinicjaElementu d = el.Definicja;
+                    if (d != null)
+                    {
+                        int i = defs.IndexOf(d);
+                        if (i >= 0) wart[i] += el.Wartosc;
+                    }
+                    emP += el.Podatki.Emerytalna.Prac; emF += el.Podatki.Emerytalna.Firma;
+                    reP += el.Podatki.Rentowa.Prac; reF += el.Podatki.Rentowa.Firma;
+                    chP += el.Podatki.Chorobowa.Prac; chF += el.Podatki.Chorobowa.Firma;
+                    wyP += el.Podatki.Wypadkowa.Prac; wyF += el.Podatki.Wypadkowa.Firma;
+                    zdP += el.Podatki.Zdrowotna.Prac; zdF += el.Podatki.Zdrowotna.Firma;
+                    fp += el.Podatki.FP.Skladka;
+                    fgsp += el.Podatki.FGSP.Skladka;
+                    fep += el.Podatki.FEP.Skladka;
+                    pit += el.Podatki.ZalFIS;
+                    ppkP += el.Podatki.PPK.Pracownika;
+                    ppkF += el.Podatki.PPK.Pracodawcy;
+                }
+
+                int c = LiczbaKolumnTekst;
+                for (int i = 0; i < defs.Count; i++) row[c++] = wart[i];
+                row[c++] = emP; row[c++] = emF;
+                row[c++] = reP; row[c++] = reF;
+                row[c++] = chP; row[c++] = chF;
+                row[c++] = wyP; row[c++] = wyF;
+                row[c++] = zdP; row[c++] = zdF;
+                row[c++] = fp; row[c++] = fgsp; row[c++] = fep;
+                row[c++] = ppkP; row[c++] = ppkF;
+                row[c++] = pit;
+                row[c++] = Dec(() => w.Wartosc.Value);   // kwota netto = pole calej wyplaty
+
+                wiersze.Add(row);
+            }
+            wiersze.Sort((a, b) => string.Compare((string)(a[1] ?? ""), (string)(b[1] ?? ""), StringComparison.CurrentCulture));
+
+            // 5. Zapis do .xlsx z czysta siatka + prawdziwy auto-fit.
+            byte[] plik = Buduj(naglowki, wiersze);
+
+            string nazwa = "A1_Pelna_Lista_Plac_" + Date.Today.ToString("yyyyMMdd") + ".xlsx";
+            return new NamedStream(nazwa, () => new MemoryStream(plik));
+        }
+
+        static byte[] Buduj(List<string> naglowki, List<object[]> wiersze)
+        {
+            int nKol = naglowki.Count;
+            using (var wb = new Workbook())
+            {
+                Worksheet ws = wb.Worksheets.ActiveWorksheet;
+                ws.Name = "Lista płac";
+
+                Color obram = Color.FromArgb(0xBF, 0xBF, 0xBF);
+                Color tloNaglowka = Color.FromArgb(0xE6, 0xE6, 0xE6);
+
+                // Tytul (wiersz 0).
+                Cell tyt = ws[0, 0];
+                tyt.Value = "Zestawienie wypłat wg elementów";
+                tyt.Font.Bold = true;
+                tyt.Font.Size = 14;
+
+                // Naglowek kolumn (wiersz 2).
+                const int rNag = 2;
+                for (int c = 0; c < nKol; c++)
+                {
+                    Cell k = ws[rNag, c];
+                    k.Value = naglowki[c];
+                    k.Font.Bold = true;
+                    k.Alignment.WrapText = true;
+                    k.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
+                    k.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
+                    k.FillColor = tloNaglowka;
+                    k.Borders.SetAllBorders(obram, BorderLineStyle.Thin);
+                }
+                ws.Rows[rNag].Height = 42;
+
+                // Dane (od wiersza 3).
+                for (int i = 0; i < wiersze.Count; i++)
+                {
+                    int r = rNag + 1 + i;
+                    object[] src = wiersze[i];
+                    for (int c = 0; c < nKol; c++)
+                    {
+                        Cell cell = ws[r, c];
+                        if (c < LiczbaKolumnTekst)
+                        {
+                            cell.Value = (src[c] as string) ?? "";
+                            cell.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Left;
+                        }
+                        else
+                        {
+                            cell.Value = (src[c] is decimal) ? (decimal)src[c] : 0m;
+                            cell.NumberFormat = "#,##0.00";
+                            cell.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Right;
+                        }
+                        cell.Borders.SetAllBorders(obram, BorderLineStyle.Thin);
+                    }
+                }
+
+                int rOstatni = rNag + wiersze.Count;   // 0-based indeks ostatniego wiersza danych
+
+                // Blokada naglowka + autofiltr.
+                ws.FreezeRows(rNag + 1);
+                try { ws.AutoFilter.Apply(ws.Range.FromLTRB(0, rNag, nKol - 1, rOstatni)); }
+                catch { /* autofiltr to udogodnienie - brak nie jest bledem */ }
+
+                // Prawdziwy auto-fit + ograniczenie skrajnych szerokosci.
+                ws.Columns.AutoFit(0, nKol - 1);
+                for (int c = 0; c < nKol; c++)
+                {
+                    Column col = ws.Columns[c];
+                    if (col.WidthInCharacters > MaxSzerokoscZnaki)
+                        col.WidthInCharacters = MaxSzerokoscZnaki;
+                    if (c >= LiczbaKolumnTekst && col.WidthInCharacters < MinSzerokoscLiczbaZnaki)
+                        col.WidthInCharacters = MinSzerokoscLiczbaZnaki;
+                }
+
+                using (var ms = new MemoryStream())
+                {
+                    wb.SaveDocument(ms, DocumentFormat.Xlsx);
+                    return ms.ToArray();
+                }
+            }
+        }
+
+        static string NazwaDef(DefinicjaElementu d)
+        {
+            if (d == null) return "";
+            string n = d.Nazwa;
+            return string.IsNullOrEmpty(n) ? (d.Kod ?? "") : n;
+        }
+
+        static string Wydzial(Pracownik pr, Wyplata w)
+        {
+            if (pr == null) return "";
+            Date data = w.Data;
+            if (data == Date.Empty) data = Date.Today;
+            PracHistoria ph = pr.Historia[data];
+            Wydzial wydz = ph != null && ph.Etat != null ? ph.Etat.Wydzial : null;
+            return wydz != null ? (wydz.Nazwa ?? "") : "";
+        }
+
+        static string Txt(Func<string> f)
+        {
+            try { return f() ?? ""; }
+            catch (Exception ex) { return "[BŁĄD: " + ex.Message + "]"; }
+        }
+
+        static decimal Dec(Func<decimal> f)
+        {
+            try { return f(); }
+            catch { return 0m; }
+        }
+    }
+}

@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Wpisy "Dane z RCP" (Kadry i place, Kadry, Czas pracy, Dane z RCP) dla pracownikow
+  testowych S1..S7, T1..T7 w bazie Al, wedlug Dokumentacja_scenariusze_testowe.html.
+  Tabela Soneta.Kalend.WejscieWyjscieI (WejsciaWyjsciaI) nie jest guidowana: import
+  jest jednorazowy, ponowne uruchomienie dopisuje kolejne wiersze (nie ma po czym
+  rozpoznac istniejacych - do reimportu najpierw skasuj wczesniej wstawione wiersze).
+
+  S5 i S7 maja wpisana tylko pierwsza partie zdarzen z dokumentacji (test doimportu
+  w trakcie dnia / test rozliczenia nadgodzin) - kolejne kroki (dopisanie zdarzen,
+  ponowny import, rozliczenie nadgodzin) robi tester recznie. S6 (test nadpisania po
+  ponownym imporcie) dostaje od razu komplet 4 zdarzen czwartku, bo to jego warunek
+  wstepny, nie kolejny krok scenariusza.
+
+  Import wedlug rekordow: dbmgr importxml Al [plik] w trybie standard
+-->
+<session>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000001</Pracownik>
+    <Data>2026-08-03</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000001</Pracownik>
+    <Data>2026-08-03</Data>
+    <Godzina>16:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000002</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000002</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>18:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000003</Pracownik>
+    <Data>2026-08-05</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000003</Pracownik>
+    <Data>2026-08-05</Data>
+    <Godzina>12:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000003</Pracownik>
+    <Data>2026-08-05</Data>
+    <Godzina>12:30</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000003</Pracownik>
+    <Data>2026-08-05</Data>
+    <Godzina>18:30</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000004</Pracownik>
+    <Data>2026-08-08</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000004</Pracownik>
+    <Data>2026-08-08</Data>
+    <Godzina>12:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000005</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000005</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>17:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000006</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000006</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>17:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000006</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>18:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000006</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>22:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000007</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000007</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>18:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000008</Pracownik>
+    <Data>2026-08-03</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000008</Pracownik>
+    <Data>2026-08-03</Data>
+    <Godzina>13:30</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000009</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000009</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>15:30</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000010</Pracownik>
+    <Data>2026-08-05</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000010</Pracownik>
+    <Data>2026-08-05</Data>
+    <Godzina>16:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000011</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000011</Pracownik>
+    <Data>2026-08-06</Data>
+    <Godzina>17:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000012</Pracownik>
+    <Data>2026-08-07</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000012</Pracownik>
+    <Data>2026-08-07</Data>
+    <Godzina>15:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000013</Pracownik>
+    <Data>2026-08-08</Data>
+    <Godzina>9:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000013</Pracownik>
+    <Data>2026-08-08</Data>
+    <Godzina>12:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000014</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000014</Pracownik>
+    <Data>2026-08-04</Data>
+    <Godzina>18:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+  </WejscieWyjscieI>
+</session>

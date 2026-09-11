@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Element "Dodatek roczny" (guid c973afe6-...) w kartotece 5 pracownikow bazy Claude.
+  Kod pracownika = numer scenariusza. Okres dodatku = caly 2026, Podstawa = 1500,00 PLN.
+  Import wg rekordow, guid staly => idempotentne.
+  Oczekiwane wyniki wyplaty 01/2027 (do potwierdzenia w GUI):
+    TS-01 -> 1500  | TS-02 -> 0 | TS-03 -> 0 | TS-05 -> 1500 | TS-09 -> 0
+-->
+<session fromto="(wszystko)">
+
+  <Pracownik where="Kod=TS-01">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000001d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000001d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-02">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000002d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000002d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-03">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000003d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000003d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-05">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000005d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000005d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-09">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000009d1">
+        <Nazwa>Dodatek roczny</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000009d2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c973afe6-a410-4cb8-9428-030ab2213957</Element>
+            <Okres>2026-01-01...2026-12-31</Okres>
+            <Podstawa>1500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+</session>

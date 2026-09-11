@@ -1,0 +1,6 @@
+public bool Feature_WiecejNizJednaStrefaNieobecnosci {
+	get {
+		int liczbaStrefNieobecnosci = Row.Strefy.Count(s => s.Definicja.Nazwa == "Nieobecność");
+		return liczbaStrefNieobecnosci > 1;
+	}
+}

@@ -1,0 +1,4 @@
+# Pliki przekazywane do analizy - zostaja tylko lokalnie (moga zawierac dane osobowe/placowe).
+# Wersjonowany jest wylacznie opis katalogu.
+Pobrane/*
+!Pobrane/README.md

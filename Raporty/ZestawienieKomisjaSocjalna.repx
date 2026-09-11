@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1" Name="ZestawienieKomisjaSocjalna" DisplayName="Zestawienie na posiedzenie Komisji Socjalnej" SnapGridSize="25" ReportUnit="TenthsOfAMillimeter" Margins="198, 198, 200, 200" PaperKind="A4" Landscape="true" PageWidth="2970" PageHeight="2100" Version="24.1" DataSource="#Ref-49" Dpi="254" Font="Calibri, 9pt">
+  <Bands>
+    <Item1 Ref="2" ControlType="TopMarginBand" Name="TopMarginBand" HeightF="200" Dpi="254" />
+    <Item2 Ref="3" ControlType="ReportHeaderBand" Name="ReportHeader" HeightF="100" Dpi="254">
+      <Controls>
+        <Item1 Ref="4" ControlType="XRLabel" Name="labelTytul" AnchorHorizontal="Both" TextAlignment="MiddleCenter" SizeF="2574,100" LocationFloat="0,0" Dpi="254" Font="Calibri, 12pt, style=Bold" Text="Zestawienie na posiedzenie Komisji Socjalnej" />
+      </Controls>
+    </Item2>
+    <Item3 Ref="5" ControlType="PageHeaderBand" Name="PageHeader" HeightF="120" Dpi="254">
+      <Controls>
+        <Item1 Ref="6" ControlType="XRTable" Name="tableNaglowek" AnchorHorizontal="Both" TextAlignment="MiddleCenter" SizeF="2574,120" LocationFloat="0,0" Dpi="254" Font="Calibri, 9pt, style=Bold">
+          <Rows>
+            <Item1 Ref="7" ControlType="XRTableRow" Name="rowNaglowek" Weight="1" Dpi="254">
+              <Cells>
+                <Item1 Ref="8" ControlType="XRTableCell" Name="cellNagl1" Weight="0.35" Multiline="true" Text="Lp." Dpi="254" />
+                <Item2 Ref="9" ControlType="XRTableCell" Name="cellNagl2" Weight="0.7" Multiline="true" Text="Nr ewid." Dpi="254" />
+                <Item3 Ref="10" ControlType="XRTableCell" Name="cellNagl3" Weight="1.6" Multiline="true" Text="Nazwisko i Imię" Dpi="254" />
+                <Item4 Ref="11" ControlType="XRTableCell" Name="cellNagl4" Weight="0.85" Multiline="true" Text="Data urodzenia" Dpi="254" />
+                <Item5 Ref="12" ControlType="XRTableCell" Name="cellNagl5" Weight="1.6" Multiline="true" Text="Jednostka obsługująca" Dpi="254" />
+                <Item6 Ref="13" ControlType="XRTableCell" Name="cellNagl6" Weight="0.95" Multiline="true" Text="Dochód na członka rodziny" Dpi="254" />
+                <Item7 Ref="14" ControlType="XRTableCell" Name="cellNagl7" Weight="0.95" Multiline="true" Text="Kwota zapomogi z 2 lat" Dpi="254" />
+                <Item8 Ref="15" ControlType="XRTableCell" Name="cellNagl8" Weight="0.65" Multiline="true" Text="Data" Dpi="254" />
+                <Item9 Ref="16" ControlType="XRTableCell" Name="cellNagl9" Weight="0.75" Multiline="true" Text="Kwota" Dpi="254" />
+                <Item10 Ref="17" ControlType="XRTableCell" Name="cellNagl10" Weight="0.95" Multiline="true" Text="Kwota zapomóg z poprzednich 2 lat" Dpi="254" />
+                <Item11 Ref="18" ControlType="XRTableCell" Name="cellNagl11" Weight="0.65" Multiline="true" Text="Data" Dpi="254" />
+                <Item12 Ref="19" ControlType="XRTableCell" Name="cellNagl12" Weight="0.75" Multiline="true" Text="Kwota" Dpi="254" />
+              </Cells>
+            </Item1>
+          </Rows>
+        </Item1>
+      </Controls>
+    </Item3>
+    <Item4 Ref="20" ControlType="DetailBand" Name="Detail" HeightF="60" Dpi="254">
+      <Controls>
+        <Item1 Ref="21" ControlType="XRTable" Name="tableDane" AnchorHorizontal="Both" TextAlignment="MiddleCenter" SizeF="2574,60" LocationFloat="0,0" Dpi="254">
+          <Rows>
+            <Item1 Ref="22" ControlType="XRTableRow" Name="rowDane" Weight="1" Dpi="254">
+              <Cells>
+                <Item1 Ref="23" ControlType="XRTableCell" Name="cellLp" Weight="0.35" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="24" Expression="[Lp]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item1>
+                <Item2 Ref="25" ControlType="XRTableCell" Name="cellNrEwid" Weight="0.7" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="26" Expression="[NrEwid]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item2>
+                <Item3 Ref="27" ControlType="XRTableCell" Name="cellNazwiskoImie" Weight="1.6" TextAlignment="MiddleLeft" Multiline="true" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="28" Expression="[NazwiskoImie]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item3>
+                <Item4 Ref="29" ControlType="XRTableCell" Name="cellDataUrodzenia" Weight="0.85" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="30" Expression="[DataUrodzenia]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item4>
+                <Item5 Ref="31" ControlType="XRTableCell" Name="cellJednostkaObslugujaca" Weight="1.6" TextAlignment="MiddleLeft" Multiline="true" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="32" Expression="[JednostkaObslugujaca]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item5>
+                <Item6 Ref="33" ControlType="XRTableCell" Name="cellDochodNaCzlonkaRodziny" Weight="0.95" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="34" Expression="[DochodNaCzlonkaRodziny]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item6>
+                <Item7 Ref="35" ControlType="XRTableCell" Name="cellKwotaZapomogiZ2Lat" Weight="0.95" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="36" Expression="[KwotaZapomogiZ2Lat]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item7>
+                <Item8 Ref="37" ControlType="XRTableCell" Name="cellDataWyplaty" Weight="0.65" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="38" Expression="[DataWyplaty]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item8>
+                <Item9 Ref="39" ControlType="XRTableCell" Name="cellKwotaWyplaty" Weight="0.75" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="40" Expression="[KwotaWyplaty]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item9>
+                <Item10 Ref="41" ControlType="XRTableCell" Name="cellKwotaZapomogPoprzednich2Lat" Weight="0.95" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="42" Expression="[KwotaZapomogPoprzednich2Lat]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item10>
+                <Item11 Ref="43" ControlType="XRTableCell" Name="cellDataWyplatyPoprzedniej" Weight="0.65" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="44" Expression="[DataWyplatyPoprzedniej]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item11>
+                <Item12 Ref="45" ControlType="XRTableCell" Name="cellKwotaWyplatyPoprzedniej" Weight="0.75" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="46" Expression="[KwotaWyplatyPoprzedniej]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item12>
+              </Cells>
+            </Item1>
+          </Rows>
+        </Item1>
+      </Controls>
+    </Item4>
+    <Item5 Ref="47" ControlType="BottomMarginBand" Name="BottomMarginBand" HeightF="200" Dpi="254" />
+  </Bands>
+  <ComponentStorage>
+    <Item1 Ref="48" ObjectType="Soneta.Business.UI.DxReports.Components.BusinessContext,Soneta.Business.UI.DxReports" Name="BusinessContext" StylesSource="standardowy" TreatStringAsValueInExport="false" />
+    <Item2 Ref="49" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSource" DataKind="Empty" />
+    <Item3 Ref="50" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSourceContext" DataKind="Context" />
+  </ComponentStorage>
+</XtraReportsLayoutSerializer>

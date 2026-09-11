@@ -84,6 +84,10 @@ Poniższe scenariusze opisują oczekiwane zachowanie weryfikatora. Kolumna „Zw
 wskazuje, które z nich zostały faktycznie sprawdzone na żywym środowisku Enova w trakcie
 tworzenia weryfikatora, a które wynikają wprost z konstrukcji kodu.
 
+Pełna lista (z kolumnami na wynik testu w GUI) w arkuszu:
+[Scenariusze testowe weryfikatorow czasu pracy.xlsx](Scenariusze%20testowe%20weryfikatorow%20czasu%20pracy.xlsx),
+arkusz **Norma okresu rozliczeniowego**. Poniższa tabela jest kopią poglądową.
+
 | # | Scenariusz | Opis sytuacji | Oczekiwany wynik | Zweryfikowano na żywo |
 |---|---|---|---|---|
 | 4.1 | Nadwyżka w jednym miesiącu, reszta okresu wolna | Okres 3-miesięczny. Miesiąc 1: jeden dzień zaplanowany z nadwyżką godzin (np. dłuższa zmiana w systemie równoważnym). Miesiące 2–3: brak jakichkolwiek wpisów. | Brak błędu — nadwyżka z jednego dnia jest znikoma wobec zapasu dostępnego w niezaplanowanej reszcie okresu. | Tak |

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Nieobecnosci pod scenariusze "Dodatek roczny" (baza Claude), import wg rekordow.
+  Kod pracownika = numer scenariusza.
+    TS-02 Wisniewski  - Nieob.nieusprawiedliwiona 1 dzien  -> lamie frekwencje -> 0
+    TS-03 Wojcik      - Zwolnienie chorobowe 5 dni          -> lamie frekwencje -> 0
+    TS-05 Lewandowski - Urlop wypoczynkowy planowy 10 dni   -> dozwolony        -> 1500
+  Selektor TypZrodla=Pracownik obowiazkowy; guid staly => idempotentne.
+-->
+<session fromto="(wszystko)">
+
+  <Pracownik where="Kod=TS-02">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000002a1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0002-000000000000</Definicja>
+        <Okres>2026-05-11...2026-05-11</Okres>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-03">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000003a1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-09-14...2026-09-18</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-05">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace"
+                   guid="a1000000-0000-0000-0000-0000000005a1">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0028-000000000000</Definicja>
+        <Okres>2026-06-08...2026-06-19</Okres>
+        <Urlop><Przyczyna>Planowy</Przyczyna></Urlop>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+</session>

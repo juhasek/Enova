@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Elementy wynagrodzenia w kartotece pieciu pracownikow bazy Claude na wrzesien 2026
+  (Okres 2026-09-01...2026-09-30), oparte o standardowe definicje juz obecne w bazie
+  (DefElementow) - "Premia" i "Skladka PZU", obie typu "Kwota z parametru" (AlgorytmTyp=1,
+  jak "Dodatek roczny"), wiec ten sam mechanizm <Dodatki><Dodatek><Historia><DodHistoria>.
+  Import wg rekordow, guidy stale => idempotentne.
+
+  Premia (guid definicji c9c3dc52-be71-4b8f-b89b-728d83cd4a9a)   -> 500,00 PLN / pracownika
+  Skladka PZU (guid definicji 2b04aaba-22ec-4613-8fbc-a80e544c7245) -> 45,00 PLN / pracownika
+-->
+<session fromto="(wszystko)">
+
+  <Pracownik where="Kod=TS-01">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000001e1">
+        <Nazwa>Premia</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000001e2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c9c3dc52-be71-4b8f-b89b-728d83cd4a9a</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000001f1">
+        <Nazwa>Składka PZU</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000001f2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>2b04aaba-22ec-4613-8fbc-a80e544c7245</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>45.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-02">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000002e1">
+        <Nazwa>Premia</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000002e2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c9c3dc52-be71-4b8f-b89b-728d83cd4a9a</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000002f1">
+        <Nazwa>Składka PZU</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000002f2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>2b04aaba-22ec-4613-8fbc-a80e544c7245</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>45.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-03">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000003e1">
+        <Nazwa>Premia</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000003e2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c9c3dc52-be71-4b8f-b89b-728d83cd4a9a</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000003f1">
+        <Nazwa>Składka PZU</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000003f2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>2b04aaba-22ec-4613-8fbc-a80e544c7245</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>45.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-05">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000005e1">
+        <Nazwa>Premia</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000005e2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c9c3dc52-be71-4b8f-b89b-728d83cd4a9a</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000005f1">
+        <Nazwa>Składka PZU</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000005f2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>2b04aaba-22ec-4613-8fbc-a80e544c7245</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>45.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-09">
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000009e1">
+        <Nazwa>Premia</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000009e2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>c9c3dc52-be71-4b8f-b89b-728d83cd4a9a</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>500.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+    <Dodatki addnew="true">
+      <Dodatek guid="a1000000-0000-0000-0000-0000000009f1">
+        <Nazwa>Składka PZU</Nazwa>
+        <Historia addnew="true">
+          <DodHistoria guid="a1000000-0000-0000-0000-0000000009f2">
+            <Aktualnosc>(wszystko)</Aktualnosc>
+            <Element>2b04aaba-22ec-4613-8fbc-a80e544c7245</Element>
+            <Okres>2026-09-01...2026-09-30</Okres>
+            <Podstawa>45.00 PLN</Podstawa>
+            <Ulamek>1/1</Ulamek>
+          </DodHistoria>
+        </Historia>
+      </Dodatek>
+    </Dodatki>
+  </Pracownik>
+
+</session>
