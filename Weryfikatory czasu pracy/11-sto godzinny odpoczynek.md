@@ -8,8 +8,9 @@ Uruchamia się przy każdej zmianie dnia planu pracy (`KontrolaDniaVerifier` w
 - **Nazwa w enova:** `11-sto godzinny odpoczynek`
 - **Poziom:** `Error` (blokuje zapis planu) – ustawiany na powiązaniu kalendarza
   z weryfikatorem (`WeryfikatorKalendarza.Typ`), **nie** w kodzie. Ustalenie z klientem.
-- Zweryfikowano na żywo: **Nie** – środowisko robocze repo nie ma dostępu do
-  bazy/DLL klienta. Odbiór po teście w GUI (scenariusze niżej).
+- Zweryfikowano na żywo: **Tak** (2026-09-11, test w GUI klienta) – scenariusz
+  sobota 8:00–21:00 / niedziela 7:00–20:00 poprawnie zgłasza brak 11h odpoczynku.
+  **Zadanie zamknięte.**
 
 ## Po co, skoro Soneta ma własny weryfikator 11 h
 
