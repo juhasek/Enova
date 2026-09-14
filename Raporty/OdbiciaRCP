@@ -209,7 +209,7 @@ namespace x.x.Reports
             {
                 if (sb.Length > 0)
                     sb.Append("; ");
-                sb.Append(SkrotTypu(wewy.Typ)).Append(' ').Append(wewy.Godzina.ToString());
+                sb.Append(SkrotTypu(wewy.Typ)).Append(' ').Append(Znormalizuj24(wewy.Godzina).ToString());
             }
             return sb.ToString();
         }
@@ -223,9 +223,23 @@ namespace x.x.Reports
             {
                 if (sb.Length > 0)
                     sb.Append("; ");
-                sb.Append(ft.From.ToString()).Append('-').Append(ft.To.ToString());
+                sb.Append(Znormalizuj24(ft.From).ToString()).Append('-').Append(Znormalizuj24(ft.To).ToString());
             }
             return sb.ToString();
+        }
+
+        // Godziny zegarowe (start/koniec strefy lub odbicia) bywają zapisywane z doliczoną
+        // dobą, gdy zdarzenie logicznie należy do "doby" zaczętej dzień wcześniej (np. 30:05
+        // zamiast 6:05 rano) - to prawidłowy sposób przechowywania w enova, ale w raporcie ma
+        // się pokazywać zwykła godzina zegarowa. Dotyczy WYŁĄCZNIE godzin zegarowych (Odbicia,
+        // PlanOdDo) - czasu trwania (CzasEwidencji, PlanCzas) NIE wolno w ten sposób zawijać,
+        // bo to realna liczba przepracowanych godzin, a nie punkt na zegarze.
+        static Time Znormalizuj24(Time t)
+        {
+            Time doba = new Time(24, 0);
+            while (t >= doba)
+                t -= doba;
+            return t;
         }
 
         static string SkrotTypu(TypWejsciaWyjscia typ)
