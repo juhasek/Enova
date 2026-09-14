@@ -101,7 +101,21 @@ Na górze wydruku wyświetlane jest podsumowanie zbiorcze dla wybranego okresu:
 - liczba dni zmodyfikowanych z poprawnie naliczonymi godzinami z RCP (uwzględniana tylko, gdy
   parametr „Pokaż dni z godzinami z RCP” jest zaznaczony).
 
-## 8. Zalecany sposób pracy z raportem
+## 8. Zgłoszony błąd i poprawka (14.09.2026)
+
+**Zgłoszenie klienta (baza Al):** raport rzucał `NullReferenceException` w `DodajDniPracownika`
+przy próbie wydruku.
+
+**Przyczyna:** przy liczeniu okresu zatrudnienia pracownika kod zakładał, że każdy wiersz historii
+zatrudnienia (`PracHistoria`) zwrócony przez `Historia.GetIntersectedRows(okres)` ma wypełnione pole
+`Etat` — `Historia` zawiera jednak też wpisy niezwiązane z etatem (np. zmiany danych osobowych), dla
+których `Etat` jest `null`. Ten sam problem był już wcześniej rozwiązany analogicznym zabezpieczeniem
+w innych raportach tego repo (`A1PelnaListaPlacWorker`, `A1NaglowekListaSnippet`).
+
+**Poprawka:** dodano warunek `if (ph.Etat != null)` przed odczytem `ph.Etat.EfektywnyOkres` —
+wiersze historii bez etatu są pomijane przy wyliczaniu okresu zatrudnienia.
+
+## 9. Zalecany sposób pracy z raportem
 
 1. Przed naliczeniem wynagrodzeń za dany okres uruchom raport dla wszystkich pracowników objętych
    RCP, z domyślnymi parametrami (bez zaznaczania „Pokaż dni z godzinami z RCP”).

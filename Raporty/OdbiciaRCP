@@ -121,7 +121,8 @@ namespace x.x.Reports
             // tylko dni w okresie zatrudnienia
             Periods zatrudnienie = Periods.Empty;
             foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(okres))
-                zatrudnienie += ph.Etat.EfektywnyOkres * okres;
+                if (ph.Etat != null)
+                    zatrudnienie += ph.Etat.EfektywnyOkres * okres;
             zatrudnienie = zatrudnienie.ToFlat();
 
             KalkulatorPracownika kalk = pracownik.Czasy;
