@@ -71,6 +71,7 @@ pozostałych.
 |---|---|
 | Pracownik | Nazwisko i imię pracownika. |
 | Kod | Kod pracownika w systemie. |
+| MPK | Centrum kosztów wydziału, do którego pracownik był przypisany w danym dniu (wg historii zatrudnienia); puste, jeśli nie da się ustalić. |
 | Data | Data dnia, którego dotyczy wiersz. |
 | Dzień | Skrót dnia tygodnia (Nd, Pn, Wt, Śr, Cz, Pt, So). |
 | Plan od-do | Godziny pracy wynikające z planu (harmonogramu), w formacie „od–do”; puste, jeśli plan nie przewidywał pracy. |
@@ -115,7 +116,32 @@ w innych raportach tego repo (`A1PelnaListaPlacWorker`, `A1NaglowekListaSnippet`
 **Poprawka:** dodano warunek `if (ph.Etat != null)` przed odczytem `ph.Etat.EfektywnyOkres` —
 wiersze historii bez etatu są pomijane przy wyliczaniu okresu zatrudnienia.
 
-## 9. Zalecany sposób pracy z raportem
+## 9. Kolumna MPK i drugi błąd tego samego dnia (14.09.2026)
+
+Niezależnie od poprawki z pkt 8, tego samego dnia raport został zmodyfikowany bezpośrednio w
+edytorze skryptów enova (baza `Al`) — dodano kolumnę **MPK** (centrum kosztów wydziału, do którego
+przypisany jest pracownik danego dnia) oraz zmieniono zachowanie kolumny „Odbicia”: przy braku
+odbić RCP nie jest już wyświetlany tekst „brak odbić”, tylko pusta wartość.
+
+Zmiana ta trafiła do bazy z pominięciem repozytorium (edycja wprost w GUI) i wprowadziła nowy,
+niezabezpieczony odczyt:
+
+```
+MPK = pracownik.Historia[data].Etat.Wydzial.CentrumKosztow.ToString(),
+```
+
+`Historia[data]` może zwrócić `null` (dzień bez wiersza historii pokrywającego tę datę), podobnie
+`Etat` i `Wydzial` — co ponownie rzucało `NullReferenceException` w tym samym miejscu (drugie
+zgłoszenie klienta tego samego dnia, ten sam stack trace co w pkt 8). Dodatkowo zapis z edytora
+enova uszkodził kodowanie polskich znaków w całym pliku (mojibake).
+
+**Poprawka:** dodano pełne zabezpieczenie łańcucha `Historia[data] → Etat → Wydzial →
+CentrumKosztow` (MPK puste, jeśli którykolwiek element jest `null`), odtworzono poprawne polskie
+znaki w całym pliku i zsynchronizowano repozytorium z kodem w bazie `Al` (kolumna MPK, zmiana
+zachowania „Odbicia”). Zaktualizowany kod wgrano z powrotem do `SystemFiles.Code` (baza `Al`,
+`ID=1`) przez bezpośredni `UPDATE` SQL — zweryfikowano poprawność polskich znaków po zapisie.
+
+## 10. Zalecany sposób pracy z raportem
 
 1. Przed naliczeniem wynagrodzeń za dany okres uruchom raport dla wszystkich pracowników objętych
    RCP, z domyślnymi parametrami (bez zaznaczania „Pokaż dni z godzinami z RCP”).

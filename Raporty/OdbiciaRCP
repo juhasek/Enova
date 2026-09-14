@@ -18,6 +18,9 @@ namespace x.x.Reports
     //
     // Czas dnia liczony kalkulatorem (KalkPracy), nie polem Praca rekordu — import RCP
     // zapisuje godziny w strefach dnia (ImportDnia.ZapiszStrefy) i pole Praca zostaje puste.
+    //
+    // 14.09.2026 TK - dodanie kolumny MPK (centrum kosztów wydziału pracownika); w przypadku
+    // braku odbić RCP kolumna Odbicia nie wyświetla już tekstu "brak odbić", tylko pustą wartość.
     public class RaportOdbicRcpSnippet : ReportSnippet
     {
         [DxBind]
@@ -144,6 +147,12 @@ namespace x.x.Reports
                     string czasEwidencji = "";
                     string odbicia = "";
                     string rcpOk = "";
+                    string mpk = "";
+
+                    PracHistoria phDnia = pracownik.Historia[data];
+                    if (phDnia != null && phDnia.Etat != null && phDnia.Etat.Wydzial != null
+                        && phDnia.Etat.Wydzial.CentrumKosztow != null)
+                        mpk = phDnia.Etat.Wydzial.CentrumKosztow.ToString();
 
                     if (dzienPracy != null)
                     {
@@ -178,6 +187,7 @@ namespace x.x.Reports
                     wiersze.Add(new Wiersz {
                         Pracownik = pracownik.NazwiskoImię.ToString(),
                         Kod = pracownik.Kod,
+                        MPK = mpk,
                         Data = data.ToString(),
                         Dzien = dniTygodnia[(int) data.DayOfWeek],
                         PlanOdDo = FormatPlan(dzienPlanu, planCzas),
@@ -201,7 +211,7 @@ namespace x.x.Reports
                     sb.Append("; ");
                 sb.Append(SkrotTypu(wewy.Typ)).Append(' ').Append(wewy.Godzina.ToString());
             }
-            return sb.Length > 0 ? sb.ToString() : "brak odbić".Translate();
+            return sb.ToString();
         }
 
         static string FormatPlan(Dzien dzienPlanu, Time planCzas)
@@ -236,6 +246,7 @@ namespace x.x.Reports
         {
             public string Pracownik { get; set; }
             public string Kod { get; set; }
+            public string MPK { get; set; }
             public string Data { get; set; }
             public string Dzien { get; set; }
             public string PlanOdDo { get; set; }
