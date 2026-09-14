@@ -108,6 +108,19 @@ public decimal Feature_Nadgodziny_okresowe {
                                 Time gorna = sumaDoby < plan ? plan : (sumaDoby < norma ? sumaDoby : norma);
                                 return gorna > dolna ? (decimal)(gorna - dolna).TotalHours : (decimal)0;
                             }
+                            // Poprawka 14.09.2026 - zgłoszenie klienta: godzina "poza normą" wypadająca
+                            // przed startem zaplanowanej zmiany tego dnia (np. dodatkowa wcześniejsza
+                            // godzina 6-7 przed nocną zmianą zaplanowaną od 19:00) to tzw. "czarna dziura"
+                            // - dotąd łapana tylko dla dnia po święcie (blok niżej, tu nieosiągalny przez
+                            // return/continue). Uogólniono: niezależnie od typu dnia poprzedniego, jeśli
+                            // strefa zaczyna się przed dzienPlanu.OdGodziny, liczy się jako okresowa (część
+                            // strefy do granicy startu zmiany). Nie dubluje z cechą "Nadgodziny 50 test" -
+                            // ta z powodu tej samej chronologicznej kumulacji i tak zwraca dla takiej strefy 0.
+                            if(dzienPlanu.Czas != Time.Zero && odGodziny < dzienPlanu.OdGodziny)
+                            {
+                                Time koniecDziury = doGodziny < dzienPlanu.OdGodziny ? doGodziny : dzienPlanu.OdGodziny;
+                                return (decimal)(koniecDziury - odGodziny).TotalHours;
+                            }
                             return 0;
                         }
                         continue;

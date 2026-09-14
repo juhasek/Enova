@@ -100,7 +100,44 @@ Blok obsługi „czarnych dziur" (poniedziałek po dobie niedzielno-świąteczne
 `return`, a dla pozostałych stref `continue`. Zmiana zachowania tego fragmentu nie
 była przedmiotem zgłoszenia.
 
-## 5. Do potwierdzenia przed wdrożeniem
+## 5. Czwarty zgłoszony błąd i poprawka (14.09.2026) — „czarna dziura” w zwykłym dniu roboczym
+
+**Zgłoszenie klienta:** cecha nie pokazuje nadgodzin dla pracy w tzw. „czarnej dziurze”. Scenariusz:
+plan pracy od 19:00, 12h (do 7:00 dnia następnego). Dodatkowo w tym samym dniu (08.09) praca
+19:00–7:00 (zgodna z planem, strefa „Praca w normie”) oraz osobna strefa 6:00–7:00 („Praca poza
+normą”) — a więc godzina dodatkowa wypadająca **przed** startem zaplanowanej zmiany.
+
+**Diagnoza:** obsługa „czarnej dziury” (opisana w pkt 4 jako nieaktywna w gałęzi `else`) rzeczywiście
+nie działała dla zwykłego dnia roboczego z dwóch powodów:
+
+1. Blok był fizycznie nieosiągalny w gałęzi `else` — kod zawsze wykonywał wcześniej `return` (dla
+   `st == Row`) albo `continue` (dla pozostałych stref), więc sterowanie nigdy nie docierało do
+   sprawdzenia „czarnej dziury” poniżej.
+2. Nawet gdyby był osiągalny, warunek ograniczał się do `dzienPracyPoprzedni.Definicja.Typ ==
+   TypDnia.Świąteczny` — czyli tylko do przejścia niedziela/święto → poniedziałek. Zgłoszony
+   scenariusz to zwykły dzień roboczy, bez święta dzień wcześniej, więc warunek i tak by nie
+   zadziałał.
+
+Klasyfikacja tych godzin: zgodnie z konwencją już ustaloną dla „czarnej dziury” świąteczno-
+niedzielnej (patrz `Cechy/Nadgodziny 50 test.md`, pkt 2 — „godziny 'czarnej dziury' to nadgodziny
+okresowe, a nie nadgodziny 50%”), godzina poza normą poprzedzająca start zaplanowanej zmiany również
+ma być liczona jako **nadgodziny okresowe**, nie dobowe 50%.
+
+**Poprawka:** w gałęzi `else`, dla strefy `Row`, gdy nie łapie się w okno `(plan, norma]` (istniejący
+warunek `praca > plan && plan < norma`), dodano ogólne sprawdzenie: jeśli strefa zaczyna się przed
+`dzienPlanu.OdGodziny` (startem zaplanowanej zmiany tego dnia, przy niezerowym planie), część strefy
+przypadająca przed tym startem liczy się jako okresowa — niezależnie od typu dnia poprzedniego.
+Dla zgłoszonego przykładu (strefa 6:00–7:00, plan od 19:00) zwraca poprawnie `1h`.
+
+Sprawdzono, że nie powstaje podwójne liczenie z cechą „Nadgodziny 50 test” — ta, licząc chronologicznie
+sumę stref dnia, dla strefy poprzedzającej główny blok planu i tak zwraca `0` (suma w momencie
+dotarcia do tej strefy jest zbyt mała, by przekroczyć normę 8h), więc nie wymagała zmiany.
+
+**Do potwierdzenia:** poprawkę zweryfikowano analitycznie na przykładzie ze zgłoszenia — do
+potwierdzenia na żywej bazie klienta (w tym dla przypadku, gdy strefa poza normą częściowo nachodzi
+na start zaplanowanej zmiany, oraz dla etatu niepełnego).
+
+## 6. Do potwierdzenia przed wdrożeniem
 
 - Kod cechy „Nadgodziny NSW", która ma faktycznie rozliczać pracę „poza normą" w święto/dzień
   wolny objęty NSW, nie jest jeszcze dodany do repozytorium — do uzupełnienia, gdy będzie dostępny.
