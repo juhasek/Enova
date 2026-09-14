@@ -133,9 +133,10 @@ Sprawdzono, że nie powstaje podwójne liczenie z cechą „Nadgodziny 50 test�
 sumę stref dnia, dla strefy poprzedzającej główny blok planu i tak zwraca `0` (suma w momencie
 dotarcia do tej strefy jest zbyt mała, by przekroczyć normę 8h), więc nie wymagała zmiany.
 
-**Do potwierdzenia:** poprawkę zweryfikowano analitycznie na przykładzie ze zgłoszenia — do
-potwierdzenia na żywej bazie klienta (w tym dla przypadku, gdy strefa poza normą częściowo nachodzi
-na start zaplanowanej zmiany, oraz dla etatu niepełnego).
+**Potwierdzone przez klienta (14.09.2026):** poprawka przetestowana na żywej bazie klienta — działa
+zgodnie z oczekiwaniem dla zgłoszonego scenariusza (strefa 6:00–7:00 przed zmianą od 19:00 → 1h
+nadgodzin okresowych). Przypadek częściowego nachodzenia strefy na start zaplanowanej zmiany oraz
+etat niepełny nie były odrębnie testowane.
 
 ## 6. Do potwierdzenia przed wdrożeniem
 
