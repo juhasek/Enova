@@ -29,6 +29,5 @@ Wcześniejsza wersja cechy zawierała blok wykluczający godziny „czarnej dziu
 niedzielno-świątecznej a przed dobą planowanego dnia roboczego, gdy dzień poprzedni był świąteczny)
 — ten sam warunek co w cesze **„Nadgodziny okresowe"** (`Cechy/Nadgodziny okresowe`), zwracający `0`
 dla takich godzin, by uniknąć podwójnego naliczenia między obiema cechami. Blok ten został usunięty
-razem z poprawką błędu sumowania (patrz wyżej) — **do potwierdzenia z użytkownikiem, czy to celowe**,
-bo bez niego godziny „czarnej dziury" mogą znów być liczone podwójnie przez tę cechę i przez
-„Nadgodziny okresowe".
+razem z poprawką błędu sumowania (patrz wyżej) — potwierdzone przez użytkownika (2026-09-16), że
+aktualny stan w bazie `Claude` (bez tego bloku) jest obowiązujący.
