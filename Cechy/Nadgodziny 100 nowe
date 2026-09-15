@@ -1,0 +1,101 @@
+public decimal Feature_Nadgodziny_100_nowe {
+	get {
+
+		if (Row.Definicja == null)
+			return 0;
+
+		if (!Row.Definicja.Nazwa.Contains("Praca poza normą"))
+			return 0;
+
+		DzienPracy dzienRow = Row.Dzien;
+		Pracownik pracownik = dzienRow.Pracownik;
+		Date data = dzienRow.Data;
+
+		PracHistoria ph = pracownik[data];
+		if (ph == null || ph.Etat == null || ph.Etat.Kalendarz == null)
+			return 0;
+
+		Kalendarz kalendarz = ph.Etat.Kalendarz;
+
+		KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
+		KalkulatorPlanu kalkPlanu = pracownik.Czasy.KalkPlanu;
+		Dzien dzienPracy = kalkPracy[data];
+		Dzien dzienPlanu = kalkPlanu[data];
+
+		if (dzienPracy == null || dzienPracy.Definicja == null)
+			return 0;
+
+		// Dni niedzielno-świąteczne rozlicza osobna cecha "Nadgodziny NSW" - tu 0
+		if (dzienPracy.Definicja.NadgodzinySW || dzienPracy.Definicja.Typ == TypDnia.Świąteczny)
+			return 0;
+
+		// Norma dobowa - tak jak wylicza ją system, wg algorytmu skonfigurowanego na kalendarzu
+		// pracownika (Nadgodziny.AlgorytmDobowa): z planu dnia, ze stałej normy Etatu, albo
+		// jako większa z tych dwóch (równoważny czas pracy)
+		Time planCzas = dzienPlanu != null ? dzienPlanu.Czas : Time.Zero;
+		Time normaDobowa;
+		if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
+			normaDobowa = planCzas != Time.Zero ? planCzas : ph.Etat.NormaDobowa;
+		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.RównoważnyCzasPracy)
+			normaDobowa = planCzas > ph.Etat.NormaDobowa ? planCzas : ph.Etat.NormaDobowa;
+		else
+			normaDobowa = ph.Etat.NormaDobowa;
+
+		// Chronologiczna suma stref "Praca w normie" + "Praca poza normą" (w tym "awaria") -
+		// wyznaczenie części nadwyżki ponad normę dobową przypadającej właśnie na Row, bez
+		// podwójnego naliczenia z innymi strefami "poza normą" tego samego dnia
+		Time suma = Time.Zero;
+		Time nadwyzkaRow = Time.Zero;
+		foreach (StrefaPracy st in dzienRow.Strefy.OrderBy(s => s.OdGodziny))
+		{
+			if (st.Definicja == null)
+				continue;
+			bool wPodstawie = st.Definicja.Nazwa.Contains("Praca w normie") || st.Definicja.Nazwa.Contains("Praca poza normą");
+			if (!wPodstawie)
+				continue;
+
+			Time przedStrefa = suma;
+			suma += st.Czas;
+
+			if (st == Row)
+			{
+				Time dolna = przedStrefa > normaDobowa ? przedStrefa : normaDobowa;
+				Time gorna = suma > normaDobowa ? suma : normaDobowa;
+				nadwyzkaRow = gorna > dolna ? gorna - dolna : Time.Zero;
+				break;
+			}
+		}
+
+		if (nadwyzkaRow <= Time.Zero)
+			return 0;
+
+		Time poczatekNadwyzki = Row.OdGodziny + (Row.Czas - nadwyzkaRow);
+		Time nadwyzka100 = Time.Zero;
+
+		// Limit dobowy 50% - aktywny tylko, gdy w konfiguracji nadgodzin włączone jest "Dobowe 100";
+		// nadmiar ponad limit trafia tutaj (do 100%)
+		bool limitDobowyAktywny = KalendModule.GetInstance(Row).Config.Nadgodziny.Dobowe100;
+		if (limitDobowyAktywny)
+		{
+			Time limit = kalendarz.Nadgodziny.Nadgodz50;
+			if (nadwyzkaRow > limit)
+			{
+				nadwyzka100 = nadwyzkaRow - limit;
+				nadwyzkaRow = limit;
+			}
+		}
+
+		// Godziny nocne wymuszone na 100% (konfiguracja "Nocne 100") - wg realnego okna nocnego
+		// wyznaczonego przez sam system (KalkulatorPracy.NocOkres), z uwzględnieniem przejścia
+		// przez północ
+		if (nadwyzkaRow > Time.Zero && KalendModule.GetInstance(Row).Config.Nadgodziny.Nocne100)
+		{
+			FromTimes nocOkres = kalkPracy.NocOkres(ph);
+			FromTimes oknoNadwyzki = FromTimes.New(new FromTime(poczatekNadwyzki, nadwyzkaRow));
+			Time wNocy = oknoNadwyzki.Intersection(nocOkres).Time;
+			nadwyzka100 += wNocy;
+		}
+
+		return (decimal)nadwyzka100.TotalHours;
+	}
+}
