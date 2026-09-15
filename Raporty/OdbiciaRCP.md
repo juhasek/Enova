@@ -141,26 +141,7 @@ znaki w całym pliku i zsynchronizowano repozytorium z kodem w bazie `Al` (kolum
 zachowania „Odbicia”). Zaktualizowany kod wgrano z powrotem do `SystemFiles.Code` (baza `Al`,
 `ID=1`) przez bezpośredni `UPDATE` SQL — zweryfikowano poprawność polskich znaków po zapisie.
 
-## 10. Godziny zapisane z doliczoną dobą — normalizacja do 24h (14.09.2026)
-
-**Zgłoszenie klienta:** dla Kaczorowski Adam, 20.09.2026, raport pokazywał godzinę „30:05” zamiast
-oczekiwanej „6:05”.
-
-**Diagnoza:** enova czasem zapisuje godzinę zdarzenia/strefy z doliczoną pełną dobą (24h), gdy
-zdarzenie logicznie przypada do „doby” zaczętej dzień wcześniej — to samo zjawisko, które widać przy
-godzinach nocnych (`Kalendarz.Nocne.Do` bywa zapisywane jako `31:00` zamiast `7:00`). Sprawdzone w
-bazie `Al`: `StrefyPracy.PracaOdGodziny = 1805` (minuty) = `30:05`; `1805 − 1440 (24h) = 365` = `6:05`
-— dokładnie oczekiwana wartość. To **nie błąd danych** — użytkownik potwierdził, że tak zapisane
-godziny pojawiają się czasem celowo — tylko błąd wyświetlania: raport pokazywał surową wartość
-zamiast zawiniętej do zwykłej godziny zegarowej.
-
-**Poprawka:** dodano funkcję pomocniczą `Znormalizuj24`, która odejmuje pełne doby (24h), dopóki
-godzina nie zmieści się w zakresie `0:00–23:59`. Zastosowano ją **tylko** do godzin zegarowych —
-kolumny „Odbicia” (godziny wejść/wyjść) i „Plan od-do” (zakres zaplanowanej zmiany). Kolumny z
-**czasem trwania** („Czas ewidencji”, „Plan”) pozostały bez zmian — to realna liczba przepracowanych
-godzin, nie punkt na zegarze, więc nie wolno ich zawijać modulo 24h.
-
-## 11. Zalecany sposób pracy z raportem
+## 10. Zalecany sposób pracy z raportem
 
 1. Przed naliczeniem wynagrodzeń za dany okres uruchom raport dla wszystkich pracowników objętych
    RCP, z domyślnymi parametrami (bez zaznaczania „Pokaż dni z godzinami z RCP”).
