@@ -1,0 +1,90 @@
+public decimal Feature_Nadgodziny_okresowe_nowe {
+	get {
+
+		if (Row.Definicja == null)
+			return 0;
+
+		if (!Row.Definicja.Nazwa.Contains("Praca poza normą"))
+			return 0;
+
+		DzienPracy dzienRow = Row.Dzien;
+		Pracownik pracownik = dzienRow.Pracownik;
+		Date data = dzienRow.Data;
+
+		PracHistoria ph = pracownik[data];
+		if (ph == null || ph.Etat == null || ph.Etat.Kalendarz == null)
+			return 0;
+
+		Kalendarz kalendarz = ph.Etat.Kalendarz;
+
+		KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
+		KalkulatorPlanu kalkPlanu = pracownik.Czasy.KalkPlanu;
+		Dzien dzienPracy = kalkPracy[data];
+		Dzien dzienPlanu = kalkPlanu[data];
+
+		if (dzienPracy == null || dzienPracy.Definicja == null)
+			return 0;
+
+		// Dni niedzielno-świąteczne rozlicza osobna cecha "Nadgodziny NSW nowe" - tu 0
+		if (dzienPracy.Definicja.NadgodzinySW || dzienPracy.Definicja.Typ == TypDnia.Świąteczny)
+			return 0;
+
+		Time planCzas = dzienPlanu != null ? dzienPlanu.Czas : Time.Zero;
+
+		// Godzina "poza normą" przypadająca przed startem zaplanowanej zmiany tego dnia
+		// (np. dodatkowa wcześniejsza godzina 6-7 przed nocną zmianą zaplanowaną od 19:00) -
+		// jest okresowa niezależnie od tego, czy plan dnia jest krótszy, czy dłuższy od normy;
+		// nie mieści się w chronologicznym oknie (plan, norma] liczonym dalej, bo w kolejności
+		// godzin zegarowych wypada przed startem planu, a nie po nim
+		if (dzienPlanu != null && planCzas != Time.Zero && Row.OdGodziny < dzienPlanu.OdGodziny)
+		{
+			Time koniecDziury = (Row.OdGodziny + Row.Czas) < dzienPlanu.OdGodziny ? (Row.OdGodziny + Row.Czas) : dzienPlanu.OdGodziny;
+			Time dziura = koniecDziury > Row.OdGodziny ? koniecDziury - Row.OdGodziny : Time.Zero;
+			if (dziura > Time.Zero)
+				return (decimal)dziura.TotalHours;
+		}
+
+		// Norma dobowa - identycznie jak w "Nadgodziny 50/100 nowe" (wg realnej konfiguracji
+		// kalendarza, nie sztywne 8h)
+		Time normaDobowa;
+		if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
+			normaDobowa = planCzas != Time.Zero ? planCzas : ph.Etat.NormaDobowa;
+		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.RównoważnyCzasPracy)
+			normaDobowa = planCzas > ph.Etat.NormaDobowa ? planCzas : ph.Etat.NormaDobowa;
+		else
+			normaDobowa = ph.Etat.NormaDobowa;
+
+		// "Okresowe" istnieją tylko wtedy, gdy dzień zaplanowano krócej niż pełna norma dobowa -
+		// wtedy godziny między planem a normą to "dopracowanie" do normy (okresowe); dopiero
+		// powyżej normy zaczynają się nadgodziny dobowe ("Nadgodziny 50/100 nowe")
+		if (planCzas >= normaDobowa)
+			return 0;
+
+		// Chronologiczna suma stref "Praca w normie" + "Praca poza normą" (w tym "awaria") -
+		// wyznaczenie części mieszczącej się w oknie (plan, norma] przypadającej właśnie na Row,
+		// bez podwójnego naliczenia z innymi strefami "poza normą" tego samego dnia
+		Time suma = Time.Zero;
+		Time okresoweRow = Time.Zero;
+		foreach (StrefaPracy st in dzienRow.Strefy.OrderBy(s => s.OdGodziny))
+		{
+			if (st.Definicja == null)
+				continue;
+			bool wPodstawie = st.Definicja.Nazwa.Contains("Praca w normie") || st.Definicja.Nazwa.Contains("Praca poza normą");
+			if (!wPodstawie)
+				continue;
+
+			Time przedStrefa = suma;
+			suma += st.Czas;
+
+			if (st == Row)
+			{
+				Time dolna = przedStrefa < planCzas ? planCzas : (przedStrefa < normaDobowa ? przedStrefa : normaDobowa);
+				Time gorna = suma < planCzas ? planCzas : (suma < normaDobowa ? suma : normaDobowa);
+				okresoweRow = gorna > dolna ? gorna - dolna : Time.Zero;
+				break;
+			}
+		}
+
+		return (decimal)okresoweRow.TotalHours;
+	}
+}
