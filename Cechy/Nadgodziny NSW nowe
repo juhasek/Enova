@@ -1,0 +1,44 @@
+public decimal Feature_Nadgodziny_NSW_nowe {
+	get {
+
+		if (Row.Definicja == null)
+			return 0;
+
+		if (!Row.Definicja.Nazwa.Contains("Praca poza normą"))
+			return 0;
+
+		DzienPracy dzienRow = Row.Dzien;
+		Pracownik pracownik = dzienRow.Pracownik;
+		Date data = dzienRow.Data;
+
+		KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
+		KalkulatorPlanu kalkPlanu = pracownik.Czasy.KalkPlanu;
+		Dzien dzienPracy = kalkPracy[data];
+		Dzien dzienPlanu = kalkPlanu[data];
+
+		if (dzienPracy == null || dzienPracy.Definicja == null)
+			return 0;
+
+		// Czy dzień kwalifikuje się jako niedzielno-świąteczny dla nadgodzin - dokładnie tak,
+		// jak robi to silnik systemu (KalkulatorPracownika.Nadgodziny): zależnie od globalnej
+		// konfiguracji "Dobowe 100" sprawdzany jest albo typ dnia (Wolny/Świąteczny), albo
+		// wprost flaga NadgodzinySW definicji dnia
+		bool dobowe100 = KalendModule.GetInstance(Row).Config.Nadgodziny.Dobowe100;
+		bool jestNSW = dobowe100
+			? (dzienPracy.Definicja.Typ == TypDnia.Wolny || dzienPracy.Definicja.Typ == TypDnia.Świąteczny)
+			: dzienPracy.Definicja.NadgodzinySW;
+
+		if (!jestNSW)
+			return 0;
+
+		Time praca = dzienPracy.Czas;
+		Time plan = dzienPlanu != null ? dzienPlanu.Czas : Time.Zero;
+
+		// W dniu niedzielno-świątecznym cała praca ponad plan (zwykle plan = 0) jest nadgodzinami
+		// NSW - nie tylko nadwyżka ponad normę dobową jak w dniach roboczych
+		if (praca <= plan)
+			return 0;
+
+		return (decimal)Row.Czas.TotalHours;
+	}
+}
