@@ -30,7 +30,6 @@ public decimal Feature_Nadgodziny_50_test {
 				//Time sobota = new Time(8,0);
 				Time praca = Time.Zero;
 				Time plan = Time.Zero;
-				Time dobaNiedziela = new Time(6,0); //(Time)KalendModule.GetInstance(Row).Config.PoczątekDobyPracWNdIŚwiętaOddział;
 
 				KalkulatorPracy kalkpracy = Row.Dzien.Pracownik.Czasy.KalkPracy;
 				KalkulatorPlanu kalkplanu = Row.Dzien.Pracownik.Czasy.KalkPlanu;
@@ -39,7 +38,6 @@ public decimal Feature_Nadgodziny_50_test {
 
 				Dzien dzienPracy = kalkpracy[Row.Dzien.Data];
 				Dzien dzienPlanu = kalkplanu[Row.Dzien.Data];
-				Dzien dzienPracyPoprzedni = kalkpracy[Row.Dzien.Data.AddDays(-1)];
 				praca = dzienPracy.Czas;
 				plan = dzienPlanu.Czas;
 				Time czasTemp = new Time(8,0);// * Row.Dzien.Pracownik.Last.Etat.Wymiar;
@@ -55,7 +53,7 @@ public decimal Feature_Nadgodziny_50_test {
 			  foreach(StrefaPracy st in Row.Dzien.Strefy.OrderBy(s => s.OdGodziny))
 				{
 
-					if (Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Pracy && !st.Definicja.Nazwa.Contains("Praca zdalna N")){
+					if (st.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Pracy && !st.Definicja.Nazwa.Contains("Praca zdalna N")){
 					 suma += st.Czas;
 
 			     if(st == Row)
@@ -77,7 +75,7 @@ public decimal Feature_Nadgodziny_50_test {
 					 }
 					}
 
-					if (Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Wolny && !st.Definicja.Nazwa.Contains("Praca zdalna N") && !dzienPracy.Definicja.NadgodzinySW){
+					if (st.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Wolny && !st.Definicja.Nazwa.Contains("Praca zdalna N") && !dzienPracy.Definicja.NadgodzinySW){
 						suma += st.Czas;
 						if(st == Row)
 						{
@@ -93,21 +91,6 @@ public decimal Feature_Nadgodziny_50_test {
 							else
 								nad50 = Time.Zero;
 						}
-					}
-
-					//godziny "czarnej dziury" (po dobie w niedzielę/święto a przed dobą poniedziałkową) to nadgodziny
-					//okresowe (patrz cecha "Nadgodziny okresowe"), a nie nadgodziny 50 - ta cecha ma ich nie liczyć,
-					//żeby nie dublować nadgodzin między dwiema cechami
-					if(dzienPracyPoprzedni.Definicja.Typ == TypDnia.Świąteczny && dzienPlanu.Czas != Time.Zero)
-					{
-						if(odGodziny >= dobaNiedziela && doGodziny <= dzienPlanu.OdGodziny)
-							return 0;
-						if(odGodziny < dobaNiedziela && doGodziny <= dzienPlanu.OdGodziny)
-							return 0;
-						if(odGodziny >= dobaNiedziela && odGodziny <= dzienPlanu.OdGodziny && doGodziny > dzienPlanu.OdGodziny)
-							return 0;
-						if(odGodziny < dobaNiedziela && doGodziny > dzienPlanu.OdGodziny)
-							return 0;
 					}
 
 					/*if(Row.Definicja.Nazwa.Contains(strefa1) && dzienPracy.Definicja.Typ == TypDnia.Wolny && praca > czasTemp && !dzienPracy.Definicja.NadgodzinySW){

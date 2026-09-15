@@ -13,15 +13,22 @@ niedzielno-świątecznymi (ponad 8h w danym dniu wolnym).
 Wersja robocza/testowa (`_test` w nazwie właściwości) — do finalnej weryfikacji przed wdrożeniem
 produkcyjnym.
 
-## 2. Wykluczenie godzin „czarnej dziury" (01.09.2026)
+## 2. Poprawka błędu sumowania godzin (16.09.2026)
 
-Cecha rozpoznaje tzw. „czarne dziury", czyli godziny przypadające po dobie niedzielno-świątecznej
-(od godz. 6:00 w niedzielę/święto) a przed dobą planowanego dnia roboczego, gdy dzień poprzedni był
-świąteczny (`TypDnia.Świąteczny`), a bieżący dzień ma niezerowy plan pracy — ten sam warunek co w
-cesze **„Nadgodziny okresowe"** (`Cechy/Nadgodziny okresowe`).
+Pętla sumująca godziny do porównania z normą 8h błędnie sprawdzała `Row.Definicja.Nazwa.Contains(...)`
+(definicję wiersza, dla którego liczona jest cecha — stałą przez całą pętlę) zamiast
+`st.Definicja.Nazwa.Contains(...)` (definicję aktualnie iterowanej strefy `st`). W efekcie do sumy
+wliczały się godziny **wszystkich** stref danego dnia (np. „Lider zmiany", „Praca w normie"), nie
+tylko stref „Praca poza normą" — co mogło sztucznie zawyżać `sumę` ponad normę i błędnie kwalifikować
+godziny „poza normą" jako nadgodziny 50%, mimo że same w sobie nie przekraczały normy. Poprawione
+przez użytkownika bezpośrednio w edytorze skryptów enova (2026-09-16), zsynchronizowane do repo.
 
-**Godziny „czarnej dziury" to nadgodziny okresowe, a nie nadgodziny 50%** — rozlicza je cecha
-„Nadgodziny okresowe". Dlatego ta cecha, wykrywszy że wiersz mieści się w „czarnej dziurze" (w
-całości lub części — niezależnie od wariantu nakładania się strefy z granicą doby/planu), zwraca dla
-niego `0`, zamiast liczyć te godziny jako 50%. Zapobiega to podwójnemu naliczeniu tych samych godzin
-przez obie cechy jednocześnie.
+## 3. Usunięte wykluczenie godzin „czarnej dziury"
+
+Wcześniejsza wersja cechy zawierała blok wykluczający godziny „czarnej dziury" (po dobie
+niedzielno-świątecznej a przed dobą planowanego dnia roboczego, gdy dzień poprzedni był świąteczny)
+— ten sam warunek co w cesze **„Nadgodziny okresowe"** (`Cechy/Nadgodziny okresowe`), zwracający `0`
+dla takich godzin, by uniknąć podwójnego naliczenia między obiema cechami. Blok ten został usunięty
+razem z poprawką błędu sumowania (patrz wyżej) — **do potwierdzenia z użytkownikiem, czy to celowe**,
+bo bez niego godziny „czarnej dziury" mogą znów być liczone podwójnie przez tę cechę i przez
+„Nadgodziny okresowe".
