@@ -56,11 +56,16 @@
     </Nadgodziny>
 
     <!-- JEDYNA roznica wobec "Standard": okno nocne skonfigurowane, zeby dalo sie
-         przetestowac przeniesienie nadgodzin nocnych do "Nadgodziny 100 nowe" -->
+         przetestowac przeniesienie nadgodzin nocnych do "Nadgodziny 100 nowe".
+         Do MUSI byc zapisane z doliczona doba (30:00 = 6:00 nastepnej doby), NIE 6:00 -
+         KalkulatorPracyBase.NocOkres (Soneta.KadryPlace.dll, zdekompilowane 2026-09-16)
+         rzuca KonfigNocneError ("Blad konfiguracji pracy w godzinach nocnych"), gdy
+         Od > Do (throw gdy od > @do || @do - od > Time.Midnight) - patrz
+         reference_enova_godziny_doliczona_doba. -->
     <Nocne>
       <Rozliczaj>True</Rozliczaj>
       <Od>22:00</Od>
-      <Do>6:00</Do>
+      <Do>30:00</Do>
       <Limit>8:00</Limit>
     </Nocne>
   </KalendarzBase>
