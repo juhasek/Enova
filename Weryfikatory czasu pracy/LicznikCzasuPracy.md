@@ -146,3 +146,47 @@ koniec, norma 8h):
   `LCzPGodzinaKoncaDnia`; zgodnie z ustaleniem limit ma być wspólny dla wszystkich
   grup ruchomych, więc override per pracownik nie powinien być potrzebny — do
   potwierdzenia, czy dodatek w ogóle z niego korzysta.
+
+## Próba symulacji „na żywo" (2026-09-16) — ograniczenie środowiska
+
+Poproszony o zalogowanie się na pulpit pracowniczy (`tl`/`1`, `http://localhost:5000/Login/claude`)
+i klikniecie „Rozpocznij pracę" — **niewykonalne z tego środowiska**, sprawdzone i
+udokumentowane:
+
+- `buscall` (sterowanie żywą aplikacją z CLI) — brak w instalacji (sprawdzone
+  `dbmgr`'s katalog + `dotnet tool list -g`), zgodnie z [[project_srodowisko_lokalne]].
+- `/Login/claude` to czysta powłoka SPA (JS renderuje całość po stronie klienta) —
+  `curl`/`WebFetch` nie mają czego wypełnić ani obserwować; `WebFetch` w ogóle nie
+  obsługuje `localhost`.
+- Import XML w trybie rekordowym (jedyny działający tryb `dbmgr importxml` — tryb
+  `business="true"` wywala dbmgr, patrz [[reference_import_pracownika_xml]]) **nie
+  uruchamia logiki biznesowej/workerów** — wpis „Wejście" wstawiony tą drogą **nie**
+  wywoła automatycznie `LicznikManager.DodajWyjsciePodczasWejscia` (ten trigger żyje
+  w skompilowanym dodatku spiętym z akcją UI „Rozpocznij pracę").
+- `TestBase` (testy integracyjne) zarządza własnymi, izolowanymi bazami
+  `nunit_default`/`nunit_ui`/`nunit_premiumui` — nie dołącza się do istniejącej,
+  ręcznie przygotowanej bazy „Claude" z naszym `RUCH-01`.
+- Samodzielne otwarcie `Login`/`Session` z konsolowego `dotnet-script` wymagałoby
+  odtworzenia bootstrapu `BusApplication` (rejestracja bazy, DI, licencje) — to,
+  co normalnie robi `dbmgr`/`server.exe` wewnątrz własnego hosta; brak w tym
+  środowisku udokumentowanego, lekkiego sposobu zrobienia tego z zewnątrz.
+
+**Co faktycznie zweryfikowano zamiast tego:**
+
+1. Izolowana symulacja arytmetyki dat — dosłowny fragment `godzdomk`
+   z `LicznikManager` (przed i po poprawce) przepisany do małej konsoli net8,
+   z realnymi wartościami tego scenariusza (`today=2026-09-16`,
+   `czasWejscia=16:00`, `plan=8h`, `LCzPGodzinaKoncaDnia=18:30`):
+   - **przed poprawką:** `godzinaWyjscia (2026-09-17 00:00) > godzdomk (2026-09-17 18:30)` →
+     `False` → cap **nie** działa, zostaje 2026-09-17 00:00.
+   - **po poprawce:** `godzinaWyjscia (2026-09-17 00:00) > godzdomk (2026-09-16 18:30)` →
+     `True` → cap działa, wynik **2026-09-16 18:30**.
+   - Potwierdza to dokładnie diagnozę z sekcji „Błąd znaleziony i naprawiony" wyżej.
+2. Rzeczywiste dane RCP w bazie „Claude" dla `RUCH-01`:
+   [ImportyXML/Licznik czasu pracy ruchomy - test 02 dane RCP.xml](../ImportyXML/Licznik%20czasu%20pracy%20ruchomy%20-%20test%2002%20dane%20RCP.xml) —
+   wpis „Wejście" 2026-09-16 16:00 (realny punkt startowy scenariusza) + wpis
+   „Wyjście" 2026-09-16 18:30, jawnie oznaczony w `Uwagi` jako **wyliczony ręcznie
+   wg poprawionego algorytmu, nie przez żywy trigger** — bo trigera nie dało się
+   tu odpalić. **Nadal wymaga potwierdzenia w GUI klienta** (przycisk „Rozpocznij
+   pracę" na pulpicie `tl`), że skompilowany dodatek faktycznie wstawia ten sam
+   wynik automatycznie.
