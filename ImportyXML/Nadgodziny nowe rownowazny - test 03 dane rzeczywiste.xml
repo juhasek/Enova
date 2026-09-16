@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  Rzeczywisty czas pracy (DzienPracy/StrefyPracy) dla scenariuszy RC-01..RC-08 - dane do
+  Rzeczywisty czas pracy (DzienPracy/StrefyPracy) dla scenariuszy RC-01..RC-09 - dane do
   odczytania cech "Nadgodziny 50/100/okresowe/NSW nowe" (StrefaPracy) w GUI: Kadry i place /
   Kadry / Pracownicy / [RC-0X] / Kalendarz / Czas pracy. Tabele DniPracy/StrefyPracy NIE SA
   guidowane - import jest JEDNORAZOWY (jak "Nadgodziny nowe - test 04 dane rzeczywiste.xml").
   Import wg rekordow: dbmgr importxml Claude "<plik>" w trybie standard.
+
+  UWAGA (historia importu): RC-01..RC-08 zaimportowane w jednym przebiegu, RC-09 (Swieto)
+  dopisany PO fakcie w osobnym, mniejszym przebiegu (zeby nie zdublowac RC-01..08 w
+  nieguidowanych tabelach). Ten plik to zbiorczy zapis stanu koncowego - import calego
+  pliku na SWIEZA baze (gdzie zadna z tych 9 os. jeszcze nie ma danych) jest bezpieczny
+  i rowny jednemu przebiegowi; na baze JUZ CZESCIOWO zasilona (jak Claude w tej sesji)
+  importuj tylko brakujacy fragment recznie.
 -->
 <session xmlns="http://www.soneta.pl/schema/business">
   <DzienPracy>
@@ -127,6 +134,19 @@
       <StrefaPracy>
         <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
         <Praca><OdGodziny>12:00</OdGodziny><Czas>6:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c3000000-0000-0000-0000-000000000009</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-22</Data>
+    <Praca><OdGodziny>9:00</OdGodziny><Czas>4:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>9:00</OdGodziny><Czas>4:00</Czas></Praca>
       </StrefaPracy>
     </Strefy>
   </DzienPracy>

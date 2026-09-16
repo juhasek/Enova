@@ -86,7 +86,12 @@ tworzą ani nie modyfikują.
 Scenariusze (arkusz „Rownowazny 4msc” w xlsx): `RC-01`/`RC-02` (plan 8h, baseline i +2h),
 `RC-03`/`RC-04` (plan 10h, brak nadgodzin vs +2h ponad wydłużony dzień), `RC-05`/`RC-06`
 (plan 12h, analogicznie), `RC-07`/`RC-08` (plan 4h — dzień kompensacyjny, „podłoga” normy
-etatu 8h wygrywa nad krótkim planem → godziny do 8h to okresowe, nie 50%).
+etatu 8h wygrywa nad krótkim planem → godziny do 8h to okresowe, nie 50%), `RC-09` (dzień
+Święto/NadgodzinySW, praca bez planu → NSW=4:00, powtórzenie `NG-07` na kalendarzu
+równoważnym — test, że NSW nowe nie zależy od `AlgorytmDobowa`, dopisany po fakcie
+2026-09-16 na żądanie użytkownika). `RC-09` importowany osobno (patrz komentarz w pliku 03)
+— nie reimportuj całego pliku 03 na już częściowo zasiloną bazę, bo zduplikuje `RC-01..08`
+(tabele `DniPracy`/`StrefyPracy` nie są guidowane).
 
 ## Wariant: strefa "Lider zmiany" współistniejąca z nadgodzinami
 
