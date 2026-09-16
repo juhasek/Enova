@@ -68,5 +68,26 @@ zadania — do porównania ze starym zestawem cech i decyzji klienta.
   (`Kadry i płace / Kadry / Pracownicy / [NG-0X] / Kalendarz / Czas pracy`) i porównać wynik
   z kolumnami oczekiwanymi w arkuszu.
 
+## Wariant: kalendarz równoważnego czasu pracy „4msc”
+
+Drugi komplet scenariuszy sprawdza te same 4 cechy na kalendarzu **równoważnego czasu
+pracy** „4msc” (`Kalendarze.ID=24`, `AlgorytmDobowa=RównoważnyCzasPracy`) — norma dobowa
+= `MAX(plan dnia, Etat.NormaDobowa=8:00)`, więc dzień zaplanowany na 10h/12h nie generuje
+nadgodzin, jeśli przepracowano dokładnie tyle, ile zaplanowano. Ten kalendarz **już
+istniał** w bazie Claude (używany przez demo-pracownika `0001`) — pliki poniżej go NIE
+tworzą ani nie modyfikują.
+
+| # | Plik | Zawartość |
+|---|---|---|
+| 1 | `Nadgodziny nowe rownowazny - test 01 pracownicy.xml` | 8 pracowników `RC-01`…`RC-08`, `Etat.Kalendarz` = „4msc” (guid `14511BBF-2E5D-4A8E-9481-36141737639E`). |
+| 2 | `Nadgodziny nowe rownowazny - test 02 plan pracy.xml` | Plan dnia (8h/10h/12h/4h) — guidy indywidualnych kalendarzy odczytane z bazy PO imporcie pliku 1 (powstają automatycznie, patrz [[reference_enova_kalendarz_wzorcowy_vs_indywidualny]]). |
+| 3 | `Nadgodziny nowe rownowazny - test 03 dane rzeczywiste.xml` | Rzeczywisty czas pracy — jednorazowy, nieidempotentny (jak plik 4 powyżej). |
+
+Scenariusze (arkusz „Rownowazny 4msc” w xlsx): `RC-01`/`RC-02` (plan 8h, baseline i +2h),
+`RC-03`/`RC-04` (plan 10h, brak nadgodzin vs +2h ponad wydłużony dzień), `RC-05`/`RC-06`
+(plan 12h, analogicznie), `RC-07`/`RC-08` (plan 4h — dzień kompensacyjny, „podłoga” normy
+etatu 8h wygrywa nad krótkim planem → godziny do 8h to okresowe, nie 50%).
+
 Zob. [[baza-claude-dodatek-roczny]], [[project-nadgodziny-50-100-nowe]],
-[[reference-import-dzienplanu-xml]], [[reference-import-pracownika-xml]].
+[[reference-import-dzienplanu-xml]], [[reference-import-pracownika-xml]],
+[[project_nadgodziny_nowe_scenariusze_testowe]].
