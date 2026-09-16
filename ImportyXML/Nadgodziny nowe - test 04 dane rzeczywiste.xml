@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Rzeczywisty czas pracy (DzienPracy/StrefyPracy) dla scenariuszy NG-01..NG-08 -
+  dane do odczytania cech "Nadgodziny 50/100/okresowe/NSW nowe" (StrefaPracy) w GUI:
+  Kadry i place / Kadry / Pracownicy / [NG-0X] / Kalendarz / Czas pracy.
+  Tabele DniPracy/StrefyPracy NIE SA guidowane (jak WejsciaWyjsciaI w ALDI RCP - dane RCP.xml) -
+  import jest JEDNORAZOWY, ponowne uruchomienie dopisze kolejne wiersze (do reimportu
+  najpierw skasuj wczesniej wstawione wiersze recznie/SQL).
+  Import wg rekordow: dbmgr importxml Claude "<plik>" w trybie standard.
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000001</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-02</Data>
+    <Praca><OdGodziny>8:00</OdGodziny><Czas>10:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+        <Praca><OdGodziny>8:00</OdGodziny><Czas>8:00</Czas></Praca>
+      </StrefaPracy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>16:00</OdGodziny><Czas>2:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000002</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-03</Data>
+    <Praca><OdGodziny>14:00</OdGodziny><Czas>10:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+        <Praca><OdGodziny>14:00</OdGodziny><Czas>8:00</Czas></Praca>
+      </StrefaPracy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>22:00</OdGodziny><Czas>2:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000003</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-04</Data>
+    <Praca><OdGodziny>12:00</OdGodziny><Czas>12:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+        <Praca><OdGodziny>12:00</OdGodziny><Czas>8:00</Czas></Praca>
+      </StrefaPracy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>20:00</OdGodziny><Czas>4:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000004</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-05</Data>
+    <Praca><OdGodziny>8:00</OdGodziny><Czas>11:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+        <Praca><OdGodziny>8:00</OdGodziny><Czas>8:00</Czas></Praca>
+      </StrefaPracy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>16:00</OdGodziny><Czas>2:00</Czas></Praca>
+      </StrefaPracy>
+      <StrefaPracy>
+        <Definicja>805C0492-8737-48F6-9BE3-A295CE33C918</Definicja>
+        <Praca><OdGodziny>18:00</OdGodziny><Czas>1:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000005</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-06</Data>
+    <Praca><OdGodziny>8:00</OdGodziny><Czas>9:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+        <Praca><OdGodziny>8:00</OdGodziny><Czas>4:00</Czas></Praca>
+      </StrefaPracy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>12:00</OdGodziny><Czas>5:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000006</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-07</Data>
+    <Praca><OdGodziny>6:00</OdGodziny><Czas>1:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>6:00</OdGodziny><Czas>1:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000007</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-08</Data>
+    <Praca><OdGodziny>9:00</OdGodziny><Czas>4:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>9:00</OdGodziny><Czas>4:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+
+  <DzienPracy>
+    <Pracownik>c2000000-0000-0000-0000-000000000008</Pracownik>
+    <RcpOK>True</RcpOK>
+    <Data>2026-11-09</Data>
+    <Praca><OdGodziny>8:00</OdGodziny><Czas>10:00</Czas></Praca>
+    <Strefy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+        <Praca><OdGodziny>8:00</OdGodziny><Czas>8:00</Czas></Praca>
+      </StrefaPracy>
+      <StrefaPracy>
+        <Definicja>00000000-0006-0001-0016-000000000000</Definicja>
+        <Praca><OdGodziny>16:00</OdGodziny><Czas>2:00</Czas></Praca>
+      </StrefaPracy>
+    </Strefy>
+  </DzienPracy>
+</session>

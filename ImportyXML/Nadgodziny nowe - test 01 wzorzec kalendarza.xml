@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Nowy kalendarz WZORCOWY "Test nadgodziny nowe" (Typ=Kalendarz) - kopia "Standard"
+  (Kalendarze ID=1 w bazie Claude) z jawnie dopisanym oknem nocnym 22:00-6:00 (w "Standard"
+  NocneOd=NocneDo=0:00, czyli brak skonfigurowanego okna - bez tego nie da sie przetestowac
+  przeniesienia nadgodzin nocnych do "Nadgodziny 100 nowe"). Etat.Kalendarz pracownikow
+  NG-01..NG-08 (plik "... test 02 pracownicy.xml") wskazuje na TEN kalendarz (nie na
+  "Standard") - silnik nadgodzin i nowe cechy czytaja Kalendarz.Nadgodziny/Nocne stad.
+  Nie modyfikuje wspolnego "Standard" (zero wplywu na TS-01..TS-09/0001/inne dane).
+  MUSI byc zaimportowany PRZED plikiem z pracownikami (Etat.Kalendarz to twardy FK).
+  Import wg rekordow: dbmgr importxml Claude "<plik>" w trybie standard. Guid staly => idempotentny.
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <KalendarzBase guid="c2000000-0000-0003-0000-000000000001" class="Soneta.Kalend.Kalendarz,Soneta.KadryPlace">
+    <Typ>Kalendarz</Typ>
+    <Nazwa>Test nadgodziny nowe</Nazwa>
+
+    <!-- pola przepisane 1:1 z "Standard" (Kalendarze ID=1) -->
+    <WersjonowaniePlan>True</WersjonowaniePlan>
+    <WersjonowanieCzas>True</WersjonowanieCzas>
+    <NormaDobowa>8:00</NormaDobowa>
+    <PierwszyPrzepracowany>LiczOdDatyZatrudnienia</PierwszyPrzepracowany>
+    <UwzglWymiarEtatu>True</UwzglWymiarEtatu>
+    <BladBraku>False</BladBraku>
+    <DefinicjaDnia>00000000-0006-0002-0001-000000000000</DefinicjaDnia>
+    <BezWeryfikacjiRegul>False</BezWeryfikacjiRegul>
+    <WeryfikacjaRegul>Tak</WeryfikacjaRegul>
+    <RuchomyCzasPracy>False</RuchomyCzasPracy>
+    <RownowaznyCzasPracy>False</RownowaznyCzasPracy>
+
+    <Nadgodziny>
+      <Rozliczaj>True</Rozliczaj>
+      <Bilansowanie>_50_100_SW</Bilansowanie>
+      <Rozliczanie>Zawsze100</Rozliczanie>
+      <Nadgodz50>2:00</Nadgodz50>
+      <PodstawaWgNormyKP>False</PodstawaWgNormyKP>
+
+      <AlgorytmDobowa>Konfiguracja</AlgorytmDobowa>
+      <WartoscDobowa>8:00</WartoscDobowa>
+      <RozliczanieDobowych>WgCzasu</RozliczanieDobowych>
+      <AlgorytmTygodniowa>Konfiguracja</AlgorytmTygodniowa>
+      <WartoscTygodniowa>40:00</WartoscTygodniowa>
+      <WartoscDobowaTygodniowa>8:00</WartoscDobowaTygodniowa>
+
+      <TypOkresu>Miesięczny</TypOkresu>
+      <Okres>1</Okres>
+      <DlaKazdejUmowy>Domyślnie</DlaKazdejUmowy>
+      <DoboweMiesiecznie>False</DoboweMiesiecznie>
+      <SwiateczneMiesiecznie>False</SwiateczneMiesiecznie>
+      <NieujemneBilansowanieOkresowe>False</NieujemneBilansowanieOkresowe>
+      <BilansowanieMiesiecznie>False</BilansowanieMiesiecznie>
+      <OdDnia>2026-01-01</OdDnia>
+      <Rocznie>False</Rocznie>
+      <Przesuniecie>0</Przesuniecie>
+      <PriorytetOkresowych>False</PriorytetOkresowych>
+    </Nadgodziny>
+
+    <!-- JEDYNA roznica wobec "Standard": okno nocne skonfigurowane, zeby dalo sie
+         przetestowac przeniesienie nadgodzin nocnych do "Nadgodziny 100 nowe" -->
+    <Nocne>
+      <Rozliczaj>True</Rozliczaj>
+      <Od>22:00</Od>
+      <Do>6:00</Do>
+      <Limit>8:00</Limit>
+    </Nocne>
+  </KalendarzBase>
+</session>
