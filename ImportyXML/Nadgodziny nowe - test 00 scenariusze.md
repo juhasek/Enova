@@ -88,6 +88,33 @@ Scenariusze (arkusz „Rownowazny 4msc” w xlsx): `RC-01`/`RC-02` (plan 8h, bas
 (plan 12h, analogicznie), `RC-07`/`RC-08` (plan 4h — dzień kompensacyjny, „podłoga” normy
 etatu 8h wygrywa nad krótkim planem → godziny do 8h to okresowe, nie 50%).
 
+## Wariant: strefa "Lider zmiany" współistniejąca z nadgodzinami
+
+Trzeci komplet (`LZ-01`…`LZ-04`) powtarza po dwa scenariusze z każdego z powyższych zestawów
+(`NG-01`/`NG-02` na kalendarzu Standard, `RC-02`/`RC-04` na kalendarzu równoważnym „4msc"),
+dopisując na tym samym dniu dodatkową strefę **„Lider zmiany"** (`DefinicjeStref` ID=25,
+`Wchodzi=0`, `PodstawaNadgodzin=0`) na całą długość zwykłej zmiany. Cel: potwierdzić, że jej
+obecność **nie zmienia** wyniku żadnej z 4 cech na strefie „Praca poza normą" — algorytm ma
+sumować chronologicznie tylko „Praca w normie" + „Praca poza normą" (oba warianty), więc
+„Lider zmiany" powinna być całkowicie pomijana niezależnie od tego, ile trwa i kiedy się
+zaczyna. Wzorowane na **danych już zastanych w bazie Claude** dla demo-pracownika `0001`
+(2 wiersze `DniPracy` sprzed tej sesji, nieznanego pochodzenia — zawierały właśnie taką
+kombinację stref).
+
+| # | Plik | Zawartość |
+|---|---|---|
+| 1 | `Nadgodziny nowe lider zmiany - test 01 pracownicy.xml` | 4 pracownicy `LZ-01`…`LZ-04`, dwaj na kalendarzu „Test nadgodziny nowe" (Standard), dwaj na „4msc" (równoważny). |
+| 2 | `Nadgodziny nowe lider zmiany - test 02 plan pracy.xml` | Plan dnia — identyczny jak w odpowiadającym scenariuszu NG/RC. |
+| 3 | `Nadgodziny nowe lider zmiany - test 03 dane rzeczywiste.xml` | Jak w NG/RC + dodatkowa strefa „Lider zmiany". Jednorazowy, nieidempotentny. |
+
+**Odkryta rozbieżność wobec danych zastanych:** w danych `0001` strefa „Lider zmiany" ma
+`PracaOdGodziny = Time.Empty` (`-2000000000`, brak godziny startu). Ten generator próbował to
+odtworzyć pomijając `<OdGodziny>` w XML, ale **po imporcie SQL pokazał `PracaOdGodziny = 0`
+(0:00)**, nie `Time.Empty` — pominięcie elementu w XML nie odtwarza `Time.Empty`, tylko daje
+domyślne `0:00`. Nie zmienia to celu testu (cecha ma ignorować tę strefę niezależnie od
+godziny), ale jeśli kiedyś potrzebny będzie **dokładnie** `Time.Empty` w imporcie XML, ta
+ścieżka nie działa — wymaga innego mechanizmu (do zbadania, np. SQL bezpośrednio).
+
 Zob. [[baza-claude-dodatek-roczny]], [[project-nadgodziny-50-100-nowe]],
 [[reference-import-dzienplanu-xml]], [[reference-import-pracownika-xml]],
 [[project_nadgodziny_nowe_scenariusze_testowe]].
