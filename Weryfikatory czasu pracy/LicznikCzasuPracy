@@ -1,0 +1,353 @@
+//----------------------------------------------------------------------------------
+// <copyright>
+// (c) Soneta 2021
+// </copyright>
+//----------------------------------------------------------------------------------
+
+using System;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kalend;
+using Soneta.Kadry;
+using AltOne.LicznikCzasuPracy.Config;
+using System.Linq;
+
+namespace Soneta.Runtime.Database.Business.TblCodeFiles {
+	public class LicznikManager
+	{
+		//IsReadOnlyStartPracy
+		public bool IsReadOnlyRozpoczeciePracy(Pracownik pracownik, DateTime startDobyPracowniczej)
+		{
+
+
+       string cechastartPrzedzial = "LCzPStartPrzedzial";
+       string cechastartPrzedzialPrzed = "LCzPStartPPrzed";
+       string cechastartPrzedzialPo = "LCzPStartPPo";
+       string cechablokadawolnych = "LCzPBlokadaWdniWolne";
+
+       DateTime timeroz = DateTime.Now;
+       //log.WriteLine("czaskliku {0}", timeroz);
+
+       //inkaso
+       if (IsFateureGlobalExistAndCheck(pracownik.Session, cechastartPrzedzial))
+       {
+
+           Time przedzPrzed = pracownik.Session.Global.Features.GetTime(cechastartPrzedzialPrzed);
+           Time przedzPo = pracownik.Session.Global.Features.GetTime(cechastartPrzedzialPo);
+
+           Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[timeroz.Date];
+
+           if (dzienPlanu.Definicja.Typ == TypDnia.Pracy)
+           {
+               Time odGodzinyNorma = dzienPlanu.OdGodziny;
+
+
+
+               Time normatywnePrzed = odGodzinyNorma - przedzPrzed;
+               Time normatywnePo = odGodzinyNorma + przedzPo;
+
+               DateTime normatywnePrzedDT = new DateTime(timeroz.Year, timeroz.Month, timeroz.Day, normatywnePrzed.Hours, normatywnePrzed.Minutes, 0);
+               DateTime normatywnePoDT = new DateTime(timeroz.Year, timeroz.Month, timeroz.Day, normatywnePo.Hours, normatywnePo.Minutes, 0);
+
+               if ((timeroz > normatywnePrzedDT) && (timeroz < normatywnePoDT))
+               {
+                   //wtedy zostaje win godzina czyli nic nie robimy
+                   //win.Godzina = odGodzinyNorma;
+                   //win.Features["CzasWejscia"] = new TimeSec(normatywneOd);
+
+               }
+               else
+               {
+                   return true;
+               }
+           }
+       }
+
+
+
+       using (Session createSession = pracownik.Session.Login.CreateSession(true, false, "DodanieWejsciaRCP"))
+       {
+           Pracownik aktualnyPracownik = KadryModule.GetInstance(createSession).Pracownicy.WgKodu[pracownik.Kod];
+           //
+           Dzien dzienPlanuP = aktualnyPracownik.Czasy.KalkPlanu[timeroz.Date];
+           if (dzienPlanuP.Definicja.Typ == TypDnia.Pracy)
+           {
+               Time doGodzinyNormaP = dzienPlanuP.OdGodziny + dzienPlanuP.Czas;
+               DateTime blokDoP = new DateTime(timeroz.Year, timeroz.Month, timeroz.Day, dzienPlanuP.OdGodziny.Hours, dzienPlanuP.OdGodziny.Minutes, 0);
+               DateTime blokOdP = new DateTime(timeroz.Year, timeroz.Month, timeroz.Day, doGodzinyNormaP.Hours, doGodzinyNormaP.Minutes, 0);
+             //  if (IsFateureGlobalExistAndCheck(pracownik.Session, cechastartKalend))
+              // {
+              //     WejscieWyjscieI[] wejsciaWyjsciaAktualnejDobyBK = AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.GetRCPEntriesForPeriodAll(aktualnyPracownik, createSession, new FromTo(timeroz.Date, timeroz.Date));
+              //     int iloscWWWAktualnejBK = wejsciaWyjsciaAktualnejDobyBK.Length;
+
+              //     if (iloscWWWAktualnejBK > 0 && ((timeroz > blokOdP) || (timeroz < blokDoP))) return true;
+              // }
+           }//
+
+           WejscieWyjscieI[] wejsciaWyjsciaAktualnejDoby = AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.GetRCPEntriesForPeriod(aktualnyPracownik, createSession, new FromTo(startDobyPracowniczej, startDobyPracowniczej), DateTime.Now);
+           int iloscWWWAktualnej = wejsciaWyjsciaAktualnejDoby.Length;
+           WejscieWyjscieI[] wejsciaWyjsciaPoprzedniejDoby = AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.GetRCPEntriesForPeriod(aktualnyPracownik, createSession, new FromTo(startDobyPracowniczej.AddDays(-1), startDobyPracowniczej.AddDays(-1)));
+
+           if (iloscWWWAktualnej > 0 && wejsciaWyjsciaAktualnejDoby.LastOrDefault().Typ == TypWejsciaWyjscia.Wejscie) return true;
+           else if (wejsciaWyjsciaPoprzedniejDoby.Any() && wejsciaWyjsciaPoprzedniejDoby.LastOrDefault().Typ == TypWejsciaWyjscia.Wejscie) return true;
+
+           if (true)//IsFateureGlobalExistAndCheck(pracownik.Session, cechastartPrzedzial))
+           {
+               WejscieWyjscieI[] wejsciaWyjsciaAktualnejDobyAll = AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.GetRCPEntriesForPeriodAll(aktualnyPracownik, createSession, new FromTo(timeroz.Date, timeroz.Date));
+               int iloscWWWAktualnejAll = wejsciaWyjsciaAktualnejDobyAll.Length;
+
+
+               if (iloscWWWAktualnejAll > 0) return true;
+           }
+
+           if (IsFateureGlobalExistAndCheck(pracownik.Session, cechablokadawolnych))
+           {
+               if (dzienPlanuP.Definicja.Typ != TypDnia.Pracy) return true;
+
+           }
+
+           return false;
+       }
+		}
+
+		//IsReadOnlyKoniecPracy
+		public static bool IsReadOnlyKoniecPracy(Pracownik pracownik, DateTime startDobyPracowniczej)
+		{
+			return false;
+		}
+
+		public bool IsVisibleKoniecPracy(Pracownik pracownik, DateTime startDobyPracowniczej)
+		{
+			 bool widoczny = true;
+       string widocznoscZakonczenia = "LCZBlokujWidokZakonczenia";
+       if (IsFateureGlobalExistAndCheck(pracownik.Session, widocznoscZakonczenia))
+       {
+           widoczny = false;
+       }
+			return widoczny;
+		}
+
+		//Metoda daje możliwość zwrócenia innej godziny rozpoczęcia niż aktualna
+		public DateTime DomyslnaGodzinaRozpoczecia(Soneta.Kadry.Pracownik pracownik, DateTime time)
+		{
+         //modyfikuje jeśli przed 7 rozpoczał prace to ma być 7
+
+         string godzStart = "LCZPStart7";
+         string cechastartKalend = "LCzPStartNormaKalend";
+         if (IsFateureGlobalExistAndCheck(pracownik.Session, cechastartKalend))
+         {
+             bool kalendarzWlasciwy = (pracownik[time.Date].Etat.Kalendarz.SystemCzasuPracy == Soneta.Kalend.Kalendarz.SystemyCzasuPracy.Standardowy) || (pracownik[time.Date].Etat.Kalendarz.SystemCzasuPracy == Soneta.Kalend.Kalendarz.SystemyCzasuPracy.Równoważny);
+             if (!kalendarzWlasciwy)  //tylko dla innych niż równoważny i podstawowy
+             {
+                 if (IsFateureGlobalExistAndCheck(pracownik.Session, godzStart))
+                 {
+                     DateTime godzinastartudnia = new DateTime(time.Year, time.Month, time.Day, 7, 0, 0);
+                     if (time < godzinastartudnia)
+                     {
+                         time = godzinastartudnia;
+                     }
+                 }
+             }
+             else
+             {
+                 //nic się nie dzieje, przechodzimy do normalnego algorytmu w LicznikCzasuPracyTool
+             }
+         }
+         else
+         {
+             if (IsFateureGlobalExistAndCheck(pracownik.Session, godzStart))
+             {
+                 DateTime godzinastartudnia = new DateTime(time.Year, time.Month, time.Day, 7, 0, 0);
+                 if (time < godzinastartudnia)
+                 {
+                     time = godzinastartudnia;
+                 }
+             }
+
+
+         }
+			return time;
+		}
+
+		 public void DodajWyjsciePodczasWejscia(Soneta.Kadry.Pracownik pracownik, Date today, DateTime godzinaWyjscia)
+     {
+			 	//Log log = new Log("test RCP", true);
+         string cechastartKalend = "LCzPStartNormaKalend";
+
+         //modyfikacja po 191293
+         if (IsFateureGlobalExistAndCheck(pracownik.Session, cechastartKalend))
+         {
+             //chyba tu nie działa czytanie tego kalendarza bo wchodzi do pierwszego warunku !!!!!!!!!!!!!!!
+             //bool kalendarzWlasciwy = (Pracownik[time.Date].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Standardowy) || (Pracownik[time.Date].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Równoważny);
+
+             if (!IsStandGroupCalend(pracownik, godzinaWyjscia.Date))//if (!kalendarzWlasciwy)  //tylko dla innych niż równoważny i podstawowy
+             {
+                 string cechatypu = "LCzPKoniecDnia";
+                 string godzinadomykania = "LCzPGodzinaKoncaDnia";
+                 if (IsFateureGlobalExistAndCheck(pracownik.Session, cechatypu))
+                 {
+                     if (IsFateureGlobalExist(pracownik.Session, godzinadomykania))
+                     {
+                         Time godzinadomk = pracownik.Session.Global.Features.GetTime(godzinadomykania);
+                         // Godzina domykania musi bazowac na dobie pracowniczej (today), a nie na godzinaWyjscia - przy starcie pracy pozno w dniu (np. 16:00 + 8h planu = 24:00) godzinaWyjscia przewija sie na kolejna dobe kalendarzowa i limit z cechy przestawal dzialac.
+                        DateTime godzdomk = new DateTime(today.Year, today.Month, today.Day, godzinadomk.Hours, godzinadomk.Minutes, 0);
+                         if (godzinaWyjscia > godzdomk)
+                         {
+                             godzinaWyjscia = godzdomk;
+                         }
+                     }
+                 }
+             }
+         }
+
+         if (IsFateureGlobalExistAndCheck(pracownik.Session, cechastartKalend))
+         {
+             //chyba tu nie działa czytanie tego kalendarza bo wchodzi do pierwszego warunku !!!!!!!!!!!!!!!
+             // bool kalendarzWlasciwy1 = (Pracownik[time.Date].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Standardowy) || (Pracownik[time.Date].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Równoważny);
+             if (!IsStandGroupCalend(pracownik, godzinaWyjscia.Date))  //tylko dla innych niż równoważny i podstawowy
+             {
+                 //modyfikacja pod zadanie 146690
+                 string cechaglobalna = "LCzPKoniecNorma";
+                 if (IsFateureGlobalExistAndCheck(pracownik.Session, cechaglobalna))
+                 {
+                     Soneta.Kalend.Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[today];
+                     Time doGodzinyNorma = dzienPlanu.OdGodziny + dzienPlanu.Czas;
+                     DateTime normatywneDo = new DateTime(today.Year, today.Month, today.Day, doGodzinyNorma.Hours, doGodzinyNorma.Minutes, 0);
+                     AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.AddEmployeeRCPEntry(pracownik.Session, pracownik, Soneta.Kalend.TypWejsciaWyjscia.Wyjscie, normatywneDo, true);
+                 }
+                 else
+                 {
+                     AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.AddEmployeeRCPEntry(pracownik.Session, pracownik, Soneta.Kalend.TypWejsciaWyjscia.Wyjscie, godzinaWyjscia, true);
+                 }
+             }
+             else
+             {
+
+                 Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[today];
+                 Time doGodzinyNorma = dzienPlanu.OdGodziny + dzienPlanu.Czas;
+                 DateTime normatywneDo = new DateTime(today.Year, today.Month, today.Day, doGodzinyNorma.Hours, doGodzinyNorma.Minutes, 0);
+                 AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.AddEmployeeRCPEntry(pracownik.Session, pracownik, Soneta.Kalend.TypWejsciaWyjscia.Wyjscie, normatywneDo, true);
+             }
+         }
+         if (IsFateureGlobalExistAndNOTCheck(pracownik.Session, cechastartKalend)) //uniwersal
+         {
+             string cechaglobalna = "LCzPKoniecNorma";
+             if (IsFateureGlobalExistAndCheck(pracownik.Session, cechaglobalna))
+             {
+                 Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[today];
+                 Time doGodzinyNorma = dzienPlanu.OdGodziny + dzienPlanu.Czas;
+                 DateTime normatywneDo = new DateTime(today.Year, today.Month, today.Day, doGodzinyNorma.Hours, doGodzinyNorma.Minutes, 0);
+                 AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.AddEmployeeRCPEntry(pracownik.Session, pracownik, Soneta.Kalend.TypWejsciaWyjscia.Wyjscie, normatywneDo, true);
+             }
+             else
+             {
+                 AltOne.LicznikCzasuPracy.Utils.LicznikCzasuPracyTool.AddEmployeeRCPEntry(pracownik.Session, pracownik, Soneta.Kalend.TypWejsciaWyjscia.Wyjscie, godzinaWyjscia, true);
+             }
+         }
+     }
+
+		 public void DodajWejscieWyjscieAfterEdit(Pracownik pracownik, WejscieWyjscieI win, DateTime czasWejscia)
+		{
+			Session session = pracownik.Session;
+		  bool wejscienormatywne = false;
+			string cechastart = "LCzPStartNorma";
+      string cechastartKalend = "LCzPStartNormaKalend";  //tylko dla kalendarzy podstawowego i równoważnego
+      string cechastartTolerancja = "LCzPTolernacja";
+      string cechaTolerancja = "TolerancjaSpoznienia";  //tyle minut się można spóżnić
+      string cechastartPrzedzial = "LCzPStartPrzedzial";
+      string cechastartPrzedzialPrzed = "LCzPStartPPrzed";
+      string cechastartPrzedzialPo = "LCzPStartPPo";
+
+			if(win.Typ == TypWejsciaWyjscia.Wejscie)
+			{
+			 if (session.Global.Features.Definitions.Contains(cechastartKalend) && session.Global.Features.GetBool(cechastartKalend))
+        {
+            bool kalendarzWlasciwy = (pracownik[czasWejscia.Date].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Standardowy) || (pracownik[czasWejscia.Date].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Równoważny);
+
+            if (session.Global.Features.Definitions.Contains(cechastart) && session.Global.Features.GetBool(cechastart) && kalendarzWlasciwy)
+            {
+                Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[czasWejscia.Date];
+                Time odGodzinyNorma = dzienPlanu.OdGodziny;
+                DateTime normatywneOd = new DateTime(czasWejscia.Year, czasWejscia.Month, czasWejscia.Day, odGodzinyNorma.Hours, odGodzinyNorma.Minutes, 0);
+                if (win.Godzina < odGodzinyNorma)
+                {
+                    wejscienormatywne = true;
+                }
+            }
+
+            if (session.Global.Features.Definitions.Contains(cechastartTolerancja) && session.Global.Features.GetBool(cechastartTolerancja) && session.Global.Features.Definitions.Contains(cechaTolerancja) && kalendarzWlasciwy)
+            {
+                int iloscMinutSpoznienia = session.Global.Features.GetInt(cechaTolerancja);
+
+                Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[czasWejscia.Date];
+                Time odGodzinyNorma = dzienPlanu.OdGodziny;
+                DateTime normatywneOd = new DateTime(czasWejscia.Year, czasWejscia.Month, czasWejscia.Day, odGodzinyNorma.Hours, odGodzinyNorma.Minutes, 0); // czasWejscia.Hour, czasWejscia.Minute, 0);
+                DateTime normatywneDoTolerancja = normatywneOd.AddMinutes(iloscMinutSpoznienia);
+
+                Time odGodzinyToleracnja = new Time(normatywneDoTolerancja.Hour, normatywneDoTolerancja.Minute);
+                if ((odGodzinyNorma < win.Godzina) && (win.Godzina < odGodzinyToleracnja))
+                {
+                    win.Godzina = odGodzinyNorma;
+                }
+                else
+                {
+                    if (wejscienormatywne)
+                    {
+                        win.Godzina = odGodzinyNorma;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (session.Global.Features.Definitions.Contains(cechastartPrzedzial) && session.Global.Features.GetBool(cechastartPrzedzial))
+            {
+                Time przedzPrzed = session.Global.Features.GetTime(cechastartPrzedzialPrzed);
+                Time przedzPo = session.Global.Features.GetTime(cechastartPrzedzialPo);
+
+                Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[czasWejscia.Date];
+                Time odGodzinyNorma = dzienPlanu.OdGodziny;
+
+                Time normatywnePrzed = odGodzinyNorma - przedzPrzed;
+                Time normatywnePo = odGodzinyNorma + przedzPo;
+
+                if ((win.Godzina >= normatywnePrzed) && (win.Godzina <= normatywnePo))
+                {
+
+                }
+                else
+                {
+                    win.Godzina = odGodzinyNorma;
+                }
+            }
+        }
+			}
+		}
+
+		 public bool IsFateureGlobalExistAndCheck(Session session, string cecha)
+     {
+
+         return (session.Global.Features.Definitions.Contains(cecha) && session.Global.Features.GetBool(cecha));
+     }
+
+		 public bool IsStandGroupCalend(Pracownik pracownik, Date data)
+     {
+
+         return ((pracownik[data].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Standardowy) || (pracownik[data].Etat.Kalendarz.SystemCzasuPracy == Kalendarz.SystemyCzasuPracy.Równoważny));
+
+     }
+
+     public bool IsFateureGlobalExistAndNOTCheck(Session session, string cecha)
+     {
+
+         return (session.Global.Features.Definitions.Contains(cecha) && !session.Global.Features.GetBool(cecha));
+     }
+
+
+     public bool IsFateureGlobalExist(Session session, string cecha)
+     {
+
+         return session.Global.Features.Definitions.Contains(cecha);
+     }
+	}
+}
