@@ -117,3 +117,32 @@ LCzPKoniecNorma      = (nieustawiona → False)
 (kalendarz „Ruchomy”, ID 26, istnieje jako wzorzec, ale bez przypisania) — do
 faktycznego przetestowania scenariusza (16:00 + 8h → przycięcie do 18:30) potrzebny
 pracownik testowy na takim kalendarzu.
+
+## Pracownik testowy `RUCH-01` (2026-09-16)
+
+Zatrudniony pod scenariusz nowej grupy (czas ruchomy 7:00–10:00 start / 15:00–18:00
+koniec, norma 8h):
+
+- Import: [ImportyXML/Licznik czasu pracy ruchomy - test 01 pracownicy.xml](../ImportyXML/Licznik%20czasu%20pracy%20ruchomy%20-%20test%2001%20pracownicy.xml)
+  (`dbmgr importxml Claude "<plik>"`, tryb rekordowy — struktura wg
+  `Demo/100.Kadry.gold.xml`).
+- `Pracownicy.ID = 41`, `Kod = RUCH-01`.
+- `Etat.Kalendarz` (wzorcowy) = **Ruchomy** (`Kalendarze.ID=26`,
+  `RuchomyCzasPracy=1`) → `IsStandGroupCalend` zwraca `false` dla tego pracownika,
+  czyli mechanizm cappingu `LCzPGodzinaKoncaDnia` się dla niego uruchamia.
+  Indywidualny kalendarz (`Kalendarze.ID=52`, `Typ=2`) utworzony automatycznie
+  przy imporcie.
+- Cechy na `Pracownicy` (`Features`, `ParentType='Pracownicy', Parent=41`):
+  `LicznikCzasuPracy = True`, `PowLicznikaCzasuPracy = True`.
+  **Niepewne, która z tych dwóch faktycznie steruje widocznością widgetu na
+  pulpicie** — obie zdefiniowane w `FeatureDefs` (ID 35, 36), ale żadna nie jest
+  użyta w dostępnym w repo kodzie (`LicznikManager` czyta tylko cechy globalne
+  `LCzP*`); logika pulpitu żyje w skompilowanym dodatku `AltOne.LicznikCzasuPracy`,
+  do którego nie mamy tu źródła. Ustawiono obie na `True` jako bezpieczny wybór —
+  **do potwierdzenia w GUI klienta**, która faktycznie odpowiada za widoczność.
+- Trzecia cecha na `Pracownicy` — `GodzinaZamknieciaLicznika` (`FeatureDefs.ID=34`,
+  `TypeNumber=17`, format nieznany, brak przykładu użycia w bazie) — **pozostawiona
+  nieustawiona**, bo `LicznikManager` czyta wyłącznie globalną
+  `LCzPGodzinaKoncaDnia`; zgodnie z ustaleniem limit ma być wspólny dla wszystkich
+  grup ruchomych, więc override per pracownik nie powinien być potrzebny — do
+  potwierdzenia, czy dodatek w ogóle z niego korzysta.
