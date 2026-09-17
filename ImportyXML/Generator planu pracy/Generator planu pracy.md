@@ -4,109 +4,129 @@
 
 Narzędzie do cyklicznego generowania plików XML importu „dnia planu” do
 enova365 — czyli zakładki **Kalendarz / Norma czasu pracy** w kartotece
-pracownika (jego rzeczywisty grafik), tabela `DniKalendarza`, wiersze typu
-`Soneta.Kalend.DzienPlanu`. Składa się z dwóch niezależnych kroków:
+pracownika (jego rzeczywisty grafik). Składa się z:
 
-1. **Excel + makro VBA** (`Generator planu pracy.xlsx` +
-   `modGeneratorPlanuPracy.bas`) — osoba wypełniająca arkusz „Plan” wpisuje
-   kod pracownika, zakres dat, dni tygodnia i godziny 1–4 stref pracy.
-   Makro rozwija to na konkretne dni i zapisuje **jeden plik XML na
-   pracownika**. **Makro NIE łączy się z bazą SQL** — element
-   `<KalendarzBase>` dostaje placeholder `guid="KOD:<Kod pracownika>"`
-   zamiast prawdziwego GUID-u.
-2. **Skrypt PowerShell** (`Importuj-PlanyPracy.ps1`), uruchamiany **poza
-   Excelem** przez osobę wykonującą import — dla każdego placeholdera
-   `KOD:xxx` odpytuje bazę SQL (Windows Auth) o GUID indywidualnego
-   kalendarza tego pracownika (`Kalendarze.Typ=2`, **bez znaczenia, jaki
-   konkretnie kalendarz ma pracownik** — liczy się tylko, że ma już
-   założony Etat), podmienia placeholder i (z `-Importuj`) od razu woła
-   `dbmgr importxml`.
+- `Generator planu pracy.xlsx` — arkusze Instrukcja / Konfiguracja / Plan,
+- `modGeneratorPlanuPracy.bas` — makro VBA `GenerujPlanyPracy`.
 
-**Dlaczego dwa kroki:** wymóg klienta — makro w Excelu (VBA) nie może
-nawiązywać połączeń z SQL. Rozdzielenie generowania treści (Excel, offline)
-od rozwiązania adresu kalendarza i importu (PowerShell, poza Excelem,
-uruchamiane przez tę samą osobę, która i tak wykonuje `dbmgr importxml`)
-spełnia ten wymóg w 100% — macro nigdy nie dotyka bazy.
+Osoba wypełniająca arkusz „Plan” wpisuje: **kod pracownika**, zakres dat,
+które dni tygodnia mają być dniami pracy i godziny 1–4 stref pracy. Makro
+generuje **jeden plik XML** w oficjalnym formacie enova (`Root/DniPlanu/
+DzienPlanu/Strefy`), który importuje się w programie enova poleceniem
+menu **Plik → Importuj zapisy → Import czasu pracy i wynagrodzeń**.
 
-Pełna instrukcja krok po kroku jest w arkuszu **„Instrukcja”** w samym
-skoroszycie.
+**Makro nie łączy się z bazą SQL w żaden sposób i nie używa żadnego GUID-u.**
+Pracownik jest identyfikowany wyłącznie po kodzie (`<Pracownik>`) — importer
+enova sam go wyszukuje po stronie serwera. To wymóg klienta (zakaz połączeń
+SQL z poziomu makra Excela) i jednocześnie właściwy, natywny sposób importu
+tego typu danych w enova365 — nie obejście, tylko udokumentowany mechanizm
+platformy.
 
-## Dlaczego nie da się zaadresować kalendarza inaczej niż przez GUID
+## Skąd wzięliśmy ten format — historia ustaleń
 
-Sprawdzone empirycznie (próbne importy na bazie `Claude`) i potwierdzone
-strukturą tabeli (`scan-props` na `Soneta.Kalend.KalendarzBase`, tabela
-`Kalendarze`): ten obiekt **nie ma żadnego pola zarejestrowanego jako klucz
-użyteczny w atrybucie `where`/`key`** poza `Guid` — próby `where="Nazwa=..."`,
-`where="Typ=... and Nazwa=..."`, `where="Pracownik=..."` kończą się błędem
-`Klucz dla pola/pól 'X' nieznaleziony w tabeli 'Kalendarze'`. Właściwość
-`Pracownik.DniPlanu` (bezpośrednio na obiekcie `Pracownik`) też nie działa w
-imporcie wg rekordów (`CollectionConverter cannot convert from (null)` —
-to właściwość obliczana, nie prosta kolekcja ORM). Zagnieżdżenie
-`Pracownik → Kalendarze → KalendarzBase` bez GUID-u też się nie udaje:
-domyślne zastępowanie kolekcji próbuje skasować kalendarz pracownika, co
-jest zablokowane regułą biznesową („Nie można skasować kalendarza
-pracownika”). Stąd GUID pozostaje jedynym działającym sposobem adresowania
-— dlatego go rozwiązujemy, tylko robimy to poza Excelem.
+Wcześniejsze podejście (ten sam plik, wcześniejsze wersje tego dokumentu)
+próbowało budować import przez ogólny mechanizm `dbmgr importxml`
+(`<session xmlns="...soneta.pl/schema/business">`). Ustalono wtedy
+empirycznie, że tabela `Kalendarze` (`KalendarzBase`) **nie ma żadnego pola
+użytecznego w `where`/`key` poza wewnętrznym GUID-em** — więc ten mechanizm
+*wymagał* GUID-u kalendarza, którego nie da się pozyskać bez SQL.
 
-(Istnieje osobny, cięższy mechanizm `DokumentAktualizacjiKalendarza` —
-dokument z obiegiem zatwierdzania, adresowalny przez pracownika bez GUID-u
-— ale to inny, dużo bardziej złożony obiekt biznesowy [workflow z
-zatwierdzaniem], używany w tym repo do zupełnie innego celu, patrz
-`Widoki/Aktualizacja planu pracy SKA.md`; nie nadaje się jako prosty
-zamiennik zwykłego importu wg rekordów.)
+Użytkownik dostarczył wzorcowy plik z **oficjalnej dokumentacji/pomocy
+enova** w formacie:
 
-## Mechanizm importu dnia planu (dla kogo rozwija to narzędzie)
+```xml
+<Root xmlns:xsd="..." xmlns:xsi="...">
+  <DniPlanu>
+    <DzienPlanu>
+      <Pracownik>006</Pracownik>
+      <Data>02.01.2012</Data>
+      <Definicja>Pracy</Definicja>
+      <OdGodziny>9:00</OdGodziny>
+      <Czas>8:00</Czas>
+    </DzienPlanu>
+  </DniPlanu>
+</Root>
+```
 
-Patrz `[[reference-import-dzienplanu-xml]]` (pamięć projektu) i przykład
-`ImportyXML/Plan pracy przerywany 7-11 13-17 - TS-01 pazdziernik 2026.xml`.
-Kluczowe punkty:
+Próba wczytania tego pliku przez `dbmgr importxml` **dała błędne wyniki bez
+zgłoszenia błędu** — trzy testy z różnymi kodami pracownika (`PP-01`,
+`0001`, `TS-01`) za każdym razem zapisały dzień planu w kalendarzu
+**kolejnego, niepowiązanego pracownika** (sekwencyjnie: NG-01, NG-02,
+NG-03), z błędnymi godzinami. Wniosek: **ten format nie jest przeznaczony
+dla `dbmgr importxml`** — `<Pracownik>` był całkowicie ignorowany. Błędne
+wpisy testowe zostały natychmiast usunięte z bazy (SQL DELETE, zweryfikowane).
 
-- `DniKalendarza` **nie jest guidowana** → dni importuje się zagnieżdżone
-  w kolekcji `<Dni>` kalendarza pracownika, a atrybut `fromto` na
-  `<session>` ogranicza kasowanie/zastępowanie do zadanego okresu.
-- Dzień przerywany (np. 8-12 i 13-17) to **dwie strefy** „Praca w normie” —
-  przerwa (12:00-13:00) to luka między strefami, nie osobna strefa.
-- GUID-y `00000000-0006-0002-0001-...` (definicja dnia „Pracy”) i
-  `00000000-0006-0001-0001-...` (definicja strefy „Praca w normie”) to
-  **systemowe stałe enova365**, jednakowe w każdej instalacji.
-- Import jest **wg rekordów** — pola `<Praca>` dnia trzeba wypełniać
-  jawnie (robi to makro: `OdGodziny` = najwcześniejsza strefa, `Czas` =
-  suma czasów stref).
-- Komentarze w XML nie mogą zawierać `--` (błąd `XmlException`).
+Użytkownik dostarczył kluczowy brakujący element: pliki
+`Soneta.CzasPracy.Migrator.dll` + `Soneta.CzasPracy.Utils.dll`
+(z paczki „Migracja_Soneta.CzasPracy od wersji 2406”) — **dodatek enova
+zarejestrowany jako rozszerzenie bazy** (`dbmgr extlist Claude` potwierdza:
+`soneta.czaspracy.migrator.dll` i `soneta.czaspracy.utils.dll`, „Use in
+server”=True) — oraz oryginalny wzorcowy arkusz Soneta
+`xml- Norma pracy.xlsm`, w którym wprost napisano:
 
-## Wymaganie wstępne: pracownik musi już istnieć w enova
+> „Plik wczytujemy z pozycji Plik | Importuj zapisy | Import czasu pracy
+> i wynagrodzeń (konieczna dllka czas pracy)”
+> „Uruchamiamy makro Plan pracy, które generuje plik norma pracy.xml”
 
-Ani makro, ani skrypt PowerShell nie tworzą pracowników — skrypt szuka
-tylko GUID-u kalendarza już istniejącego pracownika po jego `Kod`. Nowego
-pracownika trzeba najpierw założyć w enova (GUI albo osobny import XML
-kartoteki, patrz `[[reference-import-pracownika-xml]]`) — dopiero wtedy
-jego indywidualny kalendarz istnieje i skrypt go znajdzie. Pracownik bez
-kalendarza powoduje pominięcie **całego jego pliku** z ostrzeżeniem — nie
-przerywa importu pozostałych plików.
+To wyjaśnia wszystko: ten format XML **nie jest czytany przez `dbmgr`**,
+tylko przez dedykowaną pozycję menu w kliencie enova, zaimplementowaną
+właśnie w dostarczonych DLL-ach.
 
-## Status weryfikacji (2026-09-17, na żywo w bazie testowej `Claude`)
+## Potwierdzenie z kodu źródłowego (dekompilacja)
 
-1. Pracownik testowy **PP-01** (Nowicka Marta, od 2026-09-01) + 22 dni
-   planu przerywanego 8:00-12:00 / 13:00-17:00 na wrzesień 2026,
-   zaimportowane **bezpośrednio** (GUID znany z SQL) — `DniKalendarza`=22,
-   `StrefyKalandarza`=44. Pliki: `Plan pracy przerywany 8-12 13-17 - PP-01
-   pracownik.xml` i `... PP-01 wrzesien 2026.xml`.
-2. **Pełny pipeline z placeholderem** przetestowany end-to-end: plik XML z
-   `guid="KOD:PP-01"` dla dnia 2026-10-01 → `Importuj-PlanyPracy.ps1
-   -SqlServer localhost\SQLEXPRESS -Baza Claude -Importuj` → skrypt
-   rozwiązał placeholder na `3c2929f3-e527-4e10-8188-b647b9183323`
-   (kalendarz PP-01), wywołał `dbmgr importxml` bezbłędnie. Zweryfikowane
-   SQL-em: `DniKalendarza` dla 2026-10-01 ma `PracaOdGodziny`=480,
-   `PracaCzas`=480 (8:00), 2 wiersze `StrefyKalandarza`.
-3. Próby adresowania `KalendarzBase` bez GUID-u (`where`/`key` na
-   `Nazwa`/`Typ`/`Pracownik`, właściwość `Pracownik.DniPlanu`, zagnieżdżenie
-   `Pracownik→Kalendarze` bez `addnew`/z `addnew`) — **wszystkie
-   nieudane**, błędy udokumentowane wyżej. To ustalenie, nie luka do
-   dopracowania — GUID + rozwiązanie poza Excelem to ostateczny mechanizm.
+Zdekompilowano `Soneta.CzasPracy.Utils.dll` (`ilspycmd`) i przeanalizowano
+klasę `Soneta.CzasPracy.Akordy.Document` (metoda `ImportPlanuPracy`) oraz
+`Root` (definicje `[XmlElement]`/`[XmlAttribute]`). Ustalenia:
 
-**Niezweryfikowane:** samo makro VBA (`GenerujPlanyPracy`) nie było
-uruchomione w prawdziwym Excelu (brak Excela w tym środowisku) — logika
-generowania placeholdera odzwierciedla dokładnie to, co ręcznie
-przetestowano w kroku 2 powyżej, ale wymaga przetestowania w Excelu przed
-użyciem produkcyjnym: zaimportować `.bas`, wygenerować plik dla przykładowego
-wiersza PP-01, porównać wynik z plikiem testowym opisanym w punkcie 2.
+- Pracownik wyszukiwany **wyłącznie po `Kod`**:
+  `kadry.Pracownicy.WgKodu[dzienPlanu.Pracownik]` — brak GUID-u, brak SQL
+  (to zwykły klucz ORM, rozwiązywany przez sam silnik enova podczas
+  importu w GUI, nie przez nasz kod).
+- Dzień identyfikowany przez `pracownik.DniPlanu[data]` — jeśli istnieje,
+  jest **aktualizowany** (strefy kasowane i wpisywane od nowa), jeśli nie
+  — tworzony nowy. **Nie kasuje dni spoza podanych dat** (inaczej niż
+  `dbmgr importxml` z `fromto`).
+- `<Definicja>` dnia i `Definicja` strefy szukane **po nazwie**
+  (`kalend.DefinicjeDni.WgNazwy` / `kalend.DefinicjeStref.WgNazwy`) —
+  domyślnie „Pracy” / „Praca w normie” (standardowe nazwy systemowe).
+- **`<Strefy>` z wieloma `<StrefaPracy>` jest w pełni obsługiwane** —
+  każda strefa to jeden element z atrybutami `Definicja`, `OdGodziny`,
+  `Czas`. Dokładnie to trzeba do dnia przerywanego (2 strefy: 8-12, 13-17).
+- Kodowanie pliku: `Unicode` (UTF-16LE z BOM) w nagłówku XML — makro zapisuje
+  tak przez `ADODB.Stream` z `Charset="Unicode"`.
+
+Schemat klas (`Root.cs`): `Root.DniPlanu` (tablica `DzienPlanu`) →
+`DzienPlanu : DzienPracy : Praca : PracownikHost` — pola `Pracownik`,
+`Data`, `Definicja`, `OdGodziny`, `Czas`, `Strefy` (tablica `StrefaPracy`,
+każda z atrybutami `Definicja`/`OdGodziny`/`Czas`).
+
+## Wymaganie wstępne
+
+- Pracownik musi już istnieć w enova (kartoteka założona, Kod zgodny) —
+  import nie tworzy pracowników, zgłasza błąd „Pracownik o kodzie X nie
+  został znaleziony” dla brakujących (reszta pliku importuje się dalej,
+  błędy trafiają do logu „Import”).
+- W docelowej bazie musi być zarejestrowane rozszerzenie
+  `Soneta.CzasPracy.Migrator`/`Soneta.CzasPracy.Utils` — bez tego pozycja
+  menu „Import czasu pracy i wynagrodzeń” jest niedostępna.
+
+## Status weryfikacji
+
+- **Mechanizm potwierdzony z kodu źródłowego** (dekompilacja, nie
+  zgadywanie) — wysoka pewność co do poprawności schematu.
+- **Rozszerzenie zarejestrowane w bazie `Claude`** — potwierdzone
+  (`dbmgr extlist Claude`).
+- **Import przez GUI enova NIE został jeszcze przetestowany na żywo**
+  (to środowisko robocze nie ma dostępu do GUI/buscall) — plik testowy
+  `Norma pracy - test PP-01 2026-11-05 dwie strefy.xml` (w tym samym
+  folderze) czeka na test przez użytkownika: Plik → Importuj zapisy →
+  Import czasu pracy i wynagrodzeń, na bazie `Claude`, pracownik PP-01,
+  dzień 2026-11-05 z dwiema strefami 8-12/13-17.
+- Samo makro VBA nie było uruchomione w prawdziwym Excelu (brak Excela w
+  tym środowisku) — logika odzwierciedla dokładnie strukturę potwierdzoną
+  dekompilacją, ale wymaga przetestowania w Excelu przed użyciem
+  produkcyjnym.
+
+**Do zrobienia po teście użytkownika:** potwierdzić w tym pliku wynik
+próby importu (sukces/błąd, ewentualne poprawki formatu daty/nazw
+definicji, jeśli w bazie klienta różnią się od „Pracy”/„Praca w normie”).

@@ -1,15 +1,18 @@
 Attribute VB_Name = "modGeneratorPlanuPracy"
 Option Explicit
 
-' Generator cyklicznego importu "dnia planu" (DzienPlanu) do enova365 z danych w arkuszu "Plan".
+' Generator cyklicznego importu "dnia planu" (Norma czasu pracy) do enova365 z danych w arkuszu "Plan".
 ' Wymaga arkuszy "Konfiguracja" i "Plan" w tym samym skoroszycie (patrz arkusz "Instrukcja").
 '
-' WAZNE: to makro NIE LACZY SIE Z BAZA SQL (zakaz polaczen z bazy Excela/VBA). Zamiast wpisywac
-' do XML od razu GUID kalendarza indywidualnego pracownika, wpisuje placeholder guid="KOD:<Kod>".
-' Rozwiazanie placeholdera na prawdziwy GUID (przez zapytanie SQL: Kalendarze.Pracownik -> Pracownicy.Kod,
-' Typ=2 - bez znaczenia, jaki konkretnie kalendarz ma pracownik, byle mial zalozony Etat) oraz sam
-' import robi OSOBNY skrypt PowerShell "Importuj-PlanyPracy.ps1" (w tym samym folderze), uruchamiany
-' poza Excelem przez osobe wykonujaca import (tak jak dbmgr importxml jest juz uruchamiany poza Excelem).
+' Generuje plik(i) XML w OFICJALNYM formacie enova <Root><DniPlanu><DzienPlanu>...</DzienPlanu></DniPlanu></Root>
+' (ten sam format co wzorcowy arkusz Soneta "xml- Norma pracy.xlsm"), importowany w programie enova przez:
+'   Plik | Importuj zapisy | Import czasu pracy i wynagrodzen
+' (wymaga zarejestrowanego w bazie rozszerzenia Soneta.CzasPracy.Migrator/Utils).
+'
+' TO MAKRO NIE LACZY SIE Z BAZA SQL W ZADEN SPOSOB. Pracownik jest identyfikowany WYLACZNIE
+' po polu <Pracownik> = Kod pracownika - importer enova sam go wyszukuje (kadry.Pracownicy.WgKodu),
+' bez znaczenia jaki kalendarz/GUID ma jego indywidualny kalendarz.
+' Dzien przerywany (np. 8-12 i 13-17) to kolekcja <Strefy> z wieloma <StrefaPracy Definicja=... OdGodziny=... Czas=.../>.
 
 Sub GenerujPlanyPracy()
     Dim wsCfg As Worksheet, wsPlan As Worksheet
@@ -17,11 +20,11 @@ Sub GenerujPlanyPracy()
     Set wsPlan = ThisWorkbook.Worksheets("Plan")
 
     Dim folderXml As String
-    Dim guidDzienPracy As String, guidStrefaNorma As String, prefiksPliku As String
-    folderXml = Trim(wsCfg.Range("B4").Value)
-    guidDzienPracy = Trim(wsCfg.Range("B5").Value)
-    guidStrefaNorma = Trim(wsCfg.Range("B6").Value)
-    prefiksPliku = Trim(wsCfg.Range("B7").Value)
+    Dim nazwaDefDnia As String, nazwaDefStrefy As String, prefiksPliku As String
+    folderXml = Trim(wsCfg.Range("B2").Value)
+    nazwaDefDnia = Trim(wsCfg.Range("B3").Value)
+    nazwaDefStrefy = Trim(wsCfg.Range("B4").Value)
+    prefiksPliku = Trim(wsCfg.Range("B5").Value)
     If Len(folderXml) > 0 And Right(folderXml, 1) <> "\" Then folderXml = folderXml & "\"
 
     Dim lastRow As Long
@@ -31,14 +34,13 @@ Sub GenerujPlanyPracy()
         Exit Sub
     End If
 
-    Dim dniPerPracownik As Object: Set dniPerPracownik = CreateObject("Scripting.Dictionary")
-    Dim minData As Object: Set minData = CreateObject("Scripting.Dictionary")
-    Dim maxData As Object: Set maxData = CreateObject("Scripting.Dictionary")
+    Dim dniXml As String
+    Dim liczbaDni As Long
+    dniXml = ""
+    liczbaDni = 0
 
     Dim r As Long
     Dim bledy As String
-    Dim liczbaDni As Long
-    liczbaDni = 0
 
     For r = 2 To lastRow
         Dim kod As String
@@ -88,8 +90,6 @@ Sub GenerujPlanyPracy()
             GoTo NastepnyWiersz
         End If
 
-        If Not dniPerPracownik.Exists(kod) Then dniPerPracownik.Add kod, ""
-
         Dim odGodzDnia As String
         Dim czasDniaMin As Long
         odGodzDnia = NajwczesniejszaGodzina(strefyOd, liczbaStref)
@@ -104,50 +104,32 @@ Sub GenerujPlanyPracy()
                 dataTxt = Format(d, "yyyy-mm-dd")
 
                 Dim fragment As String
-                fragment = "      <DzienKalendarzaBase class=""Soneta.Kalend.DzienPlanu,Soneta.KadryPlace"">" & vbCrLf & _
-                    "        <Typ>KalendarzPracownika</Typ>" & vbCrLf & _
-                    "        <Data>" & dataTxt & "</Data>" & vbCrLf & _
-                    "        <Definicja>" & guidDzienPracy & "</Definicja>" & vbCrLf & _
-                    "        <Praca>" & vbCrLf & _
-                    "          <OdGodziny>" & odGodzDnia & "</OdGodziny>" & vbCrLf & _
-                    "          <Czas>" & FormatMinuty(czasDniaMin) & "</Czas>" & vbCrLf & _
-                    "        </Praca>" & vbCrLf & _
-                    "        <Strefy>" & vbCrLf
+                fragment = "<DzienPlanu>" & vbCrLf & _
+                    "<Pracownik>" & EscXml(kod) & "</Pracownik>" & vbCrLf & _
+                    "<Data>" & dataTxt & "</Data>" & vbCrLf & _
+                    "<Definicja>" & EscXml(nazwaDefDnia) & "</Definicja>" & vbCrLf & _
+                    "<OdGodziny>" & odGodzDnia & "</OdGodziny>" & vbCrLf & _
+                    "<Czas>" & FormatMinuty(czasDniaMin) & "</Czas>" & vbCrLf & _
+                    "<Strefy>" & vbCrLf
 
                 Dim sIdx2 As Integer
                 For sIdx2 = 1 To liczbaStref
                     fragment = fragment & _
-                        "          <StrefaKalendarza>" & vbCrLf & _
-                        "            <Definicja>" & guidStrefaNorma & "</Definicja>" & vbCrLf & _
-                        "            <Praca>" & vbCrLf & _
-                        "              <OdGodziny>" & strefyOd(sIdx2) & "</OdGodziny>" & vbCrLf & _
-                        "              <Czas>" & strefyCzas(sIdx2) & "</Czas>" & vbCrLf & _
-                        "            </Praca>" & vbCrLf & _
-                        "          </StrefaKalendarza>" & vbCrLf
+                        "<StrefaPracy Definicja=""" & EscXml(nazwaDefStrefy) & """ OdGodziny=""" & _
+                        strefyOd(sIdx2) & """ Czas=""" & strefyCzas(sIdx2) & """ />" & vbCrLf
                 Next sIdx2
 
-                fragment = fragment & "        </Strefy>" & vbCrLf & "      </DzienKalendarzaBase>" & vbCrLf
+                fragment = fragment & "</Strefy>" & vbCrLf & "</DzienPlanu>" & vbCrLf
 
-                dniPerPracownik(kod) = dniPerPracownik(kod) & fragment
+                dniXml = dniXml & fragment
                 liczbaDni = liczbaDni + 1
-
-                If Not minData.Exists(kod) Then
-                    minData.Add kod, dataTxt
-                ElseIf dataTxt < minData(kod) Then
-                    minData(kod) = dataTxt
-                End If
-                If Not maxData.Exists(kod) Then
-                    maxData.Add kod, dataTxt
-                ElseIf dataTxt > maxData(kod) Then
-                    maxData(kod) = dataTxt
-                End If
             End If
         Next d
 
 NastepnyWiersz:
     Next r
 
-    If dniPerPracownik.Count = 0 Then
+    If liczbaDni = 0 Then
         MsgBox "Nie wygenerowano zadnego dnia planu." & vbCrLf & vbCrLf & bledy, vbExclamation
         Exit Sub
     End If
@@ -156,40 +138,35 @@ NastepnyWiersz:
         If Dir(folderXml, vbDirectory) = "" Then MkDir folderXml
     End If
 
-    Dim klucz As Variant
-    Dim raport As String
-    For Each klucz In dniPerPracownik.Keys
-        Dim nazwaPliku As String
-        nazwaPliku = folderXml & prefiksPliku & " - " & klucz & " - " & minData(klucz) & "_do_" & maxData(klucz) & ".xml"
+    Dim nazwaPliku As String
+    nazwaPliku = folderXml & prefiksPliku & " " & Format(Now, "yyyy-mm-dd_hhnnss") & ".xml"
 
-        ' guid="KOD:<Kod>" jest PLACEHOLDEREM - rozwiazuje go dopiero Importuj-PlanyPracy.ps1,
-        ' ktory laczy sie z SQL (poza Excelem) i podmienia na prawdziwy GUID kalendarza
-        ' indywidualnego (Kalendarze.Typ=2) tego pracownika, bez znaczenia jaki konkretnie ma kalendarz.
-        Dim xmlTxt As String
-        xmlTxt = "<?xml version=""1.0"" encoding=""utf-8""?>" & vbCrLf & _
-            "<!-- Wygenerowano makrem GenerujPlanyPracy dnia " & Format(Now, "yyyy-mm-dd hh:nn") & _
-            ". guid=KOD:xxx to placeholder - rozwiazuje go i importuje Importuj-PlanyPracy.ps1. -->" & vbCrLf & _
-            "<session xmlns=""http://www.soneta.pl/schema/business"" fromto=""" & minData(klucz) & "..." & maxData(klucz) & """>" & vbCrLf & _
-            "  <KalendarzBase guid=""KOD:" & klucz & """>" & vbCrLf & _
-            "    <Dni>" & vbCrLf & _
-            dniPerPracownik(klucz) & _
-            "    </Dni>" & vbCrLf & _
-            "  </KalendarzBase>" & vbCrLf & _
-            "</session>" & vbCrLf
+    Dim xmlTxt As String
+    xmlTxt = "<?xml version=""1.0"" encoding=""Unicode"" ?>" & vbCrLf & _
+        "<Root xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">" & vbCrLf & _
+        "<DniPlanu>" & vbCrLf & _
+        dniXml & _
+        "</DniPlanu>" & vbCrLf & _
+        "</Root>" & vbCrLf
 
-        ZapiszUtf8 nazwaPliku, xmlTxt
-        raport = raport & klucz & ": " & nazwaPliku & vbCrLf
-    Next klucz
+    ZapiszUnicode nazwaPliku, xmlTxt
 
     Dim podsumowanie As String
-    podsumowanie = "Wygenerowano " & dniPerPracownik.Count & " plik(i) XML (z placeholderem KOD:...), lacznie " & _
-        liczbaDni & " dni planu:" & vbCrLf & vbCrLf & raport & vbCrLf & _
-        "To makro NIE laczylo sie z SQL. Zeby dokonczyc import, uruchom poza Excelem skrypt " & _
-        "Importuj-PlanyPracy.ps1 (ten sam folder) - on rozwiazuje placeholder guid=""KOD:..."" " & _
-        "i wywoluje dbmgr importxml."
+    podsumowanie = "Wygenerowano plik XML (" & liczbaDni & " dni planu):" & vbCrLf & vbCrLf & nazwaPliku & vbCrLf & vbCrLf & _
+        "Import w programie enova: Plik | Importuj zapisy | Import czasu pracy i wynagrodzen " & _
+        "(wymaga zarejestrowanego rozszerzenia Soneta.CzasPracy.Migrator/Utils w docelowej bazie)."
     If bledy <> "" Then podsumowanie = podsumowanie & vbCrLf & vbCrLf & "BLEDY / pominiete wiersze:" & vbCrLf & bledy
     MsgBox podsumowanie, IIf(bledy <> "", vbExclamation, vbInformation), "Generator planu pracy"
 End Sub
+
+Private Function EscXml(s As String) As String
+    Dim t As String
+    t = Replace(s, "&", "&amp;")
+    t = Replace(t, "<", "&lt;")
+    t = Replace(t, ">", "&gt;")
+    t = Replace(t, """", "&quot;")
+    EscXml = t
+End Function
 
 ' Akceptuje: puste, tekst "H:MM", liczbe/godzine Excela (ulamek doby) - zwraca "H:MM" albo "".
 Private Function FormatCzas(v As Variant) As String
@@ -249,46 +226,16 @@ Private Function MinutyZGodziny(s As String) As Long
     MinutyZGodziny = CLng(czesci(0)) * 60 + CLng(czesci(1))
 End Function
 
-' Zapisuje tekst jako plik UTF-8 BEZ BOM (dbmgr importxml oczekuje czystego UTF-8).
-' To tylko zapis pliku lokalnego (ADODB.Stream Typ=text/binary) - NIE jest to polaczenie z baza danych.
-Private Sub ZapiszUtf8(sciezka As String, tresc As String)
+' Zapisuje tekst jako plik Unicode (UTF-16LE z BOM) - dokladnie taki format, jaki wymaga
+' importer enova "Import czasu pracy i wynagrodzen" (encoding="Unicode" w naglowku XML).
+' To tylko zapis pliku lokalnego (ADODB.Stream) - NIE jest to polaczenie z baza danych.
+Private Sub ZapiszUnicode(sciezka As String, tresc As String)
     Dim strm As Object
     Set strm = CreateObject("ADODB.Stream")
     strm.Type = 2 ' adTypeText
-    strm.Charset = "utf-8"
+    strm.Charset = "Unicode" ' UTF-16LE z BOM - format wymagany przez importer enova
     strm.Open
     strm.WriteText tresc
-    strm.Position = 0
-    strm.Type = 1 ' adTypeBinary - zeby wyciac BOM
-    strm.Position = 0
-
-    Dim bajty() As Byte
-    bajty = strm.Read
+    strm.SaveToFile sciezka, 2 ' adSaveCreateOverWrite
     strm.Close
-
-    Dim dlugosc As Long
-    dlugosc = UBound(bajty) - LBound(bajty) + 1
-
-    Dim bezBom() As Byte
-    If dlugosc >= 3 Then
-        If bajty(0) = 239 And bajty(1) = 187 And bajty(2) = 191 Then
-            ReDim bezBom(0 To dlugosc - 4)
-            Dim i As Long
-            For i = 3 To dlugosc - 1
-                bezBom(i - 3) = bajty(i)
-            Next i
-        Else
-            bezBom = bajty
-        End If
-    Else
-        bezBom = bajty
-    End If
-
-    Dim strm2 As Object
-    Set strm2 = CreateObject("ADODB.Stream")
-    strm2.Type = 1 ' adTypeBinary
-    strm2.Open
-    strm2.Write bezBom
-    strm2.SaveToFile sciezka, 2 ' adSaveCreateOverWrite
-    strm2.Close
 End Sub
