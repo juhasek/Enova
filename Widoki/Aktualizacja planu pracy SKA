@@ -24,7 +24,7 @@
 
             indeks = poprzedni != pracownik ? 0 : indeks + 1;
             foreach (Date d in okres)
-            yield return new %NAZWA%Cell(pracownik, d, GetKalk, kalendarze.Where(_ => _.Value == pracownik).ElementAt(indeks).Key, okres, ext.Context);
+            yield return new %NAZWA%Cell(pracownik, d, GetKalk, kalendarze.Where(_ => _.Value == pracownik).ElementAt(indeks).Key, okres, ext.Context, ext);
 
             poprzedni = pracownik;
             }
@@ -216,6 +216,17 @@
 
             public bool IsEnabledWstawSerię() => dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Wypełniany;
 
+            // Poprawka 17.09.2026 - jedyny sygnał, na który web-klient faktycznie odświeża
+            // siatkę zestawienia, to OnChanged() wywołane NA INSTANCJI Extendera (potwierdzone
+            // przez użytkownika na innej definicji zestawienia - przycisk wywołujący
+            // OnChanged(EventArgs.Empty) po swojej akcji odświeża siatkę). Statyczna flaga
+            // Extender.ForceReloadRows i Session.InvokeChanged() same nie wystarczają. OnChanged
+            // jest protected (z ContextBase), więc Cell (osobna klasa, bez dziedziczenia po
+            // Extenderze) potrzebuje tej publicznej metody, żeby móc go wywołać po edycji dnia.
+            public void OdswiezZestawienie() {
+            OnChanged(EventArgs.Empty);
+            }
+
             [Priority(160)]
             [Command]
             [Group("Wstaw serię")]
@@ -286,20 +297,21 @@
             // Poprawka 17.09.2026 - "Wstaw serię" zmienia godziny wielu dni na raz tym samym
             // mechanizmem sesji co pojedyncza edycja komórki (patrz Cell poniżej), więc bez tego
             // sygnału siatka też nie odświeży kolumn Norma/KP po użyciu tej akcji.
-            DefinicjaZestawieniaCzasu.Extender.ForceReloadRows = true;
-            context.Session.InvokeChanged();
+            OdswiezZestawienie();
             }//** End: Extender **
 //** Begin: Cell **
             Func<PozycjaAktualizacjiKalendarza, KalkulatorAktualizacjiPlanu> getKalk;
             PozycjaAktualizacjiKalendarza pak;
             FromTo okres = FromTo.Empty;
             Context context = null;
+            %NAZWA%Extender ext;
 
-            public %NAZWA%Cell(Pracownik pracownik, Date data, Func<PozycjaAktualizacjiKalendarza, KalkulatorAktualizacjiPlanu> getKalk, PozycjaAktualizacjiKalendarza pak, FromTo okres, Context context): base(pracownik, data) {
+            public %NAZWA%Cell(Pracownik pracownik, Date data, Func<PozycjaAktualizacjiKalendarza, KalkulatorAktualizacjiPlanu> getKalk, PozycjaAktualizacjiKalendarza pak, FromTo okres, Context context, %NAZWA%Extender ext): base(pracownik, data) {
             this.getKalk = getKalk;
             this.pak = pak;
             this.okres = okres;
             this.context = context;
+            this.ext = ext;
             }
 
             public PozycjaAktualizacjiKalendarza GetPAK(){ return pak;}
@@ -382,18 +394,16 @@
             }
 
             // Poprawka 17.09.2026 - zgłoszenie klienta: kolumny "Norma / KP (okres)" i "Norma / KP
-            // (rozl)" nie odświeżały się na żywo po zmianie Od/Do/Czas/Typu dnia w tym samym wierszu.
-            // Przyczyna: GetKalk(pak) w Source poprawnie unieważnia cache kalkulatora po dowolnej
-            // zmianie w sesji (Session.TouchCounter), więc NormaOkres() liczy się na aktualnych
-            // danych - problem jest po stronie odświeżenia SIATKI, nie wyliczenia. Extender ma
-            // wbudowany mechanizm: OnChanged() jego własnych pól ("Wstaw serię") ustawia automatycznie
-            // Extender.ForceReloadRows = true, co przy najbliższym odświeżeniu zestawienia wymusza
-            // ponowne GetRows/GetCells. Edycja komórki dnia (Definicja/OdGodziny/DoGodziny/Czas) nie
-            // przechodzi przez ten mechanizm - trzeba go wywołać jawnie, tak jak w analogicznym,
-            // historycznym poprawieniu w pliku "Zestawienie aktualizacji czasu pracy SKA".
+            // (rozl)" nie odświeżały się na żywo (ani po nawigacji między dniami) po zmianie
+            // Od/Do/Czas/Typu dnia w tym samym wierszu. Pierwsza próba poprawki (Extender.ForceReloadRows
+            // + Session.InvokeChanged()) NIE zadziałała w kliencie webowym - potwierdzone testem
+            // użytkownika. Rzeczywisty, potwierdzony przez użytkownika na innej definicji zestawienia,
+            // sygnał odświeżenia to OnChanged(EventArgs.Empty) wywołane NA INSTANCJI Extendera
+            // (dziedziczy z ContextBase - to on faktycznie powiadamia UI). OnChanged jest protected,
+            // więc Cell (osobna klasa) woła publiczny wrapper Extendera - stąd referencja "ext"
+            // przekazywana z Source.GetCells do konstruktora Cell.
             void OdswiezZestawienie() {
-            DefinicjaZestawieniaCzasu.Extender.ForceReloadRows = true;
-            pak.Session.InvokeChanged();
+            ext.OdswiezZestawienie();
             }
 
             [Field]

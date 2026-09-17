@@ -32,40 +32,49 @@ komórki w tym samym wierszu.
 Klasa bazowa `DefinicjaZestawieniaCzasu.Extender` ma wbudowany mechanizm: jej `OnChanged()`
 (wywoływane automatycznie przy zmianie własnych pól Extendera, np. pól grupy „Wstaw serię” —
 `Okres`, `DefDnia`, `OdGodziny`, `Czas`, `Pomin`, `Nadpisz`) ustawia statyczną flagę
-`Extender.ForceReloadRows = true`, którą framework siatki sprawdza przy najbliższym odświeżeniu i
-wymusza ponowne `GetRows`/`GetCells` (czyli przeliczenie wszystkich kolumn, w tym `[YAxis]`).
-Edycja **komórki dnia** (`Definicja`, `OdGodziny`, `DoGodziny`, `Czas` we właściwościach klasy
-`Cell`) nie przechodzi jednak przez ten mechanizm — to zwykłe settery zapisujące dane w sesji,
-bez żadnego wywołania `OnChanged`/`ForceReloadRows`/`Session.InvokeChanged()`.
+`Extender.ForceReloadRows = true`. Edycja **komórki dnia** (`Definicja`, `OdGodziny`,
+`DoGodziny`, `Czas` we właściwościach klasy `Cell`) nie przechodzi jednak przez ten mechanizm —
+to zwykłe settery zapisujące dane w sesji, bez żadnego wywołania `OnChanged`.
 
-Ten sam wzorzec naprawy (ustawienie `ForceReloadRows` + `Session.InvokeChanged()` po edycji
-komórki) istniał już wcześniej, w formie zakomentowanego, historycznego kodu w pokrewnym pliku
-`Widoki/Zestawienie aktualizacji czasu pracy SKA` (setter `Czas`, wersja przed obecnym
-mechanizmem `DaneStrefy`) — potwierdza to, że jest to znany, rzeczywisty sposób wymuszenia
-odświeżenia tego typu zestawień, nie tylko domysł.
+**Pierwsza próba poprawki (17.09.2026, w oparciu o historyczny, zakomentowany kod w pokrewnym
+pliku `Widoki/Zestawienie aktualizacji czasu pracy SKA`) ustawiała jawnie
+`Extender.ForceReloadRows = true` + `Session.InvokeChanged()` w setterach `Cell`. Testy
+użytkownika na żywej aplikacji (klient webowy enova) pokazały, że to NIE wystarcza — wartość
+nie odświeżała się nawet po nawigacji między dniami w tej samej siatce** (w odróżnieniu od
+natywnej zakładki „Planowanie”, gdzie analogiczne pole odświeża się poprawnie — ale tamto pole
+korzysta z całkiem innego mechanizmu formularza, nie z tego zestawienia).
 
-**Poprawka:** w klasie `Cell` dodano prywatną metodę pomocniczą:
+**Właściwa przyczyna (potwierdzona przez użytkownika na innej, działającej definicji
+zestawienia w tym środowisku):** klient webowy enova odświeża siatkę zestawienia w reakcji na
+`OnChanged(EventArgs.Empty)` wywołane **na instancji Extendera** (metoda odziedziczona z
+`ContextBase`, patrz `references/contextbase.md` w skillu `soneta-programming` — to ten sam
+mechanizm, którego używają parametry wydruków/czynności). Sama statyczna flaga
+`ForceReloadRows` i `Session.InvokeChanged()` — mimo że to realne, istniejące API platformy
+(zweryfikowane dekompilacją `Soneta.KadryPlace.dll`) — nie są tym, co ten konkretny web-grid
+faktycznie obserwuje.
 
-```csharp
-void OdswiezZestawienie() {
-    DefinicjaZestawieniaCzasu.Extender.ForceReloadRows = true;
-    pak.Session.InvokeChanged();
-}
-```
+**Poprawka (wersja finalna):** `OnChanged` jest `protected`, więc `Cell` (osobna klasa, nie
+dziedziczy z `Extender`) nie może go wywołać bezpośrednio. Rozwiązanie:
 
-i wywołanie `OdswiezZestawienie();` na końcu setterów `Definicja`, `OdGodziny`, `DoGodziny` i
-`Czas` — po każdej faktycznej zmianie dnia planu. Dodatkowo to samo wywołanie (przez
-`context.Session.InvokeChanged()`) dodano na końcu akcji `WstawSerię` w `Extender` — ta akcja
-zmienia godziny wielu dni na raz tym samym mechanizmem sesji co edycja pojedynczej komórki, więc
-miała identyczny problem z nieodświeżaniem kolumn normy.
+1. `Source.GetCells` przekazuje referencję do żywej instancji Extendera (`ext`) do konstruktora
+   każdej `Cell` (dodatkowy parametr).
+2. W `Extender` dodano publiczny wrapper:
+   ```csharp
+   public void OdswiezZestawienie() {
+       OnChanged(EventArgs.Empty);
+   }
+   ```
+3. W `Cell` prywatna metoda `OdswiezZestawienie()` woła `ext.OdswiezZestawienie();` — wywoływana
+   na końcu setterów `Definicja`, `OdGodziny`, `DoGodziny`, `Czas`.
+4. Akcja `WstawSerię` w `Extender` (zmienia godziny wielu dni na raz tym samym mechanizmem sesji
+   co edycja pojedynczej komórki) na końcu woła `OdswiezZestawienie();` (bezpośrednio, ma dostęp
+   do `OnChanged` jako część tej samej klasy).
 
 ## 3. Do potwierdzenia
 
-- Poprawka nie została jeszcze zweryfikowana na żywo (środowisko robocze tego repo nie ma
-  dostępu do buscall/GUI) — do potwierdzenia przez użytkownika po wklejeniu kodu do edytora
-  definicji zestawienia (zakładki „Cell” i „Extender”) i przeliczeniu w enova.
-- `ForceReloadRows` i `Session.InvokeChanged()` zweryfikowano jako rzeczywiste, istniejące
-  elementy API platformy (deasemblacja `Soneta.KadryPlace.dll`, klasa
-  `Soneta.Kalend.DefinicjaZestawieniaCzasu.Extender` — `public static bool ForceReloadRows { get; set; }`
-  ustawiane w `OnChanged()`; `Session.InvokeChanged()` używane analogicznie w natywnym kodzie
-  `DokumentAktualizacjiKalendarza`/`KalkulatorDokumentuAktualizacji`), nie z domysłu.
+- Ta wersja (przekazanie `ext` do `Cell` + `OnChanged` na instancji Extendera) **jeszcze nie
+  została przetestowana na żywo** — czeka na potwierdzenie użytkownika w GUI. Pierwsza wersja
+  (statyczny `ForceReloadRows`/`Session.InvokeChanged()`) była testowana i **nie zadziałała** —
+  zob. wyżej.
+- Środowisko robocze tego repo nie ma dostępu do buscall/GUI, więc kolejne iteracje tej
+  poprawki są testowane wyłącznie przez użytkownika w żywej aplikacji.
