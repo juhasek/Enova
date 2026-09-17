@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Nowy pracownik testowy PP-01 do bazy Claude pod scenariusz "cykliczny import planu pracy"
+  (dzien przerywany 8:00-12:00 i 13:00-17:00, generowany docelowo z Excela przez makro).
+  Struktura wg Demo/100.Kadry.gold.xml (Dodatkowe_historii/PracHistoria2 + Adresy/AdresExt),
+  ten sam wzorzec co ImportyXML/Dodatek roczny - test 01 pracownicy.xml.
+  Kalendarz w Etat = Standard (wzorcowy) - indywidualny kalendarz pracownika (KalendarzPracownika)
+  powstaje automatycznie przy zapisie Etat (patrz reference_enova_kalendarz_wzorcowy_vs_indywidualny),
+  jego guid trzeba odczytac z bazy PO imporcie i uzyc w pliku z dniami planu.
+  Import: dbmgr importxml Claude "<plik>" (tryb standard)
+-->
+<session fromto="(wszystko)">
+  <Pracownik id="P1" guid="d1000000-0000-0000-0000-000000000001"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>PP-01</Kod>
+    <Nazwisko>Nowicka</Nazwisko>
+    <Imie>Marta</Imie>
+    <PESEL>94041224549</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH1" guid="d1000000-0000-0001-0000-000000000001">
+        <Pracownik>P1</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>Nowicka</Nazwisko>
+        <Imie>Marta</Imie>
+        <Urodzony><Data>1994-04-12</Data><Miejsce>Łódź</Miejsce></Urodzony>
+        <PESEL>94041224549</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-09-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-09-01</DataZawarcia>
+          <DataRozpPracy>2026-09-01</DataRozpPracy>
+          <Okres>2026-09-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-09-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-09-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-09-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-09-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-09-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-09-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH1_2">
+            <Host>PH1</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH1_AZAM">
+            <Host>PH1</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Łódź</Miejscowosc>
+              <Wojewodztwo>łódzkie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Piotrkowska</Ulica>
+              <NrDomu>15</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH1_AZAMIESZK">
+            <Host>PH1</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH1_AKOR">
+            <Host>PH1</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+</session>

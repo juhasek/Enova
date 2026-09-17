@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Prawa do struktury "Pulpity - kierownik i pracownicy" (StrukturaOrganizacyjna jest źródłem praw -
+  bez wpisu rola ma domyślnie brak dostępu). Role jak we wzorcu enova (Patterns\Workflow.Procesy
+  Workflow\006.StrukturaOrganizacyjna.xml): Administrator, pulpitKadryPlace, pulpitKierownik,
+  pulpitDyrektor.
+
+  JEDNORAZOWY: tabela Rights nie ma unikalnego indeksu (Entitle, Source) - ponowny import
+  dopisze duplikaty. Importować tylko, gdy prawa jeszcze nie istnieją:
+    SELECT COUNT(*) FROM Rights r JOIN StrukturyOrg s ON s.ID = r.Source AND r.SourceType = 'StrukturyOrg'
+    WHERE s.Guid = 'a1500000-0000-0000-0000-000000000001'
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <Right>
+    <Entitle>Entitle:00000000-0015-0001-0001-000000000000</Entitle>
+    <Source>StrukturyOrg:a1500000-0000-0000-0000-000000000001</Source>
+  </Right>
+  <Right>
+    <Entitle>Entitle:00000000-0015-0001-0100-000000000002</Entitle>
+    <Source>StrukturyOrg:a1500000-0000-0000-0000-000000000001</Source>
+  </Right>
+  <Right>
+    <Entitle>Entitle:00000000-0015-0001-0100-000000000003</Entitle>
+    <Source>StrukturyOrg:a1500000-0000-0000-0000-000000000001</Source>
+  </Right>
+  <Right>
+    <Entitle>Entitle:00000000-0015-0001-0100-000000000004</Entitle>
+    <Source>StrukturyOrg:a1500000-0000-0000-0000-000000000001</Source>
+  </Right>
+</session>

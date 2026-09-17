@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Podwyzka dla 5 pracownikow bazy Claude od 2026-05-01 (+10%).
+  AKTUALIZACJA HISTORYCZNA kartoteki: <PracHistoria date="2026-05-01"> tnie okres —
+  klonuje zapis obowiazujacy na te date, nadpisuje TYLKO Stawke, poprzedni zapis
+  obowiazuje do 2026-04-30. <Historia addnew="true"> chroni pozostale zapisy.
+
+  UWAGA: plik NIE jest idempotentny — ponowny import rzuca DateDuplicateException
+  ("nie da sie aktualizowac dwa razy tego samego dnia"). Import jednorazowy.
+
+  Stawki:  TS-01 6000->6600  TS-02 6500->7150  TS-03 5800->6380
+           TS-05 7200->7920  TS-09 5500->6050
+-->
+<session xmlns="http://www.soneta.pl/schema/business" fromto="(wszystko)">
+
+  <Pracownik where="Kod=TS-01">
+    <Historia addnew="true">
+      <PracHistoria date="2026-05-01">
+        <Etat><Zaszeregowanie><Stawka>6,600.00 PLN</Stawka></Zaszeregowanie></Etat>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-02">
+    <Historia addnew="true">
+      <PracHistoria date="2026-05-01">
+        <Etat><Zaszeregowanie><Stawka>7,150.00 PLN</Stawka></Zaszeregowanie></Etat>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-03">
+    <Historia addnew="true">
+      <PracHistoria date="2026-05-01">
+        <Etat><Zaszeregowanie><Stawka>6,380.00 PLN</Stawka></Zaszeregowanie></Etat>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-05">
+    <Historia addnew="true">
+      <PracHistoria date="2026-05-01">
+        <Etat><Zaszeregowanie><Stawka>7,920.00 PLN</Stawka></Zaszeregowanie></Etat>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik where="Kod=TS-09">
+    <Historia addnew="true">
+      <PracHistoria date="2026-05-01">
+        <Etat><Zaszeregowanie><Stawka>6,050.00 PLN</Stawka></Zaszeregowanie></Etat>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+</session>

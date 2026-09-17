@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Plan pracy PRZERYWANY 7:00-11:00 i 13:00-17:00 dla pracownika TS-01 (Kowalska Anna)
+  w bazie Claude, na wszystkie dni robocze (pn-pt) pazdziernika 2026 - 22 dni.
+  W pazdzierniku nie ma swiat ustawowo wolnych, wiec wszystkie pn-pt sa dniami pracy.
+
+  CO TO JEST: wiersze tabely DniKalendarza typu Soneta.Kalend.DzienPlanu
+  (Caption "Wyjatek w kalendarzu"), czyli dni wpisane wprost do KALENDARZA PRACOWNIKA
+  (Kalendarze.Typ = KalendarzPracownika, guid b34b00e4-29ae-4fab-b132-fab273632103, pracownik TS-01).
+  Widok w GUI: Kadry i place / Kadry / Pracownicy / [TS-01] / Kalendarz / Plan pracy.
+  Dzien planu nadpisuje na te date plan wynikajacy z kalendarza normatywnego (Standard).
+
+  JAK ZBUDOWANY JEST DZIEN PRZERYWANY:
+    - <Definicja> dnia = "Pracy" (DefinicjeDni, guid 00000000-0006-0002-0001-...)
+    - dwie strefy "Praca w normie" (DefinicjeStref, guid 00000000-0006-0001-0001-...):
+        7:00 przez 4:00  -> praca 7-11
+       13:00 przez 4:00  -> praca 13-17
+      Przerwa 11-13 nie jest osobna strefa - to po prostu luka miedzy strefami pracy.
+    - <Praca> na poziomie dnia = to, co enova wyliczylaby ze stref
+      (DefinicjaDnia.OnChanged): OdGodziny = najwczesniejsza strefa wchodzaca do planu
+      (7:00), Czas = suma stref typu "Zwieksza" (4:00 + 4:00 = 8:00) - a wiec dobowa
+      norma 8h zostaje zachowana, dzien konczy sie o 17:00.
+      Import wg rekordow nie uruchamia tego przeliczenia, dlatego pola dnia sa wpisane
+      jawnie i musza byc spojne ze strefami.
+
+  IDEMPOTENCJA: tabela DniKalendarza nie jest guidowana, wiec dni sa importowane
+  ZAGNIEZDZONE w kolekcji <Dni> kalendarza pracownika (relacja KalendarzBase.Dni).
+  Import kolekcji zastepuje jej zawartosc, a atrybut fromto na <session> ogranicza
+  kasowanie do 01-31.10.2026 - reimport jest bezpieczny i nie rusza dni spoza
+  pazdziernika 2026. Strefy sa zagniezdzone w dniu (kolekcja <Strefy>) i podmieniane
+  razem z nim.
+
+  Import: dbmgr importxml Claude "<sciezka do pliku>" w trybie standard
+-->
+<session xmlns="http://www.soneta.pl/schema/business" fromto="2026-10-01...2026-10-31">
+  <KalendarzBase guid="b34b00e4-29ae-4fab-b132-fab273632103">
+    <Dni>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-01</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-02</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-05</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-06</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-07</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-08</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-09</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-12</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-13</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-14</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-15</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-16</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-19</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-20</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-21</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-22</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-23</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-26</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-27</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-28</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-29</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-10-30</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca>
+          <OdGodziny>7:00</OdGodziny>
+          <Czas>8:00</Czas>
+        </Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>7:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca>
+              <OdGodziny>13:00</OdGodziny>
+              <Czas>4:00</Czas>
+            </Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+    </Dni>
+  </KalendarzBase>
+</session>
