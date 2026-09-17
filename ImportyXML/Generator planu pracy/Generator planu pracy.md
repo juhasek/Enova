@@ -130,3 +130,26 @@ każda z atrybutami `Definicja`/`OdGodziny`/`Czas`).
 **Do zrobienia po teście użytkownika:** potwierdzić w tym pliku wynik
 próby importu (sukces/błąd, ewentualne poprawki formatu daty/nazw
 definicji, jeśli w bazie klienta różnią się od „Pracy”/„Praca w normie”).
+
+## 2026-09-17 — poprawka: domyślny folder docelowy
+
+Pierwsza wersja makra miała w arkuszu „Konfiguracja” domyślną wartość
+`C:\enovaServer\Projekty\Enova\ImportyXML\` — to ścieżka ze środowiska
+deweloperskiego, w którym powstał ten generator, nie istniejąca na
+komputerze użytkownika. Użytkownik uruchomił makro z tą wartością
+niezmienioną i nie mógł znaleźć wygenerowanego pliku (prawdopodobnie
+cichy błąd `MkDir`, który tworzy tylko jeden brakujący poziom folderu
+naraz — dla wielopoziomowej nieistniejącej ścieżki zawodzi).
+
+Poprawka:
+- **Puste pole „Folder na plik XML” = zapis obok samego skoroszytu**
+  (`ThisWorkbook.Path`) — zawsze istniejący, zawsze zapisywalny folder,
+  nowa wartość domyślna w szablonie.
+- Tworzenie folderu (`ZapewnijFolder`) obsługuje teraz **wszystkie
+  brakujące poziomy** ścieżki, nie tylko jeden.
+- Błędy tworzenia folderu i zapisu pliku pokazują teraz **czytelny
+  komunikat z dokładną ścieżką i opisem błędu** zamiast cichego
+  niepowodzenia lub nieobsłużonego wyjątku VBA.
+- Dodana końcowa weryfikacja `Dir(nazwaPliku)` po zapisie — jeśli mimo
+  braku zgłoszonego błędu pliku nie widać (częste przy OneDrive/
+  antywirusie), makro o tym informuje zamiast milczeć.

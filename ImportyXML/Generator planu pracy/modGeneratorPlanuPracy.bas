@@ -25,7 +25,12 @@ Sub GenerujPlanyPracy()
     nazwaDefDnia = Trim(wsCfg.Range("B3").Value)
     nazwaDefStrefy = Trim(wsCfg.Range("B4").Value)
     prefiksPliku = Trim(wsCfg.Range("B5").Value)
-    If Len(folderXml) > 0 And Right(folderXml, 1) <> "\" Then folderXml = folderXml & "\"
+    If folderXml = "" Then
+        ' Puste pole = zapisz obok tego skoroszytu (zawsze istniejacy, zawsze zapisywalny folder).
+        folderXml = ThisWorkbook.Path & "\"
+    ElseIf Right(folderXml, 1) <> "\" Then
+        folderXml = folderXml & "\"
+    End If
 
     Dim lastRow As Long
     lastRow = wsPlan.Cells(wsPlan.Rows.Count, "A").End(xlUp).Row
@@ -134,9 +139,17 @@ NastepnyWiersz:
         Exit Sub
     End If
 
-    If Len(folderXml) > 0 Then
-        If Dir(folderXml, vbDirectory) = "" Then MkDir folderXml
+    On Error Resume Next
+    ZapewnijFolder folderXml
+    If Err.Number <> 0 Then
+        MsgBox "Nie udalo sie utworzyc/znalezc folderu:" & vbCrLf & folderXml & vbCrLf & vbCrLf & _
+               "Blad: " & Err.Description & vbCrLf & vbCrLf & _
+               "Popraw Konfiguracja!B2 (np. wpisz folder ktory na pewno istnieje, np. C:\Migracja) " & _
+               "albo zostaw to pole puste - wtedy plik zapisze sie obok tego skoroszytu.", vbCritical, "Blad folderu"
+        On Error GoTo 0
+        Exit Sub
     End If
+    On Error GoTo 0
 
     Dim nazwaPliku As String
     nazwaPliku = folderXml & prefiksPliku & " " & Format(Now, "yyyy-mm-dd_hhnnss") & ".xml"
@@ -149,7 +162,22 @@ NastepnyWiersz:
         "</DniPlanu>" & vbCrLf & _
         "</Root>" & vbCrLf
 
+    On Error Resume Next
     ZapiszUnicode nazwaPliku, xmlTxt
+    If Err.Number <> 0 Then
+        MsgBox "Nie udalo sie zapisac pliku:" & vbCrLf & nazwaPliku & vbCrLf & vbCrLf & _
+               "Blad: " & Err.Description & vbCrLf & vbCrLf & _
+               "Sprawdz czy masz prawo zapisu do tego folderu.", vbCritical, "Blad zapisu"
+        On Error GoTo 0
+        Exit Sub
+    End If
+    On Error GoTo 0
+
+    If Dir(nazwaPliku) = "" Then
+        MsgBox "Zapis nie zglosil bledu, ale pliku nie widac pod:" & vbCrLf & nazwaPliku & vbCrLf & vbCrLf & _
+               "Sprawdz uprawnienia/antywirusa/synchronizacje chmurowa (OneDrive) dla tego folderu.", vbExclamation, "Nie znaleziono pliku"
+        Exit Sub
+    End If
 
     Dim podsumowanie As String
     podsumowanie = "Wygenerowano plik XML (" & liczbaDni & " dni planu):" & vbCrLf & vbCrLf & nazwaPliku & vbCrLf & vbCrLf & _
@@ -157,6 +185,27 @@ NastepnyWiersz:
         "(wymaga zarejestrowanego rozszerzenia Soneta.CzasPracy.Migrator/Utils w docelowej bazie)."
     If bledy <> "" Then podsumowanie = podsumowanie & vbCrLf & vbCrLf & "BLEDY / pominiete wiersze:" & vbCrLf & bledy
     MsgBox podsumowanie, IIf(bledy <> "", vbExclamation, vbInformation), "Generator planu pracy"
+End Sub
+
+' Tworzy wszystkie brakujace poziomy folderu (MkDir tworzy tylko jeden poziom naraz).
+Private Sub ZapewnijFolder(ByVal sciezka As String)
+    Dim sciezkaBezSlasha As String
+    sciezkaBezSlasha = sciezka
+    If Right(sciezkaBezSlasha, 1) = "\" Then sciezkaBezSlasha = Left(sciezkaBezSlasha, Len(sciezkaBezSlasha) - 1)
+    If sciezkaBezSlasha = "" Then Exit Sub
+    If Dir(sciezkaBezSlasha, vbDirectory) <> "" Then Exit Sub
+
+    Dim czesci() As String
+    czesci = Split(sciezkaBezSlasha, "\")
+    If UBound(czesci) < 1 Then Exit Sub ' sama litera dysku - nic do tworzenia
+
+    Dim biezaca As String
+    biezaca = czesci(0) ' np. "C:"
+    Dim i As Integer
+    For i = 1 To UBound(czesci)
+        biezaca = biezaca & "\" & czesci(i)
+        If Dir(biezaca, vbDirectory) = "" Then MkDir biezaca
+    Next i
 End Sub
 
 Private Function EscXml(s As String) As String
