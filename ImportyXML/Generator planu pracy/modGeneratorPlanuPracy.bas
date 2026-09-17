@@ -3,51 +3,34 @@ Option Explicit
 
 ' Generator cyklicznego importu "dnia planu" (DzienPlanu) do enova365 z danych w arkuszu "Plan".
 ' Wymaga arkuszy "Konfiguracja" i "Plan" w tym samym skoroszycie (patrz arkusz "Instrukcja").
-' Uzywa polaczenia ADODB (late binding, bez dodatkowych referencji) do bazy SQL enova,
-' zeby dla kazdego Kodu pracownika odnalezc GUID jego indywidualnego kalendarza (Kalendarze.Typ=2).
+'
+' WAZNE: to makro NIE LACZY SIE Z BAZA SQL (zakaz polaczen z bazy Excela/VBA). Zamiast wpisywac
+' do XML od razu GUID kalendarza indywidualnego pracownika, wpisuje placeholder guid="KOD:<Kod>".
+' Rozwiazanie placeholdera na prawdziwy GUID (przez zapytanie SQL: Kalendarze.Pracownik -> Pracownicy.Kod,
+' Typ=2 - bez znaczenia, jaki konkretnie kalendarz ma pracownik, byle mial zalozony Etat) oraz sam
+' import robi OSOBNY skrypt PowerShell "Importuj-PlanyPracy.ps1" (w tym samym folderze), uruchamiany
+' poza Excelem przez osobe wykonujaca import (tak jak dbmgr importxml jest juz uruchamiany poza Excelem).
 
 Sub GenerujPlanyPracy()
     Dim wsCfg As Worksheet, wsPlan As Worksheet
     Set wsCfg = ThisWorkbook.Worksheets("Konfiguracja")
     Set wsPlan = ThisWorkbook.Worksheets("Plan")
 
-    Dim sqlServer As String, baza As String, folderXml As String
+    Dim folderXml As String
     Dim guidDzienPracy As String, guidStrefaNorma As String, prefiksPliku As String
-    sqlServer = Trim(wsCfg.Range("B2").Value)
-    baza = Trim(wsCfg.Range("B3").Value)
     folderXml = Trim(wsCfg.Range("B4").Value)
     guidDzienPracy = Trim(wsCfg.Range("B5").Value)
     guidStrefaNorma = Trim(wsCfg.Range("B6").Value)
     prefiksPliku = Trim(wsCfg.Range("B7").Value)
     If Len(folderXml) > 0 And Right(folderXml, 1) <> "\" Then folderXml = folderXml & "\"
 
-    Dim conn As Object
-    Set conn = CreateObject("ADODB.Connection")
-
-    On Error Resume Next
-    conn.Open "Provider=MSOLEDBSQL;Data Source=" & sqlServer & ";Initial Catalog=" & baza & ";Integrated Security=SSPI;"
-    If conn.State = 0 Then
-        Err.Clear
-        conn.Open "Provider=SQLOLEDB;Data Source=" & sqlServer & ";Initial Catalog=" & baza & ";Integrated Security=SSPI;"
-    End If
-    On Error GoTo 0
-
-    If conn.State = 0 Then
-        MsgBox "Nie udalo sie polaczyc z baza """ & baza & """ na serwerze """ & sqlServer & """." & vbCrLf & _
-               "Sprawdz Konfiguracja!B2 (SQL Server) i B3 (Baza danych) oraz czy masz zainstalowany sterownik " & _
-               "SQL (MSOLEDBSQL lub SQLOLEDB) i dostep Windows Auth do tego serwera.", vbCritical, "Blad polaczenia"
-        Exit Sub
-    End If
-
     Dim lastRow As Long
     lastRow = wsPlan.Cells(wsPlan.Rows.Count, "A").End(xlUp).Row
     If lastRow < 2 Then
         MsgBox "Arkusz ""Plan"" nie ma zadnych wierszy danych (wiersz 1 to naglowki).", vbExclamation
-        conn.Close
         Exit Sub
     End If
 
-    Dim kalendarze As Object: Set kalendarze = CreateObject("Scripting.Dictionary")
     Dim dniPerPracownik As Object: Set dniPerPracownik = CreateObject("Scripting.Dictionary")
     Dim minData As Object: Set minData = CreateObject("Scripting.Dictionary")
     Dim maxData As Object: Set maxData = CreateObject("Scripting.Dictionary")
@@ -102,19 +85,6 @@ Sub GenerujPlanyPracy()
 
         If liczbaStref = 0 Then
             bledy = bledy & "Wiersz " & r & ": brak zdefiniowanej zadnej strefy pracy (kolumny K..R)." & vbCrLf
-            GoTo NastepnyWiersz
-        End If
-
-        Dim guidKalendarza As String
-        If kalendarze.Exists(kod) Then
-            guidKalendarza = kalendarze(kod)
-        Else
-            guidKalendarza = PobierzGuidKalendarza(conn, kod)
-            kalendarze.Add kod, guidKalendarza
-        End If
-        If guidKalendarza = "" Then
-            bledy = bledy & "Wiersz " & r & ": w bazie """ & baza & """ nie ma pracownika o kodzie """ & kod & _
-                   """ z zalozonym kalendarzem indywidualnym (najpierw zaimportuj/zapisz jego Etat w enova)." & vbCrLf
             GoTo NastepnyWiersz
         End If
 
@@ -177,8 +147,6 @@ Sub GenerujPlanyPracy()
 NastepnyWiersz:
     Next r
 
-    conn.Close
-
     If dniPerPracownik.Count = 0 Then
         MsgBox "Nie wygenerowano zadnego dnia planu." & vbCrLf & vbCrLf & bledy, vbExclamation
         Exit Sub
@@ -194,12 +162,15 @@ NastepnyWiersz:
         Dim nazwaPliku As String
         nazwaPliku = folderXml & prefiksPliku & " - " & klucz & " - " & minData(klucz) & "_do_" & maxData(klucz) & ".xml"
 
+        ' guid="KOD:<Kod>" jest PLACEHOLDEREM - rozwiazuje go dopiero Importuj-PlanyPracy.ps1,
+        ' ktory laczy sie z SQL (poza Excelem) i podmienia na prawdziwy GUID kalendarza
+        ' indywidualnego (Kalendarze.Typ=2) tego pracownika, bez znaczenia jaki konkretnie ma kalendarz.
         Dim xmlTxt As String
         xmlTxt = "<?xml version=""1.0"" encoding=""utf-8""?>" & vbCrLf & _
             "<!-- Wygenerowano makrem GenerujPlanyPracy dnia " & Format(Now, "yyyy-mm-dd hh:nn") & _
-            ". Import przez dbmgr importxml " & baza & " w trybie standard. -->" & vbCrLf & _
+            ". guid=KOD:xxx to placeholder - rozwiazuje go i importuje Importuj-PlanyPracy.ps1. -->" & vbCrLf & _
             "<session xmlns=""http://www.soneta.pl/schema/business"" fromto=""" & minData(klucz) & "..." & maxData(klucz) & """>" & vbCrLf & _
-            "  <KalendarzBase guid=""" & kalendarze(klucz) & """>" & vbCrLf & _
+            "  <KalendarzBase guid=""KOD:" & klucz & """>" & vbCrLf & _
             "    <Dni>" & vbCrLf & _
             dniPerPracownik(klucz) & _
             "    </Dni>" & vbCrLf & _
@@ -211,63 +182,14 @@ NastepnyWiersz:
     Next klucz
 
     Dim podsumowanie As String
-    podsumowanie = "Wygenerowano " & dniPerPracownik.Count & " plik(i) XML, lacznie " & liczbaDni & " dni planu:" & vbCrLf & vbCrLf & raport
-    If bledy <> "" Then podsumowanie = podsumowanie & vbCrLf & "BLEDY / pominiete wiersze:" & vbCrLf & bledy
+    podsumowanie = "Wygenerowano " & dniPerPracownik.Count & " plik(i) XML (z placeholderem KOD:...), lacznie " & _
+        liczbaDni & " dni planu:" & vbCrLf & vbCrLf & raport & vbCrLf & _
+        "To makro NIE laczylo sie z SQL. Zeby dokonczyc import, uruchom poza Excelem skrypt " & _
+        "Importuj-PlanyPracy.ps1 (ten sam folder) - on rozwiazuje placeholder guid=""KOD:..."" " & _
+        "i wywoluje dbmgr importxml."
+    If bledy <> "" Then podsumowanie = podsumowanie & vbCrLf & vbCrLf & "BLEDY / pominiete wiersze:" & vbCrLf & bledy
     MsgBox podsumowanie, IIf(bledy <> "", vbExclamation, vbInformation), "Generator planu pracy"
 End Sub
-
-' Pomocnicze makro do szybkiego sprawdzenia polaczenia z baza bez generowania plikow.
-Sub TestujPolaczenie()
-    Dim wsCfg As Worksheet
-    Set wsCfg = ThisWorkbook.Worksheets("Konfiguracja")
-    Dim sqlServer As String, baza As String
-    sqlServer = Trim(wsCfg.Range("B2").Value)
-    baza = Trim(wsCfg.Range("B3").Value)
-
-    Dim conn As Object
-    Set conn = CreateObject("ADODB.Connection")
-    On Error Resume Next
-    conn.Open "Provider=MSOLEDBSQL;Data Source=" & sqlServer & ";Initial Catalog=" & baza & ";Integrated Security=SSPI;"
-    If conn.State = 0 Then
-        Err.Clear
-        conn.Open "Provider=SQLOLEDB;Data Source=" & sqlServer & ";Initial Catalog=" & baza & ";Integrated Security=SSPI;"
-    End If
-    On Error GoTo 0
-
-    If conn.State = 0 Then
-        MsgBox "Polaczenie NIEUDANE z """ & baza & """ na """ & sqlServer & """.", vbCritical
-    Else
-        MsgBox "Polaczenie OK z """ & baza & """ na """ & sqlServer & """.", vbInformation
-        conn.Close
-    End If
-End Sub
-
-Private Function PobierzGuidKalendarza(conn As Object, kod As String) As String
-    Dim rs As Object
-    Set rs = CreateObject("ADODB.Recordset")
-    Dim sql As String
-    sql = "SELECT k.Guid FROM Kalendarze k INNER JOIN Pracownicy p ON k.Pracownik = p.ID " & _
-          "WHERE p.Kod = " & SqlQuote(kod) & " AND k.Typ = 2"
-    On Error Resume Next
-    rs.Open sql, conn
-    On Error GoTo 0
-    If Not rs Is Nothing Then
-        If rs.State = 1 Then
-            If Not rs.EOF Then
-                PobierzGuidKalendarza = Trim(CStr(rs.Fields(0).Value))
-            Else
-                PobierzGuidKalendarza = ""
-            End If
-            rs.Close
-        Else
-            PobierzGuidKalendarza = ""
-        End If
-    End If
-End Function
-
-Private Function SqlQuote(s As String) As String
-    SqlQuote = "'" & Replace(s, "'", "''") & "'"
-End Function
 
 ' Akceptuje: puste, tekst "H:MM", liczbe/godzine Excela (ulamek doby) - zwraca "H:MM" albo "".
 Private Function FormatCzas(v As Variant) As String
@@ -328,6 +250,7 @@ Private Function MinutyZGodziny(s As String) As Long
 End Function
 
 ' Zapisuje tekst jako plik UTF-8 BEZ BOM (dbmgr importxml oczekuje czystego UTF-8).
+' To tylko zapis pliku lokalnego (ADODB.Stream Typ=text/binary) - NIE jest to polaczenie z baza danych.
 Private Sub ZapiszUtf8(sciezka As String, tresc As String)
     Dim strm As Object
     Set strm = CreateObject("ADODB.Stream")
