@@ -1,29 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
+  PRZEBUDOWANE 2026-09-22 wg wzorca dostarczonego przez użytkownika (działający
+  u klienta element "Rozwiązanie Rezerwy Urlopowej") — poprzednia wersja tego
+  pliku (custom KopiujNagłówek/KopiujElementy/KopiujElement w
+  DefinicjaPlanowanejListyPłac) była błędną drogą: dwukrotnie kompilowała się
+  bez błędu przez dbmgr, ale przy realnym "Nalicz" w GUI nic się nie naliczało
+  (silnik naliczał "Odprawa emerytalna" od nowa, ale filtr nie dawał wyniku w
+  praktyce w oczekiwany sposób). Właściwy, sprawdzony u klienta wzorzec jest
+  dużo prostszy:
+
   Import wg rekordów (business="false") — dwa powiązane rekordy:
-    1) DefinicjaElementu "Rozwiązanie odprawa emerytalno-rentowa" (Soneta.Place.DefinicjaElementu)
-       — element wyłącznie jako "etykieta" pozycji na planie rezerw; jego własny
-       Algorytm/Edytor NIE jest w praktyce wykonywany przez zwykły silnik płacowy
-       (wartości nadpisuje kod z pkt 2) — patrz ElementyPlac/Rozwiązanie odprawa
-       emerytalno-rentowa.md.
+    1) DefinicjaElementu "Rozwiązanie odprawa emerytalno-rentowa"
+       (Soneta.Place.DefinicjaElementu) — zwykły **Dodatek automatyczny**
+       (RodzajZrodla=DodatekAutomatyczny), analogiczny do istniejącego u
+       klienta "Rozwiązanie Rezerwy Urlopowej". Cała logika jest tutaj: w
+       _Param sumuje wartość elementu "Odprawa emerytalna" widocznego w
+       Element.Elementy[Element.Okres] (czyli u pracownika, dla tego okresu,
+       niezależnie z której listy płac pochodzi — także z listy głównej
+       sprzed miesięcy) i ustawia ją jako Podstawa1 (BEZ zmiany znaku — wzorzec
+       klienta też nie neguje; ewentualne księgowanie jako "rozwiązanie" po
+       stronie Winien/Ma jest sprawą schematu księgowego, nie znaku wartości
+       w WypElement).
     2) DefinicjaPlanowanejListyPłac "Rozwiązanie odprawa emerytalno-rentowa"
-       (Soneta.Place.DefinicjaPlanowanejListyPłac, tabela DefPlanListPlac)
-       — szablon rezerwy wskazujący jako źródło (Element) standardowy element
-       systemowy "Odprawa emerytalna" (GUID C955AB11-B500-4D90-933D-0A0FB2EE7BE8,
-       identyczny w bazach Claude i Al — element kreatorowy, przenośny) i zawierający
-       algorytm kopiujący/odwracający jego wartość na pozycję z pkt 1.
+       (tabela DefPlanListPlac) — Element = standardowy element systemowy
+       "Odprawa emerytalna" (GUID C955AB11-B500-4D90-933D-0A0FB2EE7BE8,
+       identyczny w bazach Claude i Al). Algorytm to DOMYŚLNY, niezmieniony
+       szablon enova (sam FiltrNaliczania zwracający true) — to ten rekord
+       jest wyłącznie "wyzwalaczem", który każe silnikowi
+       NaliczaniePlanowanychListPłac przeliczyć pracownika dla dodatku
+       "Odprawa emerytalna" w podanym okresie; przy tej okazji, jak każdy
+       Dodatek automatyczny, naliczy się też "Rozwiązanie..." z pkt 1, a
+       DOMYŚLNE (nienadpisane) KopiujElementy skopiuje oba na plan 1:1.
 
-  CAŁOŚĆ NIEZWERYFIKOWANA żywym testem (brak dostępu do GUI/buscall w tym
-  środowisku) — mechanizm DefPlanListPlac ustalony przez dekompilację
-  Soneta.KadryPlace.dll / Soneta.Ksiega.dll (wersja serwera 2512.5.6), nie przez
-  działający precedens. Przed użyciem produkcyjnym: import próbny (dbmgr
-  importxml) na bazie testowej + wygenerowanie planu listy płac w GUI dla
-  pracownika z rozliczoną "Odprawa emerytalna" na liście głównej. Szczegóły i
-  lista niezweryfikowanych założeń: ElementyPlac/Rozwiązanie odprawa
-  emerytalno-rentowa.md.
+  Scenariusz z użytkownika (2026-09-22): pracownik zwolniony 01/2026, odprawa
+  wypłacona na liście głównej w 08/2026 — licząc planowaną listę płac z
+  okresem 08/2026 powinno pojawić się "Rozwiązanie odprawa
+  emerytalno-rentowa" o tej samej (dodatniej) wartości.
 
-  GUID-y obu nowych rekordów wygenerowane losowo, nie kolidują ze standardowymi
-  GUID-ami Soneta (wzorzec z zerami w segmentach).
+  Nadal NIEZWERYFIKOWANE żywym testem w tej wersji — poprzednia wersja
+  dwukrotnie przechodziła kompilację dbmgr, ale nie działała w praktyce, więc
+  klient musi ponownie sprawdzić w GUI. Szczegóły i historia zmian:
+  ElementyPlac/Rozwiązanie odprawa emerytalno-rentowa.md.
+
+  GUID DefinicjaElementu zachowany z poprzedniej wersji (ten sam rekord jest
+  aktualizowany). DefinicjaPlanowanejListyPłac również zachowuje swój GUID.
 -->
 <session xmlns="http://www.soneta.pl/schema/business">
   <DefinicjaElementu guid="068108f5-a97f-494f-ab20-077aa382f6d6">
@@ -32,13 +52,8 @@
     <Blokada>False</Blokada>
 
     <Zatrudnienie>Etat</Zatrudnienie>
-    <RodzajZrodla>Dodatek</RodzajZrodla>
+    <RodzajZrodla>DodatekAutomatyczny</RodzajZrodla>
 
-    <!-- Element nigdy nie jest naliczany przez zwykły silnik wypłat — powstaje
-         wyłącznie jako PlanowanyElementWypłaty tworzony wprost w kodzie algorytmu
-         DefinicjaPlanowanejListyPłac (patrz drugi rekord w tym pliku). Ten
-         Algorytm/Edytor jest więc technicznym wypełniaczem wymaganym przez
-         formularz definicji, nie realną logiką liczącą. -->
     <GenerujZerowy>False</GenerujZerowy>
     <Korygowany>False</Korygowany>
 
@@ -46,28 +61,34 @@
       <Typ>EdytorAlgorytmu</Typ>
       <Edytor>
         <Tekst><![CDATA[
-public void Rozwiązanie_Odprawa_Emerytalno_Rentowa_Param(
-    Soneta.Place.WypElementDodatek Element, WypSkladnik Składnik)
-{
-    // Element nienaliczany na realnej liście płac — wartości na planie rezerw
-    // ustawia bezpośrednio algorytm DefinicjaPlanowanejListyPłac (KopiujElement).
-    Składnik.Podstawa1 = DoubleCy.Zero;
+public void Rozwiązanie_Odprawa_Emerytalno_Rentowa_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, WypSkladnik Składnik) {
+    decimal suma = 0;
+    foreach (WypElement e in Element.Elementy[Element.Okres]) {
+        if (e.Definicja.Nazwa.Contains("Odprawa emerytalna")) {
+            suma += e.Wartosc;
+        }
+    }
+    Składnik.Podstawa1 = suma;
 }
 
-public Currency Rozwiązanie_Odprawa_Emerytalno_Rentowa_Wylicz(
-    Soneta.Place.WypElementDodatek Element, WypSkladnik Składnik)
-{
-    return Currency.Zero;
+public Currency Rozwiązanie_Odprawa_Emerytalno_Rentowa_Wylicz(Soneta.Place.WypElementDodatekAutomatyczny Element, WypSkladnik Składnik) {
+    return (Currency)Składnik.Podstawa1;
 }
 ]]></Tekst>
       </Edytor>
     </Algorytm>
 
-    <!-- Klasyfikacja skopiowana 1:1 z "Odprawa emerytalna" (ID 111 w bazach
-         testowych): zwolniona ze składek ZUS, PIT wg skali. Wartości na rezerwie
-         i tak nadpisuje kod (KopiujElement), więc to ustawienie ma znaczenie
-         tylko dla ewentualnych raportów/filtrów czytających klasyfikację
-         definicji — NIEZWERYFIKOWANE, czy jest gdziekolwiek odczytywane. -->
+    <!-- NieNaliczać ZUS/PIT celowo dla WSZYSTKICH trzech (inaczej niż w
+         poprzedniej wersji tego pliku, gdzie PIT był NaliczaćWgSkaliPodatkowej
+         jak przy "Odprawa emerytalna"): ta pozycja mirroruje kwotę już raz
+         opodatkowanej odprawy, nie jest nową wypłatą — naliczenie podatku
+         drugi raz byłoby błędem. Ważniejsze niż w poprzedniej wersji, bo TEN
+         Dodatek automatyczny nalicza się przy KAŻDYM przeliczeniu pracownika
+         (nie tylko na planie) — jeśli "Odprawa emerytalna" i tak jest w danym
+         okresie widoczna w Element.Elementy, pozycja pojawi się też przy
+         realnym przeliczaniu listy głównej za ten sam okres, więc błędna
+         klasyfikacja podatkowa miałaby realny wpływ na wypłatę, nie tylko na
+         rezerwę. NIEZWERYFIKOWANE w GUI. -->
     <Deklaracje>
       <Spoleczne>
         <Typ>NieNaliczać</Typ>
@@ -76,11 +97,8 @@ public Currency Rozwiązanie_Odprawa_Emerytalno_Rentowa_Wylicz(
         <Typ>NieNaliczać</Typ>
       </Zdrowotne>
       <Zaliczka>
-        <Typ>NaliczaćWgSkaliPodatkowej</Typ>
+        <Typ>NieNaliczać</Typ>
       </Zaliczka>
-      <!-- Pozycja PIT taka sama jak przy "Odprawa emerytalna" / "Dodatek roczny"
-           (PozycjePIT ID 1, standardowa pozycja opodatkowanego dodatku). -->
-      <PozycjaPIT>00000000-0007-0004-0001-000000000000</PozycjaPIT>
     </Deklaracje>
 
     <Nieobecnosci>
@@ -98,69 +116,28 @@ public Currency Rozwiązanie_Odprawa_Emerytalno_Rentowa_Wylicz(
     <Nazwa>Rozwiązanie odpr.emeryt.</Nazwa>
     <Blokada>False</Blokada>
 
-    <!-- Element źródłowy skanowany przez silnik generowania planu — istniejący
-         standardowy element "Odprawa emerytalna" (RodzajZrodla=Dodatek, wymagane
-         przez DefinicjaPlanowanejListyPłac.GetListElement()). NIE nowo utworzony
-         element "Rozwiązanie..." powyżej — ten służy tylko jako Definicja
-         docelowej pozycji rezerwy, ustawiana wprost w KopiujElementy poniżej. -->
+    <!-- Element wyzwalający przeliczenie (nie docelowy element rezerwy —
+         ten powstaje automatycznie z DefinicjaElementu powyżej, jako Dodatek
+         automatyczny, w tym samym przeliczeniu). RodzajZrodla=Dodatek,
+         wymagane przez DefinicjaPlanowanejListyPłac.GetListElement(). -->
     <Element>C955AB11-B500-4D90-933D-0A0FB2EE7BE8</Element>
 
+    <!-- Domyślny, niezmieniony algorytm enova (bez własnych
+         KopiujNagłowek/KopiujElementy/KopiujElement) — dokładnie taki, jaki
+         enova sama wpisuje przy tworzeniu nowej definicji przez GUI
+         (DefinicjaPlanowanejListyPłac.domyślnyAlgorytm, ustalone
+         dekompilacją). NIEZWERYFIKOWANE, czy import wg rekordów (OnImported)
+         wymaga jawnego podania tej treści, czy uzupełnia się sam — podano
+         jawnie dla pewności. -->
     <Algorytm><![CDATA[
 public override SourceFilterDelegate FiltrNaliczania {
     get { return new SourceFilterDelegate(SourceFilter); }
 }
 
 bool SourceFilter(object sender, SourceFilterArgs args) {
-    return args.Element.Wartosc != 0;
-}
-
-protected override void KopiujNagłowek(PlanowanaWypłata dest, Soneta.Place.Wyplata src) {
-    // Nadpisujemy domyślne "dest.Wartosc = src.Wartosc" (suma CAŁEJ wypłaty) —
-    // interesuje nas wyłącznie suma skopiowanych (odwróconych) niżej pozycji.
-    dest.Wartosc = 0;
-}
-
-protected override void KopiujElementy(PlanowanaWypłata dest, Soneta.Place.Wyplata src) {
-    DefinicjaElementu rozwiazanie = dest.Module.DefElementow.WgNazwy["Rozwiązanie odprawa emerytalno-rentowa"];
-
-    foreach (WypElement item in src.Elementy)
-        if (item.Definicja.Nazwa == "Odprawa emerytalna" && item.Wartosc != 0) {
-            PlanowanyElementWypłaty plan = new PlanowanyElementWypłaty(dest, rozwiazanie, item);
-            dest.Module.PlanElementyWyp.AddRow(plan);
-            KopiujElement(plan, item);
-            dest.Wartosc += plan.Wartosc;
-        }
-}
-
-protected override void KopiujElement(PlanowanyElementWypłaty dest, WypElement src) {
-    // Odwrócenie znaku ("rozwiązanie" wcześniej rozliczonej odprawy) — w
-    // przeciwieństwie do bazowej implementacji (zwykła kopia 1:1, bez zmiany
-    // znaku, pod tą samą Definicją).
-    dest.Wartosc = -src.Wartosc;
-    dest.Brutto = -src.DoOpodatkowania;
-    dest.Narzuty = -src.Podatki.Narzuty;
-    dest.Koszty = -src.Podatki.KosztyRazem;
-
-    // Podatki.KopiujNaMinus neguje wszystkie pola składkowo-podatkowe. Bazowy
-    // kod woła ją DWA razy (podwójna negacja = zwykła kopia) — tu wołamy RAZ,
-    // żeby faktycznie odwrócić znak.
-    dest.Podatki.KopiujNaMinus(src.Podatki);
-    dest.RodzajSkladki = src.RodzajSkladki;
-
-    if (src.SkładnikGłówny != null) {
-        if (src.Definicja.Algorytm.ElPodstawa1 != "") dest.Podstawa1 -= src.SkładnikGłówny.Podstawa1;
-        if (src.Definicja.Algorytm.ElPodstawa2 != "") dest.Podstawa2 -= src.SkładnikGłówny.Podstawa2;
-        if (src.Definicja.Algorytm.ElPodstawa3 != "") dest.Podstawa3 -= src.SkładnikGłówny.Podstawa3;
-        if (src.Definicja.Algorytm.ElPodstawa4 != "") dest.Podstawa4 -= src.SkładnikGłówny.Podstawa4;
-        if (src.Definicja.Algorytm.ElPodstawa5 != "") dest.Podstawa5 -= src.SkładnikGłówny.Podstawa5;
-        // Czas/Dni to metadane godzin/dni (nie kwoty) — kopiowane addytywnie,
-        // bez zmiany znaku, tak jak w implementacji bazowej.
-        if (src.Definicja.Algorytm.ElCzas != "") dest.Czas += src.SkładnikGłówny.Czas;
-        if (src.Definicja.Algorytm.ElDni != "") dest.Dni += src.SkładnikGłówny.Dni;
-    }
-
-    if (!src.ZapisObliczen.IsEmpty)
-        dest.ZapisObliczen = src.ZapisObliczen;
+    WypElement element = args.Element;
+    FromTo okres = args.Okres;
+    return true;
 }
 ]]></Algorytm>
   </DefinicjaPlanowanejListyPłac>

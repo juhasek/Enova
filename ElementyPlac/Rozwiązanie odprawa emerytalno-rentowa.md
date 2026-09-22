@@ -63,6 +63,54 @@ Ustalenia:
    domyślnie `KopiujNagłówek` kopiuje `src.Wartosc` (sumę CAŁEJ wypłaty), a
    nam zależy tylko na sumie skopiowanych (odwróconych) pozycji.
 
+## PRZEBUDOWA 2026-09-22 (druga część dnia): właściwy wzorzec od klienta
+
+Po dwóch poprawkach błędów kompilacji (patrz sekcje niżej) mechanizm w końcu
+się kompilował i uruchamiał bez błędu — ale **nic się nie naliczało**.
+Użytkownik pokazał wtedy kod działającego u niego analogicznego elementu
+"Rozwiązanie Rezerwy Urlopowej", co ujawniło, że cała moja architektura
+(customowy `KopiujNagłowek`/`KopiujElementy`/`KopiujElement` w
+`DefinicjaPlanowanejListyPłac` odwracający znak) była **złą drogą** — działa,
+ale nie robi tego co trzeba, bo filtr/kopiowanie nie trafiał w oczekiwany
+sposób w praktyce (dokładna przyczyna niezdiagnozowana — przebudowano zamiast
+debugować, bo pojawił się sprawdzony wzorzec).
+
+**Właściwy, potwierdzony u klienta wzorzec** jest dużo prostszy:
+- Cała logika "rozwiązania" siedzi w zwykłym **Dodatku automatycznym**
+  (`RodzajZrodla=DodatekAutomatyczny`, klasa `WypElementDodatekAutomatyczny`),
+  DOKŁADNIE tak samo jak każdy inny element wynagrodzenia — zwykłe
+  `_Param`/`_Wylicz`, żadnej specjalnej integracji z `DefPlanListPlac`.
+- `_Param` sumuje `Element.Elementy[Element.Okres]` (elementy pracownika w
+  danym okresie, NIEZALEŻNIE z której listy płac — czyli widzi też historyczny,
+  już zatwierdzony element z listy głównej sprzed miesięcy) po
+  `e.Definicja.Nazwa.Contains("Odprawa emerytalna")`, i wstawia sumę do
+  `Składnik.Podstawa1` **bez zmiany znaku** (wzorzec klienta też nie neguje —
+  najwyraźniej efekt "rozwiązania" w księgowości zależy od schematu
+  księgowego/konta, a nie od znaku kwoty w WypElement).
+- `DefinicjaPlanowanejListyPłac` zostaje z DOMYŚLNYM, niezmienionym
+  algorytmem enova (sam szablon `FiltrNaliczania` zwracający `true`) — jej
+  jedyna rola to być "wyzwalaczem": `Element` = "Odprawa emerytalna" każe
+  silnikowi przeliczyć pracownika dla tego dodatku w podanym okresie, a przy
+  okazji (jak każdy Dodatek automatyczny) naliczy się też "Rozwiązanie...",
+  które domyślny (nienadpisany) `KopiujElementy` skopiuje na plan tak jak
+  jest.
+
+**Ważna konsekwencja dla klasyfikacji podatkowej:** ponieważ to zwykły Dodatek
+automatyczny, nalicza się przy KAŻDYM przeliczeniu pracownika obejmującym ten
+okres — nie tylko na planie, ale też na REALNEJ liście płac (np. w miesiącu,
+w którym faktycznie wypłacana jest odprawa, skoro wtedy "Odprawa emerytalna"
+też jest w `Element.Elementy` tego okresu). Dlatego zmieniono klasyfikację na
+`NieNaliczać` dla ZUS i PIT (poprzednia wersja miała PIT wg skali, co przy tym
+mechanizmie oznaczałoby REALNE podwójne opodatkowanie tej samej kwoty).
+
+**Scenariusz testowy od użytkownika:** pracownik zwolniony 01/2026, odprawa
+wypłacona na liście głównej w 08/2026 — licząc planowaną listę płac z
+okresem 08/2026 powinno pojawić się "Rozwiązanie odprawa emerytalno-rentowa"
+o tej samej (dodatniej) kwocie.
+
+Plik XML w całości przepisany na ten wzorzec. Nadal NIEZWERYFIKOWANE żywym
+testem w tej wersji.
+
 ## Ważne uzupełnienie (2026-09-22, po dalszej dekompilacji): jak NAPRAWDĘ działa generowanie planu
 
 Pierwsza wersja tego dokumentu zakładała, że `KopiujWypłatę` dostaje "gotową,
