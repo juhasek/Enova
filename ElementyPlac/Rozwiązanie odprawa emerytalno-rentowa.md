@@ -125,10 +125,36 @@ błędu mimo tego buga — **nie są wystarczającym testem dla tego mechanizmu*
 Przyczyna: sygnatury `KopiujNagłówek`/`KopiujElementy` używały samego
 `Wyplata`, a w kontekście kompilacji tej definicji w zasięgu są jednocześnie
 `Soneta.Kasa.Wyplata` i `Soneta.Place.Wyplata` — poprawka: pełna nazwa
-`Soneta.Place.Wyplata` w obu sygnaturach. Zaimportowano poprawkę i
-zweryfikowano `dbmgr compile Claude` (exit 0) — ale to, jak wyżej, NIE
-gwarantuje braku kolejnych błędów w tej samej, kompilowanej leniwie ścieżce;
-wymaga ponownej próby "Nalicz" w GUI.
+`Soneta.Place.Wyplata` w obu sygnaturach.
+
+**Druga iteracja tego samego dnia:** po poprawce powyżej pojawił się KOLEJNY
+błąd, tym razem `CS0115: nie znaleziono odpowiedniej metody do
+przesłonięcia` dla `KopiujNagłówek`. Przyczyna okazała się być głębsza:
+**metoda bazowa w kodzie enova ma literówkę — nazywa się `KopiujNagłowek`
+(bez „ó”), nie `KopiujNagłówek`** (poprawna polska pisownia to "nagłówek", ale
+tak akurat nie napisali w Soneta). Ja tę literówkę "naprawiłem" nieświadomie,
+bo pierwsza dekompilacja tej klasy (`Soneta.Ksiega.Płace.AlgorytmDefinicjiPlanowanejListyPłac`)
+była zrobiona przez bezpośredni wydruk `ilspycmd -t` na konsolę Bash, która
+**zniekształca polskie znaki diakrytyczne** (wychodzą jako „�") — musiałem
+je wtedy rekonstruować "na oko" i pomyliłem się przy tym jednym słowie.
+
+**Wniosek na przyszłość (ważne dla kolejnych podobnych zadań):** `ilspycmd -t
+Typ plik.dll` wypisywany bezpośrednio na konsolę Bash NIE jest wiarygodnym
+źródłem nazw z polskimi znakami — zawsze dekompilować do plików
+(`ilspycmd -p plik.dll -o katalog`) i czytać przez narzędzie Read (poprawne
+UTF-8), nigdy nie ufać rekonstrukcji nazw z zniekształconego wydruku
+konsoli. Po tym zdarzeniu wszystkie użyte w tym pliku nazwy
+(`SourceFilterArgs`, `PlanowanyElementWypłaty`, `Podatki.KopiujNaMinus`,
+`DefElementow.WgNazwy`, `SourceFilterDelegate`, `KopiujElementy`,
+`KopiujElement`) zostały ręcznie zweryfikowane znak-po-znaku względem
+poprawnie zdekompilowanych plików (`Soneta.KadryPlace.dll` → `/tmp/kadryplace_src`,
+`Soneta.Ksiega.dll` → `/tmp/ksiega_src`) — zgadzają się.
+
+Zaimportowano obie poprawki i zweryfikowano `dbmgr importxml`/`dbmgr compile`
+(exit 0 za każdym razem) — ale to, jak ustalono już wcześniej, NIE gwarantuje
+braku kolejnych błędów w tej samej, kompilowanej leniwie ścieżce (uruchamianej
+dopiero przy realnym "Nalicz" w GUI, czego `dbmgr` nie wywołuje). Mimo
+dokładnej weryfikacji nazw — wciąż nie było żywego testu wykonania kodu.
 
 **Potwierdzone próbnym importem na bazie Claude** (`dbmgr importxml`,
 2026-09-22, exit code 0):
