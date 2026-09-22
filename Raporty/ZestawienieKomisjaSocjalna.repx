@@ -19,12 +19,13 @@
                 <Item4 Ref="11" ControlType="XRTableCell" Name="cellNagl4" Weight="0.85" Multiline="true" Text="Data urodzenia" Dpi="254" />
                 <Item5 Ref="12" ControlType="XRTableCell" Name="cellNagl5" Weight="1.6" Multiline="true" Text="Jednostka obsługująca" Dpi="254" />
                 <Item6 Ref="13" ControlType="XRTableCell" Name="cellNagl6" Weight="0.95" Multiline="true" Text="Dochód na członka rodziny" Dpi="254" />
-                <Item7 Ref="14" ControlType="XRTableCell" Name="cellNagl7" Weight="0.95" Multiline="true" Text="Kwota zapomogi z 2 lat" Dpi="254" />
-                <Item8 Ref="15" ControlType="XRTableCell" Name="cellNagl8" Weight="0.65" Multiline="true" Text="Data" Dpi="254" />
-                <Item9 Ref="16" ControlType="XRTableCell" Name="cellNagl9" Weight="0.75" Multiline="true" Text="Kwota" Dpi="254" />
-                <Item10 Ref="17" ControlType="XRTableCell" Name="cellNagl10" Weight="0.95" Multiline="true" Text="Kwota zapomóg z poprzednich 2 lat" Dpi="254" />
-                <Item11 Ref="18" ControlType="XRTableCell" Name="cellNagl11" Weight="0.65" Multiline="true" Text="Data" Dpi="254" />
-                <Item12 Ref="19" ControlType="XRTableCell" Name="cellNagl12" Weight="0.75" Multiline="true" Text="Kwota" Dpi="254" />
+                <Item7 Ref="51" ControlType="XRTableCell" Name="cellNaglAktualnaZapomoga" Weight="0.95" Multiline="true" Text="Kwota zapomogi z aktualnego świadczenia" Dpi="254" />
+                <Item8 Ref="14" ControlType="XRTableCell" Name="cellNagl7" Weight="0.95" Multiline="true" Text="Kwota zapomogi z 2 lat" Dpi="254" />
+                <Item9 Ref="15" ControlType="XRTableCell" Name="cellNagl8" Weight="0.65" Multiline="true" Text="Data" Dpi="254" />
+                <Item10 Ref="16" ControlType="XRTableCell" Name="cellNagl9" Weight="0.75" Multiline="true" Text="Kwota" Dpi="254" />
+                <Item11 Ref="17" ControlType="XRTableCell" Name="cellNagl10" Weight="0.95" Multiline="true" Text="Kwota zapomóg z poprzednich 2 lat" Dpi="254" />
+                <Item12 Ref="18" ControlType="XRTableCell" Name="cellNagl11" Weight="0.65" Multiline="true" Text="Data" Dpi="254" />
+                <Item13 Ref="19" ControlType="XRTableCell" Name="cellNagl12" Weight="0.75" Multiline="true" Text="Kwota" Dpi="254" />
               </Cells>
             </Item1>
           </Rows>
@@ -67,36 +68,41 @@
                     <Item1 Ref="34" Expression="[DochodNaCzlonkaRodziny]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
                 </Item6>
-                <Item7 Ref="35" ControlType="XRTableCell" Name="cellKwotaZapomogiZ2Lat" Weight="0.95" Dpi="254">
+                <Item7 Ref="52" ControlType="XRTableCell" Name="cellKwotaZapomogiAktualnej" Weight="0.95" Dpi="254">
+                  <ExpressionBindings>
+                    <Item1 Ref="53" Expression="[KwotaZapomogiAktualnej]" PropertyName="Text" EventName="BeforePrint" />
+                  </ExpressionBindings>
+                </Item7>
+                <Item8 Ref="35" ControlType="XRTableCell" Name="cellKwotaZapomogiZ2Lat" Weight="0.95" Dpi="254">
                   <ExpressionBindings>
                     <Item1 Ref="36" Expression="[KwotaZapomogiZ2Lat]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
-                </Item7>
-                <Item8 Ref="37" ControlType="XRTableCell" Name="cellDataWyplaty" Weight="0.65" Dpi="254">
+                </Item8>
+                <Item9 Ref="37" ControlType="XRTableCell" Name="cellDataWyplaty" Weight="0.65" Dpi="254">
                   <ExpressionBindings>
                     <Item1 Ref="38" Expression="[DataWyplaty]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
-                </Item8>
-                <Item9 Ref="39" ControlType="XRTableCell" Name="cellKwotaWyplaty" Weight="0.75" Dpi="254">
+                </Item9>
+                <Item10 Ref="39" ControlType="XRTableCell" Name="cellKwotaWyplaty" Weight="0.75" Dpi="254">
                   <ExpressionBindings>
                     <Item1 Ref="40" Expression="[KwotaWyplaty]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
-                </Item9>
-                <Item10 Ref="41" ControlType="XRTableCell" Name="cellKwotaZapomogPoprzednich2Lat" Weight="0.95" Dpi="254">
+                </Item10>
+                <Item11 Ref="41" ControlType="XRTableCell" Name="cellKwotaZapomogPoprzednich2Lat" Weight="0.95" Dpi="254">
                   <ExpressionBindings>
                     <Item1 Ref="42" Expression="[KwotaZapomogPoprzednich2Lat]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
-                </Item10>
-                <Item11 Ref="43" ControlType="XRTableCell" Name="cellDataWyplatyPoprzedniej" Weight="0.65" Dpi="254">
+                </Item11>
+                <Item12 Ref="43" ControlType="XRTableCell" Name="cellDataWyplatyPoprzedniej" Weight="0.65" Dpi="254">
                   <ExpressionBindings>
                     <Item1 Ref="44" Expression="[DataWyplatyPoprzedniej]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
-                </Item11>
-                <Item12 Ref="45" ControlType="XRTableCell" Name="cellKwotaWyplatyPoprzedniej" Weight="0.75" Dpi="254">
+                </Item12>
+                <Item13 Ref="45" ControlType="XRTableCell" Name="cellKwotaWyplatyPoprzedniej" Weight="0.75" Dpi="254">
                   <ExpressionBindings>
                     <Item1 Ref="46" Expression="[KwotaWyplatyPoprzedniej]" PropertyName="Text" EventName="BeforePrint" />
                   </ExpressionBindings>
-                </Item12>
+                </Item13>
               </Cells>
             </Item1>
           </Rows>

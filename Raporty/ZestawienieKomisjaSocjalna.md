@@ -54,8 +54,13 @@ obsługująca, Dochód na członka rodziny) oraz obie sumy wypełniane są
 komórki są puste. Dwie listy zapomóg (okno bieżące / poprzednie) są
 wyrównane wg indeksu wiersza – dłuższa wyznacza liczbę wierszy grupy,
 krótsza ma puste komórki w nadmiarowych wierszach. **Pracownik bez żadnej
-zapomogi w obu oknach jest pomijany** – nie trafia na wydruk i nie zużywa
-numeru `Lp` (numeracja pozostaje ciągła dla osób z zapomogami).
+zapomogi jest pomijany** – nie trafia na wydruk i nie zużywa numeru `Lp`
+(numeracja pozostaje ciągła dla osób z zapomogami). Od 2026-09-22 warunek
+pomijania sprawdza **trzy** źródła naraz (aktualne świadczenie + oba okna
+sum), nie tylko oba okna — bo rok posiedzenia `R` jest celowo pominięty w
+oknach sum, więc pracownik z wyłącznie „aktualną" zapomogą (typowy
+przypadek — to ona go tu sprowadziła) miałby wcześniej `0` wierszy mimo
+realnych danych do pokazania.
 
 **Kwota 0 jest wartością poprawną (2026-09-22):** świadczenie może być
 przyznane w kwocie 0 i mimo to jest realną zapomogą — sumy „z 2 lat" /
@@ -74,6 +79,7 @@ względem poprzedniej wersji, gdzie `FormatKwota` chowała zerowe sumy.
 | Data urodzenia | `DataUrodzenia` | `Pracownik.Historia[Date.Today].Urodzony.Data` – tylko 1. wiersz grupy |
 | Jednostka obsługująca | `JednostkaObslugujaca` | Cecha „Jednostka obsługująca" z Wydziału bieżącego etatu pracownika. Cecha typu „element słownika" → `(ElemSlownika) Wydzial.Features["Jednostka obsługująca"]`, wyświetlane `.Nazwa` (fallback `"brak"`). Tylko 1. wiersz grupy |
 | Dochód na członka rodziny | `DochodNaCzlonkaRodziny` | Z aktualnego, zatwierdzonego wniosku ZFŚS pracownika (krotka `A1_ZFSS`, dodatek `AltOne.Skanska.Workflow`). Odwzorowuje worker `WniosekZFFSPracownikaWorker.GetProgDochodu`; niezmienione względem poprzedniej wersji. Tylko 1. wiersz grupy |
+| Kwota zapomogi z aktualnego świadczenia | `KwotaZapomogiAktualnej` | **Nowa kolumna (2026-09-22).** Suma `Rozliczenie.Kwota` świadczeń, które sprowadziły pracownika na TO zestawienie — czyli tych z cechą `PosiedzenieKomisji` równą parametrowi (albo, w trybie „Tylko zaznaczone", zaznaczonych wierszy). Rok posiedzenia `R` jest celowo pominięty w oknach „z 2 lat"/„z poprzednich 2 lat", więc to zwykle osobna liczba, nie składowa żadnej z tych dwóch sum. Puste = brak takiego świadczenia (nie powinno się zdarzyć, bo to właśnie ono kwalifikuje pracownika do wydruku); `0,00` = świadczenie jest, w kwocie zero. Tylko 1. wiersz grupy |
 | Kwota zapomogi z 2 lat | `KwotaZapomogiZ2Lat` | Suma `Rozliczenie.Kwota` zapomóg (świadczeń) z okna bieżącego. Puste = brak zapomogi w oknie; `0,00` = zapomoga jest, ale w kwocie zero. Tylko 1. wiersz grupy |
 | Data / Kwota | `DataWyplaty` / `KwotaWyplaty` | i-ta zapomoga z okna bieżącego: `SwiadczSocjalne.Data` (data przyznania) / `Rozliczenie.Kwota` (`N2`). Puste, gdy w tym wierszu nie ma już zapomogi z tego okna |
 | Kwota zapomóg z poprzednich 2 lat | `KwotaZapomogPoprzednich2Lat` | Analogicznie, okno poprzednie. Tylko 1. wiersz grupy |
@@ -158,11 +164,24 @@ mechanizm **nie zmienił się** w tej rewizji.
    odznaczone, aby raport sam znalazł wszystkich pracowników wg cechy
    (także zwolnionych).
 
-Zmiana nie wymaga modyfikacji `.repx` – pasmo `Detail` jest płaskie, a
-„wygaszanie” powtórzonych kolumn i wyrównanie dwóch list zapomóg realizuje
-snippet (puste stringi w wierszach 2..N grupy). Struktura `.repx` (komponenty
-`BusinessContext`/`BusinessSource`/`BusinessSourceContext`, bindowanie
-komórek) jest niezależna od zmiany źródła danych i **nie zmieniła się**.
+Przełączenie źródła danych na Świadczenia socjalne nie wymagało modyfikacji
+`.repx` – pasmo `Detail` jest płaskie, a „wygaszanie” powtórzonych kolumn i
+wyrównanie dwóch list zapomóg realizuje snippet (puste stringi w wierszach
+2..N grupy). Struktura `.repx` (komponenty
+`BusinessContext`/`BusinessSource`/`BusinessSourceContext`) jest niezależna
+od zmiany źródła danych i nie zmieniła się.
+
+**Dodanie kolumny „Kwota zapomogi z aktualnego świadczenia" (2026-09-22)
+WYMAGAŁO edycji `.repx`** — nowa komórka nagłówka (`cellNaglAktualnaZapomoga`,
+`rowNaglowek`) i nowa komórka danych (`cellKwotaZapomogiAktualnej`,
+bindowanie `[KwotaZapomogiAktualnej]`, `rowDane`) wstawione między kolumny
+„Dochód na członka rodziny" i „Kwota zapomogi z 2 lat", `Weight="0.95"`
+(jak sąsiednie kolumny sum). `Ref` nowych elementów: `51` (nagłówek), `52`
+(komórka danych), `53` (jej `ExpressionBindings`) — najwyższe dotąd
+niewykorzystane numery w pliku, żeby nie renumerować istniejących
+elementów. Kolejne komórki w obu wierszach przesunięte o 1 pozycję
+(`Item7`→`Item8` itd.), ich `Ref` pozostały bez zmian. Zweryfikowane:
+plik parsuje się jako poprawny XML, brak duplikatów `Ref`.
 
 ## Odporność na błędy
 

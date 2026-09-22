@@ -37,13 +37,24 @@ namespace x.x.Reports
     // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna zapomoga (świadczenie
     // socjalne). Dla pracownika z kilkoma zapomogami powstaje kilka wierszy.
     // Kolumny "poziomu pracownika" (Lp, Nr ewid., Nazwisko, Data urodzenia,
-    // Jednostka obsługująca, Dochód na członka rodziny) oraz sumy (Kwota
-    // zapomogi z 2 lat, Kwota zapomóg z poprzednich 2 lat) wypełniane są
-    // TYLKO w pierwszym wierszu grupy pracownika; w kolejnych wierszach te
-    // komórki są puste. Dwie listy zapomóg (okno bieżące / poprzednie) są
-    // wyrównane wierszami: dłuższa wyznacza liczbę wierszy grupy, krótsza ma
-    // puste komórki w nadmiarowych wierszach. Pracownik BEZ ŻADNEJ zapomogi
-    // w obu oknach jest pomijany (nie trafia na wydruk, nie zużywa numeru Lp).
+    // Jednostka obsługująca, Dochód na członka rodziny, Kwota zapomogi z
+    // aktualnego świadczenia) oraz sumy (Kwota zapomogi z 2 lat, Kwota
+    // zapomóg z poprzednich 2 lat) wypełniane są TYLKO w pierwszym wierszu
+    // grupy pracownika; w kolejnych wierszach te komórki są puste. Dwie
+    // listy zapomóg (okno bieżące / poprzednie) są wyrównane wierszami:
+    // dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
+    // nadmiarowych wierszach. Pracownik BEZ ŻADNEJ zapomogi (ani w oknach
+    // sum, ani "aktualnej" z tego posiedzenia) jest pomijany (nie trafia na
+    // wydruk, nie zużywa numeru Lp).
+    //
+    // KWOTA ZAPOMOGI Z AKTUALNEGO ŚWIADCZENIA (kolumna między "Dochód na
+    // członka rodziny" a "Kwota zapomogi z 2 lat"): suma Rozliczenie.Kwota
+    // świadczeń, które faktycznie sprowadziły pracownika na to zestawienie -
+    // czyli tych z cechą PosiedzenieKomisji == parametr (albo, w trybie
+    // "Tylko zaznaczone", zaznaczonych wierszy świadczeń). Rok posiedzenia R
+    // jest CELOWO pominięty w oknach "z 2 lat"/"z poprzednich 2 lat" (patrz
+    // niżej), więc "aktualne" świadczenie zwykle NIE wchodzi też w żadną z
+    // tych dwóch sum - to jest osobna, trzecia liczba, nie ich składowa.
     //
     // OKNA CZASOWE SUM to (jak poprzednio) całe LATA KALENDARZOWE liczone od
     // roku parametru "Data posiedzenia komisji" (rok R = rok tej daty). Rok R
@@ -175,8 +186,11 @@ namespace x.x.Reports
                 Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3
                 Date doPoprzednie = new Date(rok - 3, 12, 31);
 
-                etap = "zbieranie pracowników wg posiedzenia";
-                var pracownicy = new List<Pracownik>();
+                etap = "zbieranie świadczeń wg posiedzenia";
+                // Mapa pracownik -> jego świadczenia "aktualne" (te, które
+                // sprowadziły go na to zestawienie - wg cechy PosiedzenieKomisji
+                // albo wg zaznaczenia, patrz niżej).
+                Dictionary<Pracownik, List<SwiadczSocjalne>> swiadczeniaAktualne;
                 if (pars.TylkoZaznaczeni)
                 {
                     // Tylko świadczenia zaznaczone na liście - bez sprawdzania cechy,
@@ -187,12 +201,14 @@ namespace x.x.Reports
                         UstawDaneRaportu(new List<Wiersz>());
                         return;
                     }
+                    swiadczeniaAktualne = new Dictionary<Pracownik, List<SwiadczSocjalne>>();
                     foreach (Row row in rows)
                     {
                         SwiadczSocjalne sw = row as SwiadczSocjalne;
                         Pracownik p = sw != null ? sw.Pracownik : null;
-                        if (p != null && !pracownicy.Contains(p))
-                            pracownicy.Add(p);
+                        if (p == null)
+                            continue;
+                        DodajDoMapy(swiadczeniaAktualne, p, sw);
                     }
                 }
                 else
@@ -202,10 +218,11 @@ namespace x.x.Reports
                     // "PosiedzenieKomisji" równą dacie posiedzenia (dopasowanie
                     // dokładne, nie oknem) - niezależnie od zaznaczenia i filtra
                     // listy (łapie też zwolnionych).
-                    pracownicy = ZbierzPracownikowPosiedzenia(dc.Session, dataOdniesienia);
+                    swiadczeniaAktualne = ZbierzSwiadczeniaPosiedzenia(dc.Session, dataOdniesienia);
                 }
 
                 etap = "sortowanie listy pracowników";
+                var pracownicy = new List<Pracownik>(swiadczeniaAktualne.Keys);
                 pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
 
                 etap = "budowanie wierszy";
@@ -216,7 +233,7 @@ namespace x.x.Reports
                     Pracownik pr = pracownik;
                     try
                     {
-                        DodajWierszePracownika(wiersze, ref lp, pr, dataOdniesienia,
+                        DodajWierszePracownika(wiersze, ref lp, pr, swiadczeniaAktualne[pr], dataOdniesienia,
                             odBiezace, doBiezace, odPoprzednie, doPoprzednie);
                     }
                     catch (Exception ex)
@@ -248,22 +265,32 @@ namespace x.x.Reports
 
         // Buduje grupę wierszy dla jednego pracownika (1..N wierszy).
         static void DodajWierszePracownika(List<Wiersz> wiersze, ref int lp, Pracownik pr,
+            List<SwiadczSocjalne> aktualne,
             Date dataOdniesienia, Date odBiezace, Date doBiezace, Date odPoprzednie, Date doPoprzednie)
         {
             List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, doBiezace);
             List<ZapomogaPozycja> poprzednie = ZapomogiWOknie(pr, odPoprzednie, doPoprzednie);
 
-            // Pracownik bez żadnej zapomogi w obu oknach - pomijamy (bez wiersza,
-            // bez zużycia numeru Lp).
-            if (biezace.Count == 0 && poprzednie.Count == 0)
+            // Pracownik bez żadnej zapomogi - ani "aktualnej" (z tego posiedzenia),
+            // ani w oknach sum - pomijamy (bez wiersza, bez zużycia numeru Lp).
+            if (aktualne.Count == 0 && biezace.Count == 0 && poprzednie.Count == 0)
                 return;
 
+            decimal sumaAktualna = 0m;
+            foreach (SwiadczSocjalne sw in aktualne) sumaAktualna += sw.Rozliczenie.Kwota.Value;
             decimal sumaBiezace = 0m;
             foreach (ZapomogaPozycja z in biezace) sumaBiezace += z.Kwota;
             decimal sumaPoprzednie = 0m;
             foreach (ZapomogaPozycja z in poprzednie) sumaPoprzednie += z.Kwota;
 
             int ile = biezace.Count > poprzednie.Count ? biezace.Count : poprzednie.Count;
+            // Rok posiedzenia R jest pominięty w oknach sum (patrz komentarz na
+            // górze pliku), więc pracownik z wyłącznie "aktualną" zapomogą (bez
+            // niczego w oknach sum) miałby ile == 0 i nie dostałby ani jednego
+            // wiersza - wymuszamy co najmniej 1, żeby dane "aktualne" (widoczne
+            // tylko w wierszu 0) miały gdzie się wyświetlić.
+            if (ile == 0 && aktualne.Count > 0)
+                ile = 1;
 
             for (int i = 0; i < ile; i++)
             {
@@ -278,8 +305,9 @@ namespace x.x.Reports
                     w.JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr));
                     w.DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr, dataOdniesienia));
                     // Kwota 0 jest wynikiem poprawnym (świadczenie przyznane w
-                    // kwocie 0) - suma pokazuje się zawsze, gdy w oknie jest choć
-                    // jedna zapomoga; pusta komórka = brak zapomogi w oknie.
+                    // kwocie 0) - suma pokazuje się zawsze, gdy jest choć jedna
+                    // zapomoga (aktualna / w oknie); pusta komórka = brak zapomogi.
+                    w.KwotaZapomogiAktualnej = aktualne.Count > 0 ? sumaAktualna.ToString("N2") : "";
                     w.KwotaZapomogiZ2Lat = biezace.Count > 0 ? sumaBiezace.ToString("N2") : "";
                     w.KwotaZapomogPoprzednich2Lat = poprzednie.Count > 0 ? sumaPoprzednie.ToString("N2") : "";
                 }
@@ -359,17 +387,18 @@ namespace x.x.Reports
             return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
         }
 
-        // Zbiera pracowników, których choć jedno (niewystornowane - tu: każde,
-        // świadczenia nie mają stornowania jak WypElement) świadczenie typu
-        // "zapomoga" ma cechę "PosiedzenieKomisji" (Data) równą dacie posiedzenia
-        // z parametru. Skanuje CAŁĄ tabelę świadczeń socjalnych
-        // (session.GetKadry().SwiadczeniaSoc) - łapie też pracowników
-        // zwolnionych / spoza bieżącego filtra listy. Cecha może nie być
-        // ustawiona na części świadczeń (starsze wpisy) - traktowane jak brak
-        // dopasowania, nie błąd.
-        static List<Pracownik> ZbierzPracownikowPosiedzenia(Session session, Date dataPosiedzenia)
+        // Zbiera pracowników i ich świadczenia "aktualne" - czyli te, których
+        // choć jedno świadczenie typu "zapomoga" ma cechę "PosiedzenieKomisji"
+        // (Data) równą dacie posiedzenia z parametru (dopasowanie dokładne, nie
+        // oknem). Świadczenia socjalne nie mają odpowiednika stornowania jak
+        // WypElement - każde spełniające warunek jest liczone. Skanuje CAŁĄ
+        // tabelę świadczeń socjalnych (session.GetKadry().SwiadczeniaSoc) -
+        // łapie też pracowników zwolnionych / spoza bieżącego filtra listy.
+        // Cecha może nie być ustawiona na części świadczeń (starsze wpisy) -
+        // traktowane jak brak dopasowania, nie błąd.
+        static Dictionary<Pracownik, List<SwiadczSocjalne>> ZbierzSwiadczeniaPosiedzenia(Session session, Date dataPosiedzenia)
         {
-            var pracownicy = new List<Pracownik>();
+            var mapa = new Dictionary<Pracownik, List<SwiadczSocjalne>>();
             foreach (SwiadczSocjalne sw in session.GetKadry().SwiadczeniaSoc)
             {
                 if (!CzyZapomoga(sw))
@@ -383,10 +412,22 @@ namespace x.x.Reports
                     continue;
 
                 Pracownik p = sw.Pracownik;
-                if (p != null && !pracownicy.Contains(p))
-                    pracownicy.Add(p);
+                if (p == null)
+                    continue;
+                DodajDoMapy(mapa, p, sw);
             }
-            return pracownicy;
+            return mapa;
+        }
+
+        static void DodajDoMapy(Dictionary<Pracownik, List<SwiadczSocjalne>> mapa, Pracownik p, SwiadczSocjalne sw)
+        {
+            List<SwiadczSocjalne> lista;
+            if (!mapa.TryGetValue(p, out lista))
+            {
+                lista = new List<SwiadczSocjalne>();
+                mapa[p] = lista;
+            }
+            lista.Add(sw);
         }
 
         // Lista pojedynczych zapomóg pracownika przyznanych w oknie [od, doDaty]
@@ -447,6 +488,7 @@ namespace x.x.Reports
                 DataUrodzenia = "",
                 JednostkaObslugujaca = "",
                 DochodNaCzlonkaRodziny = "",
+                KwotaZapomogiAktualnej = "",
                 KwotaZapomogiZ2Lat = "",
                 DataWyplaty = "",
                 KwotaWyplaty = "",
@@ -470,6 +512,7 @@ namespace x.x.Reports
             public string DataUrodzenia { get; set; }
             public string JednostkaObslugujaca { get; set; }
             public string DochodNaCzlonkaRodziny { get; set; }
+            public string KwotaZapomogiAktualnej { get; set; }
             public string KwotaZapomogiZ2Lat { get; set; }
             public string DataWyplaty { get; set; }
             public string KwotaWyplaty { get; set; }
