@@ -15,37 +15,50 @@ namespace x.x.Reports
 {
     // Zestawienie na posiedzenie Komisji Socjalnej.
     //
-    // Wydruk (ZestawienieKomisjaSocjalna.repx) uruchamiany jest z listy
-    // pracowników (ew. z Pulpitu kierownika).
+    // Wydruk (ZestawienieKomisjaSocjalna.repx) uruchamiany jest z LISTY
+    // ŚWIADCZEŃ SOCJALNYCH (ZFŚS / Świadczenia socjalne, obiekt
+    // Soneta.Kadry.SwiadczSocjalne, tabela SwiadczeniaSoc) - NIE z listy
+    // pracowników jak w poprzedniej wersji. Na tej liście mogą znajdować się
+    // zarówno aktualni pracownicy, jak i osoby już niezatrudnione, którym
+    // przyznano zapomogę (kwota świadczenia może wynosić nawet 0).
     //
-    // DOBÓR PRACOWNIKÓW (parametr "Tylko pracownicy zaznaczeni na liście"):
-    //   - false (domyślnie): raport przegląda elementy wypłat o definicji
-    //     "zapomoga" (klucz WgDefinicja) z datą w oknie [1.1.(R-4), 31.12.(R-1)]
-    //     i bierze każdego pracownika, który dostał zapomogę - także zwolnionych
-    //     i spoza bieżącego filtra listy. Zaznaczenie jest ignorowane.
-    //   - true: tylko pracownicy zaznaczeni na liście (wiersz historii
-    //     zatrudnienia PracHistoria jest mapowany na pracownika).
+    // DOBÓR PRACOWNIKÓW (parametr "Data posiedzenia komisji"):
+    //   Raport skanuje WSZYSTKIE świadczenia socjalne (session.GetKadry().
+    //   SwiadczeniaSoc) i bierze każdego pracownika, którego świadczenie ma
+    //   cechę "PosiedzenieKomisji" (typu Data) RÓWNĄ dacie z parametru -
+    //   dopasowanie jest DOKŁADNE (nie oknem czasowym). Dotyczy to także
+    //   pracowników zwolnionych i spoza bieżącego filtra listy.
+    //   Parametr "Tylko świadczenia zaznaczone na liście" (domyślnie
+    //   odznaczony) pozwala zamiast tego wziąć wyłącznie zaznaczone na liście
+    //   wiersze świadczeń (bez sprawdzania cechy - ufamy zaznaczeniu
+    //   operatora).
     // Pracownicy sortowani po "Nazwisko i Imię".
     //
-    // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna wypłacona zapomoga.
-    // Dla pracownika z kilkoma zapomogami powstaje kilka wierszy. Kolumny
-    // "poziomu pracownika" (Lp, Nr ewid., Nazwisko, Data urodzenia, Jednostka
-    // obsługująca, Dochód na członka rodziny) oraz sumy (Kwota zapomogi z 2
-    // lat, Kwota zapomóg z poprzednich 2 lat) wypełniane są TYLKO w pierwszym
-    // wierszu grupy pracownika; w kolejnych wierszach te komórki są puste.
-    // Dwie listy zapomóg (okno bieżące / poprzednie) są wyrównane wierszami:
-    // dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
-    // nadmiarowych wierszach. Pracownik BEZ ŻADNEJ zapomogi w obu oknach jest
-    // pomijany (nie trafia na wydruk, nie zużywa numeru Lp).
+    // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna zapomoga (świadczenie
+    // socjalne). Dla pracownika z kilkoma zapomogami powstaje kilka wierszy.
+    // Kolumny "poziomu pracownika" (Lp, Nr ewid., Nazwisko, Data urodzenia,
+    // Jednostka obsługująca, Dochód na członka rodziny) oraz sumy (Kwota
+    // zapomogi z 2 lat, Kwota zapomóg z poprzednich 2 lat) wypełniane są
+    // TYLKO w pierwszym wierszu grupy pracownika; w kolejnych wierszach te
+    // komórki są puste. Dwie listy zapomóg (okno bieżące / poprzednie) są
+    // wyrównane wierszami: dłuższa wyznacza liczbę wierszy grupy, krótsza ma
+    // puste komórki w nadmiarowych wierszach. Pracownik BEZ ŻADNEJ zapomogi
+    // w obu oknach jest pomijany (nie trafia na wydruk, nie zużywa numeru Lp).
     //
-    // OKNA CZASOWE to całe LATA KALENDARZOWE liczone od roku parametru
-    // "Data posiedzenia komisji" (rok R = rok tej daty; domyślnie rok bieżący).
-    // Rok R jest pominięty w obu oknach:
+    // OKNA CZASOWE SUM to (jak poprzednio) całe LATA KALENDARZOWE liczone od
+    // roku parametru "Data posiedzenia komisji" (rok R = rok tej daty). Rok R
+    // jest pominięty w obu oknach:
     //   - "z 2 lat"            = lata R-2 i R-1  ([1.1.(R-2), 31.12.(R-1)])
     //   - "z poprzednich 2 lat" = lata R-4 i R-3 ([1.1.(R-4), 31.12.(R-3)])
-    // Zapomoga = element wypłaty z nazwą zawierającą "zapomog"/"zapomóg"
-    // (data = data wypłaty, kwota = WypElement.Wartosc). Elementy stornowane
-    // pominięte.
+    // WAŻNA ZMIANA względem poprzedniej wersji: te sumy NIE są już liczone
+    // skanując elementy wypłat (WypElement) - źródłem jest teraz kolekcja
+    // świadczeń socjalnych pracownika (pracownik.Swiadczenia,
+    // SubTable<SwiadczSocjalne>), pole "Data" świadczenia (data przyznania) i
+    // Rozliczenie.Kwota. Zapomoga = świadczenie, którego Definicja (rodzaj
+    // świadczenia, słownik DefSwiadczSocjal) ma w nazwie "zapomog"/"zapomóg".
+    // Kwota 0 jest wartością poprawną i widoczną (nie jest już traktowana
+    // jak "brak zapomogi") - pusta komórka oznacza teraz wyłącznie brak
+    // JAKIEJKOLWIEK zapomogi w danym oknie, nie zerową kwotę.
     //
     // Dochód na członka rodziny pochodzi z wniosku ZFŚS pracownika (dodatek
     // AltOne.Skanska.Workflow) - patrz PobierzDochodNaCzlonkaRodziny.
@@ -83,11 +96,12 @@ namespace x.x.Reports
                 }
             }
 
-            // Domyślnie (false) raport skanuje WSZYSTKIE wypłaty w oknie i bierze
-            // każdego pracownika, który miał zapomogę - także zwolnionych, spoza
-            // bieżącego filtra listy. Zaznaczenie na liście jest wtedy ignorowane.
-            // true = klasyczne zachowanie: tylko pracownicy zaznaczeni na liście.
-            [Caption("Tylko pracownicy zaznaczeni na liście")]
+            // Domyślnie (false) raport skanuje WSZYSTKIE świadczenia socjalne
+            // i bierze każdego pracownika, którego świadczenie ma cechę
+            // "PosiedzenieKomisji" równą dacie posiedzenia - także zwolnionych,
+            // spoza bieżącego filtra listy. true = tylko świadczenia zaznaczone
+            // na liście (bez sprawdzania cechy).
+            [Caption("Tylko świadczenia zaznaczone na liście")]
             public bool TylkoZaznaczeni
             {
                 get { return tylkoZaznaczeni; }
@@ -152,20 +166,21 @@ namespace x.x.Reports
                     return;
                 }
 
-                etap = "ustalenie okien czasowych";
+                etap = "ustalenie okien czasowych sum";
                 Date dataOdniesienia = pars.DataPosiedzenia != Date.Empty ? pars.DataPosiedzenia : Date.Today;
                 int rok = dataOdniesienia.Year;
-                // Okna to całe lata kalendarzowe; rok R = rok daty posiedzenia jest pominięty.
+                // Okna sum to całe lata kalendarzowe; rok R = rok daty posiedzenia jest pominięty.
                 Date odBiezace = new Date(rok - 2, 1, 1);        // lata R-2, R-1
                 Date doBiezace = new Date(rok - 1, 12, 31);
                 Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3
                 Date doPoprzednie = new Date(rok - 3, 12, 31);
 
-                etap = "zbieranie pracowników";
+                etap = "zbieranie pracowników wg posiedzenia";
                 var pracownicy = new List<Pracownik>();
                 if (pars.TylkoZaznaczeni)
                 {
-                    // Klasycznie: tylko pracownicy zaznaczeni na liście.
+                    // Tylko świadczenia zaznaczone na liście - bez sprawdzania cechy,
+                    // ufamy zaznaczeniu operatora.
                     Row[] rows = dc[typeof(Row[])] as Row[];
                     if (rows == null)
                     {
@@ -174,19 +189,20 @@ namespace x.x.Reports
                     }
                     foreach (Row row in rows)
                     {
-                        Pracownik p = row as Pracownik;
-                        if (p == null && row is PracHistoria)
-                            p = ((PracHistoria) row).Pracownik;
+                        SwiadczSocjalne sw = row as SwiadczSocjalne;
+                        Pracownik p = sw != null ? sw.Pracownik : null;
                         if (p != null && !pracownicy.Contains(p))
                             pracownicy.Add(p);
                     }
                 }
                 else
                 {
-                    // Domyślnie: skan wszystkich wypłat w oknie [1.1.(R-4), 31.12.(R-1)]
-                    // (= suma obu okien) i zebranie każdego pracownika z zapomogą -
-                    // niezależnie od zaznaczenia i filtra listy (łapie też zwolnionych).
-                    pracownicy = ZbierzPracownikowZapomogi(dc.Session, odPoprzednie, doBiezace);
+                    // Domyślnie: skan WSZYSTKICH świadczeń socjalnych i zebranie
+                    // każdego pracownika, którego świadczenie ma cechę
+                    // "PosiedzenieKomisji" równą dacie posiedzenia (dopasowanie
+                    // dokładne, nie oknem) - niezależnie od zaznaczenia i filtra
+                    // listy (łapie też zwolnionych).
+                    pracownicy = ZbierzPracownikowPosiedzenia(dc.Session, dataOdniesienia);
                 }
 
                 etap = "sortowanie listy pracowników";
@@ -261,8 +277,11 @@ namespace x.x.Reports
                     w.DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString());
                     w.JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr));
                     w.DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr, dataOdniesienia));
-                    w.KwotaZapomogiZ2Lat = FormatKwota(sumaBiezace);
-                    w.KwotaZapomogPoprzednich2Lat = FormatKwota(sumaPoprzednie);
+                    // Kwota 0 jest wynikiem poprawnym (świadczenie przyznane w
+                    // kwocie 0) - suma pokazuje się zawsze, gdy w oknie jest choć
+                    // jedna zapomoga; pusta komórka = brak zapomogi w oknie.
+                    w.KwotaZapomogiZ2Lat = biezace.Count > 0 ? sumaBiezace.ToString("N2") : "";
+                    w.KwotaZapomogPoprzednich2Lat = poprzednie.Count > 0 ? sumaPoprzednie.ToString("N2") : "";
                 }
 
                 if (i < biezace.Count)
@@ -340,71 +359,75 @@ namespace x.x.Reports
             return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
         }
 
-        // Definicje elementów wynagrodzenia, których nazwa zawiera "zapomog(a)".
-        // Zawężenie skanu wypłat do tych definicji - bez tego trzeba by iterować
-        // wszystkie wypłaty firmy z 4 lat.
-        static List<DefinicjaElementu> DefinicjeZapomog(Session session)
-        {
-            var lista = new List<DefinicjaElementu>();
-            foreach (DefinicjaElementu def in session.GetPlace().DefElementow)
-                if (NazwaZapomoga(def.Nazwa))
-                    lista.Add(def);
-            return lista;
-        }
-
-        // Zbiera pracowników, którzy dostali choć jedną (niewystornowaną) zapomogę
-        // w oknie [od, doDaty]. Iteruje tylko elementy wypłat o definicji "zapomoga"
-        // (klucz WgDefinicja) z filtrem serwerowym po dacie (WypElement.Data).
-        // Łapie też pracowników zwolnionych / spoza bieżącego filtra listy.
-        static List<Pracownik> ZbierzPracownikowZapomogi(Session session, Date od, Date doDaty)
+        // Zbiera pracowników, których choć jedno (niewystornowane - tu: każde,
+        // świadczenia nie mają stornowania jak WypElement) świadczenie typu
+        // "zapomoga" ma cechę "PosiedzenieKomisji" (Data) równą dacie posiedzenia
+        // z parametru. Skanuje CAŁĄ tabelę świadczeń socjalnych
+        // (session.GetKadry().SwiadczeniaSoc) - łapie też pracowników
+        // zwolnionych / spoza bieżącego filtra listy. Cecha może nie być
+        // ustawiona na części świadczeń (starsze wpisy) - traktowane jak brak
+        // dopasowania, nie błąd.
+        static List<Pracownik> ZbierzPracownikowPosiedzenia(Session session, Date dataPosiedzenia)
         {
             var pracownicy = new List<Pracownik>();
-            if (doDaty < od)
-                return pracownicy;
-
-            var wypElementy = session.GetPlace().WypElementy;
-            foreach (DefinicjaElementu def in DefinicjeZapomog(session))
+            foreach (SwiadczSocjalne sw in session.GetKadry().SwiadczeniaSoc)
             {
-                foreach (WypElement el in wypElementy.WgDefinicja[def][(WypElement x) => x.Data >= od && x.Data <= doDaty])
-                {
-                    if (el.RozliczenieStorna)
-                        continue;
-                    Pracownik p = el.Pracownik;
-                    if (p != null && !pracownicy.Contains(p))
-                        pracownicy.Add(p);
-                }
+                if (!CzyZapomoga(sw))
+                    continue;
+
+                object wartoscCechy = sw.Features["PosiedzenieKomisji"];
+                if (!(wartoscCechy is Date))
+                    continue;
+                Date dataKomisji = (Date) wartoscCechy;
+                if (dataKomisji != dataPosiedzenia)
+                    continue;
+
+                Pracownik p = sw.Pracownik;
+                if (p != null && !pracownicy.Contains(p))
+                    pracownicy.Add(p);
             }
             return pracownicy;
         }
 
-        // Lista pojedynczych zapomóg pracownika wypłaconych w oknie [od, doDaty]
-        // (wg WypElement.Data = data wypłaty), posortowana rosnąco po dacie.
-        // Zapomoga = element wypłaty z nazwą (lub nazwą Definicji) zawierającą
-        // "zapomog(a)". Iterujemy tylko elementy wypłat tego pracownika w oknie
-        // (klucz WgPracownik + filtr serwerowy po dacie). Elementy stornowane
-        // pomijane (RozliczenieStorna).
+        // Lista pojedynczych zapomóg pracownika przyznanych w oknie [od, doDaty]
+        // (wg SwiadczSocjalne.Data = data przyznania świadczenia), posortowana
+        // rosnąco po dacie. Zapomoga = świadczenie socjalne, którego Definicja
+        // (rodzaj świadczenia) ma w nazwie "zapomog(a)". Źródło:
+        // pracownik.Swiadczenia (SubTable<SwiadczSocjalne>) - kolekcja
+        // świadczeń TEGO pracownika, więc skan jest tani (nie iterujemy całej
+        // firmy).
         static List<ZapomogaPozycja> ZapomogiWOknie(Pracownik pracownik, Date od, Date doDaty)
         {
             var lista = new List<ZapomogaPozycja>();
             if (doDaty < od)
                 return lista;
 
-            SubTable<WypElement> elementyPracownika = pracownik.Session.GetPlace().WypElementy.WgPracownik[pracownik];
-            foreach (WypElement el in elementyPracownika[(WypElement x) => x.Data >= od && x.Data <= doDaty])
+            foreach (SwiadczSocjalne sw in pracownik.Swiadczenia)
             {
-                if (el.RozliczenieStorna)
+                if (!CzyZapomoga(sw))
                     continue;
-                if (NazwaZapomoga(el.Nazwa) || (el.Definicja != null && NazwaZapomoga(el.Definicja.Nazwa)))
-                {
-                    ZapomogaPozycja poz = new ZapomogaPozycja();
-                    poz.Data = el.Data;
-                    poz.Kwota = el.Wartosc;
-                    lista.Add(poz);
-                }
+                Date data = sw.Data;
+                if (data < od || data > doDaty)
+                    continue;
+
+                ZapomogaPozycja poz = new ZapomogaPozycja();
+                poz.Data = data;
+                poz.Kwota = sw.Rozliczenie.Kwota.Value;
+                lista.Add(poz);
             }
 
             lista.Sort((a, b) => a.Data > b.Data ? 1 : (a.Data < b.Data ? -1 : 0));
             return lista;
+        }
+
+        // Świadczenie socjalne jest "zapomogą", jeśli nazwa jego Definicji
+        // (rodzaj świadczenia, słownik DefSwiadczSocjal) zawiera "zapomog"/
+        // "zapomóg" - odróżnia zapomogi od innych rodzajów świadczeń socjalnych
+        // (np. "Dopłata do wypoczynku", "Paczka"), które mimo bycia tym samym
+        // obiektem SwiadczSocjalne nie powinny wchodzić do tego zestawienia.
+        static bool CzyZapomoga(SwiadczSocjalne sw)
+        {
+            return sw.Definicja != null && NazwaZapomoga(sw.Definicja.Nazwa);
         }
 
         static bool NazwaZapomoga(string nazwa)
@@ -413,11 +436,6 @@ namespace x.x.Reports
                 return false;
             string n = nazwa.ToLowerInvariant();
             return n.Contains("zapomog") || n.Contains("zapomóg");
-        }
-
-        static string FormatKwota(decimal kwota)
-        {
-            return kwota != 0m ? kwota.ToString("N2") : "";
         }
 
         static Wiersz NowyWiersz()
