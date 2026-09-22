@@ -13,6 +13,8 @@ Uruchamia się przy każdej zmianie dnia planu pracy (`KontrolaDniaVerifier` w
   poprawnie zgłasza brak 11h odpoczynku.
 - **Zasada "dni modyfikowane" (2026-09-22): NIEZWERYFIKOWANA na żywo w GUI** – wymaga
   potwierdzenia u klienta.
+- **Zgłoszona regresja (2026-09-22) i poprawka tego samego dnia**, patrz sekcja
+  „Naprawiona luka" niżej. Nadal niezweryfikowana na żywo w GUI po poprawce.
 
 ## Nowe wymaganie: weryfikator dotyczy tylko dni modyfikowanych (kolor żółty)
 
@@ -41,6 +43,35 @@ ma publiczną właściwość `DateSubTable DniPlanu => Kalendarz.Dni;` (to samo 
 używa `IZrodloPlanu.GetDzienPlanu(Date)` w jawnej implementacji interfejsu:
 `(DzienKalendarzaBase)DniPlanu[data]`). `DateSubTable.this[Date]` zwraca `null`, gdy nie ma
 wiersza dla danej daty (`Soneta.Business.DateSubTable`).
+
+## Naprawiona luka: dzień właśnie zapisywany (`dp.Data`) traktowany jako niemodyfikowany
+
+**Zgłoszenie klienta (2026-09-22, tego samego dnia co wdrożenie zasady „dni modyfikowane")):**
+sobota – Dyżur domowy 8:00–21:00 (modyfikowana), niedziela – Dyżur domowy 8:00–21:00
+(modyfikowana) → brak błędu, poprawnie. Następnie modyfikacja poniedziałku (praca 7:00–15:00,
+też modyfikowana) → **brak błędu, mimo że powinien się pojawić** (realna przerwa
+niedziela 21:00 → poniedziałek 7:00 = 10h < 11h; doba niedzieli, sprawdzana przy zapisie
+poniedziałku jako kontrola dnia poprzedniego, powinna dociągnąć wczesnoranny fragment
+poniedziałku i wykryć naruszenie).
+
+**Przyczyna:** sprawdzenie „czy dzień jest modyfikowany" (`pracownik.DniPlanu[data] != null`)
+zastosowane też do dnia **właśnie zapisywanego** (`dp.Data`, tu: poniedziałek) w trakcie jego
+własnej weryfikacji. Nie ma gwarancji, że wiersz `dp`, jeszcze niescommitowany, jest już
+widoczny przez świeże odpytanie `Pracownik.DniPlanu` (w przeciwieństwie do `kalkulatorPlanu[date]`,
+którego widoczność własnych, niescommitowanych zmian była już potwierdzona na żywo
+2026-09-11). Skutek: przy sprawdzaniu doby niedzieli (kontrola dnia poprzedniego dla
+poniedziałku) warunek „czy poniedziałek jest modyfikowany" wychodził fałszywie negatywny,
+fragment poniedziałku nie był dociągany do okna doby niedzieli i przerwa 10h nie została
+wykryta.
+
+**Poprawka:** dzień `dp.Data` jest modyfikowany **z definicji** (to właśnie ten wiersz jest
+teraz zapisywany) – sprawdzane bez odpytywania `pracownik.DniPlanu`, żeby wyeliminować
+zależność od jego widoczności w trakcie własnej weryfikacji:
+- wejście pętli: `if (dataDoby != dp.Data && pracownik.DniPlanu[dataDoby] == null) continue;`
+- dociąganie dnia następnego: `if (dataDoby + 1 == dp.Data || pracownik.DniPlanu[dataDoby + 1] != null)`
+
+Zaimportowane do bazy `Claude` tego samego dnia (potwierdzone SQL-em). Nadal niezweryfikowane
+na żywo w GUI.
 
 ## Po co, skoro Soneta ma własny weryfikator 11 h
 
@@ -112,6 +143,7 @@ Doba w komentarzach zapisana jako `D0–(D0+24h)`.
 | 5 | Sobota z Dyżurem kończącym się za późno; komunikat ma się pokazać przy edycji **niedzieli** | wg soboty | wg soboty | **błąd** wyświetlany także przy zapisie niedzieli (kontrola dnia poprzedniego) |
 | 6 | Sobota: Praca w normie 8:00–21:00 (modyfikowana); Niedziela: Praca w normie 7:00–20:00 (modyfikowana) | 8:00 (sob.) | fragment niedzieli 7:00–8:00 dociągnięty do doby sobotniej → przerwa 21:00→7:00 = **10:00** | **błąd** – realny odpoczynek 10h mimo że każda doba licząc „od siebie” dawałaby 11:00 |
 | 7 | Sobota: Praca w normie 8:00–16:00 + Dyżur 16:00–21:00 (**modyfikowana**); Niedziela: godziny **domyślne** 7:00–15:00 (**niemodyfikowana** – brak wiersza w `DniPlanu`) | 8:00 (sob.) | nieliczone (niedziela wyłączona z okna, bo niemodyfikowana) → trailing 21:00→8:00 = **11:00** | **brak błędu** – mimo że realny odstęp 21:00→7:00 = 10h < 11h. Gdy niedziela zostanie zmodyfikowana (dowolnie) i odstęp nadal < 11h → błąd |
+| 8 | Sobota: Dyżur domowy 8:00–21:00 (modyfikowana); Niedziela: Dyżur domowy 8:00–21:00 (modyfikowana); **następnie** modyfikacja **poniedziałku**: Praca w normie 7:00–15:00 | 8:00 (nd., kontrola dnia poprzedniego przy zapisie poniedziałku) | fragment poniedziałku 7:00–8:00 dociągnięty do doby niedzielnej → przerwa 21:00→7:00 = **10:00** | **błąd** przy zapisie poniedziałku – zgłoszona regresja (2026-09-22), naprawiona tego samego dnia (patrz „Naprawiona luka" wyżej) |
 
 Pełna lista wraz z kolumnami „Wynik testu / Uwagi” →
 [Scenariusze testowe weryfikatorow czasu pracy.xlsx](Scenariusze%20testowe%20weryfikatorow%20czasu%20pracy.xlsx), arkusz „Odpoczynek dobowy 11h”.

@@ -7,8 +7,17 @@
   2026-09-22: dodana zasada "dni modyfikowane" - weryfikator dziala tylko dla dni
   z jawnym wyjatkiem w kalendarzu pracownika (kolor zolty w GUI, Pracownik.DniPlanu[data]
   != null). Dzien dziedziczacy z kalendarza wzorcowego nie jest sprawdzany i nie wplywa
-  na wynik weryfikacji dnia sasiedniego. Patrz "Weryfikatory czasu pracy/11-sto godzinny
-  odpoczynek.md".
+  na wynik weryfikacji dnia sasiedniego.
+
+  2026-09-22 (poprawka): dzien dp.Data (wlasnie zapisywany) jest traktowany jako
+  modyfikowany Z DEFINICJI, bez odpytywania Pracownik.DniPlanu - w trakcie wlasnej
+  weryfikacji nie ma gwarancji, ze ten indekser juz widzi wlasny, jeszcze niescommitowany
+  wiersz. Naprawia zgloszony przypadek: sobota+niedziela dyzur 8-21, poniedzialek
+  praca 7-15 - brak bledu mimo przerwy 10h (kontrola dnia poprzedniego dla niedzieli
+  nie dociagala poniedzialku, bo pracownik.DniPlanu[poniedzialek] bylo null podczas
+  wlasnej weryfikacji poniedzialku).
+
+  Patrz "Weryfikatory czasu pracy/11-sto godzinny odpoczynek.md".
 
   UWAGA: srodowisko robocze repo nie ma dostepu do bazy/DLL klienta - plik NIE jest
   zweryfikowany probnym importem na bazie klienta. Zaimportowany i wgrany do bazy
@@ -72,8 +81,11 @@
         Date dataDoby = dp.Data + przesuniecieDni;
 
         // Dzień niemodyfikowany (brak jawnego wyjątku w kalendarzu pracownika) - pomijamy
-        // całą dobę rozpoczętą w tym dniu.
-        if (pracownik.DniPlanu[dataDoby] == null)
+        // całą dobę rozpoczętą w tym dniu. Dzień dp.Data jest modyfikowany Z DEFINICJI
+        // (to właśnie ten wiersz jest teraz zapisywany) - sprawdzamy to bez odpytywania
+        // pracownik.DniPlanu, bo w trakcie własnej weryfikacji nie ma pewności, że wiersz
+        // jest już widoczny przez ten indekser.
+        if (dataDoby != dp.Data &amp;&amp; pracownik.DniPlanu[dataDoby] == null)
             continue;
 
         Dzien dzien = kalkulatorPlanu[dataDoby];
@@ -125,8 +137,10 @@
         //
         // Dociągane WYŁĄCZNIE gdy dzień następny jest dniem modyfikowanym (jawny wyjątek
         // w kalendarzu) - dzień dziedziczący z kalendarza wzorcowego nie ma wpływać na wynik
-        // weryfikacji dnia bieżącego, dopóki sam nie zostanie zmodyfikowany.
-        if (pracownik.DniPlanu[dataDoby + 1] != null)
+        // weryfikacji dnia bieżącego, dopóki sam nie zostanie zmodyfikowany. Dzień dp.Data
+        // jest modyfikowany z definicji (patrz komentarz wyżej) - stąd dodatkowy warunek
+        // "dataDoby + 1 == dp.Data" niezależny od pracownik.DniPlanu.
+        if (dataDoby + 1 == dp.Data || pracownik.DniPlanu[dataDoby + 1] != null)
         {
             Dzien dzienNastepny = kalkulatorPlanu[dataDoby + 1];
             if (dzienNastepny != null)

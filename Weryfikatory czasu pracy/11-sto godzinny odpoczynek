@@ -44,8 +44,11 @@ public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs
         Date dataDoby = dp.Data + przesuniecieDni;
 
         // Dzień niemodyfikowany (brak jawnego wyjątku w kalendarzu pracownika) - pomijamy
-        // całą dobę rozpoczętą w tym dniu.
-        if (pracownik.DniPlanu[dataDoby] == null)
+        // całą dobę rozpoczętą w tym dniu. Dzień dp.Data jest modyfikowany Z DEFINICJI
+        // (to właśnie ten wiersz jest teraz zapisywany) - sprawdzamy to bez odpytywania
+        // pracownik.DniPlanu, bo w trakcie własnej weryfikacji nie ma pewności, że wiersz
+        // jest już widoczny przez ten indekser.
+        if (dataDoby != dp.Data && pracownik.DniPlanu[dataDoby] == null)
             continue;
 
         Dzien dzien = kalkulatorPlanu[dataDoby];
@@ -97,8 +100,10 @@ public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs
         //
         // Dociągane WYŁĄCZNIE gdy dzień następny jest dniem modyfikowanym (jawny wyjątek
         // w kalendarzu) - dzień dziedziczący z kalendarza wzorcowego nie ma wpływać na wynik
-        // weryfikacji dnia bieżącego, dopóki sam nie zostanie zmodyfikowany.
-        if (pracownik.DniPlanu[dataDoby + 1] != null)
+        // weryfikacji dnia bieżącego, dopóki sam nie zostanie zmodyfikowany. Dzień dp.Data
+        // jest modyfikowany z definicji (patrz komentarz wyżej) - stąd dodatkowy warunek
+        // "dataDoby + 1 == dp.Data" niezależny od pracownik.DniPlanu.
+        if (dataDoby + 1 == dp.Data || pracownik.DniPlanu[dataDoby + 1] != null)
         {
             Dzien dzienNastepny = kalkulatorPlanu[dataDoby + 1];
             if (dzienNastepny != null)
