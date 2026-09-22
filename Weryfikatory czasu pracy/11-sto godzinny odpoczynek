@@ -17,6 +17,15 @@ public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs
     // Sprawdzamy dobę rozpoczętą w dniu bieżącym ORAZ w dniu poprzednim - komunikat o dobie
     // np. soboty ma się pojawić także podczas wprowadzania zapisów na niedzielę.
     //
+    // Weryfikator dotyczy WYŁĄCZNIE dni MODYFIKOWANYCH - dni z jawnym wyjątkiem w kalendarzu
+    // pracownika (kolor żółty dnia w GUI), czyli wierszem w Pracownik.DniPlanu dla tej daty.
+    // Dzień dziedziczący godziny z kalendarza wzorcowego (brak wiersza w DniPlanu) NIE jest
+    // sprawdzany i NIE wpływa na wynik weryfikacji dnia sąsiedniego - dotyczy to zarówno
+    // doby dnia poprzedniego, jak i wczesnorannych stref dnia następnego dociąganych do okna.
+    // Przykład: modyfikacja 16.09 (praca 8-16 + dyżur 16-21) bez modyfikacji 17.09 (domyślne
+    // 7-15) - brak błędu, mimo że realny odstęp 21:00->7:00 to 10h. Błąd pojawi się dopiero,
+    // gdy 17.09 też zostanie zmodyfikowane (dowolnie) i odstęp nadal będzie < 11h.
+    //
     // Poziom (Error / Warning) ustawiany jest na powiązaniu kalendarza z weryfikatorem
     // (WeryfikatorKalendarza.Typ), nie w tym kodzie. Wg ustaleń z klientem: Error (blokuje zapis).
 
@@ -33,6 +42,11 @@ public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs
     for (int przesuniecieDni = 0; przesuniecieDni >= -1; przesuniecieDni--)
     {
         Date dataDoby = dp.Data + przesuniecieDni;
+
+        // Dzień niemodyfikowany (brak jawnego wyjątku w kalendarzu pracownika) - pomijamy
+        // całą dobę rozpoczętą w tym dniu.
+        if (pracownik.DniPlanu[dataDoby] == null)
+            continue;
 
         Dzien dzien = kalkulatorPlanu[dataDoby];
         if (dzien == null)
@@ -80,22 +94,29 @@ public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs
         // mieści się jeszcze w oknie doby sobotniej [8:00 sob ; 8:00 niedz]).
         // Przesunięte o +24h na wspólną oś czasu doby; przycięcie do [poczatekDoby;koniecDoby]
         // robi już logika klipowania poniżej.
-        Dzien dzienNastepny = kalkulatorPlanu[dataDoby + 1];
-        if (dzienNastepny != null)
+        //
+        // Dociągane WYŁĄCZNIE gdy dzień następny jest dniem modyfikowanym (jawny wyjątek
+        // w kalendarzu) - dzień dziedziczący z kalendarza wzorcowego nie ma wpływać na wynik
+        // weryfikacji dnia bieżącego, dopóki sam nie zostanie zmodyfikowany.
+        if (pracownik.DniPlanu[dataDoby + 1] != null)
         {
-            foreach (IStrefaExt strefa in (IEnumerable<IStrefaExt>)dzienNastepny)
+            Dzien dzienNastepny = kalkulatorPlanu[dataDoby + 1];
+            if (dzienNastepny != null)
             {
-                if (strefa.Definicja == null)
-                    continue;
-                if (strefa.OdGodziny == Time.Empty || strefa.Czas == Time.Zero)
-                    continue;
+                foreach (IStrefaExt strefa in (IEnumerable<IStrefaExt>)dzienNastepny)
+                {
+                    if (strefa.Definicja == null)
+                        continue;
+                    if (strefa.OdGodziny == Time.Empty || strefa.Czas == Time.Zero)
+                        continue;
 
-                bool pracaWliczanaDoDobyNast = strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza;
-                bool dyzurNast = strefa.Definicja.Features.GetBool("Weryfikator11h");
-                if (!pracaWliczanaDoDobyNast && !dyzurNast)
-                    continue;
+                    bool pracaWliczanaDoDobyNast = strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza;
+                    bool dyzurNast = strefa.Definicja.Features.GetBool("Weryfikator11h");
+                    if (!pracaWliczanaDoDobyNast && !dyzurNast)
+                        continue;
 
-                strefyAktywnosci = strefyAktywnosci.Add(new FromTime(strefa.OdGodziny + dlugoscDoby, strefa.Czas));
+                    strefyAktywnosci = strefyAktywnosci.Add(new FromTime(strefa.OdGodziny + dlugoscDoby, strefa.Czas));
+                }
             }
         }
 

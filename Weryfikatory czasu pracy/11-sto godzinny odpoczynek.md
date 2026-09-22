@@ -8,9 +8,39 @@ Uruchamia się przy każdej zmianie dnia planu pracy (`KontrolaDniaVerifier` w
 - **Nazwa w enova:** `11-sto godzinny odpoczynek`
 - **Poziom:** `Error` (blokuje zapis planu) – ustawiany na powiązaniu kalendarza
   z weryfikatorem (`WeryfikatorKalendarza.Typ`), **nie** w kodzie. Ustalenie z klientem.
-- Zweryfikowano na żywo: **Tak** (2026-09-11, test w GUI klienta) – scenariusz
-  sobota 8:00–21:00 / niedziela 7:00–20:00 poprawnie zgłasza brak 11h odpoczynku.
-  **Zadanie zamknięte.**
+- Zweryfikowano na żywo: **Tak** (2026-09-11, test w GUI klienta, przed dodaniem zasady
+  "dni modyfikowane" opisanej niżej) – scenariusz sobota 8:00–21:00 / niedziela 7:00–20:00
+  poprawnie zgłasza brak 11h odpoczynku.
+- **Zasada "dni modyfikowane" (2026-09-22): NIEZWERYFIKOWANA na żywo w GUI** – wymaga
+  potwierdzenia u klienta.
+
+## Nowe wymaganie: weryfikator dotyczy tylko dni modyfikowanych (kolor żółty)
+
+Zgłoszenie klienta (2026-09-22): weryfikator ma reagować wyłącznie na dni, które użytkownik
+**faktycznie zmodyfikował** (jawny wyjątek w kalendarzu pracownika – w GUI pokazywany jako
+dzień w **kolorze żółtym**). Dzień, który wciąż dziedziczy godziny z kalendarza wzorcowego
+(brak własnego wiersza w `DniPlanu`), nie jest sprawdzany i nie ma wpływać na wynik
+weryfikacji dnia sąsiedniego.
+
+Przykład z ustaleń: 16.09 wprowadzam pracę 8:00–16:00 + dyżur 16:00–21:00, **nie modyfikując**
+17.09 (pozostaje domyślne 7:00–15:00) → **brak błędu**, mimo że realny odstęp
+21:00→7:00 = 10h < 11h. Jeśli **17.09 również zostanie zmodyfikowany** (dowolnie) i odstęp
+nadal będzie < 11h → **błąd**. Dotyczy to wszystkich dni (zarówno kontroli doby dnia
+poprzedniego, jak i dociągania wczesnorannych stref dnia następnego).
+
+**Implementacja:** `Pracownik.DniPlanu[data] != null` (właściwość `DateSubTable`, zwraca
+`null` gdy dla danej daty nie ma jawnego wiersza w kalendarzu indywidualnym pracownika –
+czyli dzień jest niemodyfikowany/dziedziczony z kalendarza wzorcowego). Sprawdzenie dodane:
+- na wejściu każdej iteracji pętli (dzień bieżący / dzień poprzedni) – dzień niemodyfikowany
+  pomija całą dobę rozpoczętą w tym dniu,
+- przed dociągnięciem wczesnorannych stref dnia następnego do okna doby – pomijane, gdy
+  dzień następny jest niemodyfikowany.
+
+API zweryfikowane dekompilacją `Soneta.KadryPlace.dll` (2026-09-22): `Soneta.Kadry.Pracownik`
+ma publiczną właściwość `DateSubTable DniPlanu => Kalendarz.Dni;` (to samo źródło, którego
+używa `IZrodloPlanu.GetDzienPlanu(Date)` w jawnej implementacji interfejsu:
+`(DzienKalendarzaBase)DniPlanu[data]`). `DateSubTable.this[Date]` zwraca `null`, gdy nie ma
+wiersza dla danej daty (`Soneta.Business.DateSubTable`).
 
 ## Po co, skoro Soneta ma własny weryfikator 11 h
 
@@ -80,7 +110,8 @@ Doba w komentarzach zapisana jako `D0–(D0+24h)`.
 | 3 | Dzień roboczy: Praca w normie 7:00–16:00 + Dyżur 21:00–23:00 | 7:00 | trailing 23:00 → 7:00 = **8:00** | **błąd** – „…nie zachowano … 11-godzinnego odpoczynku …” |
 | 4 | Święto / sobota / niedziela / wolny za św.: Dyżur domowy jedyną strefą | początek Dyżuru | wg długości Dyżuru | błąd, gdy Dyżur zostawia < 11 h wolnego w dobie 24 h |
 | 5 | Sobota z Dyżurem kończącym się za późno; komunikat ma się pokazać przy edycji **niedzieli** | wg soboty | wg soboty | **błąd** wyświetlany także przy zapisie niedzieli (kontrola dnia poprzedniego) |
-| 6 | Sobota: Praca w normie 8:00–21:00; Niedziela: Praca w normie 7:00–20:00 | 8:00 (sob.) | fragment niedzieli 7:00–8:00 dociągnięty do doby sobotniej → przerwa 21:00→7:00 = **10:00** | **błąd** – realny odpoczynek 10h mimo że każda doba licząc „od siebie” dawałaby 11:00 |
+| 6 | Sobota: Praca w normie 8:00–21:00 (modyfikowana); Niedziela: Praca w normie 7:00–20:00 (modyfikowana) | 8:00 (sob.) | fragment niedzieli 7:00–8:00 dociągnięty do doby sobotniej → przerwa 21:00→7:00 = **10:00** | **błąd** – realny odpoczynek 10h mimo że każda doba licząc „od siebie” dawałaby 11:00 |
+| 7 | Sobota: Praca w normie 8:00–16:00 + Dyżur 16:00–21:00 (**modyfikowana**); Niedziela: godziny **domyślne** 7:00–15:00 (**niemodyfikowana** – brak wiersza w `DniPlanu`) | 8:00 (sob.) | nieliczone (niedziela wyłączona z okna, bo niemodyfikowana) → trailing 21:00→8:00 = **11:00** | **brak błędu** – mimo że realny odstęp 21:00→7:00 = 10h < 11h. Gdy niedziela zostanie zmodyfikowana (dowolnie) i odstęp nadal < 11h → błąd |
 
 Pełna lista wraz z kolumnami „Wynik testu / Uwagi” →
 [Scenariusze testowe weryfikatorow czasu pracy.xlsx](Scenariusze%20testowe%20weryfikatorow%20czasu%20pracy.xlsx), arkusz „Odpoczynek dobowy 11h”.
@@ -103,6 +134,8 @@ Import: [ImportyXML/Weryfikator 11h odpoczynek dobowy.xml](../ImportyXML/Weryfik
 ## API użyte w skrypcie
 
 - `dp.Pracownik` (== `dp.Kalendarz.Pracownik`), `dp.Data`
+- `pracownik.DniPlanu` (`DateSubTable`, `Kalendarz.Dni`), indekser `DniPlanu[Date]` → `Row`,
+  `null` gdy dzień niemodyfikowany (brak wyjątku w kalendarzu indywidualnym)
 - `new KalkulatorPlanu(pracownik)`, indekser `kp[Date]` → `Dzien` (auto-`LoadOkres`; może zwrócić `null`)
 - `Date + int` → `Date` (kolejny dzień; używane do dociągnięcia doby następnej: `kp[dataDoby + 1]`)
 - `Dzien : IEnumerable<IStrefaExt>` – iteracja po strefach doby; `Dzien.OdGodziny`
@@ -123,3 +156,9 @@ wbudowany edytor skryptów enova bywa zawodny przy takich konstrukcjach.
 - Zachowanie przy **nieobecności części dnia** + Dyżur – nie objęte scenariuszami klienta.
 - `kp[dp.Data - 1]` dla dni sprzed zatrudnienia zwraca `null` → doba poprzednia pomijana
   (bez błędu).
+- **Zasada "dni modyfikowane" (2026-09-22) NIEZWERYFIKOWANA na żywo.** Założenie do
+  potwierdzenia w GUI: `pracownik.DniPlanu[dp.Data]` widzi `dp` samego siebie już w trakcie
+  `OnVerify` (wiersz dodawany/edytowany w tej samej sesji, jeszcze przed commitem) – ten sam
+  mechanizm, na którym już wcześniej opierał się kod dla iteracji `przesuniecieDni = 0`
+  (`kalkulatorPlanu[dp.Data]` musiał widzieć bieżące zmiany, żeby scenariusz z 2026-09-11
+  działał poprawnie), więc ryzyko niskie, ale wymaga próby w GUI klienta.
