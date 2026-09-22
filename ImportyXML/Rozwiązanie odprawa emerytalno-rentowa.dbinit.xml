@@ -58,6 +58,17 @@
     <Korygowany>False</Korygowany>
 
     <Algorytm>
+      <!-- KLUCZOWE: Element.Elementy[Okres] (użyte w _Param poniżej) widzi
+           TYLKO elementy o Priorytet NIŻSZYM niż priorytet liczonego elementu
+           (WypElement.ItElementy, warunek "item.Definicja.Algorytm.Priorytet
+           < priorytet" — ustalone dekompilacją Soneta.KadryPlace.dll). Bez
+           tego pola (domyślnie 0) "Rozwiązanie..." NIE widziało "Odprawy
+           emerytalnej" (priorytet 98) i nic się nie liczyło — potwierdzone
+           przez użytkownika w GUI 2026-09-22. 200 dobrane analogicznie do
+           innych automatycznych dodatków sumujących już policzone elementy
+           (np. "Przychód od skł. pracod. PPK" też ma 200; "Odprawa
+           emerytalna" ma 98). -->
+      <Priorytet>200</Priorytet>
       <Typ>EdytorAlgorytmu</Typ>
       <Edytor>
         <Tekst><![CDATA[

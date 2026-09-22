@@ -108,8 +108,48 @@ wypłacona na liście głównej w 08/2026 — licząc planowaną listę płac z
 okresem 08/2026 powinno pojawić się "Rozwiązanie odprawa emerytalno-rentowa"
 o tej samej (dodatniej) kwocie.
 
-Plik XML w całości przepisany na ten wzorzec. Nadal NIEZWERYFIKOWANE żywym
-testem w tej wersji.
+## Czwarta iteracja tego samego dnia: brakujący Priorytet algorytmu
+
+Po przebudowie na Dodatek automatyczny (sekcja wyżej) kod kompilował się i
+uruchamiał bez błędu, ale **nadal nic się nie liczyło** nawet dla dokładnie
+opisanego scenariusza (odprawa 08/2026, plan liczony na 08/2026). Przyczyna,
+ustalona dekompilacją `Soneta.KadryPlace.dll` (`WypElement.ItElementy`,
+klasa obsługująca indekser `Element.Elementy[Okres]` użyty w `_Param`):
+
+```csharp
+int priorytet = element.Definicja.Algorytm.Priorytet;
+foreach (WypElement item in subTable)
+    if (item.Definicja.Algorytm.Priorytet < priorytet && !item.RozliczenieStorna)
+        arrayList.Add(item);
+```
+
+**`Element.Elementy[Okres]` zwraca WYŁĄCZNIE elementy o priorytecie NIŻSZYM
+niż priorytet elementu, który go odpytuje** — to mechanizm kolejności
+naliczania w silniku enova (element o wyższym priorytecie liczy się później i
+"widzi" wyniki elementów o niższym priorytecie, nigdy odwrotnie). "Odprawa
+emerytalna" ma `AlgorytmPriorytet=98` (sprawdzone w bazie Claude), a nowo
+utworzony element domyślnie dostał `AlgorytmPriorytet=0` — więc warunek
+`98 < 0` był fałszywy i pętla `foreach` w `_Param` nigdy nie widziała
+"Odprawy emerytalnej", niezależnie od tego, czy dana wypłata faktycznie ją
+zawierała.
+
+**Poprawka:** dodano `<Algorytm><Priorytet>200</Priorytet></Algorytm>` do
+definicji "Rozwiązanie odprawa emerytalno-rentowa" — wartość dobrana
+analogicznie do innych automatycznych dodatków w bazie, które też sumują już
+policzone elementy (np. "Przychód od skł. pracod. PPK (etat, W)" też ma
+`Priorytet=200`; dla porównania "Potrącenie OPP", liczone jako ostatnie, ma
+999). Zweryfikowano zapis w bazie Claude (`dbmgr importxml`, exit 0).
+
+**Wniosek na przyszłość:** przy KAŻDYM dodatku automatycznym, który w swoim
+`_Param` odczytuje `Element.Elementy[Okres]` żeby zsumować/odczytać wartość
+INNEGO elementu — trzeba pamiętać o ustawieniu `Algorytm.Priorytet` na
+wartość WYŻSZĄ niż priorytet tego innego (źródłowego) elementu, inaczej kod
+skompiluje się i uruchomi bez żadnego błędu, ale pętla zawsze będzie pusta.
+To nie jest widoczne ani przy kompilacji, ani przy pierwszym spojrzeniu na
+kod — ujawnia się tylko przy realnym teście z danymi.
+
+Plik XML w całości przepisany na ten wzorzec + poprawka priorytetu. Nadal
+NIEZWERYFIKOWANE żywym testem w tej wersji.
 
 ## Ważne uzupełnienie (2026-09-22, po dalszej dekompilacji): jak NAPRAWDĘ działa generowanie planu
 
