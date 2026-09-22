@@ -63,6 +63,44 @@ Ustalenia:
    domyślnie `KopiujNagłówek` kopiuje `src.Wartosc` (sumę CAŁEJ wypłaty), a
    nam zależy tylko na sumie skopiowanych (odwróconych) pozycji.
 
+## Ważne uzupełnienie (2026-09-22, po dalszej dekompilacji): jak NAPRAWDĘ działa generowanie planu
+
+Pierwsza wersja tego dokumentu zakładała, że `KopiujWypłatę` dostaje "gotową,
+już zatwierdzoną" realną wypłatę z listy głównej. To nieprecyzyjne. Klasa
+faktycznie wywołująca algorytm to `Soneta.Place.NaliczaniePlanowanychListPłac`
+(`NaliczPracownika` → `Nalicz`):
+
+1. Silnik ustawia `pracownikParams.Dodatek = definicja.Element` (czyli
+   "Odprawa emerytalna") i woła `nw.DodajDodatek(...)` — to standardowy
+   mechanizm **naliczania seryjnego scopowanego do jednego dodatku** (ten sam
+   co przy zwykłym przeliczaniu wybranego dodatku dla grupy pracowników).
+2. **PRZED** przeliczeniem silnik kasuje niezatwierdzone wypłaty pracownika
+   danego `TypWypłaty` (`wyp.Delete()`), chyba że wywołanie ma
+   `UwzgledniajNieZatwierdzoneListyPlac=true` (wtedy tylko je zatwierdza).
+   **To wbudowane zachowanie enova, nie coś wprowadzonego tym plikiem — ale
+   ważne ryzyko operacyjne, o którym trzeba poinformować klienta przed
+   użyciem na produkcji: generowanie planu może skasować inne, niezwiązane
+   niezatwierdzone wypłaty tego pracownika.**
+3. Woła `NaliczanieSeryjne.Pracownika(pracownikParams).Nalicz()` — to
+   PRAWDZIWY silnik liczący wypłaty (ten sam co przy zwykłym przeliczaniu
+   listy płac), NIE odczyt historii. Wynik (`Wyplata`) to świeże przeliczenie
+   dla okresu/parametrów podanych przez operatora przy generowaniu planu, a
+   NIE odczytana z bazy już zatwierdzona wartość.
+4. Dopiero ten świeżo przeliczony wynik trafia jako `src` do
+   `algorytmDefinicji.KopiujWypłatę(planowanaWypłata, item)`.
+
+**Konsekwencja dla naszej logiki (raczej pozytywna):** ponieważ "Odprawa
+emerytalna" jest dodatkiem jednorazowym przypisanym przez `DodHistoria` do
+konkretnego okresu, przeliczenie scopowane do tego dodatku dla okresu spoza
+jej `DodHistoria.Okres` powinno naturalnie zwrócić zero — silnik SAM pilnuje
+"czy to należy się w tym okresie", więc nasz kod (filtr po nazwie +
+`Wartosc != 0`) nie musi ręcznie przeszukiwać historii realnych list. Warunek
+użytkownika "jeżeli na liście głównej ma rozliczoną odprawę" powinien być
+więc spełniony automatycznie, POD WARUNKIEM że operator generuje plan dla
+tego samego okresu, w którym odprawa faktycznie została/zostanie naliczona —
+to wymaga potwierdzenia w GUI, nie jest to już tylko teoria z dekompilacji
+klas kopiujących, tylko z całego łańcucha wywołań.
+
 ## Co jest POTWIERDZONE, a co NIEZWERYFIKOWANE
 
 **Potwierdzone próbnym importem na bazie Claude** (`dbmgr importxml`,
@@ -137,10 +175,20 @@ wygenerowania planu w GUI**, bo środowisko robocze tego repo nie ma dostępu do
 
 ## Kolejne kroki przed produkcją
 
-1. Import próbny na bazie testowej (Claude lub Al) przez `dbmgr importxml`.
-2. W GUI: rozliczyć testowemu pracownikowi "Odprawa emerytalna" na liście
-   głównej, wygenerować plan listy płac dla tej samej definicji/okresu i
-   sprawdzić, czy powstaje pozycja "Rozwiązanie odprawa emerytalno-rentowa"
-   z poprawną (ujemną, równą) kwotą.
-3. Po weryfikacji — zaktualizować ten plik z wynikiem (analogicznie do historii
+1. Import próbny na bazie testowej (Claude lub Al) przez `dbmgr importxml` —
+   **zrobione** (2026-09-22, zobacz sekcję "Potwierdzone próbnym importem"
+   wyżej), ale to tylko test kompilacji, nie zachowania.
+2. **UWAGA przed testem w GUI:** generowanie planu kasuje niezatwierdzone
+   wypłaty pracownika danego typu, chyba że zaznaczona jest opcja
+   uwzględniania niezatwierdzonych list — testować WYŁĄCZNIE na danych
+   testowych, nigdy na produkcyjnych bez zrozumienia tej opcji.
+3. W GUI: rozliczyć testowemu pracownikowi "Odprawa emerytalna" na liście
+   głównej, wygenerować plan listy płac dla TEGO SAMEGO okresu (to ważne —
+   plan przelicza dodatek na nowo dla podanego okresu, nie odczytuje historii
+   — patrz sekcja wyżej) i sprawdzić, czy powstaje pozycja "Rozwiązanie
+   odprawa emerytalno-rentowa" z poprawną (ujemną, równą) kwotą.
+4. Sprawdzić też przypadek negatywny: wygenerować plan dla okresu, w którym
+   pracownik NIE miał odprawy — pozycja "Rozwiązanie..." nie powinna w ogóle
+   powstać.
+5. Po weryfikacji — zaktualizować ten plik z wynikiem (analogicznie do historii
    zmian w `ImportyXML/Dodatek roczny.dbinit.xml`).
