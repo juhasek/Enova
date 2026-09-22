@@ -34,6 +34,7 @@ na wydruk.
 |---|---|---|---|
 | Data posiedzenia komisji | `PrnParams.DataPosiedzenia` (`Date`) | dziś | **Klucz doboru pracowników** — musi się dokładnie zgadzać z cechą „PosiedzenieKomisji" świadczenia; wyznacza też rok odniesienia `R` dla okien sum i jest datą graniczną wniosku ZFŚS |
 | Tylko świadczenia zaznaczone na liście | `PrnParams.TylkoZaznaczeni` (`bool`) | `false` | `false` = skan wszystkich świadczeń wg cechy; `true` = tylko zaznaczone wiersze świadczeń |
+| Emeryci / Pracownicy / Wszyscy | `PrnParams.RodzajOsoby` (enum `RodzajOsoby`) | `Wszyscy` | **Nowy parametr (2026-09-22).** Lista rozwijana: `Wszyscy` (bez filtrowania) / `Emeryci` / `Pracownicy`. Filtruje wynikową listę pracowników **po** doborze wg posiedzenia/zaznaczenia, wg cechy „CzyEmerytRencista" (`bool`) na Pracowniku: zaznaczona = emeryt/rencista, niezaznaczona (też brak wartości cechy) = pracownik |
 
 Okna **sum** (nie doboru pracowników!) to nadal **całe lata kalendarzowe**,
 rok `R` (rok daty posiedzenia) jest **pominięty**:
@@ -116,6 +117,11 @@ Rok oświadczenia = rok z „Daty posiedzenia komisji"; data graniczna wniosku
 
 ## TODO / do weryfikacji na żywej bazie
 
+- **Filtr „Emeryci / Pracownicy / Wszyscy" niezweryfikowany na żywo** —
+  cecha „CzyEmerytRencista" (bool) na Pracowniku nie istnieje w żadnej
+  lokalnej bazie testowej (analogicznie do cechy „PosiedzenieKomisji").
+  Kod ma zabezpieczenie (`wartoscCechy is bool`) — brak/zły typ cechy
+  traktowany jak `false` (pracownik), nie błąd.
 - **CAŁA nowa logika doboru wg cechy „PosiedzenieKomisji" jest
   niezweryfikowana na żywo** — kompilacja lokalna OK (enova 2512.5.6 +
   `Soneta.Kadry.SwiadczSocjalne` ze standardowych DLL serwera, stuby zamiast

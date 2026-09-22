@@ -32,6 +32,11 @@ namespace x.x.Reports
     //   odznaczony) pozwala zamiast tego wziąć wyłącznie zaznaczone na liście
     //   wiersze świadczeń (bez sprawdzania cechy - ufamy zaznaczeniu
     //   operatora).
+    //   Dodatkowy parametr "Emeryci / Pracownicy / Wszyscy" (domyślnie
+    //   Wszyscy) filtruje wynikową listę pracowników wg cechy
+    //   "CzyEmerytRencista" (bool) na Pracowniku - zaznaczona = emeryt,
+    //   niezaznaczona = pracownik. Stosowany PO doborze wg posiedzenia/
+    //   zaznaczenia, niezależnie od trybu.
     // Pracownicy sortowani po "Nazwisko i Imię".
     //
     // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna zapomoga (świadczenie
@@ -78,6 +83,15 @@ namespace x.x.Reports
     // try/catch - błąd dla jednego pracownika daje jeden wiersz "[BŁĄD: ...]"
     // zamiast wywalenia wydruku. Cała metoda BeforePrint jest dodatkowo
     // opakowana w try/catch (jeden diagnostyczny wiersz "BŁĄD" z etapem).
+    // Filtr "kto ma trafić na zestawienie" wg cechy "CzyEmerytRencista"
+    // (bool) na Pracowniku. Wszyscy = bez filtrowania (domyślnie).
+    public enum RodzajOsoby
+    {
+        [Caption("Wszyscy")] Wszyscy = 0,
+        [Caption("Emeryci")] Emeryci = 1,
+        [Caption("Pracownicy")] Pracownicy = 2
+    }
+
     public class ZestawienieKomisjaSocjalnaSnippet : ReportSnippet
     {
         // Wzorowane na Raporty/OdbiciaRCP i Raporty/SzablonTabela6KolumnSnippet:
@@ -89,11 +103,13 @@ namespace x.x.Reports
         {
             Date dataPosiedzenia;
             bool tylkoZaznaczeni;
+            RodzajOsoby rodzajOsoby;
 
             public PrnParams(Context context) : base(context)
             {
                 dataPosiedzenia = Date.Today;
                 tylkoZaznaczeni = false;
+                rodzajOsoby = RodzajOsoby.Wszyscy;
             }
 
             [Caption("Data posiedzenia komisji")]
@@ -119,6 +135,20 @@ namespace x.x.Reports
                 set
                 {
                     tylkoZaznaczeni = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+
+            // Filtr wg cechy "CzyEmerytRencista" (bool) na Pracowniku:
+            // zaznaczona = emeryt/rencista, niezaznaczona = pracownik.
+            // Domyślnie Wszyscy (brak filtrowania).
+            [Caption("Emeryci / Pracownicy / Wszyscy")]
+            public RodzajOsoby RodzajOsoby
+            {
+                get { return rodzajOsoby; }
+                set
+                {
+                    rodzajOsoby = value;
                     OnChanged(EventArgs.Empty);
                 }
             }
@@ -221,8 +251,13 @@ namespace x.x.Reports
                     swiadczeniaAktualne = ZbierzSwiadczeniaPosiedzenia(dc.Session, dataOdniesienia);
                 }
 
+                etap = "filtrowanie wg Emeryci/Pracownicy/Wszyscy";
+                var pracownicy = new List<Pracownik>();
+                foreach (Pracownik p in swiadczeniaAktualne.Keys)
+                    if (CzyPasujeRodzaj(p, pars.RodzajOsoby))
+                        pracownicy.Add(p);
+
                 etap = "sortowanie listy pracowników";
-                var pracownicy = new List<Pracownik>(swiadczeniaAktualne.Keys);
                 pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
 
                 etap = "budowanie wierszy";
@@ -469,6 +504,19 @@ namespace x.x.Reports
         static bool CzyZapomoga(SwiadczSocjalne sw)
         {
             return sw.Definicja != null && NazwaZapomoga(sw.Definicja.Nazwa);
+        }
+
+        // Filtr "Emeryci / Pracownicy / Wszyscy" wg cechy "CzyEmerytRencista"
+        // (bool) na Pracowniku - zaznaczona = emeryt/rencista, niezaznaczona
+        // (albo w ogóle nieustawiona) = pracownik. Wszyscy = bez filtrowania.
+        static bool CzyPasujeRodzaj(Pracownik pracownik, RodzajOsoby rodzaj)
+        {
+            if (rodzaj == RodzajOsoby.Wszyscy)
+                return true;
+
+            object wartoscCechy = pracownik.Features["CzyEmerytRencista"];
+            bool czyEmeryt = wartoscCechy is bool && (bool) wartoscCechy;
+            return rodzaj == RodzajOsoby.Emeryci ? czyEmeryt : !czyEmeryt;
         }
 
         static bool NazwaZapomoga(string nazwa)
