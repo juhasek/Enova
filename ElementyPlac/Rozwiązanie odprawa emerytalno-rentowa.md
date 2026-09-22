@@ -148,8 +148,60 @@ skompiluje się i uruchomi bez żadnego błędu, ale pętla zawsze będzie pusta
 To nie jest widoczne ani przy kompilacji, ani przy pierwszym spojrzeniu na
 kod — ujawnia się tylko przy realnym teście z danymi.
 
-Plik XML w całości przepisany na ten wzorzec + poprawka priorytetu. Nadal
-NIEZWERYFIKOWANE żywym testem w tej wersji.
+Plik XML w całości przepisany na ten wzorzec + poprawka priorytetu.
+
+## Piąta iteracja tego samego dnia: Element wskazywał na złą definicję
+
+Po poprawce priorytetu użytkownik zgłosił: nadal się nie liczy, tym razem BEZ
+komunikatu o błędzie. Dekompilacja `NaliczanieWypłat.AddŹródło` (metoda, przez
+którą przechodzi KAŻDY kandydat na element wypłaty — także Dodatki
+automatyczne, patrz `WypElementDodatekAutomatyczny.Nalicz.GenerujElement`,
+linia `Naliczanie.AddŹródło(wypElementDodatekAutomatyczny, item3)`) ujawniła
+twardy warunek wykluczający:
+
+```csharp
+if ((dodatek != null && element.Definicja != dodatek) || ...)
+    return; // element pomijany całkowicie
+```
+
+`dodatek` to pole ustawiane przez `NaliczaniePlanowanychListPłac.Nalicz`
+wprost z `DefinicjaPlanowanejListyPłac.Element`
+(`pracownikParams.Dodatek = definicja.Element` → `nw.DodajDodatek(...)`).
+Skoro `Element` = "Odprawa emerytalna", to warunek `element.Definicja !=
+dodatek` był PRAWDZIWY dla "Rozwiązanie odprawa emerytalno-rentowa" (inna
+definicja) — **element był całkowicie wykluczany z przeliczenia, zanim
+dotarł do własnego `_Param`**, niezależnie od priorytetu czy czegokolwiek
+innego w jego kodzie. To była prawdziwa przyczyna, głębsza niż priorytet z
+poprzedniej sekcji (priorytet i tak trzeba było poprawić, ale sam nie
+wystarczał).
+
+**Poprawka:** `DefinicjaPlanowanejListyPłac.Element` zmieniony z "Odprawa
+emerytalna" na WŁASNY element "Rozwiązanie odprawa emerytalno-rentowa" (ID
+276 w bazie Claude). Wtedy `element.Definicja == dodatek` jest prawdziwe dla
+"Rozwiązanie..." (bo to ONO jest teraz scopingiem), więc DOCIERA do swojego
+`_Param`. Ten z kolei i tak czyta "Odprawa emerytalna" NIEZALEŻNIE od tego
+scopingu — `Element.Elementy[Okres]` to osobne zapytanie do historycznej
+tabeli `WypElementy` (`WypElement.ItElementy`), niezwiązane z polem `dodatek`.
+
+`GetListElement()` (podpowiedź w GUI) filtruje kandydatów do pola `Element`
+po `RodzajZrodla=Dodatek`, więc "Rozwiązanie..." (RodzajZrodla=DodatekAutomatyczny)
+formalnie nie pasuje do tej podpowiedzi — ale nie znaleziono żadnego
+walidatora wymuszającego to przy zapisie. **NIEZWERYFIKOWANE, czy edycja tej
+definicji przez GUI będzie się nadal dawała normalnie otworzyć/zapisać**
+(pole Element może pokazywać się jako puste/nieprawidłowe, skoro wskazywany
+element nie jest na liście podpowiedzi).
+
+**Techniczna uwaga:** `dbmgr importxml` przy tej poprawce zaczął się
+konsekwentnie zawieszać na `TimeoutDatabaseSqlException` (kilka prób pod
+rząd) — okazało się to przejściowym obciążeniem/blokadą serwera SQL
+(potwierdzone: `dbmgr compile Claude` chwilę później przeszło normalnie, z
+komunikatem "Waiting for the end of administrative operation..."), nie
+błędem samej zmiany. Żeby nie czekać na ustąpienie obciążenia, pole
+`DefPlanListPlac.Element` zaktualizowano wprost przez SQL
+(`UPDATE DefPlanListPlac SET Element = 276 WHERE ID = 3`) — baza i plik XML
+są teraz zgodne.
+
+Nadal NIEZWERYFIKOWANE żywym testem w tej (piątej) wersji.
 
 ## Ważne uzupełnienie (2026-09-22, po dalszej dekompilacji): jak NAPRAWDĘ działa generowanie planu
 

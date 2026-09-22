@@ -127,11 +127,38 @@ public Currency Rozwiązanie_Odprawa_Emerytalno_Rentowa_Wylicz(Soneta.Place.WypE
     <Nazwa>Rozwiązanie odpr.emeryt.</Nazwa>
     <Blokada>False</Blokada>
 
-    <!-- Element wyzwalający przeliczenie (nie docelowy element rezerwy —
-         ten powstaje automatycznie z DefinicjaElementu powyżej, jako Dodatek
-         automatyczny, w tym samym przeliczeniu). RodzajZrodla=Dodatek,
-         wymagane przez DefinicjaPlanowanejListyPłac.GetListElement(). -->
-    <Element>C955AB11-B500-4D90-933D-0A0FB2EE7BE8</Element>
+    <!-- ZMIANA (5. iteracja, 2026-09-22): Element = WŁASNY Dodatek automatyczny
+         "Rozwiązanie odprawa emerytalno-rentowa" (guid poniżej ten sam co w
+         DefinicjaElementu powyżej), NIE "Odprawa emerytalna" jak wcześniej.
+
+         Powód (ustalony dekompilacją NaliczanieWypłat.AddŹródło i
+         WypElementDodatekAutomatyczny.Nalicz.GenerujElement): silnik
+         przelicza pracownika ze SCOPINGIEM na jeden konkretny element
+         (pracownikParams.Dodatek = definicja.Element → nw.DodajDodatek(...)).
+         WEWNĄTRZ AddŹródło jest twardy warunek wykluczający:
+         "dodatek != null && element.Definicja != dodatek" — DOTYCZY TAKŻE
+         Dodatków automatycznych (są dodawane przez ten sam AddŹródło, patrz
+         WypElementDodatekAutomatyczny.Nalicz.GenerujElement). Więc gdy
+         Element="Odprawa emerytalna", "Rozwiązanie..." było CAŁKOWICIE
+         wykluczane z przeliczenia — nigdy nie docierało do własnego _Param,
+         niezależnie od priorytetu. To była prawdziwa przyczyna "kompiluje się,
+         ale się nie liczy", nie tylko brakujący Priorytet.
+
+         Z Element="Rozwiązanie..." warunek staje się
+         "element.Definicja == dodatek" → PRZECHODZI, więc "Rozwiązanie..."
+         faktycznie się przelicza. Jego _Param i tak odczytuje "Odprawa
+         emerytalna" NIEZALEŻNIE od tego scopingu — Element.Elementy[Okres]
+         to osobne zapytanie do historycznej tabeli WypElementy (patrz
+         WypElement.ItElementy), nie jest ograniczone przez `dodatek`.
+
+         RodzajZrodla=DodatekAutomatyczny NIE pasuje do filtra
+         GetListElement() (RodzajZrodla=Dodatek, tylko podpowiedź w GUI dla
+         okna wyboru) — ale nie znaleziono żadnego walidatora wymuszającego
+         to przy zapisie, więc powinno dać się zapisać przez import wg
+         rekordów. NIEZWERYFIKOWANE, czy zapisze się też poprawnie przez samo
+         GUI (edycja tej definicji może pokazywać puste/nieprawidłowe pole
+         Element, skoro nie ma go na liście podpowiedzi). -->
+    <Element>068108f5-a97f-494f-ab20-077aa382f6d6</Element>
 
     <!-- Domyślny, niezmieniony algorytm enova (bez własnych
          KopiujNagłowek/KopiujElementy/KopiujElement) — dokładnie taki, jaki
