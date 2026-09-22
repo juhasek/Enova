@@ -103,6 +103,33 @@ klas kopiujących, tylko z całego łańcucha wywołań.
 
 ## Co jest POTWIERDZONE, a co NIEZWERYFIKOWANE
 
+**Aktualizacja 2026-09-22 (test w GUI przez użytkownika, wersja serwera
+2512.5.6):** próba realnego "Nalicz" na planowanej liście płac ujawniła błąd
+kompilacji, którego `dbmgr importxml`/`dbmgr compile` NIE wykryły:
+
+```
+DefPlanListPlac\Rozwiązanie odpr.emeryt.\Rozwiązanie odpr.emeryt..cs(73,63):
+error CS0104: 'Element „Wyplata” to niejednoznaczne odwołanie między
+elementem „Soneta.Kasa.Wyplata” i „Soneta.Place.Wyplata”
+```
+
+Stos wywołań z błędu potwierdza WPROST ścieżkę ustaloną wcześniej
+dekompilacją: `NaliczaniePlanowanychListPłacWorker.Nalicz()` →
+`NaliczaniePlanowanychListPłac.NaliczPracownika` →
+`DefPlanListPlac.PobierzAlgorytm(definicja)` →
+`Session._AssemblyCache.GetType(...)` — czyli algorytm `DefPlanListPlac`
+kompiluje się DOPIERO na żądanie, przy faktycznym "Nalicz" w GUI, a NIE przy
+ogólnej kompilacji bazy (`dbmgr importxml`/`dbmgr compile` przechodzą bez
+błędu mimo tego buga — **nie są wystarczającym testem dla tego mechanizmu**).
+
+Przyczyna: sygnatury `KopiujNagłówek`/`KopiujElementy` używały samego
+`Wyplata`, a w kontekście kompilacji tej definicji w zasięgu są jednocześnie
+`Soneta.Kasa.Wyplata` i `Soneta.Place.Wyplata` — poprawka: pełna nazwa
+`Soneta.Place.Wyplata` w obu sygnaturach. Zaimportowano poprawkę i
+zweryfikowano `dbmgr compile Claude` (exit 0) — ale to, jak wyżej, NIE
+gwarantuje braku kolejnych błędów w tej samej, kompilowanej leniwie ścieżce;
+wymaga ponownej próby "Nalicz" w GUI.
+
 **Potwierdzone próbnym importem na bazie Claude** (`dbmgr importxml`,
 2026-09-22, exit code 0):
 - Oba rekordy (`DefinicjaElementu` ID 276, `DefinicjaPlanowanejListyPłac` ID 3)

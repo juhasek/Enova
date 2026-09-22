@@ -114,13 +114,13 @@ bool SourceFilter(object sender, SourceFilterArgs args) {
     return args.Element.Wartosc != 0;
 }
 
-protected override void KopiujNagłówek(PlanowanaWypłata dest, Wyplata src) {
+protected override void KopiujNagłówek(PlanowanaWypłata dest, Soneta.Place.Wyplata src) {
     // Nadpisujemy domyślne "dest.Wartosc = src.Wartosc" (suma CAŁEJ wypłaty) —
     // interesuje nas wyłącznie suma skopiowanych (odwróconych) niżej pozycji.
     dest.Wartosc = 0;
 }
 
-protected override void KopiujElementy(PlanowanaWypłata dest, Wyplata src) {
+protected override void KopiujElementy(PlanowanaWypłata dest, Soneta.Place.Wyplata src) {
     DefinicjaElementu rozwiazanie = dest.Module.DefElementow.WgNazwy["Rozwiązanie odprawa emerytalno-rentowa"];
 
     foreach (WypElement item in src.Elementy)
