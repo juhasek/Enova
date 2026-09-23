@@ -4,7 +4,7 @@
     <Item1 Ref="2" ControlType="TopMarginBand" Name="TopMarginBand" HeightF="200" Dpi="254" />
     <Item2 Ref="3" ControlType="ReportHeaderBand" Name="ReportHeader" HeightF="100" Dpi="254">
       <Controls>
-        <Item1 Ref="4" ControlType="XRLabel" Name="labelTytul" AnchorHorizontal="Both" TextAlignment="MiddleCenter" SizeF="2574,100" LocationFloat="0,0" Dpi="254" Font="Calibri, 12pt, style=Bold" Text="Zestawienie na posiedzenie Komisji Socjalnej" />
+        <Item1 Ref="4" ControlType="XRLabel" Name="labelTytul" AnchorHorizontal="Both" TextAlignment="MiddleCenter" SizeF="2574,100" LocationFloat="0,0" Dpi="254" Font="Calibri, 12pt, style=Bold" Text="Zebranie Komisji Socjalnej SKANSKA S.A. Zestawienie na posiedzenie Komisji" />
       </Controls>
     </Item2>
     <Item3 Ref="5" ControlType="PageHeaderBand" Name="PageHeader" HeightF="120" Dpi="254">

@@ -115,6 +115,49 @@ zmieniła się** w tej rewizji.
 Rok oświadczenia = rok z „Daty posiedzenia komisji"; data graniczna wniosku
 („nie później niż") = data posiedzenia.
 
+## Nagłówek wydruku (2026-09-23)
+
+`labelTytul` (`ReportHeader`) ma treść ustawianą dynamicznie w `BeforePrint`
+(pole `[DxBind] private readonly XRLabel labelTytul;` w snippecie — wzorzec
+jak `TytulRaportu`/`Podsumowanie` w `Raporty/OdbiciaRCP`):
+
+> „Zebranie Komisji Socjalnej SKANSKA S.A. Zestawienie {Rodzaj} na
+> posiedzenie Komisji w dn. {DataPosiedzenia}."
+
+`{Rodzaj}` = `NazwaRodzaju(pars.RodzajOsoby)`: „Emerytów" / „Pracowników" /
+dla `Wszyscy` — **„Emerytów i Pracowników" (założenie, niepotwierdzone z
+klientem)**. `{DataPosiedzenia}` = `pars.DataPosiedzenia.ToString()` (ten sam
+parametr, który steruje doborem świadczeń wg cechy „PosiedzenieKomisji").
+Tekst w `.repx` (`Text="..."`) to tylko fallback widoczny w projektancie,
+zanim `pars` zostanie wstrzyknięty (`pars == null` → metoda wychodzi przed
+ustawieniem nagłówka).
+
+## Kolumna „Dochód na członka rodziny" — fallback do danych z migracji (2026-09-23)
+
+Jeśli pracownik **nie ma** zatwierdzonego wniosku ZFŚS złożonego cyfrowo w
+Enovie (`PracownikExt.GetAktualnyWniosekZFSS(...) == null`), kolumna
+sięga teraz po wartość zmigrowaną ze starego systemu — odpowiednik kolumny
+widoku pracowników **„Workers.WniosekZFSSPracownika.GetDochodMigracja"**
+(ten sam worker co `GetProgDochodu`). Zaimplementowane przez **bezpośrednie
+zainstancjonowanie workera** (`PobierzDochodMigracja`, wzorzec „Programowe
+użycie workera" z `soneta-programming`), a nie przez re-implementację logiki
+jak dla `GetProgDochodu`/`A1ZfssTuple` — bo nie znamy źródła danych migracji.
+
+**NIEZWERYFIKOWANE, do potwierdzenia przy najbliższej kompilacji w edytorze
+Enova (brak DLL `AltOne.Skanska.Workflow` w tym środowisku, nie da się
+skompilować lokalnie):**
+- nazwa klasy workera — przyjęto `WniosekZFSSPracownikaWorker` w
+  `AltOne.Skanska.Workflow.Workers.Wyliczane` (alias „WniosekZFSSPracownika"
+  wg konwencji: klasa bez sufiksu `Worker`); wcześniejsza notatka projektowa
+  miała literówkę „WniosekZFFSPracownikaWorker" (podwójne F) — do
+  sprostowania po weryfikacji;
+- nazwa property kontekstowej `[Context] Pracownik` — przyjęto `Pracownik`
+  (standardowa konwencja, nazwa property = nazwa typu);
+- typ zwracany `GetDochodMigracja` — przyjęto `string` (jak `GetProgDochodu`).
+
+Jeśli kompilacja w Enovie się wywali, wkleić treść błędu — to od razu
+wskaże właściwą nazwę klasy/property.
+
 ## TODO / do weryfikacji na żywej bazie
 
 - **Filtr „Emeryci / Pracownicy / Wszyscy" niezweryfikowany na żywo** —

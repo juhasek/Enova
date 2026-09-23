@@ -163,6 +163,11 @@ namespace x.x.Reports
             set { pars = value; }
         }
 
+        // Nagłówek wydruku (labelTytul w .repx) - treść ustawiana dynamicznie w
+        // BeforePrint: rodzaj osób (Emeryci/Pracownicy/Wszyscy) i data posiedzenia.
+        [DxBind]
+        private readonly XRLabel labelTytul;
+
         // Ustawia listę wierszy jako CustomDataSource przez refleksję zamiast
         // bezpośredniego DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = ...
         // Powód: statyczne odwołanie do właściwości CustomDataSource wymusza w
@@ -215,6 +220,10 @@ namespace x.x.Reports
                 Date doBiezace = new Date(rok - 1, 12, 31);
                 Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3
                 Date doPoprzednie = new Date(rok - 3, 12, 31);
+
+                etap = "ustawienie nagłówka";
+                labelTytul.Text = "Zebranie Komisji Socjalnej SKANSKA S.A. Zestawienie {0} na posiedzenie Komisji w dn. {1}"
+                    .TranslateFormat(NazwaRodzaju(pars.RodzajOsoby), dataOdniesienia.ToString());
 
                 etap = "zbieranie świadczeń wg posiedzenia";
                 // Mapa pracownik -> jego świadczenia "aktualne" (te, które
@@ -413,13 +422,35 @@ namespace x.x.Reports
         static string PobierzDochodNaCzlonkaRodziny(Pracownik pracownik, Date dataOdniesienia)
         {
             A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, dataOdniesienia, dataOdniesienia.Year);
+            // Brak zatwierdzonego wniosku ZFŚS w Enovie (oświadczenie nie zostało
+            // złożone cyfrowo) - sięgamy po wartość zmigrowaną ze starego systemu,
+            // widoczną na liście pracowników jako kolumna
+            // "Workers.WniosekZFSSPracownika.GetDochodMigracja".
             if (wniosek == null)
-                return "";
+                return PobierzDochodMigracja(pracownik);
             if (!wniosek.CzyPrawaDoWidokuProgow())
                 return "(Brak praw do widoku)";
             if (wniosek._RodzajWskazywaniaDochodu == "Kwota")
                 return wniosek._KwotaDochoduNaCzlonkaRodziny.ToString();
             return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "";
+        }
+
+        // Odpowiednik kolumny widoku "Workers.WniosekZFSSPracownika.GetDochodMigracja"
+        // (ten sam worker co GetProgDochodu - alias "WniosekZFSSPracownika" ⇒ klasa
+        // WniosekZFSSPracownikaWorker wg konwencji nazewnictwa workerów), wołany wg
+        // wzorca "Programowe użycie workera" (instancja + ustawienie [Context]).
+        // ZAŁOŻENIE, NIEZWERYFIKOWANE: nazwa property kontekstowej ("Pracownik") i
+        // typ zwracany ("string") przyjęte przez analogię do GetProgDochodu - w tym
+        // środowisku nie ma dostępu do DLL dodatku AltOne.Skanska.Workflow, więc
+        // kompilacja nie była sprawdzona. Jeśli nie skompiluje się w edytorze Enova,
+        // wklej treść błędu - poprawimy nazwę klasy/property.
+        static string PobierzDochodMigracja(Pracownik pracownik)
+        {
+            var worker = new AltOne.Skanska.Workflow.Workers.Wyliczane.WniosekZFSSPracownikaWorker
+            {
+                Pracownik = pracownik
+            };
+            return worker.GetDochodMigracja ?? "";
         }
 
         // Zbiera pracowników i ich świadczenia "aktualne" - czyli te, których
@@ -517,6 +548,23 @@ namespace x.x.Reports
             object wartoscCechy = pracownik.Features["CzyEmerytRencista"];
             bool czyEmeryt = wartoscCechy is bool && (bool) wartoscCechy;
             return rodzaj == RodzajOsoby.Emeryci ? czyEmeryt : !czyEmeryt;
+        }
+
+        // Rzeczownik w dopełniaczu do nagłówka wydruku, zależny od parametru
+        // "Emeryci/Pracownicy/Wszyscy". Dla "Wszyscy" (brak filtrowania) przyjęto
+        // formę łączącą obie grupy - do potwierdzenia z klientem, czy taka forma
+        // jest oczekiwana (zob. TODO w .md).
+        static string NazwaRodzaju(RodzajOsoby rodzaj)
+        {
+            switch (rodzaj)
+            {
+                case RodzajOsoby.Emeryci:
+                    return "Emerytów";
+                case RodzajOsoby.Pracownicy:
+                    return "Pracowników";
+                default:
+                    return "Emerytów i Pracowników";
+            }
         }
 
         static bool NazwaZapomoga(string nazwa)
