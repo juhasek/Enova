@@ -162,13 +162,12 @@ zamiast statusu „Zmodyfikowany – BRAK godzin pracy”. Dodano osobny licznik
 na górze wydruku („Dni z rozliczeniem nadgodzin”).
 
 Zaktualizowany kod wgrano do `SystemFiles.Code` (baza `Al`, `ID=1`) przez `UPDATE` po ADO.NET
-`SqlParameter` (nie tekstowy SQL — patrz [[reference_sqlcmd_f65001_mangles_niektore_znaki]]) i
-zweryfikowano bit-w-bit zgodność z repo (w tym poprawność polskich znaków).
+`SqlParameter` (nie tekstowy SQL, żeby nie uszkodzić polskich znaków) i zweryfikowano bit-w-bit
+zgodność z repo.
 
-**Nieprzetestowane na żywo:** nie potwierdzono jeszcze w GUI/na żywej bazie, że kolejność
-klasyfikacji (najpierw odbiór nadgodzin, dopiero potem błąd) obejmuje wszystkie warianty — np. dzień
-z jednoczesnym odbiorem nadgodzin i faktycznie brakującym naliczeniem innej pracy w tym samym dniu
-nadal trafi do „Rozliczenie nadgodzin” bez sygnału błędu.
+**Potwierdzone przez klienta na żywo (23.09.2026)** — działa. Nietestowany pozostaje brzegowy
+przypadek: dzień z jednoczesnym odbiorem nadgodzin i faktycznie brakującym naliczeniem innej pracy
+tego samego dnia nadal trafi do „Rozliczenie nadgodzin” bez sygnału błędu.
 
 ## 11. Zalecany sposób pracy z raportem
 
