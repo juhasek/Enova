@@ -114,21 +114,21 @@ Sub GenerujPlanyPracy()
             GoTo NastepnyWiersz
         End If
 
-        Dim odGodzDnia As String
-        Dim czasDniaMin As Long
-        odGodzDnia = NajwczesniejszaGodzina(strefyOd, liczbaStref)
-        czasDniaMin = SumaCzasowMin(strefyCzas, liczbaStref)
-
         Dim dataTxt As String
         dataTxt = Format(dataDnia, "yyyy-mm-dd")
 
+        ' UWAGA: celowo NIE wysylamy tu <OdGodziny>/<Czas> na poziomie DzienPlanu.
+        ' Te pola sa przechowywane w enova OSOBNO od kolekcji <Strefy> (DzienPlanu.Strefy.KillAll()
+        ' w importerze czysci tylko strefy, nie te pola) i licza sie RAZEM ze strefami przy
+        ' weryfikacji "Strefy wliczane do czasu faktycznie przepracowanego nie moga na siebie
+        ' zachodzic". Wysylanie obu jednoczesnie (dzien 8:00-16:00 + strefy 8-12/13-17) zawsze
+        ' powoduje falszywy blad nachodzenia, bo zakres dnia zawiera w sobie obie strefy.
+        ' Dzien z przerwa/kilkoma strefami opisujemy WYLACZNIE przez <Strefy>.
         Dim fragment As String
         fragment = "<DzienPlanu>" & vbCrLf & _
             "<Pracownik>" & EscXml(kod) & "</Pracownik>" & vbCrLf & _
             "<Data>" & dataTxt & "</Data>" & vbCrLf & _
             "<Definicja>" & EscXml(nazwaDniaWiersz) & "</Definicja>" & vbCrLf & _
-            "<OdGodziny>" & odGodzDnia & "</OdGodziny>" & vbCrLf & _
-            "<Czas>" & FormatMinuty(czasDniaMin) & "</Czas>" & vbCrLf & _
             "<Strefy>" & vbCrLf
 
         Dim sIdx2 As Integer
@@ -261,31 +261,6 @@ Private Function FormatMinuty(totalMin As Long) As String
     FormatMinuty = CStr(h) & ":" & Format(m, "00")
 End Function
 
-Private Function NajwczesniejszaGodzina(strefyOd() As String, n As Integer) As String
-    Dim i As Integer
-    Dim najmniejszyMin As Long, biezacyMin As Long
-    najmniejszyMin = -1
-    For i = 1 To n
-        biezacyMin = MinutyZGodziny(strefyOd(i))
-        If najmniejszyMin = -1 Or biezacyMin < najmniejszyMin Then najmniejszyMin = biezacyMin
-    Next i
-    NajwczesniejszaGodzina = FormatMinuty(najmniejszyMin)
-End Function
-
-Private Function SumaCzasowMin(strefyCzas() As String, n As Integer) As Long
-    Dim i As Integer, suma As Long
-    suma = 0
-    For i = 1 To n
-        suma = suma + MinutyZGodziny(strefyCzas(i))
-    Next i
-    SumaCzasowMin = suma
-End Function
-
-Private Function MinutyZGodziny(s As String) As Long
-    Dim czesci() As String
-    czesci = Split(s, ":")
-    MinutyZGodziny = CLng(czesci(0)) * 60 + CLng(czesci(1))
-End Function
 
 ' Zapisuje tekst jako plik Unicode (UTF-16LE z BOM) - dokladnie taki format, jaki wymaga
 ' importer enova "Import czasu pracy i wynagrodzen" (encoding="Unicode" w naglowku XML).

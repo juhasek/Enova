@@ -232,3 +232,58 @@ Zastosowano dokładnie ten sam wzorzec co przy „Nazwie dnia”: arkusz
 używaną dla wszystkich stref 1–4 tego wiersza. Fallback na
 `Konfiguracja!B4` gdy puste, błąd wiersza gdy oba puste. Kolumny stref
 przesunęły się o jedną (teraz E..L zamiast D..K).
+
+## 2026-09-23 — trzeci błąd testu: fałszywe „nachodzenie się stref”
+
+Po naprawie obu nazw definicji trzeci test zgłosił:
+
+```
+Strefy wliczane do czasu faktycznie przepracowanego nie mogą na siebie zachodzić
+DzienPlanu: Kowalski Adam (006), 1.09.2026
+```
+
+mimo że strefy w arkuszu (8:00-12:00 i 13:00-17:00) się nie pokrywają.
+Użytkownik zauważył kluczowy trop: dla tego dnia w kalendarzu
+pracownika widoczne były jeszcze „domyślne godziny pracy” — czyli
+osobne pole dnia, nie strefa.
+
+**Analiza zdekompilowanego `ImportPlanuPracy`** (`Soneta.CzasPracy.Utils`,
+`Document.cs`) potwierdziła przyczynę:
+
+```csharp
+dzienPlanu2.Definicja = definicjaDnia;
+dzienPlanu2.Strefy.KillAll();
+if (dzienPlanu.OdGodziny != Time.Empty) dzienPlanu2.Praca.OdGodziny = dzienPlanu.OdGodziny;
+if (dzienPlanu.Czas > Time.Zero) dzienPlanu2.Praca.Czas = dzienPlanu.Czas;
+ImportStrefPlanu(dzienPlanu2, dzienPlanu.Strefy);
+```
+
+`<OdGodziny>`/`<Czas>` na poziomie `DzienPlanu` zapisują się do
+**osobnego pola `Praca.OdGodziny`/`Praca.Czas`**, zupełnie niezależnego
+od kolekcji `Strefy` — `Strefy.KillAll()` czyści TYLKO strefy, nie to
+pole. Nasz generator ZAWSZE wysyłał oba jednocześnie (dzień liczony
+jako najwcześniejsza godzina + suma czasów stref, czyli dla
+8-12/13-17 wychodziło pole dnia = 8:00-16:00) — a oba te zakresy razem
+uczestniczą w weryfikacji nachodzenia stref liczonych do czasu pracy,
+więc zakres dnia (8-16) **zawsze** nachodzi na własne strefy (8-12,
+13-17) generatora. Oryginalny wzorcowy przykład Soneta używał tylko
+JEDNEGO z tych dwóch mechanizmów naraz (dzień bez przerwy: samo
+`OdGodziny`/`Czas`, BEZ `<Strefy>`).
+
+**Poprawka:** generator już NIE wysyła `<OdGodziny>`/`<Czas>` na
+poziomie `DzienPlanu` — dzień (także jednostrefowy) opisywany jest
+wyłącznie przez `<Strefy>`. Usunięto też stające się martwym kodem
+funkcje `NajwczesniejszaGodzina`/`SumaCzasowMin`/`MinutyZGodziny`.
+
+**WAŻNE dla już przetestowanego dnia (006, 1.09.2026):** ten dzień
+prawdopodobnie ma już zapisane pole `Praca.OdGodziny`/`Czas` z
+poprzednich (nieudanych) prób importu — import per-rekord w enova nie
+wycofuje częściowo zastosowanych zmian przy błędzie innego rekordu/pola,
+więc te dane mogły zostać zapisane mimo zgłoszonego błędu. Nowy plik
+XML (bez `<OdGodziny>`/`<Czas>` na poziomie dnia) NIE wyczyści tego
+pola — schemat XML pozwala tylko NADPISYWAĆ niepuste wartości, nie ma
+sposobu na jawne wyczyszczenie. Przed kolejnym testem tego konkretnego
+dnia zalecane: w enova otworzyć kartotekę 006 → Kalendarz/Norma czasu
+pracy → dzień 2026-09-01 i ręcznie wyczyścić godziny dnia (zostawić
+tylko strefy) — albo przetestować od razu na nowej, nieużywanej wcześniej
+dacie, żeby wykluczyć zaśmiecone dane z poprzednich prób.
