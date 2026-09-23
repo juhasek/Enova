@@ -110,6 +110,8 @@ importem mają na kalendarzu oznaczenie „DP: czas”.
 
 Pełna lista z kolumnami „Wynik testu / Uwagi z testu” →
 [ALDI Import RCP - scenariusze testowe.xlsx](ALDI%20Import%20RCP%20-%20scenariusze%20testowe.xlsx).
+Wersja do druku dla testera (karty scenariuszy z polami OK / Błąd / Uwagi) →
+[ALDI Import RCP - scenariusze testowe.docx](ALDI%20Import%20RCP%20-%20scenariusze%20testowe.docx).
 
 W stosunku do pierwotnej wersji dokumentacji dla klienta
 (`Dokumentacja_scenariusze_testowe.html`, 2026-08-19) scenariusze zostały przepisane pod
