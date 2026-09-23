@@ -9,9 +9,11 @@ pracownika (jego rzeczywisty grafik). Składa się z:
 - `Generator planu pracy.xlsx` — arkusze Instrukcja / Konfiguracja / Plan,
 - `modGeneratorPlanuPracy.bas` — makro VBA `GenerujPlanyPracy`.
 
-Osoba wypełniająca arkusz „Plan” wpisuje: **kod pracownika**, zakres dat,
-które dni tygodnia mają być dniami pracy i godziny 1–4 stref pracy. Makro
-generuje **jeden plik XML** w oficjalnym formacie enova (`Root/DniPlanu/
+Osoba wypełniająca arkusz „Plan” wpisuje: **kod pracownika**, **jedną
+konkretną datę** i godziny 1–4 stref pracy tego dnia — **jeden wiersz =
+jeden dzień dla jednego pracownika** (bez zakresu dat, bez zaznaczania
+dni tygodnia — każdy dzień roboczy to osobny wiersz). Makro generuje
+**jeden plik XML** w oficjalnym formacie enova (`Root/DniPlanu/
 DzienPlanu/Strefy`), który importuje się w programie enova poleceniem
 menu **Plik → Importuj zapisy → Import czasu pracy i wynagrodzeń**.
 
@@ -153,3 +155,27 @@ Poprawka:
 - Dodana końcowa weryfikacja `Dir(nazwaPliku)` po zapisie — jeśli mimo
   braku zgłoszonego błędu pliku nie widać (częste przy OneDrive/
   antywirusie), makro o tym informuje zamiast milczeć.
+
+## 2026-09-23 — uproszczenie arkusza „Plan”: jeden wiersz = jeden dzień
+
+Użytkownik dostarczył własny wzorcowy plik Excela pokazujący oczekiwany
+układ arkusza „Plan” — bez kolumn „Data do” i „Pn..Nd”, za to z jednym
+wierszem na każdy pojedynczy dzień pracownika (np. 11 wierszy dla PP-01,
+2026-09-01..2026-09-11). Wcześniejsza wersja (zakres dat + zaznaczanie
+dni tygodnia, rozwijana przez makro pętlą `For d = dataOd To dataDo`)
+została zastąpiona tym prostszym modelem:
+
+- Kolumny „Plan” teraz: `Kod pracownika | Data | Strefa 1 od | Strefa 1
+  czas | Strefa 2 od | Strefa 2 czas | Strefa 3 od | Strefa 3 czas |
+  Strefa 4 od | Strefa 4 czas` (10 kolumn zamiast 19 — bez „Data do”,
+  „Pn..Nd”, „Uwagi”).
+- Makro (`modGeneratorPlanuPracy.bas`) już nie rozwija zakresów dat ani
+  dni tygodnia — każdy wiersz arkusza generuje dokładnie jeden
+  `<DzienPlanu>` w pliku wynikowym. Kto chce zaplanować cały miesiąc,
+  musi mieć w arkuszu jeden wiersz na każdy dzień roboczy (Excel
+  ułatwia to przez przeciągnięcie/serię dat).
+- Format wynikowego XML (`Root/DniPlanu/DzienPlanu/Strefy`) się nie
+  zmienił — zmiana dotyczy wyłącznie sposobu wypełniania arkusza
+  „Plan” i logiki odczytu wierszy w makrze.
+- Nadal **zero SQL, zero GUID-u** — bez zmian względem wcześniejszych
+  ustaleń.

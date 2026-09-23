@@ -13,6 +13,10 @@ Option Explicit
 ' po polu <Pracownik> = Kod pracownika - importer enova sam go wyszukuje (kadry.Pracownicy.WgKodu),
 ' bez znaczenia jaki kalendarz/GUID ma jego indywidualny kalendarz.
 ' Dzien przerywany (np. 8-12 i 13-17) to kolekcja <Strefy> z wieloma <StrefaPracy Definicja=... OdGodziny=... Czas=.../>.
+'
+' Arkusz "Plan": jeden wiersz = jeden dzien dla jednego pracownika (kolumny A=Kod, B=Data,
+' C..J = Strefa 1..4 Od/Czas). Zadnego rozwijania zakresow dat/dni tygodnia - kazdy dzien,
+' ktory ma powstac w enova, musi miec wlasny wiersz w arkuszu.
 
 Sub GenerujPlanyPracy()
     Dim wsCfg As Worksheet, wsPlan As Worksheet
@@ -52,34 +56,22 @@ Sub GenerujPlanyPracy()
         kod = Trim(CStr(wsPlan.Cells(r, "A").Value))
         If kod = "" Then GoTo NastepnyWiersz
 
-        If Not IsDate(wsPlan.Cells(r, "B").Value) Or Not IsDate(wsPlan.Cells(r, "C").Value) Then
-            bledy = bledy & "Wiersz " & r & ": nieprawidlowa Data od / Data do." & vbCrLf
+        If Not IsDate(wsPlan.Cells(r, "B").Value) Then
+            bledy = bledy & "Wiersz " & r & ": nieprawidlowa Data." & vbCrLf
             GoTo NastepnyWiersz
         End If
-        Dim dataOd As Date, dataDo As Date
-        dataOd = CDate(wsPlan.Cells(r, "B").Value)
-        dataDo = CDate(wsPlan.Cells(r, "C").Value)
-        If dataDo < dataOd Then
-            bledy = bledy & "Wiersz " & r & ": Data do jest wczesniejsza niz Data od." & vbCrLf
-            GoTo NastepnyWiersz
-        End If
+        Dim dataDnia As Date
+        dataDnia = CDate(wsPlan.Cells(r, "B").Value)
 
-        ' Kolumny D..J = Pn..Nd (1=Pn .. 7=Nd wg Weekday(d, vbMonday)); dowolna niepusta wartosc = dzien wlaczony
-        Dim dniTyg(1 To 7) As Boolean
-        Dim kIdx As Integer
-        For kIdx = 1 To 7
-            dniTyg(kIdx) = (Trim(CStr(wsPlan.Cells(r, 3 + kIdx).Value)) <> "")
-        Next kIdx
-
-        ' Strefy: pary kolumn K/L, M/N, O/P, Q/R (do 4 stref na dzien)
+        ' Strefy: pary kolumn C/D, E/F, G/H, I/J (do 4 stref na dzien)
         Dim strefyOd(1 To 4) As String, strefyCzas(1 To 4) As String
         Dim liczbaStref As Integer
         liczbaStref = 0
         Dim sIdx As Integer
         For sIdx = 0 To 3
             Dim colOd As Integer, colCzas As Integer
-            colOd = 11 + sIdx * 2
-            colCzas = 12 + sIdx * 2
+            colOd = 3 + sIdx * 2
+            colCzas = 4 + sIdx * 2
             Dim vOd As String, vCzas As String
             vOd = FormatCzas(wsPlan.Cells(r, colOd).Value)
             vCzas = FormatCzas(wsPlan.Cells(r, colCzas).Value)
@@ -91,7 +83,7 @@ Sub GenerujPlanyPracy()
         Next sIdx
 
         If liczbaStref = 0 Then
-            bledy = bledy & "Wiersz " & r & ": brak zdefiniowanej zadnej strefy pracy (kolumny K..R)." & vbCrLf
+            bledy = bledy & "Wiersz " & r & ": brak zdefiniowanej zadnej strefy pracy (kolumny C..J)." & vbCrLf
             GoTo NastepnyWiersz
         End If
 
@@ -100,36 +92,29 @@ Sub GenerujPlanyPracy()
         odGodzDnia = NajwczesniejszaGodzina(strefyOd, liczbaStref)
         czasDniaMin = SumaCzasowMin(strefyCzas, liczbaStref)
 
-        Dim d As Date
-        For d = dataOd To dataDo
-            Dim nrDnia As Integer
-            nrDnia = Weekday(d, vbMonday)
-            If dniTyg(nrDnia) Then
-                Dim dataTxt As String
-                dataTxt = Format(d, "yyyy-mm-dd")
+        Dim dataTxt As String
+        dataTxt = Format(dataDnia, "yyyy-mm-dd")
 
-                Dim fragment As String
-                fragment = "<DzienPlanu>" & vbCrLf & _
-                    "<Pracownik>" & EscXml(kod) & "</Pracownik>" & vbCrLf & _
-                    "<Data>" & dataTxt & "</Data>" & vbCrLf & _
-                    "<Definicja>" & EscXml(nazwaDefDnia) & "</Definicja>" & vbCrLf & _
-                    "<OdGodziny>" & odGodzDnia & "</OdGodziny>" & vbCrLf & _
-                    "<Czas>" & FormatMinuty(czasDniaMin) & "</Czas>" & vbCrLf & _
-                    "<Strefy>" & vbCrLf
+        Dim fragment As String
+        fragment = "<DzienPlanu>" & vbCrLf & _
+            "<Pracownik>" & EscXml(kod) & "</Pracownik>" & vbCrLf & _
+            "<Data>" & dataTxt & "</Data>" & vbCrLf & _
+            "<Definicja>" & EscXml(nazwaDefDnia) & "</Definicja>" & vbCrLf & _
+            "<OdGodziny>" & odGodzDnia & "</OdGodziny>" & vbCrLf & _
+            "<Czas>" & FormatMinuty(czasDniaMin) & "</Czas>" & vbCrLf & _
+            "<Strefy>" & vbCrLf
 
-                Dim sIdx2 As Integer
-                For sIdx2 = 1 To liczbaStref
-                    fragment = fragment & _
-                        "<StrefaPracy Definicja=""" & EscXml(nazwaDefStrefy) & """ OdGodziny=""" & _
-                        strefyOd(sIdx2) & """ Czas=""" & strefyCzas(sIdx2) & """ />" & vbCrLf
-                Next sIdx2
+        Dim sIdx2 As Integer
+        For sIdx2 = 1 To liczbaStref
+            fragment = fragment & _
+                "<StrefaPracy Definicja=""" & EscXml(nazwaDefStrefy) & """ OdGodziny=""" & _
+                strefyOd(sIdx2) & """ Czas=""" & strefyCzas(sIdx2) & """ />" & vbCrLf
+        Next sIdx2
 
-                fragment = fragment & "</Strefy>" & vbCrLf & "</DzienPlanu>" & vbCrLf
+        fragment = fragment & "</Strefy>" & vbCrLf & "</DzienPlanu>" & vbCrLf
 
-                dniXml = dniXml & fragment
-                liczbaDni = liczbaDni + 1
-            End If
-        Next d
+        dniXml = dniXml & fragment
+        liczbaDni = liczbaDni + 1
 
 NastepnyWiersz:
     Next r
