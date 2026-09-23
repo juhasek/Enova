@@ -357,6 +357,57 @@ wygenerowania planu w GUI**, bo środowisko robocze tego repo nie ma dostępu do
   traktować jako **pierwszą wersję do zweryfikowania**, nie jako gotowe
   rozwiązanie.
 
+## Szósta iteracja (2026-09-23): zwolniony pracownik "znika" z listy przy generowaniu planu
+
+Użytkownik zgłosił nowy przypadek dla tego samego scenariusza testowego
+(pracownik zwolniony 01/2026, odprawa wypłacona na liście głównej 08/2026):
+licząc plan dla okresu 08/2026, mimo że pracownika nie ma już na "liście
+pracowników", rozwiązanie odprawy i tak powinno mu się naliczyć.
+
+Zdekompilowano `Soneta.KadryPlace.dll` (`NaliczaniePlanowanychListPłacWorker`,
+`NaliczaniePlanowanychListPłac`, `NaliczanieSeryjne.Pracownika`) w wersji
+serwera 2512.5.6 — ustalono, że **silnik naliczania (`NaliczanieSeryjne.Pracownika`
+→ `NaliczanieWypłat`) nie ma żadnego wbudowanego filtra "tylko aktualnie
+zatrudnieni"**: liczy dla dowolnego przekazanego mu obiektu `Pracownik`, dla
+podanego okresu, niezależnie od statusu zatrudnienia (aktywny/zwolniony).
+
+Akcja `NaliczaniePlanowanychListPłacWorker.Nalicz()` (przycisk "Nalicz
+planowane listy płac...") działa na tablicy `Pracownik[] pracownicy`
+wstrzykiwanej przez `[Context] Pracownik` z **aktualnie zaznaczonych wierszy
+listy Pracownicy**, z której akcja jest wywoływana:
+
+```csharp
+[Context]
+public Pracownik[] Pracownik { set { pracownicy = value; } }
+...
+public NaliczaniePlanowanychListPłac Nalicz()
+{
+    if (pracownicy.Length == 0) throw new CancelException();
+    ...
+    foreach (Pracownik pracownik in pracownicy)
+        naliczaniePlanowanychListPłac.NaliczPracownika(pracownik, kontekstPłac);
+```
+
+**Wniosek: to NIE jest błąd/luka w naszym Dodatku automatycznym ani w
+mechanizmie `DefPlanListPlac`.** Zwolniony pracownik "znika" wyłącznie dlatego,
+że domyślny filtr listy Kadry → Pracownicy w GUI pokazuje tylko aktualnie
+zatrudnionych — pracownik zwolniony w 01/2026 nie jest widoczny/zaznaczalny na
+tej liście, więc nigdy nie trafia do `pracownicy[]`, a silnik w ogóle go nie
+przelicza (nie dlatego, że coś go odrzuca wewnątrz naliczania).
+
+**Rozwiązanie operacyjne (bez zmiany kodu):** w GUI przełączyć filtr listy
+Pracownicy tak, żeby pokazywał też zwolnionych ("Wszyscy" zamiast domyślnych
+"Aktualnie zatrudnieni"), zaznaczyć tego pracownika i z takiego zaznaczenia
+uruchomić "Nalicz planowane listy płac...". Silnik policzy wtedy dla niego
+okres 08/2026 normalnie, a Dodatek automatyczny "Rozwiązanie odprawa
+emerytalno-rentowa" (priorytet 200, `Element` wskazujący na samego siebie)
+powinien zadziałać zgodnie z projektem.
+
+**Nadal NIEZWERYFIKOWANE żywym testem** (ani ta poprawka podejścia w GUI, ani
+sam mechanizm rozwiązania odprawy) — do potwierdzenia przy najbliższym
+kontakcie z klientem: wynik testu po zaznaczeniu zwolnionego pracownika z
+filtrem "Wszyscy".
+
 ## Pliki
 
 - `ImportyXML/Rozwiązanie odprawa emerytalno-rentowa.dbinit.xml` — import wg
