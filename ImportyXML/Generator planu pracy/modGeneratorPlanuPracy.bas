@@ -15,8 +15,12 @@ Option Explicit
 ' Dzien przerywany (np. 8-12 i 13-17) to kolekcja <Strefy> z wieloma <StrefaPracy Definicja=... OdGodziny=... Czas=.../>.
 '
 ' Arkusz "Plan": jeden wiersz = jeden dzien dla jednego pracownika (kolumny A=Kod, B=Data,
-' C..J = Strefa 1..4 Od/Czas). Zadnego rozwijania zakresow dat/dni tygodnia - kazdy dzien,
-' ktory ma powstac w enova, musi miec wlasny wiersz w arkuszu.
+' C=Nazwa dnia, D..K = Strefa 1..4 Od/Czas). Zadnego rozwijania zakresow dat/dni tygodnia -
+' kazdy dzien, ktory ma powstac w enova, musi miec wlasny wiersz w arkuszu.
+' Kolumna C "Nazwa dnia" musi byc nazwa DEFINICJI DNIA juz istniejaca w bazie enova
+' (DefinicjeDni) - inaczej import zglasza blad "Definicja dnia o nazwie '' nie zostala
+' znaleziona". Jesli C jest puste w danym wierszu, uzywana jest domyslna wartosc z
+' Konfiguracja!B3 ("Nazwa definicji dnia") - ale jesli i ta jest pusta, wiersz jest bledny.
 
 Sub GenerujPlanyPracy()
     Dim wsCfg As Worksheet, wsPlan As Worksheet
@@ -63,15 +67,23 @@ Sub GenerujPlanyPracy()
         Dim dataDnia As Date
         dataDnia = CDate(wsPlan.Cells(r, "B").Value)
 
-        ' Strefy: pary kolumn C/D, E/F, G/H, I/J (do 4 stref na dzien)
+        Dim nazwaDniaWiersz As String
+        nazwaDniaWiersz = Trim(CStr(wsPlan.Cells(r, "C").Value))
+        If nazwaDniaWiersz = "" Then nazwaDniaWiersz = nazwaDefDnia
+        If nazwaDniaWiersz = "" Then
+            bledy = bledy & "Wiersz " & r & ": brak Nazwy dnia (kolumna C) i brak domyslnej w Konfiguracja!B3." & vbCrLf
+            GoTo NastepnyWiersz
+        End If
+
+        ' Strefy: pary kolumn D/E, F/G, H/I, J/K (do 4 stref na dzien)
         Dim strefyOd(1 To 4) As String, strefyCzas(1 To 4) As String
         Dim liczbaStref As Integer
         liczbaStref = 0
         Dim sIdx As Integer
         For sIdx = 0 To 3
             Dim colOd As Integer, colCzas As Integer
-            colOd = 3 + sIdx * 2
-            colCzas = 4 + sIdx * 2
+            colOd = 4 + sIdx * 2
+            colCzas = 5 + sIdx * 2
             Dim vOd As String, vCzas As String
             vOd = FormatCzas(wsPlan.Cells(r, colOd).Value)
             vCzas = FormatCzas(wsPlan.Cells(r, colCzas).Value)
@@ -83,7 +95,7 @@ Sub GenerujPlanyPracy()
         Next sIdx
 
         If liczbaStref = 0 Then
-            bledy = bledy & "Wiersz " & r & ": brak zdefiniowanej zadnej strefy pracy (kolumny C..J)." & vbCrLf
+            bledy = bledy & "Wiersz " & r & ": brak zdefiniowanej zadnej strefy pracy (kolumny D..K)." & vbCrLf
             GoTo NastepnyWiersz
         End If
 
@@ -99,7 +111,7 @@ Sub GenerujPlanyPracy()
         fragment = "<DzienPlanu>" & vbCrLf & _
             "<Pracownik>" & EscXml(kod) & "</Pracownik>" & vbCrLf & _
             "<Data>" & dataTxt & "</Data>" & vbCrLf & _
-            "<Definicja>" & EscXml(nazwaDefDnia) & "</Definicja>" & vbCrLf & _
+            "<Definicja>" & EscXml(nazwaDniaWiersz) & "</Definicja>" & vbCrLf & _
             "<OdGodziny>" & odGodzDnia & "</OdGodziny>" & vbCrLf & _
             "<Czas>" & FormatMinuty(czasDniaMin) & "</Czas>" & vbCrLf & _
             "<Strefy>" & vbCrLf

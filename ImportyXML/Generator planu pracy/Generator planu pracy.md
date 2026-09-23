@@ -10,10 +10,11 @@ pracownika (jego rzeczywisty grafik). Składa się z:
 - `modGeneratorPlanuPracy.bas` — makro VBA `GenerujPlanyPracy`.
 
 Osoba wypełniająca arkusz „Plan” wpisuje: **kod pracownika**, **jedną
-konkretną datę** i godziny 1–4 stref pracy tego dnia — **jeden wiersz =
-jeden dzień dla jednego pracownika** (bez zakresu dat, bez zaznaczania
-dni tygodnia — każdy dzień roboczy to osobny wiersz). Makro generuje
-**jeden plik XML** w oficjalnym formacie enova (`Root/DniPlanu/
+konkretną datę**, **nazwę dnia** (definicja dnia już istniejąca w bazie
+enova, np. „Pracy”) i godziny 1–4 stref pracy tego dnia — **jeden
+wiersz = jeden dzień dla jednego pracownika** (bez zakresu dat, bez
+zaznaczania dni tygodnia — każdy dzień roboczy to osobny wiersz). Makro
+generuje **jeden plik XML** w oficjalnym formacie enova (`Root/DniPlanu/
 DzienPlanu/Strefy`), który importuje się w programie enova poleceniem
 menu **Plik → Importuj zapisy → Import czasu pracy i wynagrodzeń**.
 
@@ -179,3 +180,30 @@ została zastąpiona tym prostszym modelem:
   „Plan” i logiki odczytu wierszy w makrze.
 - Nadal **zero SQL, zero GUID-u** — bez zmian względem wcześniejszych
   ustaleń.
+
+## 2026-09-23 — pierwszy realny test importu: błąd pustej „Definicji dnia”
+
+Użytkownik przetestował import na żywo w enova i dostał błąd:
+
+```
+Definicja dnia o nazwie '' nie została znaleziona (System.Exception)
+```
+
+Przyczyna: `<Definicja>` w wygenerowanym XML brała się wyłącznie z
+globalnej wartości w arkuszu „Konfiguracja” (`Nazwa definicji dnia`,
+domyślnie „Pracy”) — w realnym pliku użytkownika ta wartość wyszła
+pusta, więc każdy `<DzienPlanu>` dostawał `<Definicja></Definicja>`.
+
+Poprawka: arkusz „Plan” ma teraz **kolumnę C „Nazwa dnia”** — nazwę
+definicji dnia (musi już istnieć w enova, `DefinicjeDni`) wpisywaną
+**per wiersz** (widoczną wprost przy danych, nie ukrytą w osobnym
+arkuszu). Makro (`modGeneratorPlanuPracy.bas`) czyta ją z kolumny C;
+jeśli komórka jest pusta, sięga po wartość domyślną z
+`Konfiguracja!B3` — a jeśli i ta jest pusta, wiersz jest zgłaszany jako
+błędny (zamiast cicho generować pustą `<Definicja>`). Kolumny stref
+przesunęły się o jedną (teraz D..K zamiast C..J).
+
+**To pierwsze potwierdzenie, że import przez GUI (Plik → Importuj
+zapisy → Import czasu pracy i wynagrodzeń) faktycznie działa** —
+błąd dotyczył tylko treści pliku XML, nie samego mechanizmu importu.
+Czeka na kolejny test użytkownika z poprawionym plikiem.
