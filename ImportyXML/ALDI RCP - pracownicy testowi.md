@@ -12,7 +12,9 @@ duplikuje danych).
 ## Co tworzy
 
 14 pracowników — **1 pracownik = 1 scenariusz** z dokumentacji
-`Dokumentacja_scenariusze_testowe.html`. **Kod pracownika = numer scenariusza.**
+`Dokumentacja_scenariusze_testowe.html`
+(przepisane scenariusze: [Zadania/ALDI Import RCP - scenariusze testowe.xlsx](../Zadania/ALDI%20Import%20RCP%20-%20scenariusze%20testowe.xlsx),
+dokumentacja: [Zadania/ALDI Import RCP - podział nadgodzin.md](../Zadania/ALDI%20Import%20RCP%20-%20podzia%C5%82%20nadgodzin.md)). **Kod pracownika = numer scenariusza.**
 
 | Kod | Nazwisko / Imię | Wymiar etatu | Kalendarz | Plan dnia (pn–pt) |
 |-----|-----------------|--------------|-----------|-------------------|
@@ -40,7 +42,9 @@ dbmgr importxml Al "ALDI RCP - dane RCP.xml" --standard
 ```
 
 32 zdarzenia (Wejście/Wyjście, Stan=Aktywny) — po jednym komplecie na scenariusz,
-dokładnie wg kart w `Dokumentacja_scenariusze_testowe.html`. **Tabela nie jest
+dokładnie wg kart w `Dokumentacja_scenariusze_testowe.html`
+(przepisane scenariusze: [Zadania/ALDI Import RCP - scenariusze testowe.xlsx](../Zadania/ALDI%20Import%20RCP%20-%20scenariusze%20testowe.xlsx),
+dokumentacja: [Zadania/ALDI Import RCP - podział nadgodzin.md](../Zadania/ALDI%20Import%20RCP%20-%20podzia%C5%82%20nadgodzin.md)). **Tabela nie jest
 guidowana → import jest jednorazowy** (bez `guid`/`where`; ponowne uruchomienie
 dopisze kolejne wiersze zamiast je zaktualizować — przy reimporcie najpierw
 skasować wcześniej wstawione wiersze).
