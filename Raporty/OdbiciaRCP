@@ -78,6 +78,7 @@ namespace x.x.Reports
         int dniBezGodzin;
         int dniZPlanu;
         int dniPoprawne;
+        int dniOdbiorNadgodzin;
 
         static readonly string[] dniTygodnia = { "Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So" };
 
@@ -105,7 +106,7 @@ namespace x.x.Reports
             }
             pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
 
-            dniBezGodzin = dniZPlanu = dniPoprawne = 0;
+            dniBezGodzin = dniZPlanu = dniPoprawne = dniOdbiorNadgodzin = 0;
             var wiersze = new List<Wiersz>();
             foreach (Pracownik pracownik in pracownicy)
                 DodajDniPracownika(wiersze, pracownik, okres);
@@ -113,8 +114,8 @@ namespace x.x.Reports
             TytulRaportu.Text = "Raport z odbić RCP - dni zmodyfikowane i czas z planu, okres: {0}"
                 .TranslateFormat(okres.ToString());
             Podsumowanie.Text =
-                "Pracowników: {0}   |   Dni zmodyfikowane BEZ godzin pracy: {1}   |   Dni z czasem przepisanym z planu: {2}   |   Dni zmodyfikowane z godzinami z RCP: {3}"
-                .TranslateFormat(pracownicy.Count, dniBezGodzin, dniZPlanu, dniPoprawne);
+                "Pracowników: {0}   |   Dni zmodyfikowane BEZ godzin pracy: {1}   |   Dni z czasem przepisanym z planu: {2}   |   Dni zmodyfikowane z godzinami z RCP: {3}   |   Dni z rozliczeniem nadgodzin: {4}"
+                .TranslateFormat(pracownicy.Count, dniBezGodzin, dniZPlanu, dniPoprawne, dniOdbiorNadgodzin);
 
             DxReportHelpers.GetDataSourceEmpty(this).CustomDataSource = wiersze;
         }
@@ -160,9 +161,21 @@ namespace x.x.Reports
                         rcpOk = dzienPracy.RcpOK ? "Tak".Translate() : "Nie".Translate();
                         if (pracaCzas.IsEmptyOrZero())
                         {
-                            status = "Zmodyfikowany - BRAK godzin pracy".Translate();
-                            czyBlad = true;
-                            dniBezGodzin++;
+                            if (MaOdbiorNadgodzin(dzienEwid))
+                            {
+                                // sobota/dzień bez normy z wprowadzonym odbiorem nadgodzin
+                                // (strefa "Rozliczenie nadgodzin (prac/firma)") - kalkulator
+                                // nie liczy tam czasu pracy, ale to nie błąd, tylko rozliczenie
+                                // wcześniej wypracowanych nadgodzin czasem wolnym.
+                                status = "Zmodyfikowany - Rozliczenie nadgodzin".Translate();
+                                dniOdbiorNadgodzin++;
+                            }
+                            else
+                            {
+                                status = "Zmodyfikowany - BRAK godzin pracy".Translate();
+                                czyBlad = true;
+                                dniBezGodzin++;
+                            }
                         }
                         else
                         {
@@ -226,6 +239,23 @@ namespace x.x.Reports
                 sb.Append(ft.From.ToString()).Append('-').Append(ft.To.ToString());
             }
             return sb.ToString();
+        }
+
+        // Odbiór nadgodzin (czas wolny w zamian za nadgodziny) zapisywany jest jako strefa
+        // dnia "Rozliczenie nadgodzin (prac)"/"Rozliczenie nadgodzin (firma)" - wzorzec jak
+        // w Raporty/SkanskaRaportDzienny. Taki dzień ma zerowy Czas z kalkulatora (to nie
+        // czas pracy), więc bez tego sprawdzenia wpadał do "BRAK godzin pracy" jako błąd.
+        static bool JestStrefaOdbioruNadgodzin(string nazwaStrefy) =>
+            nazwaStrefy != null && nazwaStrefy.IndexOf("Rozliczenie nadgodzin", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        static bool MaOdbiorNadgodzin(Dzien dzienEwid)
+        {
+            if (dzienEwid == null)
+                return false;
+            foreach (Dzien.Strefa s in dzienEwid)
+                if (JestStrefaOdbioruNadgodzin(s.Definicja.Nazwa))
+                    return true;
+            return false;
         }
 
         static string SkrotTypu(TypWejsciaWyjscia typ)
