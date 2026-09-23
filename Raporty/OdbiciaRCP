@@ -242,9 +242,10 @@ namespace x.x.Reports
         }
 
         // Odbiór nadgodzin (czas wolny w zamian za nadgodziny) zapisywany jest jako strefa
-        // dnia "Rozliczenie nadgodzin (prac)"/"Rozliczenie nadgodzin (firma)" - wzorzec jak
-        // w Raporty/SkanskaRaportDzienny. Taki dzień ma zerowy Czas z kalkulatora (to nie
-        // czas pracy), więc bez tego sprawdzenia wpadał do "BRAK godzin pracy" jako błąd.
+        // dnia "Rozliczenie nadgodzin (prac)"/"Rozliczenie nadgodzin (firma)" - ten sam
+        // wzorzec rozpoznawania co w innym raporcie tego repozytorium. Taki dzień ma
+        // zerowy Czas z kalkulatora (to nie czas pracy), więc bez tego sprawdzenia
+        // wpadał do "BRAK godzin pracy" jako błąd.
         static bool JestStrefaOdbioruNadgodzin(string nazwaStrefy) =>
             nazwaStrefy != null && nazwaStrefy.IndexOf("Rozliczenie nadgodzin", StringComparison.OrdinalIgnoreCase) >= 0;
 

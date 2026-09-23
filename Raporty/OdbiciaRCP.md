@@ -149,10 +149,10 @@ klasyfikował taki dzień jako „Zmodyfikowany – BRAK godzin pracy”, czyli 
 korekty, mimo że sytuacja jest prawidłowa.
 
 **Przyczyna:** odbiór nadgodzin zapisywany jest w enova jako strefa dnia „Rozliczenie nadgodzin
-(prac)” lub „Rozliczenie nadgodzin (firma)” (ten sam mechanizm co w `Raporty/SkanskaRaportDzienny`).
-Kalkulator nie liczy dla takiej strefy czasu pracy (`Dzien.Czas` = 0), bo to nie praca, tylko
-rozliczenie wcześniej należnych nadgodzin czasem wolnym — ale kod raportu nie odróżniał tego od
-faktycznego braku naliczenia czasu.
+(prac)” lub „Rozliczenie nadgodzin (firma)” (ten sam mechanizm rozpoznawania co w innym raporcie
+tego repozytorium). Kalkulator nie liczy dla takiej strefy czasu pracy (`Dzien.Czas` = 0), bo to nie
+praca, tylko rozliczenie wcześniej należnych nadgodzin czasem wolnym — ale kod raportu nie
+odróżniał tego od faktycznego braku naliczenia czasu.
 
 **Poprawka:** dodano rozpoznawanie strefy odbioru nadgodzin (funkcje `JestStrefaOdbioruNadgodzin`
 i `MaOdbiorNadgodzin`, sprawdzające `Dzien.Strefa.Definicja.Nazwa` dnia z ewidencji). Dzień z
