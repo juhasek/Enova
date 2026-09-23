@@ -1,20 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Skompilowany dodatek enova365 (net8.0). Mimo nazwy zestawu, hostuje DWIE
-    niezalezne funkcje (jeden DLL, jedno wgranie przez ExtPath):
-
-    1. Przycisk "Pelna lista plac (XLSX)" na pasku narzedzi widoku Place -> Listy
-       plac (worker zarejestrowany na TABELI ListyPlac + ActionTarget.ToolbarWithText;
-       wczesniej: worker na wierszu ListaPlac i pozycja menu Czynnosci). Powstal, bo
-       report-snippet + eksport z podgladu DevExpress uporczywie scala kolumny
-       tekstowe w Excelu (patrz Raporty/A1PelnaListaPlac.md).
-
-    2. Przycisk "Nalicz plan wg wyplaconych odpraw (takze zwolnieni)..." na widoku
-       "Definicje planowanych list plac" (A1RozwiazanieOdprawWorker.cs) - omija
-       ograniczenie wbudowanej czynnosci enova, ktora dziala tylko na aktualnie
-       zaznaczonych/zatrudnionych pracownikach (patrz ElementyPlac/Rozwiazanie
-       odprawa emerytalno-rentowa.md).
+    Skompilowany dodatek enova365 (net8.0) - przycisk "Pelna lista plac (XLSX)"
+    na pasku narzedzi widoku Place -> Listy plac (worker zarejestrowany na TABELI
+    ListyPlac + ActionTarget.ToolbarWithText; wczesniej: worker na wierszu ListaPlac
+    i pozycja menu Czynnosci). Powstal, bo report-snippet + eksport z podgladu
+    DevExpress uporczywie scala kolumny tekstowe w Excelu (patrz Raporty/A1PelnaListaPlac.md).
 
     BUDOWANIE (na maszynie z DLL-ami serwera enova 2512.5.6):
       dotnet build -c Release
@@ -73,7 +64,6 @@
     <Reference Include="Soneta.Types">           <HintPath>$(SonetaDir)\Soneta.Types.dll</HintPath>           <Private>false</Private></Reference>
     <Reference Include="Soneta.Core">            <HintPath>$(SonetaDir)\Soneta.Core.dll</HintPath>            <Private>false</Private></Reference>
     <Reference Include="Soneta.KadryPlace">      <HintPath>$(SonetaDir)\Soneta.KadryPlace.dll</HintPath>      <Private>false</Private></Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"> <HintPath>$(SonetaDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath> <Private>false</Private></Reference>
 
     <Reference Include="DevExpress.Printing.v24.1.Core">     <HintPath>$(SonetaDir)\DevExpress.Printing.v24.1.Core.dll</HintPath>     <Private>false</Private></Reference>
     <Reference Include="DevExpress.Docs.v24.1">              <HintPath>$(SonetaDir)\DevExpress.Docs.v24.1.dll</HintPath>              <Private>false</Private></Reference>

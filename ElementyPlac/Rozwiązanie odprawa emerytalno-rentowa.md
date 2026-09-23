@@ -408,120 +408,142 @@ sam mechanizm rozwiązania odprawy) — do potwierdzenia przy najbliższym
 kontakcie z klientem: wynik testu po zaznaczeniu zwolnionego pracownika z
 filtrem "Wszyscy".
 
-## Siódma iteracja (2026-09-23): operacyjnie to za mało — trzeba automatycznego przycisku
+## Siódma iteracja (2026-09-23): próba z osobnym DLL — ODRZUCONA przez klienta
 
-Użytkownik słusznie zwrócił uwagę, że rozwiązanie z poprzedniej sekcji (filtr
-"Wszyscy" + ręczne zaznaczenie zwolnionego pracownika) jest nierealistyczne w
-praktyce: generując plan na dany miesiąc, operator standardowo stoi na liście
-pracowników zatrudnionych AKTUALNIE (w momencie liczenia planu), a nie
-"zatrudnionych w miesiącu, dla którego liczy plan" — nie ma powodu, żeby co
-miesiąc pamiętać o ręcznym doszukiwaniu zwolnionych. Wymóg użytkownika wprost:
-**kod ma sam sprawdzać, komu w danym okresie wypłacono odprawę, i naliczać
-rozwiązanie automatycznie — bez polegania na ręcznym zaznaczeniu pracownika**.
+Pierwsza próba naprawy: nowy skompilowany dodatek (`Addon/A1RozwiazanieOdprawWorker.cs`,
+przycisk "Nalicz plan wg wypłaconych odpraw..." na widoku "Definicje
+planowanych list płac", omijający zaznaczenie listy Pracownicy przez własne
+zapytanie do `WypElementy` + wywołanie wbudowanego
+`NaliczaniePlanowanychListPłacWorker`). Skompilowana lokalnie (exit 0), ale
+**klient jednoznacznie odrzucił to podejście**: (a) nowy przycisk wymaga
+wgrania DLL przez `ExtPath` i restartu usług — poza standardowym trybem pracy
+tego repo (import XML wg rekordów, bez kompilowanych dodatków), (b) w ogóle
+nie chce rozwiązania w DLL dla tej funkcji. **Zmiany w `Addon/` wycofane**
+(commit cofnięty, plik `A1RozwiazanieOdprawWorker.cs` usunięty,
+`A1PelnaListaPlacAddon.csproj`/`README.md` przywrócone do stanu sprzed tej
+próby) — `Addon/` zawiera z powrotem WYŁĄCZNIE oryginalną funkcję "Pełna lista
+płac (XLSX)".
 
-Ponieważ silnik (`NaliczaniePlanowanychListPłacWorker.Nalicz`) sam w sobie nie
-ma haka pozwalającego Dodatkowi automatycznemu "dociągnąć" innego pracownika
-spoza przekazanej tablicy `Pracownik[]` (dodatek liczy się TYLKO w kontekście
-pracownika, dla którego silnik już został wywołany — nie może sam wywołać
-przeliczenia dla kogoś innego), jedynym miejscem, w którym można to naprawić,
-jest to, SKĄD bierze się `Pracownik[]` — czyli własny, skompilowany worker
-zamiast polegania na zaznaczeniu listy Pracownicy w GUI.
+**Why:** klient wprost odrzucił zarówno "ręczne zaznaczanie zwolnionych"
+(szósta iteracja), jak i "osobny DLL/przycisk" (ta iteracja) — wymaganie jest
+węższe, niż się początkowo wydawało: rozwiązanie MUSI żyć w kodzie SAMEGO
+elementu (import XML wg rekordów, tak jak reszta tego zadania), bez nowego
+punktu wejścia w GUI.
 
-**Rozwiązanie: nowy przycisk w skompilowanym dodatku**
-(`Addon/A1RozwiazanieOdprawWorker.cs`, ten sam DLL co "Pełna lista płac XLSX",
-`[assembly: Worker<A1RozwiazanieOdprawWorker, DefPlanListPlac>]` — przycisk na
-widoku "Definicje planowanych list płac"):
+## Ósma iteracja (2026-09-23): efekt uboczny w istniejącym, XML-importowanym algorytmie
 
-1. Operator wybiera definicję planu (u nas: "Rozwiązanie odprawa
-   emerytalno-rentowa") i okres/parametry przez STANDARDOWE okienko
-   (`Soneta.Place.NaliczaniePlanowanychListPłacWorker.Params` — klasa
-   wbudowana w enova, ponownie użyta wprost, bez przepisywania; publiczna,
-   więc referencyjna z zewnętrznego dodatku).
-2. Worker sam odpytuje `PlaceModule.WypElementy.WgDefinicja[odprawa]`
-   (indeks tabeli historycznej `WypElementy` po polu `Definicja` — zwraca
-   elementy WSZYSTKICH pracowników, niezależnie od statusu zatrudnienia) i
-   filtruje po `Okres == Pars.Okres` oraz `Wartosc != 0` — dokładnie ten sam
-   warunek, jaki już i tak sprawdza `_Param` Dodatku automatycznego
-   (`Element.Elementy[Okres]` + `Nazwa.Contains("Odprawa emerytalna")`), tylko
-   odwrócony: zamiast "dla TEGO pracownika sprawdź, czy ma odprawę w okresie"
-   pytamy "dla TEGO okresu, którzy pracownicy mają odprawę".
-3. Znaleziona lista `Pracownik[]` (aktywni i zwolnieni razem, bez rozróżniania)
-   trafia do zwykłego, WBUDOWANEGO `NaliczaniePlanowanychListPłacWorker` przez
-   jego publiczne właściwości `Pracownik`/`Pars`, po czym wywołujemy jego
-   `Nalicz()` — **świadomie NIE odtworzono ręcznie wewnętrznej logiki
-   sesji/transakcji tej metody** (tworzenie osobnej sesji, `Context.Clone`,
-   dwie zagnieżdżone transakcje na różnych sesjach — patrz kod w
-   `NaliczaniePlanowanychListPłac.Nalicz`/`NaliczPracownika` ustalony
-   dekompilacją) — ryzyko subtelnego błędu w tak niedokumentowanym
-   mechanizmie uznano za zbyt duże po już 5 rundach poprawek. Zamiast tego
-   worker tylko DOSTARCZA inną listę pracowników do tej samej, sprawdzonej
-   metody.
+Użytkownik doprecyzował: w kodzie dodatku (czyli **algorytmie
+`DefinicjaPlanowanejListyPłac`, tym samym XML-owym mechanizmie co reszta tego
+zadania**) ma się dać sprawdzić wszystkie wypłacone elementy źródłowe
+ograniczone do okresu i na tej podstawie naliczyć dla pracownika — bez nowego
+przycisku, bez DLL.
 
-Lookup elementu źródłowego: `PlaceModule.DefElementow.WgNazwy["Odprawa
-emerytalna"]` (indeks po dokładnej nazwie — potwierdzony jako istniejący i
-kompilujący się typ w tej wersji serwera, patrz sekcja "Potwierdzone próbnym
-importem" wyżej, gdzie `Module.DefElementow.WgNazwy` był już częścią
-zweryfikowanego kodu).
+**Kluczowe ograniczenie (potwierdzone dekompilacją, niezmienne niezależnie od
+tego GDZIE żyje kod):** silnik (`NaliczaniePlanowanychListPłacWorker.Nalicz`
+→ `NaliczaniePlanowanychListPłac.NaliczPracownika`) wywołuje kod algorytmu
+(`KopiujWypłatę`/`KopiujNagłowek`/`KopiujElementy`) TYLKO dla pracowników
+fizycznie przekazanych mu w tablicy `Pracownik[]` z zewnątrz (zaznaczenie
+listy Pracownicy w GUI). Żaden kod WEWNĄTRZ algorytmu nie jest w stanie
+"zmusić" silnika do przeliczenia kogoś, kogo nie ma w tej tablicy — to
+architektoniczny fakt silnika, nie ograniczenie konkretnego mechanizmu
+dostarczania kodu (DLL vs XML).
 
-**Skompilowano lokalnie** (`dotnet build -c Release` w `Addon/`) — exit 0,
-`A1PelnaListaPlacAddon.dll` zbudowany bez błędów. Po drodze doszła jedna
-poprawka projektu: `PlaceModule.GetInstance(Session)` wymaga typu
-`ISupportRequiredService` z `Microsoft.Extensions.DependencyInjection.Abstractions.dll`
-(referencja dodana do `.csproj`, `Private=false`, DLL z folderu serwera —
-wcześniej niepotrzebna, bo `A1PelnaListaPlacWorker` nie wołał tej przeciążonej
-metody).
+**Obejście, które NIE wymaga dociągania nikogo do silnika:** zamiast liczyć
+zwolnionego pracownika PRZEZ silnik (niemożliwe), kod algorytmu — wywoływany
+i tak normalnie dla KAŻDEGO pracownika, którego operator faktycznie zaznaczy i
+przeliczy w danym uruchomieniu (typowo: aktywni pracownicy z normalnego,
+comiesięcznego zaznaczenia) — jako EFEKT UBOCZNY ręcznie dopisuje wpisy na
+planie dla INNYCH (w tym zwolnionych) pracowników, bez udziału silnika:
 
-**NIEZWERYFIKOWANE żywym testem** (jak cały mechanizm `DefPlanListPlac` w tym
-zadaniu) — do zrobienia przed produkcją:
-1. Wgrać `A1PelnaListaPlacAddon.dll` (przez `ExtPath`, restart usług — patrz
-   `Addon/README.md`) na bazę testową.
-2. W GUI: "Definicje planowanych list płac" → zaznaczyć "Rozwiązanie odprawa
-   emerytalno-rentowa" → nowy przycisk "Nalicz plan wg wypłaconych odpraw
-   (także zwolnieni)..." → podać okres 08/2026 → sprawdzić, czy pracownik
-   zwolniony 01/2026 (z odprawą rozliczoną na liście głównej w 08/2026)
-   pojawia się na wygenerowanym planie z pozycją "Rozwiązanie odprawa
-   emerytalno-rentowa", MIMO że nie był zaznaczony na żadnej liście
-   Pracownicy.
-3. Przypadek negatywny: uruchomić dla okresu, w którym żaden pracownik nie ma
-   rozliczonej odprawy — powinien pojawić się komunikat "Brak pracowników...",
-   bez tworzenia pustego planu.
-4. Sprawdzić przypadek pracownika AKTYWNEGO z odprawą w tym samym okresie —
-   powinien zostać znaleziony i policzony tak samo jak zwolniony (zapytanie
-   nie rozróżnia statusu zatrudnienia).
+1. Nadpisano `KopiujNagłowek` (dziedziczone z
+   `Soneta.Ksiega.Płace.AlgorytmDefinicjiPlanowanejListyPłac`, zdekompilowane
+   na nowo w tej sesji — potwierdzona dokładna sygnatura i literówka bez "ó",
+   ta sama co w czwartej/piątej iteracji) — po standardowym
+   `base.KopiujNagłowek(dest, src)` woła `DociągnijZwolnionychZOdprawą(dest)`.
+2. Ta metoda odpytuje `PlaceModule.WypElementy.WgDefinicja[odprawa]` (indeks
+   tabeli historycznej po polu `Definicja` — zwraca elementy WSZYSTKICH
+   pracowników, niezależnie od statusu zatrudnienia), filtruje po
+   `Okres == dest.ListaPlac.Okres` i `Wartosc != 0`, pomija pracownika już
+   przetwarzanego przez silnik oraz tych, którzy już mają wpis na planie
+   (idempotentność — bezpieczne przy wielokrotnym wywołaniu w tym samym
+   przebiegu).
+3. Dla każdego pozostałego (typowo: zwolnionego) pracownika RĘCZNIE tworzy
+   `PlanowanaListaPłac` (odtworzone 1:1 wg prywatnej metody silnika
+   `WyszukajListęPłac`, sparametryzowane wzorcową listą aktywnego pracownika
+   zamiast niedostępnego stąd `Pars`) + `PlanowanaWypłata` +
+   `PlanowanyElementWypłaty`, po czym woła odziedziczoną (bez zmian)
+   `KopiujElement(nowyElement, el)` — DOKŁADNIE tę samą metodę, którą silnik
+   wywołałby dla prawdziwie przeliczonego pracownika.
+
+**Warunek działania:** w danym uruchomieniu "Nalicz planowane listy płac..."
+musi zostać faktycznie przeliczony CHOĆ JEDEN pracownik (dowolny, normalnie
+wybierany co miesiąc — nie musi mieć nic wspólnego z odprawą) — to jego
+przetwarzanie "niesie" efekt uboczny. W normalnej pracy (plan liczony dla
+całej firmy/działu na dany miesiąc) ten warunek jest zawsze spełniony, więc
+operator NIE musi nic zmieniać w swoim dotychczasowym sposobie pracy (dalej
+zaznacza tylko aktywnych pracowników, jak zawsze) — zwolnieni z odprawą w tym
+okresie pojawią się na planie automatycznie, przy okazji.
+
+Cały kod dopisany w TYM SAMYM miejscu co poprzednie 6 iteracji —
+`<Algorytm>` w `DefinicjaPlanowanejListyPłac` w `ImportyXML/Rozwiązanie
+odprawa emerytalno-rentowa.dbinit.xml` — bez nowego pliku, bez DLL, bez
+nowego przycisku w GUI.
+
+**Zweryfikowano przez `dbmgr importxml Claude ... --standard`** (baza
+piaskownica Claude): exit 0, brak błędów w logu kompilacji ("Kompilacja
+projektu: KadryPlace" przechodzi bez błędu). **WAŻNE ZASTRZEŻENIE** (już raz
+namierzone w tym zadaniu — patrz sekcja "Co jest POTWIERDZONE, a co
+NIEZWERYFIKOWANE" wyżej): algorytm `DefinicjaPlanowanejListyPłac` kompiluje
+się LENIWIE, dopiero przy faktycznym "Nalicz" w GUI — `dbmgr importxml`/`dbmgr
+compile` w tym miejscu już RAZ przepuściły błąd kompilacji (CS0104), który
+ujawnił się dopiero w GUI. Ten import **nie jest więc dowodem, że nowy kod
+się skompiluje przy realnym Nalicz** — to nadal tylko sygnał, że składnia i
+typy są prawdopodobnie poprawne (wszystkie użyte symbole —
+`PlaceModule.DefElementow.WgNazwy`, `WypElementy.WgDefinicja`,
+`PlanowaneWyplaty.WgPracownik`, `PlanListyPlac.WgWydzial`, konstruktory
+`PlanowanaWypłata`/`PlanowanyElementWypłaty` — zweryfikowane osobno
+dekompilacją `Soneta.KadryPlace.dll`/`Soneta.Ksiega.dll` w tej sesji, nie
+zgadywane).
+
+**NIEZWERYFIKOWANE żywym testem** — do zrobienia przy najbliższym kontakcie z
+klientem:
+1. W GUI: rozliczyć testowemu ZWOLNIONEMU pracownikowi (scenariusz klienta:
+   zwolniony 01/2026) "Odprawa emerytalna" na liście głównej za okres
+   08/2026. Zaznaczyć na liście Pracownicy DOWOLNEGO aktywnego pracownika
+   (nie musi mieć nic wspólnego z odprawą) i uruchomić standardowe "Nalicz
+   planowane listy płac..." dla okresu 08/2026 — **bez zaznaczania
+   zwolnionego pracownika**. Sprawdzić, czy na wygenerowanym planie pojawia
+   się też wpis dla zwolnionego, z pozycją "Rozwiązanie odprawa
+   emerytalno-rentowa".
+2. Sprawdzić, czy pierwsze uruchomienie faktycznie ujawnia ewentualny błąd
+   kompilacji leniwej (CS-cokolwiek) — jeśli tak, to dokładnie ten scenariusz,
+   który dwukrotnie już umknął `dbmgr importxml` w tym zadaniu.
+3. Przypadek negatywny: okres bez żadnej rozliczonej odprawy — plan nie
+   powinien dostać żadnego dodatkowego wpisu.
+4. Uruchomić drugi raz dla tego samego okresu (idempotentność) — nie powinno
+   powstać duplikatu wpisu dla zwolnionego pracownika.
+5. Sprawdzić przypadek, gdy zwolniony pracownik jest z INNEGO działu
+   (Wydział) niż aktywny pracownik, który "niesie" przeliczenie — czy wpis
+   trafia na właściwą (osobną) planowaną listę płac dla jego działu.
 
 ## Pliki
 
 - `ImportyXML/Rozwiązanie odprawa emerytalno-rentowa.dbinit.xml` — import wg
   rekordów: `DefinicjaElementu` ("Rozwiązanie odprawa emerytalno-rentowa",
   Dodatek automatyczny) + `DefinicjaPlanowanejListyPłac` (`Element` wskazuje
-  na SAM SIEBIE, patrz "Piąta iteracja" wyżej).
-- `Addon/A1RozwiazanieOdprawWorker.cs` — skompilowany worker: przycisk "Nalicz
-  plan wg wypłaconych odpraw (także zwolnieni)..." na widoku "Definicje
-  planowanych list płac", omijający ograniczenie wbudowanej czynności enova do
-  aktualnie zaznaczonych/zatrudnionych pracowników (patrz "Siódma iteracja"
-  wyżej). Część tego samego `A1PelnaListaPlacAddon.dll` co funkcja "Pełna
-  lista płac (XLSX)" — wgrywane i wdrażane razem, patrz `Addon/README.md`.
+  na SAM SIEBIE, patrz "Piąta iteracja" wyżej; algorytm zawiera od ósmej
+  iteracji też dociąganie zwolnionych pracowników, patrz wyżej).
 
 ## Kolejne kroki przed produkcją
 
-1. Import próbny na bazie testowej (Claude lub Al) przez `dbmgr importxml` —
-   **zrobione** (2026-09-22, zobacz sekcję "Potwierdzone próbnym importem"
-   wyżej), ale to tylko test kompilacji, nie zachowania.
-2. Zbudować i wgrać `Addon/A1PelnaListaPlacAddon.dll` (`dotnet build -c
-   Release` — **zrobione, exit 0**, patrz "Siódma iteracja" wyżej — wgranie
-   przez `ExtPath` + restart usług na bazie testowej NIEZROBIONE).
-3. **UWAGA przed testem w GUI:** generowanie planu kasuje niezatwierdzone
+1. Import próbny na bazie testowej (Claude) przez `dbmgr importxml` —
+   **zrobione** (2026-09-23, exit 0, zobacz "Ósma iteracja" wyżej) — to nadal
+   tylko test składni, NIE dowód działania (leniwa kompilacja algorytmu
+   `DefPlanListPlac`, patrz zastrzeżenie wyżej).
+2. **UWAGA przed testem w GUI:** generowanie planu kasuje niezatwierdzone
    wypłaty pracownika danego typu, chyba że zaznaczona jest opcja
    uwzględniania niezatwierdzonych list — testować WYŁĄCZNIE na danych
    testowych, nigdy na produkcyjnych bez zrozumienia tej opcji.
-4. W GUI: rozliczyć testowemu pracownikowi (najlepiej ZWOLNIONEMU, jak w
-   scenariuszu klienta) "Odprawa emerytalna" na liście głównej za dany okres,
-   potem z widoku "Definicje planowanych list płac" uruchomić nowy przycisk
-   "Nalicz plan wg wypłaconych odpraw..." dla TEGO SAMEGO okresu — bez
-   zaznaczania kogokolwiek na liście Pracownicy — i sprawdzić, czy powstaje
-   pozycja "Rozwiązanie odprawa emerytalno-rentowa" z poprawną kwotą.
-5. Sprawdzić też przypadek negatywny (okres bez żadnej odprawy → komunikat,
-   brak planu) i przypadek pracownika aktywnego (patrz punkty 3–4 w sekcji
-   "Siódma iteracja" wyżej).
-6. Po weryfikacji — zaktualizować ten plik z wynikiem (analogicznie do historii
+3. Wykonać test z sekcji "Ósma iteracja" (punkty 1–5) w GUI na bazie Claude.
+4. Po weryfikacji — zaktualizować ten plik z wynikiem (analogicznie do historii
    zmian w `ImportyXML/Dodatek roczny.dbinit.xml`).

@@ -177,6 +177,125 @@ bool SourceFilter(object sender, SourceFilterArgs args) {
     FromTo okres = args.Okres;
     return true;
 }
+
+// ÓSMA ITERACJA (2026-09-23): dociąganie ZWOLNIONYCH pracowników z odprawą
+// w danym okresie planu, BEZ polegania na tym, że operator zaznaczy ich na
+// liście Pracownicy. Ustalone dekompilacją: silnik (NaliczaniePlanowanychListPłacWorker.Nalicz)
+// przelicza WYŁĄCZNIE pracowników fizycznie przekazanych mu z zewnątrz
+// (Pracownik[] z zaznaczenia listy Pracownicy w GUI, domyślnie pokazującej
+// tylko aktualnie zatrudnionych) — nic w kodzie DefinicjaElementu/DefPlanListPlac
+// nie może "dociągnąć" pracownika spoza tej tablicy, bo silnik po prostu nigdy
+// nie wywoła dla niego żadnego kodu. Próba rozwiązania osobnym, kompilowanym
+// dodatkiem (DLL) i osobnym przyciskiem została ODRZUCONA przez klienta —
+// rozwiązanie MUSI być kodem tego elementu, importowanym tak jak reszta tego
+// pliku (dbmgr importxml), bez DLL i bez nowego przycisku.
+//
+// Zamiast liczyć TERMINOWANEGO pracownika przez silnik (niemożliwe, bo nie
+// jest przekazany), KopiujNagłowek (wywoływane przez silnik RAZ dla KAŻDEGO
+// faktycznie przetwarzanego pracownika, przy okazji normalnego przeliczenia
+// planu) dopisuje efekt uboczny: sam wyszukuje w historycznej tabeli
+// WypElementy WSZYSTKICH pracowników (aktywnych i zwolnionych, bez
+// rozróżnienia — WypElementy.WgDefinicja[definicja] nie filtruje po statusie
+// zatrudnienia) z niezerowo rozliczoną "Odprawa emerytalna" w TYM SAMYM
+// okresie planu (dest.ListaPlac.Okres) i dla każdego z nich (poza już
+// przetwarzanym przez silnik) RĘCZNIE tworzy wpis na planie — dokładnie tymi
+// samymi krokami, jakie domyślny KopiujElementy wykonałby dla prawdziwie
+// przeliczonego pracownika (PlanowanaWypłata + PlanowanyElementWypłaty +
+// KopiujElement, wszystko odziedziczone bez zmian z klasy bazowej
+// AlgorytmDefinicjiPlanowanejListyPłac — patrz Soneta.Ksiega.dll).
+//
+// Warunek działania: operator musi w danym uruchomieniu "Nalicz planowane
+// listy płac..." przeliczyć CHOĆ JEDNEGO pracownika (dowolnego, normalnie
+// wybieranego co miesiąc — nie musi mieć nic wspólnego z odprawą) — to on
+// "niesie" wywołanie KopiujNagłowek, przy okazji którego dociągane są
+// zwolnieni. W normalnej pracy (plan liczony dla całej firmy/działu) ten
+// warunek jest zawsze spełniony.
+//
+// Idempotentność: przed utworzeniem wpisu sprawdzane jest, czy dany
+// pracownik nie ma już planowanej wypłaty dla tej definicji i okresu — więc
+// wielokrotne uruchomienie (albo to, że efekt uboczny odpala się dla KAŻDEGO
+// przetwarzanego pracownika, nie tylko pierwszego) nie tworzy duplikatów.
+protected override void KopiujNagłowek(PlanowanaWypłata dest, Wyplata src) {
+    base.KopiujNagłowek(dest, src);
+    DociągnijZwolnionychZOdprawą(dest);
+}
+
+private void DociągnijZwolnionychZOdprawą(PlanowanaWypłata dest) {
+    Session session = dest.Session;
+    PlaceModule place = PlaceModule.GetInstance(session);
+
+    DefinicjaElementu odprawa = place.DefElementow.WgNazwy["Odprawa emerytalna"];
+    if (odprawa == null) return;
+
+    DefinicjaElementu rozwiazanie = dest.ListaPlac.Definicja.Element;
+    if (rozwiazanie == null) return;
+
+    FromTo okres = dest.ListaPlac.Okres;
+
+    foreach (WypElement el in place.WypElementy.WgDefinicja[odprawa]) {
+        if (el.Okres != okres) continue;
+        if (el.Wartosc == 0m) continue;
+
+        Pracownik pracownik = el.Pracownik;
+        if (pracownik == null) continue;
+        if (pracownik.Guid == dest.Pracownik.Guid) continue;
+
+        bool istnieje = false;
+        foreach (PlanowanaWypłata pw in place.PlanowaneWyplaty.WgPracownik[pracownik]) {
+            if (pw.ListaPlac.Definicja == dest.ListaPlac.Definicja && pw.ListaPlac.Okres == okres) {
+                istnieje = true;
+                break;
+            }
+        }
+        if (istnieje) continue;
+
+        Wydzial wydział = el.Wydzial != null ? el.Wydzial : dest.ListaPlac.Wydzial;
+        PlanowanaListaPłac lista = ZnajdźLubUtwórzListę(place, dest.ListaPlac, wydział);
+
+        PlanowanaWypłata nowaWyplata = new PlanowanaWypłata(pracownik, lista);
+        place.PlanowaneWyplaty.AddRow(nowaWyplata);
+        nowaWyplata.Wartosc = el.Wartosc;
+
+        PlanowanyElementWypłaty nowyElement = new PlanowanyElementWypłaty(nowaWyplata, rozwiazanie, el);
+        place.PlanElementyWyp.AddRow(nowyElement);
+        KopiujElement(nowyElement, el);
+    }
+}
+
+// Odtworzone 1:1 wg prywatnej metody silnika NaliczaniePlanowanychListPłac.WyszukajListęPłac
+// (ustalone dekompilacją Soneta.KadryPlace.dll) — ta sama logika "znajdź
+// niezatwierdzoną listę o tych parametrach, w przeciwnym razie utwórz nową",
+// tylko sparametryzowana wzorcową PlanowanaListaPłac (dest.ListaPlac) zamiast
+// niedostępnego stąd obiektu Pars, i z osobnym Wydzialem dla dociąganego
+// pracownika (może być z innego działu niż ten, który "niesie" wywołanie).
+private static PlanowanaListaPłac ZnajdźLubUtwórzListę(PlaceModule place, PlanowanaListaPłac wzorzec, Wydzial wydział) {
+    View<PlanowanaListaPłac> view = place.PlanListyPlac.WgWydzial[wydział, wzorzec.Data].CreateView();
+    view.Condition &= (RowCondition)new FieldCondition.Equal("Definicja", wzorzec.Definicja);
+    view.Condition &= (RowCondition)new FieldCondition.Equal("Data", wzorzec.Data);
+    view.Condition &= (RowCondition)new FieldCondition.Equal("MiesiacZUSDzien", wzorzec.MiesiącZUS.FirstDay);
+    view.Condition &= (RowCondition)new FieldCondition.Equal("Okres", wzorzec.Okres);
+    view.Condition &= (RowCondition)new FieldCondition.Equal("MiesWstecz", wzorzec.MiesWstecz);
+    view.Condition &= (RowCondition)new FieldCondition.Equal("Naliczanie", wzorzec.Naliczanie);
+    view.Condition &= (RowCondition)new FieldCondition.Equal("DefinicjaListyPlac", wzorzec.DefinicjaListyPlac);
+    view.Condition &= (RowCondition)new FieldCondition.Equal("Seria", wzorzec.Seria);
+    foreach (PlanowanaListaPłac item in (View)view) {
+        if (!item.Zatwierdzona) return item;
+    }
+
+    PlanowanaListaPłac nowa = new PlanowanaListaPłac();
+    place.PlanListyPlac.AddRow(nowa);
+    nowa.Wydzial = wydział;
+    nowa.DataWyplaty = wzorzec.DataWyplaty;
+    nowa.Definicja = wzorzec.Definicja;
+    nowa.DefinicjaListyPlac = wzorzec.DefinicjaListyPlac;
+    nowa.Seria = wzorzec.Seria;
+    nowa.Data = wzorzec.Data;
+    nowa.MiesiącZUS = wzorzec.MiesiącZUS;
+    nowa.Okres = wzorzec.Okres;
+    nowa.MiesWstecz = wzorzec.MiesWstecz;
+    nowa.Naliczanie = wzorzec.Naliczanie;
+    return nowa;
+}
 ]]></Algorytm>
   </DefinicjaPlanowanejListyPłac>
 </session>
