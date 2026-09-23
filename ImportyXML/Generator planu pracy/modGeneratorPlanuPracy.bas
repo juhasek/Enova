@@ -15,12 +15,19 @@ Option Explicit
 ' Dzien przerywany (np. 8-12 i 13-17) to kolekcja <Strefy> z wieloma <StrefaPracy Definicja=... OdGodziny=... Czas=.../>.
 '
 ' Arkusz "Plan": jeden wiersz = jeden dzien dla jednego pracownika (kolumny A=Kod, B=Data,
-' C=Nazwa dnia, D..K = Strefa 1..4 Od/Czas). Zadnego rozwijania zakresow dat/dni tygodnia -
-' kazdy dzien, ktory ma powstac w enova, musi miec wlasny wiersz w arkuszu.
+' C=Nazwa dnia, D=Nazwa strefy, E..L = Strefa 1..4 Od/Czas). Zadnego rozwijania zakresow
+' dat/dni tygodnia - kazdy dzien, ktory ma powstac w enova, musi miec wlasny wiersz w arkuszu.
+'
 ' Kolumna C "Nazwa dnia" musi byc nazwa DEFINICJI DNIA juz istniejaca w bazie enova
 ' (DefinicjeDni) - inaczej import zglasza blad "Definicja dnia o nazwie '' nie zostala
 ' znaleziona". Jesli C jest puste w danym wierszu, uzywana jest domyslna wartosc z
 ' Konfiguracja!B3 ("Nazwa definicji dnia") - ale jesli i ta jest pusta, wiersz jest bledny.
+'
+' Kolumna D "Nazwa strefy" musi byc nazwa DEFINICJI STREFY juz istniejaca w bazie enova
+' (DefinicjeStref - INNA lista niz DefinicjeDni, mimo ze czasem maja podobne/te same nazwy!)
+' - inaczej import zglasza blad "Definicja strefy o nazwie '...' nie zostala znaleziona".
+' Ta sama nazwa jest uzywana dla wszystkich stref (1-4) danego wiersza. Jesli D jest puste,
+' uzywana jest domyslna wartosc z Konfiguracja!B4 ("Nazwa definicji strefy").
 
 Sub GenerujPlanyPracy()
     Dim wsCfg As Worksheet, wsPlan As Worksheet
@@ -75,15 +82,23 @@ Sub GenerujPlanyPracy()
             GoTo NastepnyWiersz
         End If
 
-        ' Strefy: pary kolumn D/E, F/G, H/I, J/K (do 4 stref na dzien)
+        Dim nazwaStrefyWiersz As String
+        nazwaStrefyWiersz = Trim(CStr(wsPlan.Cells(r, "D").Value))
+        If nazwaStrefyWiersz = "" Then nazwaStrefyWiersz = nazwaDefStrefy
+        If nazwaStrefyWiersz = "" Then
+            bledy = bledy & "Wiersz " & r & ": brak Nazwy strefy (kolumna D) i brak domyslnej w Konfiguracja!B4." & vbCrLf
+            GoTo NastepnyWiersz
+        End If
+
+        ' Strefy: pary kolumn E/F, G/H, I/J, K/L (do 4 stref na dzien)
         Dim strefyOd(1 To 4) As String, strefyCzas(1 To 4) As String
         Dim liczbaStref As Integer
         liczbaStref = 0
         Dim sIdx As Integer
         For sIdx = 0 To 3
             Dim colOd As Integer, colCzas As Integer
-            colOd = 4 + sIdx * 2
-            colCzas = 5 + sIdx * 2
+            colOd = 5 + sIdx * 2
+            colCzas = 6 + sIdx * 2
             Dim vOd As String, vCzas As String
             vOd = FormatCzas(wsPlan.Cells(r, colOd).Value)
             vCzas = FormatCzas(wsPlan.Cells(r, colCzas).Value)
@@ -95,7 +110,7 @@ Sub GenerujPlanyPracy()
         Next sIdx
 
         If liczbaStref = 0 Then
-            bledy = bledy & "Wiersz " & r & ": brak zdefiniowanej zadnej strefy pracy (kolumny D..K)." & vbCrLf
+            bledy = bledy & "Wiersz " & r & ": brak zdefiniowanej zadnej strefy pracy (kolumny E..L)." & vbCrLf
             GoTo NastepnyWiersz
         End If
 
@@ -119,7 +134,7 @@ Sub GenerujPlanyPracy()
         Dim sIdx2 As Integer
         For sIdx2 = 1 To liczbaStref
             fragment = fragment & _
-                "<StrefaPracy Definicja=""" & EscXml(nazwaDefStrefy) & """ OdGodziny=""" & _
+                "<StrefaPracy Definicja=""" & EscXml(nazwaStrefyWiersz) & """ OdGodziny=""" & _
                 strefyOd(sIdx2) & """ Czas=""" & strefyCzas(sIdx2) & """ />" & vbCrLf
         Next sIdx2
 

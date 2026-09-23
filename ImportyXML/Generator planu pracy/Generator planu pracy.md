@@ -11,12 +11,14 @@ pracownika (jego rzeczywisty grafik). Składa się z:
 
 Osoba wypełniająca arkusz „Plan” wpisuje: **kod pracownika**, **jedną
 konkretną datę**, **nazwę dnia** (definicja dnia już istniejąca w bazie
-enova, np. „Pracy”) i godziny 1–4 stref pracy tego dnia — **jeden
-wiersz = jeden dzień dla jednego pracownika** (bez zakresu dat, bez
-zaznaczania dni tygodnia — każdy dzień roboczy to osobny wiersz). Makro
-generuje **jeden plik XML** w oficjalnym formacie enova (`Root/DniPlanu/
-DzienPlanu/Strefy`), który importuje się w programie enova poleceniem
-menu **Plik → Importuj zapisy → Import czasu pracy i wynagrodzeń**.
+enova, np. „Pracy”), **nazwę strefy** (definicja strefy już istniejąca
+w bazie enova, np. „Praca w normie” — to INNA lista niż definicje dni)
+i godziny 1–4 stref pracy tego dnia — **jeden wiersz = jeden dzień dla
+jednego pracownika** (bez zakresu dat, bez zaznaczania dni tygodnia —
+każdy dzień roboczy to osobny wiersz). Makro generuje **jeden plik
+XML** w oficjalnym formacie enova (`Root/DniPlanu/DzienPlanu/Strefy`),
+który importuje się w programie enova poleceniem menu **Plik →
+Importuj zapisy → Import czasu pracy i wynagrodzeń**.
 
 **Makro nie łączy się z bazą SQL w żaden sposób i nie używa żadnego GUID-u.**
 Pracownik jest identyfikowany wyłącznie po kodzie (`<Pracownik>`) — importer
@@ -207,3 +209,26 @@ przesunęły się o jedną (teraz D..K zamiast C..J).
 zapisy → Import czasu pracy i wynagrodzeń) faktycznie działa** —
 błąd dotyczył tylko treści pliku XML, nie samego mechanizmu importu.
 Czeka na kolejny test użytkownika z poprawionym plikiem.
+
+## 2026-09-23 — drugi błąd testu: pusta/błędna „Definicja strefy”
+
+Po naprawie „Definicji dnia” kolejny test zgłosił analogiczny błąd, ale
+dla innej encji:
+
+```
+Definicja strefy o nazwie 'Pracy' nie została znaleziona (System.Exception)
+```
+
+Przyczyna ta sama co poprzednio, tylko dla atrybutu `Definicja` w
+`<StrefaPracy>`: brany był wyłącznie z globalnej `Konfiguracja!B4`
+(„Nazwa definicji strefy”), co w praktyce rozjeżdża się z realną bazą —
+**`DefinicjeStref` to zupełnie inna lista niż `DefinicjeDni`**, mimo że
+często mają podobnie/tak samo brzmiące nazwy w GUI enova (stąd łatwa
+pomyłka: podanie nazwy dnia zamiast nazwy strefy).
+
+Zastosowano dokładnie ten sam wzorzec co przy „Nazwie dnia”: arkusz
+„Plan” ma teraz kolumnę **D „Nazwa strefy”** — nazwę definicji strefy
+(musi już istnieć w enova, `DefinicjeStref`) wpisywaną **per wiersz**,
+używaną dla wszystkich stref 1–4 tego wiersza. Fallback na
+`Konfiguracja!B4` gdy puste, błąd wiersza gdy oba puste. Kolumny stref
+przesunęły się o jedną (teraz E..L zamiast D..K).
