@@ -1,5 +1,17 @@
 # A1PelnaListaPlacAddon — skompilowany dodatek enova365
 
+Ten DLL hostuje DWIE niezależne funkcje (jedno wgranie przez `ExtPath`,
+jeden restart usług dla obu):
+
+1. **"Pełna lista płac (XLSX)"** — opisana w tym pliku niżej.
+2. **"Nalicz plan wg wypłaconych odpraw (także zwolnieni)..."**
+   (`A1RozwiazanieOdprawWorker.cs`) — przycisk na widoku "Definicje
+   planowanych list płac", patrz `ElementyPlac/Rozwiązanie odprawa
+   emerytalno-rentowa.md` (sekcja "Siódma iteracja"). Status: skompilowany
+   lokalnie (exit 0), NIEZWERYFIKOWANY żywym testem w GUI.
+
+## Pełna lista płac (XLSX)
+
 **Status: DZIAŁA — potwierdzone przez użytkownika** (wgrany przez `ExtPath`,
 generuje poprawny plik XLSX z rozdzielonymi kolumnami; wersja z 5 slotami kolumn
 oraz okno hasła do pliku przetestowane na żywo 2026-09-09).
