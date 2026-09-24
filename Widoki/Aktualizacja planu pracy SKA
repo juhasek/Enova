@@ -353,7 +353,7 @@
             if (Pracownicy == null || dokument == null)
             return string.Empty;
 
-            return NormaPracownika(Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.Od));
+            return NormaPracownika(Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.From));
             }
             }
             //** End: Extender **

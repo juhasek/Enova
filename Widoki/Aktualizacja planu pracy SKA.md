@@ -93,7 +93,7 @@ dole ekranu, w której te same informacje o normie pracownika są widoczne na bi
     ` / `) norma kodeksowa, liczona dla okresu całego dokumentu (`dokument.Okres`).
   - `NormaRozlPracownika` („Norma / KP (rozl)”) — to samo, ale dla okresu rozliczeniowego
     nadgodzin wyliczonego względem początku okresu dokumentu
-    (`Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.Od)`).
+    (`Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.From)`).
 - Obie właściwości liczą normę dla **jednego** pracownika — tego wybranego w natywnym,
   wbudowanym filtrze „Pracownicy” (pole `Pracownicy` w `Extender`, już wcześniej używane do
   filtrowania listy wierszy siatki), a nie dla każdego wiersza siatki z osobna jak poprzednio.
@@ -121,3 +121,8 @@ dostępu do buscall/GUI) — w szczególności:
 - czy `dokument.PozycjePlan` zawiera pozycję dla pracownika, zanim jakikolwiek wiersz zostanie
   wyrenderowany (sekcja odwołuje się do `dokument` ustawianego w `ListaPracownicy`, wywoływanego
   przez natywny mechanizm listy pracowników — powinno być już ustawione, ale niezweryfikowane).
+
+**Błąd kompilacji przy pierwszym otwarciu (24.09.2026):** `FromTo` nie ma właściwości `Od`/`Do` —
+poprawny odczyt granic okresu to `.From`/`.To` (tak jak już wcześniej w tym pliku, np.
+`Row.Okres.From`/`Row.Okres.To` w innych plikach repo). Poprawiono
+`Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.Od)` na `...(dokument.Okres.From)`.
