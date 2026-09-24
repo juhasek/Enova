@@ -298,7 +298,65 @@
             // mechanizmem sesji co pojedyncza edycja komórki (patrz Cell poniżej), więc bez tego
             // sygnału siatka też nie odświeży kolumn Norma/KP po użyciu tej akcji.
             OdswiezZestawienie();
-            }//** End: Extender **
+            }
+
+            // Poprawka 24.09.2026 - sekcja "Norma pracownika" na dole ekranu (panel Extendera),
+            // zastępująca dawne kolumny [YAxis] "Norma / KP (okres)"/"Norma / KP (rozl)" z klasy
+            // Cell. Liczona dla pracownika wybranego w natywnym filtrze "Pracownicy" (pole
+            // wbudowane, patrz wyżej), a nie dla każdego wiersza siatki osobno. Odświeża się przez
+            // ten sam mechanizm co reszta panelu - OnChanged() wywoływane przez OdswiezZestawienie()
+            // z setterów komórek w klasie Cell (patrz niżej) automatycznie przelicza te pola przy
+            // każdym przerysowaniu Extendera, bo są to zwykłe właściwości tylko do odczytu na tej
+            // samej instancji.
+
+            PozycjaAktualizacjiKalendarza PakPracownika() {
+            if (Pracownicy == null || dokument == null)
+            return null;
+
+            foreach (PozycjaAktualizacjiKalendarza poz in dokument.PozycjePlan)
+            if (poz.ZrodloPlanu.GetPracownik() == Pracownicy)
+            return poz;
+
+            return null;
+            }
+
+            string NormaPracownika(FromTo okres) {
+            PozycjaAktualizacjiKalendarza pak = PakPracownika();
+            if (pak == null || okres == FromTo.Empty)
+            return string.Empty;
+
+            KalkulatorAktualizacjiPlanu kalk = new KalkulatorAktualizacjiPlanu(pak);
+            kalk.LoadOkres(okres);
+
+            object normaKP = null;
+            try { normaKP = new KalkulatorKodeksowyPracownika(Pracownicy).Norma(okres).Czas; } catch { normaKP = "?"; }
+
+            return kalk.Norma(okres).Czas + (normaKP != null ? " / " + normaKP.ToString() : "");
+            }
+
+            [Priority(200)]
+            [Group("Norma pracownika")]
+            [Caption("Norma / KP (okres)")]
+            [DefaultWidth(20)]
+            [Field]
+            public string NormaOkresPracownika {
+            get { return NormaPracownika(dokument != null ? dokument.Okres : FromTo.Empty); }
+            }
+
+            [Priority(210)]
+            [Group("Norma pracownika")]
+            [Caption("Norma / KP (rozl)")]
+            [DefaultWidth(20)]
+            [Field]
+            public string NormaRozlPracownika {
+            get {
+            if (Pracownicy == null || dokument == null)
+            return string.Empty;
+
+            return NormaPracownika(Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.Od));
+            }
+            }
+            //** End: Extender **
 //** Begin: Cell **
             Func<PozycjaAktualizacjiKalendarza, KalkulatorAktualizacjiPlanu> getKalk;
             PozycjaAktualizacjiKalendarza pak;
@@ -365,33 +423,13 @@
             return false;
             }
 
-            [YAxis]
-            [Priority(103)]
-            [Caption("Norma / KP (okres)")]
-            [DefaultWidth(14)]
-            public string NormaO {
-				get
-				{
-					return NormaOkres(okres);
-				}
-			}
-
-            [YAxis]
-            [Priority(104)]
-            [Caption("Norma / KP (rozl)")]
-            [DefaultWidth(13)]
-            public string NormaR => NormaOkres(Pracownik.WyliczOkresRoliczeniowyNadgodzin(Data));
-
-            string NormaOkres(FromTo okres){
-            object normaKP = null;
-            var kalk = getKalk(pak);
-            if(pak.ZrodloPlanu is Pracownik prac){
-            var kalkKodeks = new KalkulatorKodeksowyPracownika(prac);
-            try { normaKP = kalkKodeks.Norma(okres).Czas; } catch { normaKP = "?"; }
-            }
-
-            return kalk.Norma(okres).Czas + (normaKP != null ? " / " + normaKP.ToString() : "" );
-            }
+            // Poprawka 24.09.2026 - na życzenie klienta kolumny "Norma / KP (okres)" i "Norma / KP
+            // (rozl)" (dawniej [YAxis] w tej klasie, patrz historia poprawki poniżej) zostały
+            // usunięte z siatki i zastąpione osobną sekcją "Norma pracownika" w panelu Extendera
+            // (na dole ekranu, pod siatką) - patrz pola NormaOkresPracownika/NormaRozlPracownika
+            // w klasie Extender. Ich zawartość i sposób liczenia są identyczne z usuniętymi
+            // kolumnami, tylko liczone dla pracownika wybranego w filtrze "Pracownicy", nie dla
+            // każdego wiersza siatki osobno.
 
             // Poprawka 17.09.2026 - zgłoszenie klienta: kolumny "Norma / KP (okres)" i "Norma / KP
             // (rozl)" nie odświeżały się na żywo (ani po nawigacji między dniami) po zmianie

@@ -78,3 +78,46 @@ dziedziczy z `Extender`) nie może go wywołać bezpośrednio. Rozwiązanie:
   zob. wyżej.
 - Środowisko robocze tego repo nie ma dostępu do buscall/GUI, więc kolejne iteracje tej
   poprawki są testowane wyłącznie przez użytkownika w żywej aplikacji.
+
+## 4. Sekcja „Norma pracownika” w panelu na dole (24.09.2026) — zamiast kolumn w siatce
+
+**Zgłoszenie klienta:** kolumny „Norma / KP (okres)” i „Norma / KP (rozl)” (opisane w punkcie 1
+jako `[YAxis]` w klasie `Cell`) mają zniknąć z siatki. W ich miejsce ma powstać osobna sekcja na
+dole ekranu, w której te same informacje o normie pracownika są widoczne na bieżąco.
+
+**Zmiana:**
+
+- Usunięto z `Cell` właściwości `NormaO`/`NormaR` oraz pomocniczą metodę `NormaOkres(FromTo)`.
+- W `Extender` dodano grupę pól **„Norma pracownika”**:
+  - `NormaOkresPracownika` („Norma / KP (okres)”) — norma z kalkulatora aktualizacji planu i (po
+    ` / `) norma kodeksowa, liczona dla okresu całego dokumentu (`dokument.Okres`).
+  - `NormaRozlPracownika` („Norma / KP (rozl)”) — to samo, ale dla okresu rozliczeniowego
+    nadgodzin wyliczonego względem początku okresu dokumentu
+    (`Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.Od)`).
+- Obie właściwości liczą normę dla **jednego** pracownika — tego wybranego w natywnym,
+  wbudowanym filtrze „Pracownicy” (pole `Pracownicy` w `Extender`, już wcześniej używane do
+  filtrowania listy wierszy siatki), a nie dla każdego wiersza siatki z osobna jak poprzednio.
+  Odpowiadającą pozycję dokumentu (`PozycjaAktualizacjiKalendarza`) szuka się w
+  `dokument.PozycjePlan` po `ZrodloPlanu.GetPracownik() == Pracownicy` (metoda `PakPracownika()`).
+- Logika samego wyliczenia (`KalkulatorAktualizacjiPlanu` + `KalkulatorKodeksowyPracownika`,
+  format `"wartość / wartość"`) jest przeniesiona 1:1 z usuniętych kolumn — patrz historyczny
+  kod w punkcie 1 tego dokumentu.
+
+**Odświeżanie na żywo:** nowa sekcja nie potrzebuje osobnego mechanizmu odświeżania — to zwykłe
+właściwości tylko do odczytu na tej samej instancji `Extender`, więc automatycznie przeliczają się
+przy każdym przerysowaniu panelu. Przerysowanie już następuje przez `OdswiezZestawienie()`
+(`OnChanged(EventArgs.Empty)` na instancji Extendera) wywoływane z setterów `Definicja`/
+`OdGodziny`/`DoGodziny`/`Czas` w `Cell` (patrz punkt 2) — w przeciwieństwie do usuniętych kolumn
+`[YAxis]`, które musiały pożyczać referencję do Extendera (`ext`), żeby w ogóle mieć dostęp do
+`OnChanged`. Dzięki przeniesieniu do samego Extendera ten krok pośredni znika.
+
+**Do potwierdzenia:** ta sekcja **nie została przetestowana na żywo** (środowisko robocze bez
+dostępu do buscall/GUI) — w szczególności:
+- czy sam mechanizm `OdswiezZestawienie()` z punktu 2 rzeczywiście już działa (jeszcze
+  niepotwierdzony przez użytkownika w chwili pisania tej zmiany),
+- czy zmiana wybranego pracownika w filtrze „Pracownicy” sama w sobie odświeża tę sekcję (powinna,
+  bo zmiana filtra przeładowuje wiersze siatki, ale nie zweryfikowano tego na żywo dla tego
+  konkretnego panelu),
+- czy `dokument.PozycjePlan` zawiera pozycję dla pracownika, zanim jakikolwiek wiersz zostanie
+  wyrenderowany (sekcja odwołuje się do `dokument` ustawianego w `ListaPracownicy`, wywoływanego
+  przez natywny mechanizm listy pracowników — powinno być już ustawione, ale niezweryfikowane).
