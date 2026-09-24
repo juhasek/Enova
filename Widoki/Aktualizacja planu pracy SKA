@@ -309,12 +309,17 @@
             // każdym przerysowaniu Extendera, bo są to zwykłe właściwości tylko do odczytu na tej
             // samej instancji.
 
+            // Poprawka 24.09.2026 (2) - zgłoszenie klienta: nowe pola normy były zawsze puste.
+            // Porównanie pracownika przez "==" (jak w pierwszej wersji) mogło nie trafiać, mimo
+            // ustawionego filtra "Pracownicy" - reszta tego pliku (ListaPracownicy) zawsze
+            // porównuje pracowników po Guid, nie przez "==" na obiektach wiersza, więc dla
+            // spójności i pewności dopasowania zamieniono na porównanie Guid.
             PozycjaAktualizacjiKalendarza PakPracownika() {
             if (Pracownicy == null || dokument == null)
             return null;
 
             foreach (PozycjaAktualizacjiKalendarza poz in dokument.PozycjePlan)
-            if (poz.ZrodloPlanu.GetPracownik() == Pracownicy)
+            if (poz.ZrodloPlanu.GetPracownik().Guid == Pracownicy.Guid)
             return poz;
 
             return null;

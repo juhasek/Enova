@@ -126,3 +126,21 @@ dostępu do buscall/GUI) — w szczególności:
 poprawny odczyt granic okresu to `.From`/`.To` (tak jak już wcześniej w tym pliku, np.
 `Row.Okres.From`/`Row.Okres.To` w innych plikach repo). Poprawiono
 `Pracownicy.WyliczOkresRoliczeniowyNadgodzin(dokument.Okres.Od)` na `...(dokument.Okres.From)`.
+
+**Zgłoszenie klienta (24.09.2026) — nowe pola normy są puste:** po naprawieniu kompilacji pola
+`NormaOkresPracownika`/`NormaRozlPracownika` wyświetlały się, ale bez wartości.
+
+**Możliwa przyczyna 1 (poprawiona):** `PakPracownika()` w pierwszej wersji porównywał pracownika
+operatorem `==` na obiektach wiersza (`poz.ZrodloPlanu.GetPracownik() == Pracownicy`). Reszta tego
+pliku (`ListaPracownicy`) zawsze porównuje pracowników po `Guid`, nigdy przez `==` na obiektach
+wiersza — dla spójności i pewności dopasowania zmieniono na
+`poz.ZrodloPlanu.GetPracownik().Guid == Pracownicy.Guid`.
+
+**Możliwa przyczyna 2 (do sprawdzenia przez użytkownika):** pole `Pracownicy` jest `null`, dopóki
+w natywnym filtrze „Pracownik” na górze zestawienia nie zostanie wybrany **jeden konkretny**
+pracownik (przy „(Wszyscy)”/braku wyboru sekcja zgodnie z założeniem z rozmowy z klientem
+pozostaje pusta — user świadomie wybrał tę opcję zamiast liczenia normy per wiersz siatki). Jeśli
+po wyborze konkretnego pracownika w tym filtrze pola nadal są puste, przyczyna 1 nie wystarczyła i
+trzeba sprawdzić dalej (np. czy `dokument.PozycjePlan` w ogóle zawiera pozycję dla tego
+pracownika, czy `KalkulatorAktualizacjiPlanu`/`KalkulatorKodeksowyPracownika` rzucają wyjątek
+połykany bez śladu).
