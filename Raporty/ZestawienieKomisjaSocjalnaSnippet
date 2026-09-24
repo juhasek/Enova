@@ -7,6 +7,7 @@ using Soneta.Business.UI.DxReports;
 using Soneta.Kadry;
 using Soneta.Ksiega;
 using Soneta.Place;
+using Soneta.Tools;         // TranslateFormat
 using Soneta.Types;
 using AltOne.Skanska.Workflow.Extensions;
 using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples;
