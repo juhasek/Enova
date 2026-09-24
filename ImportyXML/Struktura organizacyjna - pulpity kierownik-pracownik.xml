@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Struktura organizacyjna dla Pulpitów (Pulpit pracownika / kierownika): węzeł Kierownik,
+  pod nim węzeł Pracownik. Pracownik podpięty do węzła Pracownik podlega pracownikowi
+  podpiętemu do węzła nadrzędnego (Kierownik).
+  Baza Claude: Kierownik = TS-05 Lewandowski Marek; Pracownik = TS-01, TS-02, TS-03, TS-09.
+
+  Import wg rekordów, idempotentny: stałe guidy; DefinicjeElementów/Elementy z addnew="true" (bez addnew
+  reimport próbuje skasować węzły i pada na "Nie można kasować elementu posiadającego powiązania");
+  kolekcje Powiązania zastępowane przy reimporcie (lista pracowników w węźle = zawartość pliku).
+  Wzorzec: Soneta.Products.Server.Standard\Patterns\Workflow.Procesy Workflow\006.StrukturaOrganizacyjna.xml
+  Po imporcie:
+   1. jednorazowo: "Struktura organizacyjna - pulpity kierownik-pracownik - prawa.xml",
+   2. Narzędzia -> Opcje -> Kadry NET -> Ogólne -> Struktura podległości = nazwa tej struktury.
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+
+  <StrukturaOrganizacyjna id="Struktura" guid="a1500000-0000-0000-0000-000000000001">
+    <Nazwa>Pulpity - kierownik i pracownicy</Nazwa>
+    <Blokada>False</Blokada>
+    <Xml />
+    <Algorytm>// public REZULTAT Pulpity_kierownik_i_pracownicy_METODA(PARAMETRY)</Algorytm>
+    <PublikujWDrzewie>True</PublikujWDrzewie>
+    <Historycznosc>False</Historycznosc>
+    <Ekskluzywnosc>False</Ekskluzywnosc>
+    <HistoriaPodleglosci>False</HistoriaPodleglosci>
+    <OkresPowiazania>False</OkresPowiazania>
+    <DefinicjeElementów addnew="true">
+      <DefinicjaElementuStrukturyOrganizacyjnej id="DefKierownik" guid="a1500000-0000-0000-0000-000000000011">
+        <Struktura>Struktura</Struktura>
+        <Nazwa>Kierownik</Nazwa>
+        <DozwolonePowiazania>True</DozwolonePowiazania>
+        <UkryjNaglowek>False</UkryjNaglowek>
+        <Warunek1>False</Warunek1>
+        <Warunek2>False</Warunek2>
+        <Warunek3>False</Warunek3>
+        <Warunek4>False</Warunek4>
+        <Warunek5>False</Warunek5>
+        <TypZrodlaPowiazania>Pracownicy</TypZrodlaPowiazania>
+      </DefinicjaElementuStrukturyOrganizacyjnej>
+      <DefinicjaElementuStrukturyOrganizacyjnej id="DefPracownik" guid="a1500000-0000-0000-0000-000000000012">
+        <Struktura>Struktura</Struktura>
+        <Nazwa>Pracownik</Nazwa>
+        <DozwolonePowiazania>True</DozwolonePowiazania>
+        <UkryjNaglowek>False</UkryjNaglowek>
+        <Warunek1>False</Warunek1>
+        <Warunek2>False</Warunek2>
+        <Warunek3>False</Warunek3>
+        <Warunek4>False</Warunek4>
+        <Warunek5>False</Warunek5>
+        <TypZrodlaPowiazania>Pracownicy</TypZrodlaPowiazania>
+      </DefinicjaElementuStrukturyOrganizacyjnej>
+    </DefinicjeElementów>
+    <Elementy addnew="true">
+      <ElementStrukturyOrganizacyjnej id="ElKierownik" guid="a1500000-0000-0000-0000-000000000021">
+        <Struktura>Struktura</Struktura>
+        <Nadrzedny />
+        <Definicja>DefKierownik</Definicja>
+        <Kod>KIEROWNIK</Kod>
+        <Nazwa>Kierownik</Nazwa>
+        <NazwaPomocnicza />
+        <Okres>(wszystko)</Okres>
+        <Powiązania>
+          <PowiązanieStrukturyOrganizacyjnej>
+            <Element>ElKierownik</Element>
+            <Zrodlo>Pracownik:b1000000-0000-0000-0000-000000000005</Zrodlo>
+            <Okres>(wszystko)</Okres>
+          </PowiązanieStrukturyOrganizacyjnej>
+        </Powiązania>
+      </ElementStrukturyOrganizacyjnej>
+      <ElementStrukturyOrganizacyjnej id="ElPracownik" guid="a1500000-0000-0000-0000-000000000022">
+        <Struktura>Struktura</Struktura>
+        <Nadrzedny>ElKierownik</Nadrzedny>
+        <Definicja>DefPracownik</Definicja>
+        <Kod>PRACOWNIK</Kod>
+        <Nazwa>Pracownik</Nazwa>
+        <NazwaPomocnicza />
+        <Okres>(wszystko)</Okres>
+        <Powiązania>
+          <PowiązanieStrukturyOrganizacyjnej>
+            <Element>ElPracownik</Element>
+            <Zrodlo>Pracownik:b1000000-0000-0000-0000-000000000001</Zrodlo>
+            <Okres>(wszystko)</Okres>
+          </PowiązanieStrukturyOrganizacyjnej>
+          <PowiązanieStrukturyOrganizacyjnej>
+            <Element>ElPracownik</Element>
+            <Zrodlo>Pracownik:b1000000-0000-0000-0000-000000000002</Zrodlo>
+            <Okres>(wszystko)</Okres>
+          </PowiązanieStrukturyOrganizacyjnej>
+          <PowiązanieStrukturyOrganizacyjnej>
+            <Element>ElPracownik</Element>
+            <Zrodlo>Pracownik:b1000000-0000-0000-0000-000000000003</Zrodlo>
+            <Okres>(wszystko)</Okres>
+          </PowiązanieStrukturyOrganizacyjnej>
+          <PowiązanieStrukturyOrganizacyjnej>
+            <Element>ElPracownik</Element>
+            <Zrodlo>Pracownik:b1000000-0000-0000-0000-000000000009</Zrodlo>
+            <Okres>(wszystko)</Okres>
+          </PowiązanieStrukturyOrganizacyjnej>
+        </Powiązania>
+      </ElementStrukturyOrganizacyjnej>
+    </Elementy>
+  </StrukturaOrganizacyjna>
+
+</session>

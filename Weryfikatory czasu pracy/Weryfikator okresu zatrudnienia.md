@@ -54,6 +54,10 @@ dozwolona.
 
 ## 6. Scenariusze testowe
 
+Pełna lista scenariuszy (z kolumnami na wynik testu w GUI) w arkuszu:
+[Scenariusze testowe weryfikatorow czasu pracy.xlsx](Scenariusze%20testowe%20weryfikatorow%20czasu%20pracy.xlsx),
+arkusz **Okres zatrudnienia**. Poniższa tabela jest kopią poglądową.
+
 | Lp | Scenariusz | Dane wejściowe | Oczekiwany wynik |
 |---|---|---|---|
 | 1 | Dzień w środku okresu zatrudnienia | Etat: 01.01.2026–31.12.2026; dzień planu: 15.06.2026 | Brak błędu |

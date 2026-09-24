@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1" Name="A1PelnaListaPlac" DisplayName="A1 - Pełna lista płac (wg elementów)" SnapGridSize="25" ReportUnit="TenthsOfAMillimeter" Margins="198, 198, 200, 200" PaperKind="A4" PageWidth="2100" PageHeight="2970" Version="24.1" DataSource="#Ref-12" Dpi="254" Font="Calibri, 9pt">
+  <Bands>
+    <Item1 Ref="2" ControlType="TopMarginBand" Name="TopMarginBand" HeightF="200" Dpi="254" />
+    <Item2 Ref="3" ControlType="ReportHeaderBand" Name="ReportHeader" HeightF="120" Dpi="254">
+      <Controls>
+        <Item1 Ref="4" ControlType="XRLabel" Name="lblTytul" Text="Zestawienie wypłat wg elementów" SizeF="1704,60" LocationFloat="0,0" Font="Calibri, 14pt, style=Bold" TextAlignment="MiddleLeft" Dpi="254" />
+        <Item2 Ref="5" ControlType="XRLabel" Name="lblPodtytul" Text="" SizeF="1704,40" LocationFloat="0,60" Font="Calibri, 8pt" TextAlignment="MiddleLeft" ForeColor="Gray" Dpi="254" />
+      </Controls>
+    </Item2>
+    <Item3 Ref="6" ControlType="PageHeaderBand" Name="PageHeader" HeightF="60" Dpi="254">
+      <Controls>
+        <Item1 Ref="7" ControlType="XRTable" Name="tabelaNaglowek" AnchorHorizontal="Both" SizeF="1704,60" LocationFloat="0,0" Dpi="254" Font="Calibri, 9pt, style=Bold" />
+      </Controls>
+    </Item3>
+    <Item4 Ref="8" ControlType="DetailBand" Name="Detail" HeightF="20" Dpi="254">
+      <Controls>
+        <Item1 Ref="9" ControlType="XRTable" Name="tabelaDane" AnchorHorizontal="Both" SizeF="1704,20" LocationFloat="0,0" Dpi="254" Font="Calibri, 9pt" />
+      </Controls>
+    </Item4>
+    <Item5 Ref="10" ControlType="BottomMarginBand" Name="BottomMarginBand" HeightF="200" Dpi="254" />
+  </Bands>
+  <ComponentStorage>
+    <Item1 Ref="11" ObjectType="Soneta.Business.UI.DxReports.Components.BusinessContext,Soneta.Business.UI.DxReports" Name="BusinessContext" StylesSource="standardowy" TreatStringAsValueInExport="false" />
+    <Item2 Ref="12" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSource" DataKind="Empty" />
+    <Item3 Ref="13" ObjectType="Soneta.Business.UI.DxReports.BusinessDataSource,Soneta.Business.UI.DxReports" Name="BusinessSourceContext" DataKind="Context" />
+  </ComponentStorage>
+</XtraReportsLayoutSerializer>

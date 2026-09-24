@@ -1,0 +1,1754 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Pracownicy testowi do bazy Al (ALDI) pod testy "Import danych z RCP (ALDI)"
+  z podzialem na strefy nadgodzin: zlecenia 277381 (pelne etaty) i 277382 (niepelne etaty).
+  1 pracownik = 1 scenariusz. Kod pracownika = numer scenariusza.
+
+    S1..S7, T7 : etat 1/1, kalendarz Standard (plan pn.pt 8:00 do 16:00)
+    T1..T4, T6 : etat 3/4, kalendarz Standard (plan skaluje wg wymiaru do 8:00 do 14:00 / 6h)
+    T5         : etat 1/1; piatek 07.08.2026 plan recznie skrocony do 6h (robi tester)
+
+  Import wedlug rekordow:  dbmgr importxml Al [plik] w trybie standard
+  Guidy stale (a1d10000...) czyli idempotentne.
+  Poza zakresem tego pliku (robi tester recznie wg dokumentacji):
+    * Magazyn nadgodzin rozliczany od (Narzedzia, Opcje, Kadry i place, Kalendarze, Czas pracy)
+    * wpisy w "Dane z RCP" (Wejscia/Wyjscia) dla poszczegolnych scenariuszy
+    * naliczenie/weryfikacja planu (Kalendarz, Norma czasu pracy)
+-->
+<session fromto="(wszystko)">
+  <Pracownik id="P01" guid="a1d10000-0000-0000-0000-000000000001"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>S1</Kod>
+    <Nazwisko>TEST-S1</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>85030410018</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH01" guid="a1d10000-0000-0001-0000-000000000001">
+        <Pracownik>P01</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-S1</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1985-03-04</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>85030410018</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH01_2">
+            <Host>PH01</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH01_AZAM">
+            <Host>PH01</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>1</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH01_AZAMIESZK">
+            <Host>PH01</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH01_AKOR">
+            <Host>PH01</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P02" guid="a1d10000-0000-0000-0000-000000000002"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>S2</Kod>
+    <Nazwisko>TEST-S2</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>86040510105</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH02" guid="a1d10000-0000-0001-0000-000000000002">
+        <Pracownik>P02</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-S2</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1986-04-05</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>86040510105</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH02_2">
+            <Host>PH02</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH02_AZAM">
+            <Host>PH02</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>2</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH02_AZAMIESZK">
+            <Host>PH02</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH02_AKOR">
+            <Host>PH02</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P03" guid="a1d10000-0000-0000-0000-000000000003"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>S3</Kod>
+    <Nazwisko>TEST-S3</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>87050610216</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH03" guid="a1d10000-0000-0001-0000-000000000003">
+        <Pracownik>P03</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-S3</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1987-05-06</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>87050610216</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH03_2">
+            <Host>PH03</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH03_AZAM">
+            <Host>PH03</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>3</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH03_AZAMIESZK">
+            <Host>PH03</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH03_AKOR">
+            <Host>PH03</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P04" guid="a1d10000-0000-0000-0000-000000000004"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>S4</Kod>
+    <Nazwisko>TEST-S4</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>88060710303</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH04" guid="a1d10000-0000-0001-0000-000000000004">
+        <Pracownik>P04</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-S4</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1988-06-07</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>88060710303</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH04_2">
+            <Host>PH04</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH04_AZAM">
+            <Host>PH04</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>4</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH04_AZAMIESZK">
+            <Host>PH04</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH04_AKOR">
+            <Host>PH04</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P05" guid="a1d10000-0000-0000-0000-000000000005"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>S5</Kod>
+    <Nazwisko>TEST-S5</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>89070810414</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH05" guid="a1d10000-0000-0001-0000-000000000005">
+        <Pracownik>P05</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-S5</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1989-07-08</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>89070810414</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH05_2">
+            <Host>PH05</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH05_AZAM">
+            <Host>PH05</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>5</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH05_AZAMIESZK">
+            <Host>PH05</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH05_AKOR">
+            <Host>PH05</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P06" guid="a1d10000-0000-0000-0000-000000000006"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>S6</Kod>
+    <Nazwisko>TEST-S6</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>90080910500</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH06" guid="a1d10000-0000-0001-0000-000000000006">
+        <Pracownik>P06</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-S6</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1990-08-09</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>90080910500</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH06_2">
+            <Host>PH06</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH06_AZAM">
+            <Host>PH06</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>6</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH06_AZAMIESZK">
+            <Host>PH06</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH06_AKOR">
+            <Host>PH06</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P07" guid="a1d10000-0000-0000-0000-000000000007"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>S7</Kod>
+    <Nazwisko>TEST-S7</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>91091010610</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH07" guid="a1d10000-0000-0001-0000-000000000007">
+        <Pracownik>P07</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-S7</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1991-09-10</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>91091010610</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH07_2">
+            <Host>PH07</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH07_AZAM">
+            <Host>PH07</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>7</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH07_AZAMIESZK">
+            <Host>PH07</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH07_AKOR">
+            <Host>PH07</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P08" guid="a1d10000-0000-0000-0000-000000000008"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>T1</Kod>
+    <Nazwisko>TEST-T1</Nazwisko>
+    <Imie>Niepelny</Imie>
+    <PESEL>85101110702</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH08" guid="a1d10000-0000-0001-0000-000000000008">
+        <Pracownik>P08</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-T1</Nazwisko>
+        <Imie>Niepelny</Imie>
+        <Urodzony><Data>1985-10-11</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>85101110702</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>3/4</Wymiar>
+            <Stawka>4,500.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH08_2">
+            <Host>PH08</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH08_AZAM">
+            <Host>PH08</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>8</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH08_AZAMIESZK">
+            <Host>PH08</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH08_AKOR">
+            <Host>PH08</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P09" guid="a1d10000-0000-0000-0000-000000000009"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>T2</Kod>
+    <Nazwisko>TEST-T2</Nazwisko>
+    <Imie>Niepelny</Imie>
+    <PESEL>86111210813</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH09" guid="a1d10000-0000-0001-0000-000000000009">
+        <Pracownik>P09</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-T2</Nazwisko>
+        <Imie>Niepelny</Imie>
+        <Urodzony><Data>1986-11-12</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>86111210813</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>3/4</Wymiar>
+            <Stawka>4,500.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH09_2">
+            <Host>PH09</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH09_AZAM">
+            <Host>PH09</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>9</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH09_AZAMIESZK">
+            <Host>PH09</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH09_AKOR">
+            <Host>PH09</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P10" guid="a1d10000-0000-0000-0000-000000000010"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>T3</Kod>
+    <Nazwisko>TEST-T3</Nazwisko>
+    <Imie>Niepelny</Imie>
+    <PESEL>87121310900</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH10" guid="a1d10000-0000-0001-0000-000000000010">
+        <Pracownik>P10</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-T3</Nazwisko>
+        <Imie>Niepelny</Imie>
+        <Urodzony><Data>1987-12-13</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>87121310900</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>3/4</Wymiar>
+            <Stawka>4,500.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH10_2">
+            <Host>PH10</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH10_AZAM">
+            <Host>PH10</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>10</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH10_AZAMIESZK">
+            <Host>PH10</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH10_AKOR">
+            <Host>PH10</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P11" guid="a1d10000-0000-0000-0000-000000000011"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>T4</Kod>
+    <Nazwisko>TEST-T4</Nazwisko>
+    <Imie>Niepelny</Imie>
+    <PESEL>88011411017</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH11" guid="a1d10000-0000-0001-0000-000000000011">
+        <Pracownik>P11</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-T4</Nazwisko>
+        <Imie>Niepelny</Imie>
+        <Urodzony><Data>1988-01-14</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>88011411017</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>3/4</Wymiar>
+            <Stawka>4,500.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH11_2">
+            <Host>PH11</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH11_AZAM">
+            <Host>PH11</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>11</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH11_AZAMIESZK">
+            <Host>PH11</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH11_AKOR">
+            <Host>PH11</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P12" guid="a1d10000-0000-0000-0000-000000000012"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>T5</Kod>
+    <Nazwisko>TEST-T5</Nazwisko>
+    <Imie>Rownowazny</Imie>
+    <PESEL>89021511104</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH12" guid="a1d10000-0000-0001-0000-000000000012">
+        <Pracownik>P12</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-T5</Nazwisko>
+        <Imie>Rownowazny</Imie>
+        <Urodzony><Data>1989-02-15</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>89021511104</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH12_2">
+            <Host>PH12</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH12_AZAM">
+            <Host>PH12</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>12</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH12_AZAMIESZK">
+            <Host>PH12</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH12_AKOR">
+            <Host>PH12</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P13" guid="a1d10000-0000-0000-0000-000000000013"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>T6</Kod>
+    <Nazwisko>TEST-T6</Nazwisko>
+    <Imie>Niepelny</Imie>
+    <PESEL>90031611214</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH13" guid="a1d10000-0000-0001-0000-000000000013">
+        <Pracownik>P13</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-T6</Nazwisko>
+        <Imie>Niepelny</Imie>
+        <Urodzony><Data>1990-03-16</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>90031611214</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>3/4</Wymiar>
+            <Stawka>4,500.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH13_2">
+            <Host>PH13</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH13_AZAM">
+            <Host>PH13</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>13</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH13_AZAMIESZK">
+            <Host>PH13</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH13_AKOR">
+            <Host>PH13</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <Pracownik id="P14" guid="a1d10000-0000-0000-0000-000000000014"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>T7</Kod>
+    <Nazwisko>TEST-T7</Nazwisko>
+    <Imie>Pelny</Imie>
+    <PESEL>91041711301</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH14" guid="a1d10000-0000-0001-0000-000000000014">
+        <Pracownik>P14</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-T7</Nazwisko>
+        <Imie>Pelny</Imie>
+        <Urodzony><Data>1991-04-17</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>91041711301</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>K</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH14_2">
+            <Host>PH14</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH14_AZAM">
+            <Host>PH14</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>14</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH14_AZAMIESZK">
+            <Host>PH14</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH14_AKOR">
+            <Host>PH14</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+</session>

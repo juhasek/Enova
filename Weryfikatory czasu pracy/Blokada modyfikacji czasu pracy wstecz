@@ -1,0 +1,48 @@
+// Cecha GLOBALNA "BlokadaOdDnia" (okno "Cechy globalne") - dzień miesiąca (1..28),
+// od którego - włącznie - domyka się miesiąc poprzedni i wcześniejsze.
+// Pusta cecha / wartość < 1 = brak jakiejkolwiek blokady.
+public static string BlokadaMiesiacaWstecz(Pracownik pracownik, Date data)
+{
+	object wartoscCechy = pracownik.Session.Global.Features["BlokadaOdDnia"];
+	if (wartoscCechy == null)
+		return null;
+
+	int dzienBlokady = (int)wartoscCechy;
+	if (dzienBlokady < 1)
+		return null;
+
+	Date dzisiaj = Date.Today;
+
+	// Próg nie może przekroczyć liczby dni bieżącego miesiąca (np. cecha = 30 w lutym -> 28/29).
+	int dniWMiesiacu = System.DateTime.DaysInMonth(dzisiaj.Year, dzisiaj.Month);
+	int prog = dzienBlokady;
+	if (prog > dniWMiesiacu)
+		prog = dniWMiesiacu;
+
+	// Od dnia "prog" bieżącego miesiąca (włącznie) blokada obejmuje 1. dzień bieżącego
+	// miesiąca wstecz. Wcześniej w miesiącu trwa jeszcze okno na domknięcie miesiąca poprzedniego
+	// - granica cofa się o jeden miesiąc.
+	int rok = dzisiaj.Year;
+	int miesiac = dzisiaj.Month;
+	if (dzisiaj.Day < prog)
+	{
+		miesiac = miesiac - 1;
+		if (miesiac == 0)
+		{
+			miesiac = 12;
+			rok = rok - 1;
+		}
+	}
+	Date blokadaOd = new Date(rok, miesiac, 1);
+
+	if (data < blokadaOd)
+	{
+		// Komunikat: numer miesiąca i rok w formacie MM.rrrr (np. 08.2026).
+		// Nazwa miesiąca zamiast numeru: odkomentuj tablicę i użyj nazwy[miesiac - 1].
+		// string[] nazwy = new string[] { "styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec",
+		//     "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień" };
+		string miesiacRok = miesiac.ToString("00") + "." + rok.ToString();
+		return "Dla miesięcy wcześniejszych niż {0} nie można modyfikować czasu pracy.".TranslateFormat(miesiacRok);
+	}
+	return null;
+}

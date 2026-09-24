@@ -1,0 +1,508 @@
+                private void SendMail(TaskMessageEventArgs args, Pracownik pp) => SendMail(args, pp, null);
+
+                private void SendMail(TaskMessageEventArgs args, Pracownik pp, Pracownik kk) {
+                if (!Pars.Mail) args.Cancel = true;
+                else FormatMsg(args, pp, kk, true);
+                }
+
+                private void SendMsg(TaskMessageEventArgs args, Pracownik pp) => SendMsg(args, pp, null);
+
+                private void SendMsg(TaskMessageEventArgs args, Pracownik pp, Pracownik kk) {
+                if (!Pars.Msg) args.Cancel = true;
+                else FormatMsg(args, pp, kk, false);
+                }
+
+                private void FormatMsg(TaskMessageEventArgs args, Pracownik pp, bool email) => FormatMsg(args, pp, null, email);
+
+                private void FormatMsg(TaskMessageEventArgs args, Pracownik pp, Pracownik kk, bool email) {
+                System.Globalization.CultureInfo ci = Soneta.Web.Business.Kadry.Tools.GetCultureInfo(args.Task.TaskUser);
+                string subject = "", body = "";
+                subject = string.Format("{0} {1} - {2}, {3}, {4}", CaptionAttribute.EnumToString(Wniosek_urlopowy.Stan, ci), Definicja.GetLocalizedNazwa(ci).ToLower(), Pracownik, Wniosek_urlopowy.Okres.ToString("t"), CaptionAttribute.EnumToString(Wniosek_urlopowy.PrzyczynaUrlopu, ci));
+                string powodOdrzucenia = string.IsNullOrEmpty(PowodOdrzucenia) ? string.Empty : "\nPowód odrzucenia: " + PowodOdrzucenia + "\n";
+                if (Wniosek_urlopowy.Norma != Time.Empty) {
+                if (Wniosek_urlopowy.PrzyczynaUrlopu != PrzyczynaUrlopu.NieDotyczy)
+                body = string.Format("{0} {1}: {2} {7} {3} {8} {4}\n{9}: {5}\n{6}{10}", CaptionAttribute.EnumToString(Wniosek_urlopowy.Stan, ci), Wniosek_urlopowy.Definicja.GetLocalizedNazwa(ci), Wniosek_urlopowy.Okres.ToString("t"), Wniosek_urlopowy.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture), Wniosek_urlopowy.DoGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture),
+                CaptionAttribute.EnumToString(Wniosek_urlopowy.PrzyczynaUrlopu, ci), Wniosek_urlopowy.Opis, "od godz.".Translate(null, ci), "do".Translate(null, ci), "Przyczyna".Translate(null, ci), powodOdrzucenia);
+                else
+                body = string.Format("{0} {1}: {2} {6} {3} {7} {4}\n{5}{8}", CaptionAttribute.EnumToString(Wniosek_urlopowy.Stan, ci), Wniosek_urlopowy.Definicja.GetLocalizedNazwa(ci), Wniosek_urlopowy.Okres.ToString("t"), Wniosek_urlopowy.OdGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture), Wniosek_urlopowy.DoGodziny.ToString("+", System.Globalization.CultureInfo.InvariantCulture), Wniosek_urlopowy.Opis, "od godz.".Translate(null, ci),
+                "do".Translate(null, ci), powodOdrzucenia);
+                }
+                else {
+                if (Wniosek_urlopowy.PrzyczynaUrlopu != PrzyczynaUrlopu.NieDotyczy)
+                body = string.Format("{0} {1}: {2}\n{5}: {3}\n{4}{6}", CaptionAttribute.EnumToString(Wniosek_urlopowy.Stan, ci), Wniosek_urlopowy.Definicja.GetLocalizedNazwa(ci), Wniosek_urlopowy.Okres.ToString("t"), CaptionAttribute.EnumToString(Wniosek_urlopowy.PrzyczynaUrlopu, ci), Wniosek_urlopowy.Opis,
+                "Przyczyna".Translate(null, ci), powodOdrzucenia);
+                else
+                body = string.Format("{0} {1}: {2}\n{3}{4}", CaptionAttribute.EnumToString(Wniosek_urlopowy.Stan, ci), Wniosek_urlopowy.Definicja.GetLocalizedNazwa(ci), Wniosek_urlopowy.Okres.ToString("t"), Wniosek_urlopowy.Opis, powodOdrzucenia);
+                }
+
+                args["@subject"] = subject;
+                args["@body"] = body;
+                args["@to"] = "";
+                if (!email) return;
+
+
+                string emailTo = string.Empty;
+                if (kk != null && kk.Last?.Kontakt != null && !string.IsNullOrEmpty(kk.Last.Kontakt.EMAIL.Trim()))
+                emailTo = kk.Last.Kontakt.EMAIL.Trim();
+
+                if (pp.Last?.Kontakt != null && !string.IsNullOrEmpty(pp.Last.Kontakt.EMAIL.Trim()))
+                emailTo = (!emailTo.IsNullOrEmpty() ? emailTo + ";" : string.Empty ) + pp.Last.Kontakt.EMAIL.Trim();
+
+                if(!emailTo.IsNullOrWhiteSpace())
+                args["@to"] = emailTo;
+                else
+                args.Cancel = true;
+                }
+
+                private EWniosek_o_urlop_wypoczynkowy_1_Calc.Parametry.StaticParams pars;
+                private EWniosek_o_urlop_wypoczynkowy_1_Calc.Parametry.StaticParams Pars {
+                get {
+                if (pars == null)
+                pars = new EWniosek_o_urlop_wypoczynkowy_1_Calc.Parametry.StaticParams(Context.Empty.Clone(Session));
+                return pars;
+                }
+                }
+
+                [DefaultConstructor]
+                public EWniosek_o_urlop_wypoczynkowy_1([Required][Context(typeof(DbTuple.HostContext), "Row")]Soneta.Kadry.Pracownik pracownik, Session session) : base(null, pracownik) {
+                }
+
+                public EWniosek_o_urlop_wypoczynkowy_1([Required][Context(typeof(DbTuple.HostContext), "Row")]Soneta.Kadry.Pracownik pracownik, FromTo okres) : this(pracownik, okres, null) {
+                }
+
+                public EWniosek_o_urlop_wypoczynkowy_1([Required][Context(typeof(DbTuple.HostContext), "Row")]Soneta.Kadry.Pracownik pracownik, FromTo okres, string uwagi) : base(null, pracownik) {
+                this.okres = okres;
+                this.uwagi = uwagi;
+                }
+
+                protected override void OnAdded() {
+                base.OnAdded();
+                NowyWniosek();
+                }
+
+                private FromTo okres;
+                private string uwagi;
+                private bool podwladni;
+
+                private void NowyWniosek() {
+                baseWniosek_urlopowy = CreateWniosek(Pracownik, WnioskiUrlopoweDefinicje.NbUrlopWypoczynkowy);
+                if (okres != FromTo.Empty) Okres = okres;
+                if (!uwagi.IsNullOrEmpty()) Wniosek_urlopowy.Opis = uwagi;
+                Wniosek_urlopowy.UrlopWypoczynkowy.PrzyczynaUrlopu = PrzyczynaUrlopu.Planowy;
+                UrlopNaZadanie = false;
+                WniosekZa = Pracownik == Kierownik ? Soneta.KadryPlace.Kadry.EWnioski.WniosekOsoba.ZaSiebie : Soneta.KadryPlace.Kadry.EWnioski.WniosekOsoba.ZaPodwladnego;
+                podwladni = GetJestKierownikiem(Pracownik) && Pracownik.Module.Config.KadryNET.CzasPracy.WnioskiUrlopowe.WnioskiPracownikow;
+                // A1: wniosek otwarty od razu z okresem = dzisiaj (np. klik w kalendarzu Pulpitu)
+                UstawPrzyczyneWgOkresu();
+                }
+
+                #region A1: wniosek na dzień dzisiejszy = urlop na żądanie
+
+                // Czy przyczynę "Na żądanie" ustawił kod (a nie pracownik ręcznie) - tylko wtedy
+                // wolno ją cofnąć do "Planowy", gdy okres zostanie zmieniony na inny niż dzisiaj.
+                private bool naZadanieAutomatycznie;
+
+                // Etap 1: obsługiwany wyłącznie wniosek na JEDEN dzień, równy dzisiejszej dacie.
+                // Okres wielodniowy zaczynający się dzisiaj NIE jest (jeszcze) objęty regułą.
+                private bool JestWnioskiemNaDzisiaj() {
+                if (Wniosek_urlopowy == null) return false;
+                FromTo o = Wniosek_urlopowy.Okres;
+                return o.From == Date.Today && o.To == Date.Today;
+                }
+
+                private void UstawPrzyczyneWgOkresu() {
+                if (Wniosek_urlopowy == null) return;
+                if (JestWnioskiemNaDzisiaj()) {
+                if (!UrlopNaZadanie) {
+                UrlopNaZadanie = true;
+                naZadanieAutomatycznie = true;
+                }
+                }
+                else if (naZadanieAutomatycznie) {
+                UrlopNaZadanie = false;
+                naZadanieAutomatycznie = false;
+                }
+                }
+
+                #endregion
+
+                [AttributeInheritance]
+                public new Pracownik Pracownik {
+                get { return base.Pracownik; }
+                set {
+                if (base.Pracownik != value) {
+                base.Pracownik = value;
+                WniosekUrlopowy wu = Wniosek_urlopowy;
+                baseWniosek_urlopowy = null;
+                wu.Delete();
+                NowyWniosek();
+                }
+                }
+                }
+
+                public object GetListPracownik() {
+                return GetListaPodwladnych(Pracownik, true);
+                }
+
+                public bool IsReadOnlyPracownik() {
+                return base.IsReadOnly() || !podwladni;
+                }
+
+                public new string PowodOdrzucenia {
+                get { return base.PowodOdrzucenia; }
+                set {
+                if (base.PowodOdrzucenia != value) {
+                using (ForceWriteMode()) {
+                base.PowodOdrzucenia = value;
+                }
+                }
+                }
+                }
+
+                public bool IsReadOnlyPowodOdrzucenia() {
+                return Stan == StanObsługiProcesu.Zakończony;
+                }
+
+                public bool IsVisiblePowodOdrzucenia() {
+                var tran = GetWFTransitionFromActiveTask();
+                return (tran != null && tran.Name == PracDbTupleDefinitionExt.WnioskiPracowniczeTranzycja_Odrzuc) || (Stan == StanObsługiProcesu.Zakończony && Wniosek_urlopowy.Stan == StanWnioskuUrlopowego.Odrzucony);
+                }
+
+                public bool IsVisibleDokument() {
+                return Pars.PokazDokument;
+                }
+
+                public bool IsVisiblePodsumowanie() {
+                return Pars.PokazPodsumowanie;
+                }
+
+                public bool IsVisibleDecyzja() {
+                return Pars.PokazDecyzja;
+                }
+
+                [AttributeInheritance]
+                public new FromTo Okres {
+                get { return base.Wniosek_urlopowy.Okres; }
+                set {
+                base.Wniosek_urlopowy.Okres = base.Okres = value;
+                UstawPrzyczyneWgOkresu(); // A1: dzisiaj = na żądanie
+                }
+                }
+
+                [AttributeInheritance]
+                public new bool UrlopNaZadanie {
+                get { return base.Wniosek_urlopowy.UrlopWypoczynkowy.PrzyczynaUrlopu == PrzyczynaUrlopu.NaŻądanie; }
+                set {
+                if(value)
+                base.Wniosek_urlopowy.UrlopWypoczynkowy.PrzyczynaUrlopu = PrzyczynaUrlopu.NaŻądanie;
+                else
+                base.Wniosek_urlopowy.UrlopWypoczynkowy.PrzyczynaUrlopu = PrzyczynaUrlopu.Planowy;
+                }
+                }
+
+                public bool IsReadOnlyUrlopNaZadanie() {
+                // A1: na dzisiaj przyczyna jest wymuszona (Na żądanie) - pracownik nie może jej zmienić
+                return base.IsReadOnly() || JestWnioskiemNaDzisiaj();
+                }
+
+                [AttributeInheritance]
+                [Format("+")]
+                public new Time WniosekNaGodzinyOd{
+                get { return base.Wniosek_urlopowy.OdGodziny; }
+                set { base.Wniosek_urlopowy.OdGodziny = value; }
+                }
+
+                [AttributeInheritance]
+                [Format("+")]
+                public new Time WniosekNaGodzinyDo{
+                get { return base.Wniosek_urlopowy.DoGodziny; }
+                set { base.Wniosek_urlopowy.DoGodziny = value; }
+                }
+
+                public bool IsReadOnlyWniosekNaGodzinyDo(){
+                return base.IsReadOnly() || WniosekNaGodzinyOd == Time.Empty;
+                }
+
+                [AttributeInheritance]
+                public new Time WniosekNaGodzinyCzas{
+                get { return base.Wniosek_urlopowy.Norma; }
+                }
+
+                public bool IsVisibleWniosekNaGodziny(){
+                return Wniosek_urlopowy.IlośćDni == 1 && Wniosek_urlopowy.IsVisibleNaGodziny();
+                }
+
+                [AttributeInheritance]
+                public new string Zastepca{
+                get { return base.Wniosek_urlopowy.Zastepca == null ? "" : base.Wniosek_urlopowy.Zastepca.ToString(); }
+                }
+
+                public bool IsVisibleZastepca(){
+                return !Zastepca.IsNullOrWhiteSpace();
+                }
+
+                [AttributeInheritance]
+                public new string PodsumowanieNorma {
+                get { return GetPodsumowanieWorker(Wniosek_urlopowy).Norma.ToString(); }
+                }
+
+                [AttributeInheritance]
+                public new string PodsumowanieNiezatwierdzone {
+                get { return GetPodsumowanieWorker(Wniosek_urlopowy).Niezatwierdzone.ToString(); }
+                }
+
+                public bool IsVisiblePodsumowanieNiezatwierdzone() {
+                return !Pars.UproszczonePodsumowanie;
+                }
+
+                [AttributeInheritance]
+                public new string PodsumowanieLimitGodz {
+                get { return GetPodsumowanieWorker(Wniosek_urlopowy).LimitGodz.ToString(); }
+                }
+
+                public bool IsVisiblePodsumowanieLimitGodz() {
+                return !Pars.UproszczonePodsumowanie && GetPodsumowanieWorker(Wniosek_urlopowy).IsVisibleLimitGodz();
+                }
+
+                [AttributeInheritance]
+                public new string PodsumowaniePozostajeGodz {
+                get { return GetPodsumowanieWorker(Wniosek_urlopowy).PozostajeGodz.ToString(); }
+                }
+
+                public bool IsVisiblePodsumowaniePozostajeGodz() {
+                return GetPodsumowanieWorker(Wniosek_urlopowy).IsVisiblePozostajeGodz();
+                }
+
+                [AttributeInheritance]
+                public new string PodsumowanieLimitDni {
+                get { return GetPodsumowanieWorker(Wniosek_urlopowy).LimitDni.ToString(); }
+                }
+
+                public bool IsVisiblePodsumowanieLimitDni() {
+                return !Pars.UproszczonePodsumowanie && GetPodsumowanieWorker(Wniosek_urlopowy).IsVisibleLimitDni();
+                }
+
+                [AttributeInheritance]
+                public new string PodsumowaniePozostajeDni {
+                get { return GetPodsumowanieWorker(Wniosek_urlopowy).PozostajeDni.ToString(); }
+                }
+
+                public bool IsVisiblePodsumowaniePozostajeDni() {
+                return GetPodsumowanieWorker(Wniosek_urlopowy).IsVisiblePozostajeDni();
+                }
+
+                [AttributeInheritance]
+                public new string NaZadanieNorma {
+                get { return GetUrlopNaŻądanieWorker(Wniosek_urlopowy).Norma.ToString(); }
+                }
+
+                public bool IsVisibleNaZadanieNorma() {
+                return !Pars.UproszczonePodsumowanie && GetUrlopNaŻądanieWorker(Wniosek_urlopowy).IsVisible();
+                }
+
+                [AttributeInheritance]
+                public new string NaZadanieNiezatwierdzone {
+                get { return GetUrlopNaŻądanieWorker(Wniosek_urlopowy).Niezatwierdzone.ToString(); }
+                }
+
+                public bool IsVisibleNaZadanieNiezatwierdzone() {
+                return !Pars.UproszczonePodsumowanie && GetUrlopNaŻądanieWorker(Wniosek_urlopowy).IsVisible();
+                }
+
+                [AttributeInheritance]
+                public new string NaZadanieLimit {
+                get { return GetUrlopNaŻądanieWorker(Wniosek_urlopowy).Limit.ToString(); }
+                }
+
+                public bool IsVisibleNaZadanieLimit() {
+                return !Pars.UproszczonePodsumowanie && IsVisiblePodsumowanieLimitGodz() && GetUrlopNaŻądanieWorker(Wniosek_urlopowy).IsVisible();
+                }
+
+                [AttributeInheritance]
+                public new string NaZadaniePozostaje {
+                get { return GetUrlopNaŻądanieWorker(Wniosek_urlopowy).Pozostaje.ToString(); }
+                }
+
+                public bool IsVisibleNaZadaniePozostaje() {
+                return IsVisiblePodsumowaniePozostajeGodz() && GetUrlopNaŻądanieWorker(Wniosek_urlopowy).IsVisible();
+                }
+
+                [AttributeInheritance]
+                public new string NaZadanieLimit2 {
+                get { return GetUrlopNaŻądanieWorker(Wniosek_urlopowy).Limit.ToString(); }
+                }
+
+                public bool IsVisibleNaZadanieLimit2() {
+                return !Pars.UproszczonePodsumowanie && IsVisiblePodsumowanieLimitDni() && GetUrlopNaŻądanieWorker(Wniosek_urlopowy).IsVisible();
+                }
+
+                [AttributeInheritance]
+                public new string NaZadaniePozostaje2 {
+                get { return GetUrlopNaŻądanieWorker(Wniosek_urlopowy).Pozostaje.ToString(); }
+                }
+
+                public bool IsVisibleNaZadaniePozostaje2() {
+                return IsVisiblePodsumowaniePozostajeDni() && GetUrlopNaŻądanieWorker(Wniosek_urlopowy).IsVisible();
+                }
+
+                #region IWniosekAnulowalny
+
+                public void AnulujWniosek() {
+                SetStan(StanObsługiProcesu.Zakończony, null, null, null);
+                Wniosek_urlopowy.Stan = StanWnioskuUrlopowego.Anulowany;
+                }
+
+                public void InfoWniosekAnulowany(DbTuple sender, TaskMessageEventArgs args){
+                var ci = Soneta.Web.Business.Kadry.Tools.GetCultureInfo(args.Task.TaskUser);
+                var subject = string.Format("Anulowanie wniosku: {0} - {1}, {2}, {3}",
+                Definicja.GetLocalizedNazwa(ci).ToLower(),
+                Pracownik,
+                Wniosek_urlopowy.Okres.ToString("t"),
+                CaptionAttribute.EnumToString(Wniosek_urlopowy.PrzyczynaUrlopu, ci));
+                args["@subject"] = subject;
+                args["@body"] = subject;
+                }
+
+                #endregion
+
+                #region IInformacjaOPrzetwarzaniuWniosku
+
+                public string GetInformacjaOPrzetwarzaniuWniosku(){
+                string result= "";
+
+                if(!PowodOdrzucenia.IsNullOrWhiteSpace()) result += "Powód odrzucenia: " + PowodOdrzucenia + Environment.NewLine;
+
+                return result;
+                }
+
+                #endregion
+
+                #region Interfejs dokumentów obsługiwanych przez standardowe procesy
+
+                public string WfTaskName(TaskUserEventArgs args) {
+                System.Globalization.CultureInfo ci = Soneta.Web.Business.Kadry.Tools.GetCultureInfo(args.Task.TaskUser);
+                if (Pracownik == null || Wniosek_urlopowy == null)
+                return Definicja.GetLocalizedNazwa(ci).ToLower();
+                return string.Format("{0} - {1}, {2}, {3}", Definicja.GetLocalizedNazwa(ci).ToLower(), Pracownik, Wniosek_urlopowy.Okres, CaptionAttribute.EnumToString(Wniosek_urlopowy.PrzyczynaUrlopu, ci));
+                }
+
+                public ITaskUser WfKierownik(TaskUserEventArgs args) {
+                bool nz = !Wniosek_urlopowy.Module.Config.KadryNET.CzasPracy.WnioskiUrlopowe.UrlopNaŻądanie && Wniosek_urlopowy.PrzyczynaUrlopu == PrzyczynaUrlopu.NaŻądanie;
+                return nz ? null : Wniosek_urlopowy.Kierownik;
+                }
+
+                public void WfWprowadzany(TaskInitEventArgs args) {
+                SetStan(StanObsługiProcesu.Wprowadzany, WniosekDecyzja.Oczekujący, null, null);
+                }
+
+                public void WfZatwierdzany(TaskInitEventArgs args) {
+                SprawdzLimitUrlop(Wniosek_urlopowy);
+                SetStan(StanObsługiProcesu.Przetwarzany, null, null, null);
+                }
+
+                public void WfZatwierdzanyEmail(TaskMessageEventArgs args) {
+                SendMail(args, Wniosek_urlopowy.Kierownik);
+                }
+
+                public void WfOdrzucony(TaskInitEventArgs args) {
+                SetStan(StanObsługiProcesu.Zakończony, WniosekDecyzja.Odrzucony, Date.Today, null);
+                Wniosek_urlopowy.Stan = StanWnioskuUrlopowego.Odrzucony;
+                if (Pars.Zakoncz) args.GoThru = true;
+                }
+
+                public void WfOdrzuconyEmail(TaskMessageEventArgs args) {
+                SendMail(args, Pracownik);
+                }
+
+                public void WfOdrzuconyMsg(TaskMessageEventArgs args) {
+                SendMsg(args, Pracownik);
+                }
+
+                public void WfDoRealizacji(TaskInitEventArgs args) {
+                SprawdzLimitUrlop(Wniosek_urlopowy);
+                SprawdzZastepstwa(Wniosek_urlopowy);
+                SetStan(StanObsługiProcesu.Przetwarzany, WniosekDecyzja.Zatwierdzony, Date.Today, null);
+                if (!Pars.Kadry) args.GoThru = true;
+                }
+
+                public void WfZrealizowany(TaskInitEventArgs args) {
+                Wniosek_urlopowy.Stan = StanWnioskuUrlopowego.Zaakceptowany;
+                SetStan(StanObsługiProcesu.Zakończony, null, null, Date.Today);
+                if (Pars.Zakoncz) args.GoThru = true;
+                }
+
+                public void WfZrealizowanyEmail(TaskMessageEventArgs args) {
+                bool nz = !Wniosek_urlopowy.Module.Config.KadryNET.CzasPracy.WnioskiUrlopowe.UrlopNaŻądanie && Wniosek_urlopowy.PrzyczynaUrlopu == PrzyczynaUrlopu.NaŻądanie;
+                if(nz && Wniosek_urlopowy.Kierownik != null)
+                SendMail(args, Pracownik, Wniosek_urlopowy.Kierownik);
+                else
+                SendMail(args, Pracownik);
+                }
+
+                public void WfZrealizowanyMsg(TaskMessageEventArgs args) {
+                bool nz = !Wniosek_urlopowy.Module.Config.KadryNET.CzasPracy.WnioskiUrlopowe.UrlopNaŻądanie && Wniosek_urlopowy.PrzyczynaUrlopu == PrzyczynaUrlopu.NaŻądanie;
+                if(nz && Wniosek_urlopowy.Kierownik != null)
+                SendMsg(args, Pracownik, Wniosek_urlopowy.Kierownik);
+                else
+                SendMsg(args, Pracownik);
+                }
+
+                public void WfNiezrealizowany(TaskInitEventArgs args) {
+                SetStan(StanObsługiProcesu.Zakończony, null, null, null);
+                if (Pars.Zakoncz) args.GoThru = true;
+                }
+
+                public void WfNiezrealizowanyEmail(TaskMessageEventArgs args) {
+                SendMail(args, Pracownik);
+                }
+
+                public void WfNiezrealizowanyMsg(TaskMessageEventArgs args) {
+                SendMsg(args, Pracownik);
+                }
+
+                public void WfZakończony(TaskInitEventArgs args) {
+                if (Wniosek_urlopowy.Stan == StanWnioskuUrlopowego.Oczekujący)
+                Wniosek_urlopowy.Stan = StanWnioskuUrlopowego.Anulowany;
+                }
+
+                public void WfAnulowany(TaskInitEventArgs args) {
+                SetStan(StanObsługiProcesu.Zakończony, null, null, null);
+                Wniosek_urlopowy.Stan = StanWnioskuUrlopowego.Anulowany;
+                }
+
+                protected override bool CalcReadOnly() { return base.CalcReadOnly() || CalcReadOnly(Stan); }
+
+                public void SetStan(StanObsługiProcesu stanProcesu) {
+                using (ForceWriteMode()){
+                baseStan = stanProcesu;
+
+                if (Stan != StanObsługiProcesu.Wprowadzany && Stan != StanObsługiProcesu.Edytowany)
+                SetReadOnly(true);
+                }
+                }
+
+                void SetStan(StanObsługiProcesu stanProcesu, WniosekDecyzja? decyzja, Date? dataDecyzji, Date? dataRealizacji) {
+                using (ForceWriteMode()) {
+                baseStan = stanProcesu;
+
+                if (decyzja != null)
+                baseDecyzja = (WniosekDecyzja)decyzja;
+
+                if (dataDecyzji != null)
+                baseDataDecyzji = (Date)dataDecyzji;
+
+                if (dataRealizacji != null)
+                baseDataRealizacji = (Date)dataRealizacji;
+
+                if (Stan != StanObsługiProcesu.Wprowadzany && Stan != StanObsługiProcesu.Edytowany)
+                SetReadOnly(true);
+                }
+                }
+
+                protected override void OnLoaded() {
+                base.OnLoaded();
+                if ((AccessRight == AccessRights.ReadOnly || AccessRight == AccessRights.Granted) && HasToBeSetReadonly(Stan, Pars.Serwis))
+                SetReadOnly(true);
+                }
+
+                #endregion

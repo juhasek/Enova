@@ -71,6 +71,7 @@ pozostałych.
 |---|---|
 | Pracownik | Nazwisko i imię pracownika. |
 | Kod | Kod pracownika w systemie. |
+| MPK | Centrum kosztów wydziału, do którego pracownik był przypisany w danym dniu (wg historii zatrudnienia); puste, jeśli nie da się ustalić. |
 | Data | Data dnia, którego dotyczy wiersz. |
 | Dzień | Skrót dnia tygodnia (Nd, Pn, Wt, Śr, Cz, Pt, So). |
 | Plan od-do | Godziny pracy wynikające z planu (harmonogramu), w formacie „od–do”; puste, jeśli plan nie przewidywał pracy. |
@@ -101,7 +102,74 @@ Na górze wydruku wyświetlane jest podsumowanie zbiorcze dla wybranego okresu:
 - liczba dni zmodyfikowanych z poprawnie naliczonymi godzinami z RCP (uwzględniana tylko, gdy
   parametr „Pokaż dni z godzinami z RCP” jest zaznaczony).
 
-## 8. Zalecany sposób pracy z raportem
+## 8. Zgłoszony błąd i poprawka (14.09.2026)
+
+**Zgłoszenie klienta (baza Al):** raport rzucał `NullReferenceException` w `DodajDniPracownika`
+przy próbie wydruku.
+
+**Przyczyna:** przy liczeniu okresu zatrudnienia pracownika kod zakładał, że każdy wiersz historii
+zatrudnienia (`PracHistoria`) zwrócony przez `Historia.GetIntersectedRows(okres)` ma wypełnione pole
+`Etat` — `Historia` zawiera jednak też wpisy niezwiązane z etatem (np. zmiany danych osobowych), dla
+których `Etat` jest `null`. Ten sam problem był już wcześniej rozwiązany analogicznym zabezpieczeniem
+w innych raportach tego repo (`A1PelnaListaPlacWorker`, `A1NaglowekListaSnippet`).
+
+**Poprawka:** dodano warunek `if (ph.Etat != null)` przed odczytem `ph.Etat.EfektywnyOkres` —
+wiersze historii bez etatu są pomijane przy wyliczaniu okresu zatrudnienia.
+
+## 9. Kolumna MPK i drugi błąd tego samego dnia (14.09.2026)
+
+Niezależnie od poprawki z pkt 8, tego samego dnia raport został zmodyfikowany bezpośrednio w
+edytorze skryptów enova (baza `Al`) — dodano kolumnę **MPK** (centrum kosztów wydziału, do którego
+przypisany jest pracownik danego dnia) oraz zmieniono zachowanie kolumny „Odbicia”: przy braku
+odbić RCP nie jest już wyświetlany tekst „brak odbić”, tylko pusta wartość.
+
+Zmiana ta trafiła do bazy z pominięciem repozytorium (edycja wprost w GUI) i wprowadziła nowy,
+niezabezpieczony odczyt:
+
+```
+MPK = pracownik.Historia[data].Etat.Wydzial.CentrumKosztow.ToString(),
+```
+
+`Historia[data]` może zwrócić `null` (dzień bez wiersza historii pokrywającego tę datę), podobnie
+`Etat` i `Wydzial` — co ponownie rzucało `NullReferenceException` w tym samym miejscu (drugie
+zgłoszenie klienta tego samego dnia, ten sam stack trace co w pkt 8). Dodatkowo zapis z edytora
+enova uszkodził kodowanie polskich znaków w całym pliku (mojibake).
+
+**Poprawka:** dodano pełne zabezpieczenie łańcucha `Historia[data] → Etat → Wydzial →
+CentrumKosztow` (MPK puste, jeśli którykolwiek element jest `null`), odtworzono poprawne polskie
+znaki w całym pliku i zsynchronizowano repozytorium z kodem w bazie `Al` (kolumna MPK, zmiana
+zachowania „Odbicia”). Zaktualizowany kod wgrano z powrotem do `SystemFiles.Code` (baza `Al`,
+`ID=1`) przez bezpośredni `UPDATE` SQL — zweryfikowano poprawność polskich znaków po zapisie.
+
+## 10. Odbiór nadgodzin nie jest już traktowany jak błąd (23.09.2026)
+
+**Zgłoszenie klienta:** pracownik miał w sobotę wprowadzony **odbiór nadgodzin** (czas wolny w
+zamian za wcześniej wypracowane nadgodziny) i tego dnia nie miał żadnego czasu pracy — raport
+klasyfikował taki dzień jako „Zmodyfikowany – BRAK godzin pracy”, czyli jako błąd wymagający
+korekty, mimo że sytuacja jest prawidłowa.
+
+**Przyczyna:** odbiór nadgodzin zapisywany jest w enova jako strefa dnia „Rozliczenie nadgodzin
+(prac)” lub „Rozliczenie nadgodzin (firma)” (ten sam mechanizm rozpoznawania co w innym raporcie
+tego repozytorium). Kalkulator nie liczy dla takiej strefy czasu pracy (`Dzien.Czas` = 0), bo to nie
+praca, tylko rozliczenie wcześniej należnych nadgodzin czasem wolnym — ale kod raportu nie
+odróżniał tego od faktycznego braku naliczenia czasu.
+
+**Poprawka:** dodano rozpoznawanie strefy odbioru nadgodzin (funkcje `JestStrefaOdbioruNadgodzin`
+i `MaOdbiorNadgodzin`, sprawdzające `Dzien.Strefa.Definicja.Nazwa` dnia z ewidencji). Dzień z
+zerowym czasem pracy, ale zawierający taką strefę, dostaje teraz status
+**„Zmodyfikowany – Rozliczenie nadgodzin”** i nie jest oznaczany jako błędny (`CzyBlad=false`),
+zamiast statusu „Zmodyfikowany – BRAK godzin pracy”. Dodano osobny licznik i pozycję w podsumowaniu
+na górze wydruku („Dni z rozliczeniem nadgodzin”).
+
+Zaktualizowany kod wgrano do `SystemFiles.Code` (baza `Al`, `ID=1`) przez `UPDATE` po ADO.NET
+`SqlParameter` (nie tekstowy SQL, żeby nie uszkodzić polskich znaków) i zweryfikowano bit-w-bit
+zgodność z repo.
+
+**Potwierdzone przez klienta na żywo (23.09.2026)** — działa. Nietestowany pozostaje brzegowy
+przypadek: dzień z jednoczesnym odbiorem nadgodzin i faktycznie brakującym naliczeniem innej pracy
+tego samego dnia nadal trafi do „Rozliczenie nadgodzin” bez sygnału błędu.
+
+## 11. Zalecany sposób pracy z raportem
 
 1. Przed naliczeniem wynagrodzeń za dany okres uruchom raport dla wszystkich pracowników objętych
    RCP, z domyślnymi parametrami (bez zaznaczania „Pokaż dni z godzinami z RCP”).

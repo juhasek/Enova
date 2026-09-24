@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Aktualizacja definicji weryfikatora kalendarza "11-sto godzinny odpoczynek"
+  (rodzaj DzienPlanu) po GUID - nadpisuje wylacznie <Code>, zachowujac powiazania
+  z kalendarzami i poziom (Error/Warning) ustawiony na WeryfikatorKalendarza.
+
+  2026-09-22: dodana zasada "dni modyfikowane" - weryfikator dziala tylko dla dni
+  z jawnym wyjatkiem w kalendarzu pracownika (kolor zolty w GUI, Pracownik.DniPlanu[data]
+  != null). Dzien dziedziczacy z kalendarza wzorcowego nie jest sprawdzany i nie wplywa
+  na wynik weryfikacji dnia sasiedniego.
+
+  2026-09-22 (poprawka): dzien dp.Data (wlasnie zapisywany) jest traktowany jako
+  modyfikowany Z DEFINICJI, bez odpytywania Pracownik.DniPlanu - w trakcie wlasnej
+  weryfikacji nie ma gwarancji, ze ten indekser juz widzi wlasny, jeszcze niescommitowany
+  wiersz. Naprawia zgloszony przypadek: sobota+niedziela dyzur 8-21, poniedzialek
+  praca 7-15 - brak bledu mimo przerwy 10h (kontrola dnia poprzedniego dla niedzieli
+  nie dociagala poniedzialku, bo pracownik.DniPlanu[poniedzialek] bylo null podczas
+  wlasnej weryfikacji poniedzialku).
+
+  Patrz "Weryfikatory czasu pracy/11-sto godzinny odpoczynek.md".
+
+  UWAGA: srodowisko robocze repo nie ma dostepu do bazy/DLL klienta - plik NIE jest
+  zweryfikowany probnym importem na bazie klienta. Zaimportowany i wgrany do bazy
+  testowej "Claude" (dbmgr importxml) 2026-09-22; wymaga potwierdzenia w GUI klienta
+  przed produkcja.
+
+  Wymaga wczesniej: FeatureDefinition "Weryfikator11h" na tabeli DefinicjeStref
+  (guid aa96da4b-0e5d-4504-9bad-89eac460fc1c) oraz ustawienia tej cechy = True
+  na definicjach stref typu "Dyzur domowy".
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <DefinicjaWeryfikatoraKalendarza id="DefinicjaWeryfikatoraKalendarza_11h" guid="1eeff9e2-7888-4309-ad2b-3064a1729809" class="Soneta.Kalend.DefinicjaWeryfikatoraKalendarza+DzienPlanu,Soneta.KadryPlace">
+    <Rodzaj>DzienPlanu</Rodzaj>
+    <Nazwa>11-sto godzinny odpoczynek</Nazwa>
+    <Opis>Odpoczynek 11h liczony w ramach jednej doby pracowniczej (24h), tylko dla dni modyfikowanych (jawny wyjatek w kalendarzu pracownika). Kotwica doby: praca w normie, a w dni wolne strefa Dyzur domowy (cecha Weryfikator11h). Sprawdza takze dobe dnia poprzedniego, jesli jest modyfikowana.</Opis>
+    <Blokada>False</Blokada>
+    <Priorytet>0</Priorytet>
+    <Code>public override string Weryfikuj(Soneta.Kalend.DzienPlanu dp, WeryfikujEventArgs args)
+{
+    // 11-godzinny odpoczynek dobowy liczony W RAMACH JEDNEJ DOBY PRACOWNICZEJ (sztywne 24 h),
+    // a NIE względem realnego początku pracy w kolejnej dobie (jak standardowy weryfikator Sonety).
+    //
+    // Doba pracownicza: okno [poczatekDoby ; poczatekDoby + 24h].
+    //  poczatekDoby = początek "pracy w normie" w danym dniu;
+    //       gdy w dniu brak pracy w normie (święto / sobota / niedziela / wolny za święto -
+    //       jedyną strefą bywa wtedy Dyżur domowy) - początek najwcześniejszej strefy aktywności;
+    //       gdy i tego brak - OdGodziny dnia.
+    //  Strefy aktywności = strefy wliczane do doby wg Sonety (Wchodzi &amp;&amp; Typ == Zwiększa)
+    //       oraz strefy oznaczone cechą "Weryfikator11h" (Dyżur domowy).
+    //       Uwzględniane są też wczesnoranne strefy dnia NASTĘPNEGO, jeśli ich początek
+    //       wpada jeszcze w okno doby bieżącej (przesunięte o +24h na wspólną oś czasu).
+    //  Naruszenie: największa ciągła przerwa w oknie doby jest &lt; 11 h.
+    //
+    // Sprawdzamy dobę rozpoczętą w dniu bieżącym ORAZ w dniu poprzednim - komunikat o dobie
+    // np. soboty ma się pojawić także podczas wprowadzania zapisów na niedzielę.
+    //
+    // Weryfikator dotyczy WYŁĄCZNIE dni MODYFIKOWANYCH - dni z jawnym wyjątkiem w kalendarzu
+    // pracownika (kolor żółty dnia w GUI), czyli wierszem w Pracownik.DniPlanu dla tej daty.
+    // Dzień dziedziczący godziny z kalendarza wzorcowego (brak wiersza w DniPlanu) NIE jest
+    // sprawdzany i NIE wpływa na wynik weryfikacji dnia sąsiedniego - dotyczy to zarówno
+    // doby dnia poprzedniego, jak i wczesnorannych stref dnia następnego dociąganych do okna.
+    // Przykład: modyfikacja 16.09 (praca 8-16 + dyżur 16-21) bez modyfikacji 17.09 (domyślne
+    // 7-15) - brak błędu, mimo że realny odstęp 21:00-&gt;7:00 to 10h. Błąd pojawi się dopiero,
+    // gdy 17.09 też zostanie zmodyfikowane (dowolnie) i odstęp nadal będzie &lt; 11h.
+    //
+    // Poziom (Error / Warning) ustawiany jest na powiązaniu kalendarza z weryfikatorem
+    // (WeryfikatorKalendarza.Typ), nie w tym kodzie. Wg ustaleń z klientem: Error (blokuje zapis).
+
+    Pracownik pracownik = dp.Pracownik;
+    if (pracownik == null)
+        return null;
+
+    KalkulatorPlanu kalkulatorPlanu = new KalkulatorPlanu(pracownik);
+    Time wymaganyOdpoczynek = new Time(11, 0);
+    Time dlugoscDoby = new Time(24, 0);
+    string komunikat = null;
+
+    // przesuniecieDni = 0 -&gt; doba rozpoczeta dzisiaj; -1 -&gt; doba rozpoczeta wczoraj
+    for (int przesuniecieDni = 0; przesuniecieDni &gt;= -1; przesuniecieDni--)
+    {
+        Date dataDoby = dp.Data + przesuniecieDni;
+
+        // Dzień niemodyfikowany (brak jawnego wyjątku w kalendarzu pracownika) - pomijamy
+        // całą dobę rozpoczętą w tym dniu. Dzień dp.Data jest modyfikowany Z DEFINICJI
+        // (to właśnie ten wiersz jest teraz zapisywany) - sprawdzamy to bez odpytywania
+        // pracownik.DniPlanu, bo w trakcie własnej weryfikacji nie ma pewności, że wiersz
+        // jest już widoczny przez ten indekser.
+        if (dataDoby != dp.Data &amp;&amp; pracownik.DniPlanu[dataDoby] == null)
+            continue;
+
+        Dzien dzien = kalkulatorPlanu[dataDoby];
+        if (dzien == null)
+            continue;
+
+        // --- Kotwica doby oraz zebranie stref aktywności tego dnia ---
+        Time poczatekPracyWNormie = Time.Empty;
+        Time poczatekPierwszejAktywnosci = Time.Empty;
+        FromTimes strefyAktywnosci = FromTimes.Empty;
+
+        foreach (IStrefaExt strefa in (IEnumerable&lt;IStrefaExt&gt;)dzien)
+        {
+            if (strefa.Definicja == null)
+                continue;
+            if (strefa.OdGodziny == Time.Empty || strefa.Czas == Time.Zero)
+                continue;
+
+            bool pracaWliczanaDoDoby = strefa.Definicja.Wchodzi &amp;&amp; strefa.Definicja.Typ == TypStrefy.Zwieksza;
+            bool dyzur = strefa.Definicja.Features.GetBool("Weryfikator11h");
+            if (!pracaWliczanaDoDoby &amp;&amp; !dyzur)
+                continue;
+
+            if (pracaWliczanaDoDoby &amp;&amp; (poczatekPracyWNormie == Time.Empty || strefa.OdGodziny &lt; poczatekPracyWNormie))
+                poczatekPracyWNormie = strefa.OdGodziny;
+            if (poczatekPierwszejAktywnosci == Time.Empty || strefa.OdGodziny &lt; poczatekPierwszejAktywnosci)
+                poczatekPierwszejAktywnosci = strefa.OdGodziny;
+
+            strefyAktywnosci = strefyAktywnosci.Add(new FromTime(strefa.OdGodziny, strefa.Czas));
+        }
+
+        Time poczatekDoby;
+        if (poczatekPracyWNormie != Time.Empty)
+            poczatekDoby = poczatekPracyWNormie;
+        else if (poczatekPierwszejAktywnosci != Time.Empty)
+            poczatekDoby = poczatekPierwszejAktywnosci;
+        else if (dzien.OdGodziny != Time.Empty)
+            poczatekDoby = dzien.OdGodziny;
+        else
+            continue; // brak jakiejkolwiek aktywności w tej dobie - nie ma czego sprawdzać
+
+        Time koniecDoby = poczatekDoby + dlugoscDoby;
+
+        // --- Wczesnoranne strefy dnia następnego, wpadające w okno doby bieżącej ---
+        // (np. sobota 8:00-21:00, niedziela od 7:00 -&gt; fragment niedzieli 7:00-8:00
+        // mieści się jeszcze w oknie doby sobotniej [8:00 sob ; 8:00 niedz]).
+        // Przesunięte o +24h na wspólną oś czasu doby; przycięcie do [poczatekDoby;koniecDoby]
+        // robi już logika klipowania poniżej.
+        //
+        // Dociągane WYŁĄCZNIE gdy dzień następny jest dniem modyfikowanym (jawny wyjątek
+        // w kalendarzu) - dzień dziedziczący z kalendarza wzorcowego nie ma wpływać na wynik
+        // weryfikacji dnia bieżącego, dopóki sam nie zostanie zmodyfikowany. Dzień dp.Data
+        // jest modyfikowany z definicji (patrz komentarz wyżej) - stąd dodatkowy warunek
+        // "dataDoby + 1 == dp.Data" niezależny od pracownik.DniPlanu.
+        if (dataDoby + 1 == dp.Data || pracownik.DniPlanu[dataDoby + 1] != null)
+        {
+            Dzien dzienNastepny = kalkulatorPlanu[dataDoby + 1];
+            if (dzienNastepny != null)
+            {
+                foreach (IStrefaExt strefa in (IEnumerable&lt;IStrefaExt&gt;)dzienNastepny)
+                {
+                    if (strefa.Definicja == null)
+                        continue;
+                    if (strefa.OdGodziny == Time.Empty || strefa.Czas == Time.Zero)
+                        continue;
+
+                    bool pracaWliczanaDoDobyNast = strefa.Definicja.Wchodzi &amp;&amp; strefa.Definicja.Typ == TypStrefy.Zwieksza;
+                    bool dyzurNast = strefa.Definicja.Features.GetBool("Weryfikator11h");
+                    if (!pracaWliczanaDoDobyNast &amp;&amp; !dyzurNast)
+                        continue;
+
+                    strefyAktywnosci = strefyAktywnosci.Add(new FromTime(strefa.OdGodziny + dlugoscDoby, strefa.Czas));
+                }
+            }
+        }
+
+        strefyAktywnosci = strefyAktywnosci.ToFlat();
+
+        // --- Największa ciągła przerwa w oknie [poczatekDoby ; koniecDoby] ---
+        Time najwiekszaPrzerwa = dlugoscDoby;   // gdy w oknie brak aktywności = pełny odpoczynek
+        Time koniecPoprzedniejStrefy = poczatekDoby;
+        bool bylaAktywnoscWOknie = false;
+        foreach (FromTime strefa in strefyAktywnosci)
+        {
+            Time strefaOd = strefa.From &lt; poczatekDoby ? poczatekDoby : strefa.From;
+            Time strefaDo = strefa.To &gt; koniecDoby ? koniecDoby : strefa.To;
+            if (strefaDo &lt;= strefaOd)
+                continue; // strefa poza oknem doby
+
+            Time przerwa = strefaOd &gt; koniecPoprzedniejStrefy ? strefaOd - koniecPoprzedniejStrefy : Time.Zero;
+            if (!bylaAktywnoscWOknie)
+            {
+                najwiekszaPrzerwa = przerwa;   // przerwa wiodąca (od poczatekDoby do pierwszej strefy)
+                bylaAktywnoscWOknie = true;
+            }
+            else if (przerwa &gt; najwiekszaPrzerwa)
+            {
+                najwiekszaPrzerwa = przerwa;   // przerwa między strefami
+            }
+            koniecPoprzedniejStrefy = strefaDo;
+        }
+        if (bylaAktywnoscWOknie)
+        {
+            Time przerwaKoncowa = koniecDoby &gt; koniecPoprzedniejStrefy ? koniecDoby - koniecPoprzedniejStrefy : Time.Zero;
+            if (przerwaKoncowa &gt; najwiekszaPrzerwa)
+                najwiekszaPrzerwa = przerwaKoncowa;   // przerwa końcowa (od ostatniej strefy do poczatekDoby + 24h)
+        }
+
+        if (najwiekszaPrzerwa &lt; wymaganyOdpoczynek)
+        {
+            string dataTekst = dataDoby.Day.ToString("00") + "." + dataDoby.Month.ToString("00") + "." + dataDoby.Year.ToString();
+            string linia = "W dobie pracowniczej rozpoczętej {0} nie zachowano wymaganego przepisami prawa pracy 11-godzinnego odpoczynku dobowego (najdłuższa przerwa w dobie: {1}). {2}"
+                .TranslateFormat(dataTekst, najwiekszaPrzerwa, pracownik);
+            komunikat = komunikat == null ? linia : komunikat + System.Environment.NewLine + linia;
+        }
+    }
+
+    return komunikat;
+}
+
+</Code>
+    <RuntimeInfo>
+      <Project />
+      <Identifier />
+      <FileName />
+    </RuntimeInfo>
+  </DefinicjaWeryfikatoraKalendarza>
+</session>
