@@ -12,7 +12,7 @@ using Soneta.Types;
 using AltOne.Skanska.Workflow.Extensions;
 using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples;
 
-namespace x.x.Reports
+namespace Soneta.KadryPlace.Reports
 {
     // ============================================================
     //  RAPORT: Zestawienie na posiedzenie Komisji Socjalnej (ZFŚS)
