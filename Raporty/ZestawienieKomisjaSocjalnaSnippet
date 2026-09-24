@@ -14,78 +14,53 @@ using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples;
 
 namespace x.x.Reports
 {
-    // Zestawienie na posiedzenie Komisji Socjalnej.
+    // ============================================================
+    //  RAPORT: Zestawienie na posiedzenie Komisji Socjalnej (ZFŚS)
+    // ============================================================
     //
-    // Wydruk (ZestawienieKomisjaSocjalna.repx) uruchamiany jest z LISTY
-    // ŚWIADCZEŃ SOCJALNYCH (ZFŚS / Świadczenia socjalne, obiekt
-    // Soneta.Kadry.SwiadczSocjalne, tabela SwiadczeniaSoc) - NIE z listy
-    // pracowników jak w poprzedniej wersji. Na tej liście mogą znajdować się
-    // zarówno aktualni pracownicy, jak i osoby już niezatrudnione, którym
-    // przyznano zapomogę (kwota świadczenia może wynosić nawet 0).
+    // Wydruk uruchamia się z LISTY ŚWIADCZEŃ SOCJALNYCH (ZFŚS), nie z listy
+    // pracowników. Na tej liście mogą być też osoby już zwolnione, którym
+    // przyznano zapomogę - one też mogą trafić na wydruk.
     //
-    // DOBÓR PRACOWNIKÓW (parametr "Data posiedzenia komisji"):
-    //   Raport skanuje WSZYSTKIE świadczenia socjalne (session.GetKadry().
-    //   SwiadczeniaSoc) i bierze każdego pracownika, którego świadczenie ma
-    //   cechę "PosiedzenieKomisji" (typu Data) RÓWNĄ dacie z parametru -
-    //   dopasowanie jest DOKŁADNE (nie oknem czasowym). Dotyczy to także
-    //   pracowników zwolnionych i spoza bieżącego filtra listy.
-    //   Parametr "Tylko świadczenia zaznaczone na liście" (domyślnie
-    //   odznaczony) pozwala zamiast tego wziąć wyłącznie zaznaczone na liście
-    //   wiersze świadczeń (bez sprawdzania cechy - ufamy zaznaczeniu
-    //   operatora).
-    //   Dodatkowy parametr "Emeryci / Pracownicy / Wszyscy" (domyślnie
-    //   Wszyscy) filtruje wynikową listę pracowników wg cechy
-    //   "CzyEmerytRencista" (bool) na Pracowniku - zaznaczona = emeryt,
-    //   niezaznaczona = pracownik. Stosowany PO doborze wg posiedzenia/
-    //   zaznaczenia, niezależnie od trybu.
-    // Pracownicy sortowani po "Nazwisko i Imię".
+    // JAK RAPORT WYBIERA, KOGO POKAZAĆ:
+    //   - Domyślnie: pokazuje każdego pracownika, którego zapomoga ma
+    //     ustawioną cechę "Posiedzenie komisji" z datą DOKŁADNIE równą
+    //     dacie podanej w parametrze "Data posiedzenia komisji". Dotyczy
+    //     to również osób już zwolnionych.
+    //   - Jeśli zaznaczysz parametr "Tylko świadczenia zaznaczone na
+    //     liście" - raport weźmie wyłącznie wiersze zaznaczone ręcznie na
+    //     liście świadczeń (nie patrzy wtedy na cechę powyżej).
+    //   - Parametr "Emeryci / Pracownicy / Wszyscy" dodatkowo zawęża wynik
+    //     wg cechy "Czy emeryt/rencista" na kartotece pracownika.
+    //   - Lista jest posortowana alfabetycznie po nazwisku i imieniu.
     //
-    // UKŁAD MASTER-DETAIL: jeden wiersz wydruku = jedna zapomoga (świadczenie
-    // socjalne). Dla pracownika z kilkoma zapomogami powstaje kilka wierszy.
-    // Kolumny "poziomu pracownika" (Lp, Nr ewid., Nazwisko, Data urodzenia,
-    // Jednostka obsługująca, Dochód na członka rodziny, Kwota zapomogi z
-    // aktualnego świadczenia) oraz sumy (Kwota zapomogi z 2 lat, Kwota
-    // zapomóg z poprzednich 2 lat) wypełniane są TYLKO w pierwszym wierszu
-    // grupy pracownika; w kolejnych wierszach te komórki są puste. Dwie
-    // listy zapomóg (okno bieżące / poprzednie) są wyrównane wierszami:
-    // dłuższa wyznacza liczbę wierszy grupy, krótsza ma puste komórki w
-    // nadmiarowych wierszach. Pracownik BEZ ŻADNEJ zapomogi (ani w oknach
-    // sum, ani "aktualnej" z tego posiedzenia) jest pomijany (nie trafia na
-    // wydruk, nie zużywa numeru Lp).
+    // JAK CZYTAĆ WYDRUK:
+    //   - Jeden wiersz = jedna zapomoga. Pracownik z kilkoma zapomogami ma
+    //     pod sobą kilka wierszy.
+    //   - Dane pracownika (numer, nazwisko, data urodzenia, dochód na
+    //     członka rodziny itd.) oraz sumy pokazują się TYLKO w pierwszym
+    //     wierszu danej osoby - to zamierzone, nie błąd.
+    //   - "Kwota zapomogi z aktualnego świadczenia" to kwota zapomogi, dla
+    //     której akurat odbywa się to posiedzenie komisji.
+    //   - "Kwota zapomogi z 2 lat" i "z poprzednich 2 lat" to sumy
+    //     wcześniejszych zapomóg z pełnych lat kalendarzowych, licząc
+    //     wstecz od roku posiedzenia. Sam rok posiedzenia NIE wchodzi do
+    //     tych dwóch sum - to jest osobna, trzecia liczba.
+    //     Przykład: posiedzenie w 2026 r. -> "z 2 lat" to 2024-2025,
+    //     "z poprzednich 2 lat" to 2022-2023.
+    //   - Zapomoga w kwocie 0 zł też się liczy jako przyznana - pusta
+    //     komórka oznacza, że w danym okresie NIE było żadnej zapomogi
+    //     (a nie że była, ale za 0 zł).
+    //   - Pracownik bez żadnej zapomogi (ani teraz, ani w poprzednich
+    //     okresach) w ogóle nie pojawia się na wydruku.
+    //   - "Dochód na członka rodziny" pochodzi z wniosku ZFŚS złożonego
+    //     przez pracownika, a jeśli go brak - z danych historycznych ze
+    //     starego systemu (migracja).
     //
-    // KWOTA ZAPOMOGI Z AKTUALNEGO ŚWIADCZENIA (kolumna między "Dochód na
-    // członka rodziny" a "Kwota zapomogi z 2 lat"): suma Rozliczenie.Kwota
-    // świadczeń, które faktycznie sprowadziły pracownika na to zestawienie -
-    // czyli tych z cechą PosiedzenieKomisji == parametr (albo, w trybie
-    // "Tylko zaznaczone", zaznaczonych wierszy świadczeń). Rok posiedzenia R
-    // jest CELOWO pominięty w oknach "z 2 lat"/"z poprzednich 2 lat" (patrz
-    // niżej), więc "aktualne" świadczenie zwykle NIE wchodzi też w żadną z
-    // tych dwóch sum - to jest osobna, trzecia liczba, nie ich składowa.
-    //
-    // OKNA CZASOWE SUM to (jak poprzednio) całe LATA KALENDARZOWE liczone od
-    // roku parametru "Data posiedzenia komisji" (rok R = rok tej daty). Rok R
-    // jest pominięty w obu oknach:
-    //   - "z 2 lat"            = lata R-2 i R-1  ([1.1.(R-2), 31.12.(R-1)])
-    //   - "z poprzednich 2 lat" = lata R-4 i R-3 ([1.1.(R-4), 31.12.(R-3)])
-    // WAŻNA ZMIANA względem poprzedniej wersji: te sumy NIE są już liczone
-    // skanując elementy wypłat (WypElement) - źródłem jest teraz kolekcja
-    // świadczeń socjalnych pracownika (pracownik.Swiadczenia,
-    // SubTable<SwiadczSocjalne>), pole "Data" świadczenia (data przyznania) i
-    // Rozliczenie.Kwota. Zapomoga = świadczenie, którego Definicja (rodzaj
-    // świadczenia, słownik DefSwiadczSocjal) ma w nazwie "zapomog"/"zapomóg".
-    // Kwota 0 jest wartością poprawną i widoczną (nie jest już traktowana
-    // jak "brak zapomogi") - pusta komórka oznacza teraz wyłącznie brak
-    // JAKIEJKOLWIEK zapomogi w danym oknie, nie zerową kwotę.
-    //
-    // Dochód na członka rodziny pochodzi z wniosku ZFŚS pracownika (dodatek
-    // AltOne.Skanska.Workflow) - patrz PobierzDochodNaCzlonkaRodziny.
-    //
-    // Odporność na błędy: grupa każdego pracownika budowana jest w osobnym
-    // try/catch - błąd dla jednego pracownika daje jeden wiersz "[BŁĄD: ...]"
-    // zamiast wywalenia wydruku. Cała metoda BeforePrint jest dodatkowo
-    // opakowana w try/catch (jeden diagnostyczny wiersz "BŁĄD" z etapem).
-    // Filtr "kto ma trafić na zestawienie" wg cechy "CzyEmerytRencista"
-    // (bool) na Pracowniku. Wszyscy = bez filtrowania (domyślnie).
+    // Jeśli dla któregoś pracownika coś pójdzie nie tak przy liczeniu, nie
+    // psuje to całego wydruku - w jego miejscu pojawi się jeden wiersz
+    // "[BŁĄD: ...]" z opisem problemu, a reszta zestawienia drukuje się
+    // normalnie. To samo dotyczy błędu w całym raporcie (wiersz "BŁĄD").
     public enum RodzajOsoby
     {
         [Caption("Wszyscy")] Wszyscy = 0,
