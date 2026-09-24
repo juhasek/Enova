@@ -10,7 +10,9 @@ using Soneta.Place;
 using Soneta.Tools;         // TranslateFormat
 using Soneta.Types;
 using AltOne.Skanska.Workflow.Extensions;
+using AltOne.Skanska.Workflow.Konfiguracja.Config;
 using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples;
+using AltOne.EnovaExt.Business.App.Operator;
 
 namespace Soneta.KadryPlace.Reports
 {
@@ -331,7 +333,7 @@ namespace Soneta.KadryPlace.Reports
         {
             A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, dataOdniesienia, dataOdniesienia.Year);
             if (wniosek == null)
-                return PobierzDochodMigracja(pracownik);
+                return PobierzDochodMigracja(pracownik, dataOdniesienia);
             if (!wniosek.CzyPrawaDoWidokuProgow())
                 return "(Brak praw do widoku)";
             string zWniosku = wniosek._RodzajWskazywaniaDochodu == "Kwota"
@@ -339,16 +341,29 @@ namespace Soneta.KadryPlace.Reports
                 : (wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "");
             // Wniosek istnieje, ale bez wartości (np. nie wybrano progu) - sięgamy
             // po dane zmigrowane zamiast zostawiać pustą komórkę.
-            return !string.IsNullOrEmpty(zWniosku) ? zWniosku : PobierzDochodMigracja(pracownik);
+            return !string.IsNullOrEmpty(zWniosku) ? zWniosku : PobierzDochodMigracja(pracownik, dataOdniesienia);
         }
 
-        static string PobierzDochodMigracja(Pracownik pracownik)
+        // Odpowiednik WniosekZFFSPracownikaWorker.GetDochodMigracja (dekompilacja
+        // AltOne.Skanska.Workflow.dll), ale bez tego workera wprost - wymaga on
+        // dodatkowo kontekstu WnioskiZFSSParams (Pars.Aktualny), którego snippet
+        // raportu nie ma i nie da się bezpiecznie zbudować poza żywym widokiem.
+        // Czytamy tę samą cechę "Dochód" na historii pracownika, tylko wg naszej
+        // własnej daty odniesienia (data posiedzenia) zamiast Pars.Aktualny.
+        static string PobierzDochodMigracja(Pracownik pracownik, Date dataOdniesienia)
         {
-            var worker = new AltOne.Skanska.Workflow.Workers.Wyliczane.WniosekZFFSPracownikaWorker
-            {
-                Pracownik = pracownik
-            };
-            return worker.GetDochodMigracja ?? "";
+            if (!CzyMaPrawoDoDochoduMigracji(pracownik.Session))
+                return "(Brak praw do widoku)";
+            object dochod = pracownik[dataOdniesienia].Features["Dochód"];
+            return dochod != null ? Math.Round((decimal) dochod, 2).ToString() : "";
+        }
+
+        static bool CzyMaPrawoDoDochoduMigracji(Session session)
+        {
+            if (session.Login.Operator == null)
+                return false;
+            var config = new WniosekZFSSConfig(session);
+            return OperatorExt.OperatorPosiadaRole(session.Login.Operator, new Guid(config.RolaWidocznosciKwotGuid));
         }
 
         static Dictionary<Pracownik, List<SwiadczSocjalne>> ZbierzSwiadczeniaPosiedzenia(Session session, Date dataPosiedzenia)
