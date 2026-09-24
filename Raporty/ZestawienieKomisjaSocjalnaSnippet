@@ -1,991 +1,490 @@
-using System; 
-
-using System.Collections.Generic; 
-
-using System.ComponentModel; 
-
-using DevExpress.XtraReports.UI; 
-
-using Soneta.Business; 
-
-using Soneta.Business.UI.DxReports; 
-
-using Soneta.Kadry; 
-
-using Soneta.Ksiega; 
-
-using Soneta.Place; 
-
-using Soneta.Tools;         // TranslateFormat 
-
-using Soneta.Types; 
-
-using AltOne.Skanska.Workflow.Extensions; 
-
-using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples; 
-
-  
-
-namespace Soneta.KadryPlace.Reports 
-
-{ 
-
-    // ============================================================ 
-
-    //  RAPORT: Zestawienie na posiedzenie Komisji Socjalnej (ZFŚS) 
-
-    // ============================================================ 
-
-    // 
-
-    // Wydruk uruchamia się z LISTY ŚWIADCZEŃ SOCJALNYCH (ZFŚS), nie z listy 
-
-    // pracowników. Na tej liście mogą być też osoby już zwolnione, którym 
-
-    // przyznano zapomogę - one też mogą trafić na wydruk. 
-
-    // 
-
-    // JAK RAPORT WYBIERA, KOGO POKAZAĆ: 
-
-    //   - Domyślnie: pokazuje każdego pracownika, którego zapomoga ma 
-
-    //     ustawioną cechę "Posiedzenie komisji" z datą DOKŁADNIE równą 
-
-    //     dacie podanej w parametrze "Data posiedzenia komisji". Dotyczy 
-
-    //     to również osób już zwolnionych. 
-
-    //   - Jeśli zaznaczysz parametr "Tylko świadczenia zaznaczone na 
-
-    //     liście" - raport weźmie wyłącznie wiersze zaznaczone ręcznie na 
-
-    //     liście świadczeń (nie patrzy wtedy na cechę powyżej). 
-
-    //   - Parametr "Emeryci / Pracownicy / Wszyscy" dodatkowo zawęża wynik 
-
-    //     wg cechy "Czy emeryt/rencista" na kartotece pracownika. 
-
-    //   - Lista jest posortowana alfabetycznie po nazwisku i imieniu. 
-
-    // 
-
-    // JAK CZYTAĆ WYDRUK: 
-
-    //   - Jeden wiersz = jedna zapomoga. Pracownik z kilkoma zapomogami ma 
-
-    //     pod sobą kilka wierszy. 
-
-    //   - Dane pracownika (numer, nazwisko, data urodzenia, dochód na 
-
-    //     członka rodziny itd.) oraz sumy pokazują się TYLKO w pierwszym 
-
-    //     wierszu danej osoby - to zamierzone, nie błąd. 
-
-    //   - "Kwota zapomogi z aktualnego świadczenia" to kwota zapomogi, dla 
-
-    //     której akurat odbywa się to posiedzenie komisji. 
-
-    //   - "Kwota zapomogi z 2 lat" i "z poprzednich 2 lat" to sumy 
-
-    //     wcześniejszych zapomóg z pełnych lat kalendarzowych, licząc 
-
-    //     wstecz od roku posiedzenia. Sam rok posiedzenia NIE wchodzi do 
-
-    //     tych dwóch sum - to jest osobna, trzecia liczba. 
-
-    //     Przykład: posiedzenie w 2026 r. -> "z 2 lat" to 2024-2025, 
-
-    //     "z poprzednich 2 lat" to 2022-2023. 
-
-    //   - Zapomoga w kwocie 0 zł też się liczy jako przyznana - pusta 
-
-    //     komórka oznacza, że w danym okresie NIE było żadnej zapomogi 
-
-    //     (a nie że była, ale za 0 zł). 
-
-    //   - Pracownik bez żadnej zapomogi (ani teraz, ani w poprzednich 
-
-    //     okresach) w ogóle nie pojawia się na wydruku. 
-
-    //   - "Dochód na członka rodziny" pochodzi z wniosku ZFŚS złożonego 
-
-    //     przez pracownika, a jeśli go brak - z danych historycznych ze 
-
-    //     starego systemu (migracja). 
-
-    // 
-
-    // Jeśli dla któregoś pracownika coś pójdzie nie tak przy liczeniu, nie 
-
-    // psuje to całego wydruku - w jego miejscu pojawi się jeden wiersz 
-
-    // "[BŁĄD: ...]" z opisem problemu, a reszta zestawienia drukuje się 
-
-    // normalnie. To samo dotyczy błędu w całym raporcie (wiersz "BŁĄD"). 
-
-    public enum RodzajOsoby 
-
-    { 
-
-        [Caption("Wszyscy")] Wszyscy = 0, 
-
-        [Caption("Emeryci")] Emeryci = 1, 
-
-        [Caption("Pracownicy")] Pracownicy = 2 
-
-    } 
-
-  
-
-    public class ZestawienieKomisjaSocjalnaSnippet : ReportSnippet 
-
-    { 
-
- 
-
-        public class PrnParams : ContextBase 
-
-        { 
-
-            Date dataPosiedzenia; 
-
-            bool tylkoZaznaczeni; 
-
-            RodzajOsoby rodzajOsoby; 
-
-  
-
-            public PrnParams(Context context) : base(context) 
-
-            { 
-
-                dataPosiedzenia = Date.Today; 
-
-                tylkoZaznaczeni = false; 
-
-                rodzajOsoby = RodzajOsoby.Wszyscy; 
-
-            } 
-
-  
-
-            [Caption("Data posiedzenia komisji")] 
-
-            public Date DataPosiedzenia 
-
-            { 
-
-                get { return dataPosiedzenia; } 
-
-                set 
-
-                { 
-
-                    dataPosiedzenia = value; 
-
-                    OnChanged(EventArgs.Empty); 
-
-                } 
-
-            } 
-
-  
-
-            [Caption("Tylko świadczenia zaznaczone na liście")] 
-
-            public bool TylkoZaznaczeni 
-
-            { 
-
-                get { return tylkoZaznaczeni; } 
-
-                set 
-
-                { 
-
-                    tylkoZaznaczeni = value; 
-
-                    OnChanged(EventArgs.Empty); 
-
-                } 
-
-            } 
-
-  
-
-            [Caption("Emeryci / Pracownicy / Wszyscy")] 
-
-            public RodzajOsoby RodzajOsoby 
-
-            { 
-
-                get { return rodzajOsoby; } 
-
-                set 
-
-                { 
-
-                    rodzajOsoby = value; 
-
-                    OnChanged(EventArgs.Empty); 
-
-                } 
-
-            } 
-
-        } 
-
-  
-
-        PrnParams pars; 
-
-  
-
-        [Context(Required = true)] 
-
-        public PrnParams Params 
-
-        { 
-
-            get { return pars; } 
-
-            set { pars = value; } 
-
-        } 
-
-  
-
-        [DxBind] 
-
-        private readonly XRLabel labelTytul; 
-
- 
-
-        private void UstawDaneRaportu(object dane) 
-
-        { 
-
-            object zrodlo = DxReportHelpers.GetDataSourceEmpty(this); 
-
-            if (zrodlo == null) 
-
-                return; 
-
-            var wlasciwosc = zrodlo.GetType().GetProperty("CustomDataSource"); 
-
-            if (wlasciwosc != null) 
-
-                wlasciwosc.SetValue(zrodlo, dane, null); 
-
-        } 
-
-  
-
-        [DxBind(Name = "Report")] 
-
-        private void ZestawienieKomisjaSocjalna_BeforePrint(object sender, CancelEventArgs e) 
-
-        { 
-
-            string etap = "start"; 
-
-            try 
-
-            { 
-
-                etap = "sprawdzenie trybu (designer)"; 
-
-                if (pars == null) 
-
-                { 
-
-                    UstawDaneRaportu(new List<Wiersz>()); 
-
-                    return; 
-
-                } 
-
-  
-
-                etap = "pobranie kontekstu"; 
-
-                Context dc = pars.Context; 
-
-                if (dc == null) 
-
-                { 
-
-                    UstawDaneRaportu(new List<Wiersz>()); 
-
-                    return; 
-
-                } 
-
-  
-
-                etap = "ustalenie okien czasowych sum"; 
-
-                Date dataOdniesienia = pars.DataPosiedzenia != Date.Empty ? pars.DataPosiedzenia : Date.Today; 
-
-                int rok = dataOdniesienia.Year; 
-
-                // Okna sum to całe lata kalendarzowe; rok R = rok daty posiedzenia jest pominięty. 
-
-                Date odBiezace = new Date(rok - 2, 1, 1);        // lata R-2, R-1 
-
-                Date doBiezace = new Date(rok - 1, 12, 31); 
-
-                Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3 
-
-                Date doPoprzednie = new Date(rok - 3, 12, 31); 
-
-  
-
-                etap = "ustawienie nagłówka"; 
-
-                labelTytul.Text = "Zebranie Komisji Socjalnej SKANSKA S.A. Zestawienie {0} na posiedzenie Komisji w dn. {1}" 
-
-                    .TranslateFormat(NazwaRodzaju(pars.RodzajOsoby), dataOdniesienia.ToString()); 
-
-  
-
-                etap = "zbieranie świadczeń wg posiedzenia"; 
-
- 
-
-                Dictionary<Pracownik, List<SwiadczSocjalne>> swiadczeniaAktualne; 
-
-                if (pars.TylkoZaznaczeni) 
-
-                { 
-
- 
-
-                    Row[] rows = dc[typeof(Row[])] as Row[]; 
-
-                    if (rows == null) 
-
-                    { 
-
-                        UstawDaneRaportu(new List<Wiersz>()); 
-
-                        return; 
-
-                    } 
-
-                    swiadczeniaAktualne = new Dictionary<Pracownik, List<SwiadczSocjalne>>(); 
-
-                    foreach (Row row in rows) 
-
-                    { 
-
-                        SwiadczSocjalne sw = row as SwiadczSocjalne; 
-
-                        Pracownik p = sw != null ? sw.Pracownik : null; 
-
-                        if (p == null) 
-
-                            continue; 
-
-                        DodajDoMapy(swiadczeniaAktualne, p, sw); 
-
-                    } 
-
-                } 
-
-                else 
-
-                { 
-
- 
-
-                    swiadczeniaAktualne = ZbierzSwiadczeniaPosiedzenia(dc.Session, dataOdniesienia); 
-
-                } 
-
-  
-
-                etap = "filtrowanie wg Emeryci/Pracownicy/Wszyscy"; 
-
-                var pracownicy = new List<Pracownik>(); 
-
-                foreach (Pracownik p in swiadczeniaAktualne.Keys) 
-
-                    if (CzyPasujeRodzaj(p, pars.RodzajOsoby)) 
-
-                        pracownicy.Add(p); 
-
-  
-
-                etap = "sortowanie listy pracowników"; 
-
-                pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture)); 
-
-  
-
-                etap = "budowanie wierszy"; 
-
-                var wiersze = new List<Wiersz>(); 
-
-                int lp = 1; 
-
-                foreach (Pracownik pracownik in pracownicy) 
-
-                { 
-
-                    Pracownik pr = pracownik; 
-
-                    try 
-
-                    { 
-
-                        DodajWierszePracownika(wiersze, ref lp, pr, swiadczeniaAktualne[pr], dataOdniesienia, 
-
-                            odBiezace, doBiezace, odPoprzednie, doPoprzednie); 
-
-                    } 
-
-                    catch (Exception ex) 
-
-                    { 
-
-                        Wiersz blad = NowyWiersz(); 
-
-                        blad.Lp = (lp++).ToString(); 
-
-                        blad.NrEwid = Bezpiecznie(() => pr.Kod); 
-
-                        blad.NazwiskoImie = "[BŁĄD: " + ex.Message + "]"; 
-
-                        wiersze.Add(blad); 
-
-                    } 
-
-                } 
-
-  
-
-                etap = "ustawienie CustomDataSource"; 
-
-                UstawDaneRaportu(wiersze); 
-
-            } 
-
-            catch (Exception ex) 
-
-            { 
-
-                string opis = "ETAP=" + (etap ?? "(null)") 
-
-                    + " | TYP=" + ex.GetType().FullName 
-
-                    + " | KOMUNIKAT=" + ex.Message; 
-
-                UstawDaneRaportu(new List<Wiersz> { 
-
-                    new Wiersz { 
-
-                        Lp = "BŁĄD", 
-
-                        NazwiskoImie = opis 
-
-                    } 
-
-                }); 
-
-            } 
-
-        } 
-
-  
-
-        // Buduje grupę wierszy dla jednego pracownika (1..N wierszy). 
-
-        static void DodajWierszePracownika(List<Wiersz> wiersze, ref int lp, Pracownik pr, 
-
-            List<SwiadczSocjalne> aktualne, 
-
-            Date dataOdniesienia, Date odBiezace, Date doBiezace, Date odPoprzednie, Date doPoprzednie) 
-
-        { 
-
-            List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, doBiezace); 
-
-            List<ZapomogaPozycja> poprzednie = ZapomogiWOknie(pr, odPoprzednie, doPoprzednie); 
-
- 
-
-            if (aktualne.Count == 0 && biezace.Count == 0 && poprzednie.Count == 0) 
-
-                return; 
-
-  
-
-            decimal sumaAktualna = 0m; 
-
-            foreach (SwiadczSocjalne sw in aktualne) sumaAktualna += sw.Rozliczenie.Kwota.Value; 
-
-            decimal sumaBiezace = 0m; 
-
-            foreach (ZapomogaPozycja z in biezace) sumaBiezace += z.Kwota; 
-
-            decimal sumaPoprzednie = 0m; 
-
-            foreach (ZapomogaPozycja z in poprzednie) sumaPoprzednie += z.Kwota; 
-
-  
-
-            int ile = biezace.Count > poprzednie.Count ? biezace.Count : poprzednie.Count; 
-
- 
-
-            if (ile == 0 && aktualne.Count > 0) 
-
-                ile = 1; 
-
-  
-
-            for (int i = 0; i < ile; i++) 
-
-            { 
-
-                Wiersz w = NowyWiersz(); 
-
-  
-
-                if (i == 0) 
-
-                { 
-
-                    w.Lp = (lp++).ToString(); 
-
-                    w.NrEwid = Bezpiecznie(() => pr.Kod); 
-
-                    w.NazwiskoImie = Bezpiecznie(() => pr.NazwiskoImię.ToString()); 
-
-                    w.DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString()); 
-
-                    w.JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr)); 
-
-                    w.DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr, dataOdniesienia)); 
-
-                    // Kwota 0 jest wynikiem poprawnym (świadczenie przyznane w 
-
-                    // kwocie 0) - suma pokazuje się zawsze, gdy jest choć jedna 
-
-                    // zapomoga (aktualna / w oknie); pusta komórka = brak zapomogi. 
-
-                    w.KwotaZapomogiAktualnej = aktualne.Count > 0 ? sumaAktualna.ToString("N2") : ""; 
-
-                    w.KwotaZapomogiZ2Lat = biezace.Count > 0 ? sumaBiezace.ToString("N2") : ""; 
-
-                    w.KwotaZapomogPoprzednich2Lat = poprzednie.Count > 0 ? sumaPoprzednie.ToString("N2") : ""; 
-
-                } 
-
-  
-
-                if (i < biezace.Count) 
-
-                { 
-
-                    w.DataWyplaty = biezace[i].Data.ToString(); 
-
-                    w.KwotaWyplaty = biezace[i].Kwota.ToString("N2"); 
-
-                } 
-
-                if (i < poprzednie.Count) 
-
-                { 
-
-                    w.DataWyplatyPoprzedniej = poprzednie[i].Data.ToString(); 
-
-                    w.KwotaWyplatyPoprzedniej = poprzednie[i].Kwota.ToString("N2"); 
-
-                } 
-
-  
-
-                wiersze.Add(w); 
-
-            } 
-
-        } 
-
-  
-
-        static string Bezpiecznie(Func<string> policz) 
-
-        { 
-
-            try 
-
-            { 
-
-                return policz() ?? ""; 
-
-            } 
-
-            catch (Exception ex) 
-
-            { 
-
-                return "[BŁĄD: " + ex.Message + "]"; 
-
-            } 
-
-        } 
-
-  
-
-        static string PobierzJednostkeObslugujaca(Pracownik pracownik) 
-
-        { 
-
-            PracHistoria biezaca = null; 
-
-            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(new FromTo(Date.Today, Date.Today))) 
-
-                biezaca = ph; 
-
-            if (biezaca == null) 
-
-                biezaca = pracownik.Historia[Date.Today]; 
-
-  
-
-            var wydzial = biezaca != null && biezaca.Etat != null ? biezaca.Etat.Wydzial : null; 
-
-            if (wydzial == null) 
-
-                return ""; 
-
-  
-
-            ElemSlownika elem = (ElemSlownika) wydzial.Features["Jednostka obsługująca"]; 
-
-            return elem != null ? elem.Nazwa : "brak"; 
-
-        } 
-
- 
-
-        static string PobierzDochodNaCzlonkaRodziny(Pracownik pracownik, Date dataOdniesienia) 
-
-        { 
-
-            A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, dataOdniesienia, dataOdniesienia.Year); 
-
- 
-
-            if (wniosek == null) 
-
-                return PobierzDochodMigracja(pracownik); 
-
-            if (!wniosek.CzyPrawaDoWidokuProgow()) 
-
-                return "(Brak praw do widoku)"; 
-
-            if (wniosek._RodzajWskazywaniaDochodu == "Kwota") 
-
-                return wniosek._KwotaDochoduNaCzlonkaRodziny.ToString(); 
-
-            return wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : ""; 
-
-        } 
-
- 
-
-        static string PobierzDochodMigracja(Pracownik pracownik) 
-
-        { 
-
-            var worker = new AltOne.Skanska.Workflow.Workers.Wyliczane.WniosekZFFSPracownikaWorker 
-
-            { 
-
-                Pracownik = pracownik 
-
-            }; 
-
-            return worker.GetDochodMigracja ?? ""; 
-
-        } 
-
- 
-
-        static Dictionary<Pracownik, List<SwiadczSocjalne>> ZbierzSwiadczeniaPosiedzenia(Session session, Date dataPosiedzenia) 
-
-        { 
-
-            var mapa = new Dictionary<Pracownik, List<SwiadczSocjalne>>(); 
-
-            foreach (SwiadczSocjalne sw in session.GetKadry().SwiadczeniaSoc) 
-
-            { 
-
-                if (!CzyZapomoga(sw)) 
-
-                    continue; 
-
-  
-
-                object wartoscCechy = sw.Features["PosiedzenieKomisji"]; 
-
-                if (!(wartoscCechy is Date)) 
-
-                    continue; 
-
-                Date dataKomisji = (Date) wartoscCechy; 
-
-                if (dataKomisji != dataPosiedzenia) 
-
-                    continue; 
-
-  
-
-                Pracownik p = sw.Pracownik; 
-
-                if (p == null) 
-
-                    continue; 
-
-                DodajDoMapy(mapa, p, sw); 
-
-            } 
-
-            return mapa; 
-
-        } 
-
-  
-
-        static void DodajDoMapy(Dictionary<Pracownik, List<SwiadczSocjalne>> mapa, Pracownik p, SwiadczSocjalne sw) 
-
-        { 
-
-            List<SwiadczSocjalne> lista; 
-
-            if (!mapa.TryGetValue(p, out lista)) 
-
-            { 
-
-                lista = new List<SwiadczSocjalne>(); 
-
-                mapa[p] = lista; 
-
-            } 
-
-            lista.Add(sw); 
-
-        } 
-
- 
-
-        static List<ZapomogaPozycja> ZapomogiWOknie(Pracownik pracownik, Date od, Date doDaty) 
-
-        { 
-
-            var lista = new List<ZapomogaPozycja>(); 
-
-            if (doDaty < od) 
-
-                return lista; 
-
-  
-
-            foreach (SwiadczSocjalne sw in pracownik.Swiadczenia) 
-
-            { 
-
-                if (!CzyZapomoga(sw)) 
-
-                    continue; 
-
-                Date data = sw.Data; 
-
-                if (data < od || data > doDaty) 
-
-                    continue; 
-
-  
-
-                ZapomogaPozycja poz = new ZapomogaPozycja(); 
-
-                poz.Data = data; 
-
-                poz.Kwota = sw.Rozliczenie.Kwota.Value; 
-
-                lista.Add(poz); 
-
-            } 
-
-  
-
-            lista.Sort((a, b) => a.Data > b.Data ? 1 : (a.Data < b.Data ? -1 : 0)); 
-
-            return lista; 
-
-        } 
-
-  
-
-        static bool CzyZapomoga(SwiadczSocjalne sw) 
-
-        { 
-
-            return sw.Definicja != null && NazwaZapomoga(sw.Definicja.Nazwa); 
-
-        } 
-
- 
-
-        static bool CzyPasujeRodzaj(Pracownik pracownik, RodzajOsoby rodzaj) 
-
-        { 
-
-            if (rodzaj == RodzajOsoby.Wszyscy) 
-
-                return true; 
-
-  
-
-            object wartoscCechy = pracownik.Features["CzyEmerytRencista"]; 
-
-            bool czyEmeryt = wartoscCechy is bool && (bool) wartoscCechy; 
-
-            return rodzaj == RodzajOsoby.Emeryci ? czyEmeryt : !czyEmeryt; 
-
-        } 
-
- 
-
-        static string NazwaRodzaju(RodzajOsoby rodzaj) 
-
-        { 
-
-            switch (rodzaj) 
-
-            { 
-
-                case RodzajOsoby.Emeryci: 
-
-                    return "Emerytów"; 
-
-                case RodzajOsoby.Pracownicy: 
-
-                    return "Pracowników"; 
-
-                default: 
-
-                    return "Emerytów i Pracowników"; 
-
-            } 
-
-        } 
-
-  
-
-        static bool NazwaZapomoga(string nazwa) 
-
-        { 
-
-            if (string.IsNullOrEmpty(nazwa)) 
-
-                return false; 
-
-            string n = nazwa.ToLowerInvariant(); 
-
-            return n.Contains("zapomog") || n.Contains("zapomóg"); 
-
-        } 
-
-  
-
-        static Wiersz NowyWiersz() 
-
-        { 
-
-            return new Wiersz { 
-
-                Lp = "", 
-
-                NrEwid = "", 
-
-                NazwiskoImie = "", 
-
-                DataUrodzenia = "", 
-
-                JednostkaObslugujaca = "", 
-
-                DochodNaCzlonkaRodziny = "", 
-
-                KwotaZapomogiAktualnej = "", 
-
-                KwotaZapomogiZ2Lat = "", 
-
-                DataWyplaty = "", 
-
-                KwotaWyplaty = "", 
-
-                KwotaZapomogPoprzednich2Lat = "", 
-
-                DataWyplatyPoprzedniej = "", 
-
-                KwotaWyplatyPoprzedniej = "" 
-
-            }; 
-
-        } 
-
-  
-
-        class ZapomogaPozycja 
-
-        { 
-
-            public Date Data; 
-
-            public decimal Kwota; 
-
-        } 
-
-  
-
-        public class Wiersz 
-
-        { 
-
-            public string Lp { get; set; } 
-
-            public string NrEwid { get; set; } 
-
-            public string NazwiskoImie { get; set; } 
-
-            public string DataUrodzenia { get; set; } 
-
-            public string JednostkaObslugujaca { get; set; } 
-
-            public string DochodNaCzlonkaRodziny { get; set; } 
-
-            public string KwotaZapomogiAktualnej { get; set; } 
-
-            public string KwotaZapomogiZ2Lat { get; set; } 
-
-            public string DataWyplaty { get; set; } 
-
-            public string KwotaWyplaty { get; set; } 
-
-            public string KwotaZapomogPoprzednich2Lat { get; set; } 
-
-            public string DataWyplatyPoprzedniej { get; set; } 
-
-            public string KwotaWyplatyPoprzedniej { get; set; } 
-
-        } 
-
-    } 
-
-}	   
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+using Soneta.Business;
+using Soneta.Business.UI.DxReports;
+using Soneta.Kadry;
+using Soneta.Ksiega;
+using Soneta.Place;
+using Soneta.Tools;         // TranslateFormat
+using Soneta.Types;
+using AltOne.Skanska.Workflow.Extensions;
+using AltOne.Skanska.Workflow.Procesy.WniosekZFSS.Tuples;
+
+namespace Soneta.KadryPlace.Reports
+{
+    // ============================================================
+    //  RAPORT: Zestawienie na posiedzenie Komisji Socjalnej (ZFŚS)
+    // ============================================================
+    //
+    // Wydruk uruchamia się z LISTY ŚWIADCZEŃ SOCJALNYCH (ZFŚS), nie z listy
+    // pracowników. Na tej liście mogą być też osoby już zwolnione, którym
+    // przyznano zapomogę - one też mogą trafić na wydruk.
+    //
+    // JAK RAPORT WYBIERA, KOGO POKAZAĆ:
+    //   - Domyślnie: pokazuje każdego pracownika, którego zapomoga ma
+    //     ustawioną cechę "Posiedzenie komisji" z datą DOKŁADNIE równą
+    //     dacie podanej w parametrze "Data posiedzenia komisji". Dotyczy
+    //     to również osób już zwolnionych.
+    //   - Jeśli zaznaczysz parametr "Tylko świadczenia zaznaczone na
+    //     liście" - raport weźmie wyłącznie wiersze zaznaczone ręcznie na
+    //     liście świadczeń (nie patrzy wtedy na cechę powyżej).
+    //   - Parametr "Emeryci / Pracownicy / Wszyscy" dodatkowo zawęża wynik
+    //     wg cechy "Czy emeryt/rencista" na kartotece pracownika.
+    //   - Lista jest posortowana alfabetycznie po nazwisku i imieniu.
+    //
+    // JAK CZYTAĆ WYDRUK:
+    //   - Jeden wiersz = jedna zapomoga. Pracownik z kilkoma zapomogami ma
+    //     pod sobą kilka wierszy.
+    //   - Dane pracownika (numer, nazwisko, data urodzenia, dochód na
+    //     członka rodziny itd.) oraz sumy pokazują się TYLKO w pierwszym
+    //     wierszu danej osoby - to zamierzone, nie błąd.
+    //   - "Kwota zapomogi z aktualnego świadczenia" to kwota zapomogi, dla
+    //     której akurat odbywa się to posiedzenie komisji.
+    //   - "Kwota zapomogi z 2 lat" i "z poprzednich 2 lat" to sumy
+    //     wcześniejszych zapomóg z pełnych lat kalendarzowych, licząc
+    //     wstecz od roku posiedzenia. Sam rok posiedzenia NIE wchodzi do
+    //     tych dwóch sum - to jest osobna, trzecia liczba.
+    //     Przykład: posiedzenie w 2026 r. -> "z 2 lat" to 2024-2025,
+    //     "z poprzednich 2 lat" to 2022-2023.
+    //   - Zapomoga w kwocie 0 zł też się liczy jako przyznana - pusta
+    //     komórka oznacza, że w danym okresie NIE było żadnej zapomogi
+    //     (a nie że była, ale za 0 zł).
+    //   - Pracownik bez żadnej zapomogi (ani teraz, ani w poprzednich
+    //     okresach) w ogóle nie pojawia się na wydruku.
+    //   - "Dochód na członka rodziny" pochodzi z wniosku ZFŚS złożonego
+    //     przez pracownika, a jeśli go brak - z danych historycznych ze
+    //     starego systemu (migracja).
+    //
+    // Jeśli dla któregoś pracownika coś pójdzie nie tak przy liczeniu, nie
+    // psuje to całego wydruku - w jego miejscu pojawi się jeden wiersz
+    // "[BŁĄD: ...]" z opisem problemu, a reszta zestawienia drukuje się
+    // normalnie. To samo dotyczy błędu w całym raporcie (wiersz "BŁĄD").
+    public enum RodzajOsoby
+    {
+        [Caption("Wszyscy")] Wszyscy = 0,
+        [Caption("Emeryci")] Emeryci = 1,
+        [Caption("Pracownicy")] Pracownicy = 2
+    }
+
+    public class ZestawienieKomisjaSocjalnaSnippet : ReportSnippet
+    {
+        public class PrnParams : ContextBase
+        {
+            Date dataPosiedzenia;
+            bool tylkoZaznaczeni;
+            RodzajOsoby rodzajOsoby;
+
+            public PrnParams(Context context) : base(context)
+            {
+                dataPosiedzenia = Date.Today;
+                tylkoZaznaczeni = false;
+                rodzajOsoby = RodzajOsoby.Wszyscy;
+            }
+
+            [Caption("Data posiedzenia komisji")]
+            public Date DataPosiedzenia
+            {
+                get { return dataPosiedzenia; }
+                set
+                {
+                    dataPosiedzenia = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+
+            [Caption("Tylko świadczenia zaznaczone na liście")]
+            public bool TylkoZaznaczeni
+            {
+                get { return tylkoZaznaczeni; }
+                set
+                {
+                    tylkoZaznaczeni = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+
+            [Caption("Emeryci / Pracownicy / Wszyscy")]
+            public RodzajOsoby RodzajOsoby
+            {
+                get { return rodzajOsoby; }
+                set
+                {
+                    rodzajOsoby = value;
+                    OnChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        PrnParams pars;
+
+        [Context(Required = true)]
+        public PrnParams Params
+        {
+            get { return pars; }
+            set { pars = value; }
+        }
+
+        [DxBind]
+        private readonly XRLabel labelTytul;
+
+        private void UstawDaneRaportu(object dane)
+        {
+            object zrodlo = DxReportHelpers.GetDataSourceEmpty(this);
+            if (zrodlo == null)
+                return;
+            var wlasciwosc = zrodlo.GetType().GetProperty("CustomDataSource");
+            if (wlasciwosc != null)
+                wlasciwosc.SetValue(zrodlo, dane, null);
+        }
+
+        [DxBind(Name = "Report")]
+        private void ZestawienieKomisjaSocjalna_BeforePrint(object sender, CancelEventArgs e)
+        {
+            string etap = "start";
+            try
+            {
+                etap = "sprawdzenie trybu (designer)";
+                if (pars == null)
+                {
+                    UstawDaneRaportu(new List<Wiersz>());
+                    return;
+                }
+
+                etap = "pobranie kontekstu";
+                Context dc = pars.Context;
+                if (dc == null)
+                {
+                    UstawDaneRaportu(new List<Wiersz>());
+                    return;
+                }
+
+                etap = "ustalenie okien czasowych sum";
+                Date dataOdniesienia = pars.DataPosiedzenia != Date.Empty ? pars.DataPosiedzenia : Date.Today;
+                int rok = dataOdniesienia.Year;
+                // Okna sum to całe lata kalendarzowe; rok R = rok daty posiedzenia jest pominięty.
+                Date odBiezace = new Date(rok - 2, 1, 1);        // lata R-2, R-1
+                Date doBiezace = new Date(rok - 1, 12, 31);
+                Date odPoprzednie = new Date(rok - 4, 1, 1);     // lata R-4, R-3
+                Date doPoprzednie = new Date(rok - 3, 12, 31);
+
+                etap = "ustawienie nagłówka";
+                labelTytul.Text = "Zebranie Komisji Socjalnej SKANSKA S.A. Zestawienie {0} na posiedzenie Komisji w dn. {1}"
+                    .TranslateFormat(NazwaRodzaju(pars.RodzajOsoby), dataOdniesienia.ToString());
+
+                etap = "zbieranie świadczeń wg posiedzenia";
+                Dictionary<Pracownik, List<SwiadczSocjalne>> swiadczeniaAktualne;
+                if (pars.TylkoZaznaczeni)
+                {
+                    Row[] rows = dc[typeof(Row[])] as Row[];
+                    if (rows == null)
+                    {
+                        UstawDaneRaportu(new List<Wiersz>());
+                        return;
+                    }
+                    swiadczeniaAktualne = new Dictionary<Pracownik, List<SwiadczSocjalne>>();
+                    foreach (Row row in rows)
+                    {
+                        SwiadczSocjalne sw = row as SwiadczSocjalne;
+                        Pracownik p = sw != null ? sw.Pracownik : null;
+                        if (p == null)
+                            continue;
+                        DodajDoMapy(swiadczeniaAktualne, p, sw);
+                    }
+                }
+                else
+                {
+                    swiadczeniaAktualne = ZbierzSwiadczeniaPosiedzenia(dc.Session, dataOdniesienia);
+                }
+
+                etap = "filtrowanie wg Emeryci/Pracownicy/Wszyscy";
+                var pracownicy = new List<Pracownik>();
+                foreach (Pracownik p in swiadczeniaAktualne.Keys)
+                    if (CzyPasujeRodzaj(p, pars.RodzajOsoby))
+                        pracownicy.Add(p);
+
+                etap = "sortowanie listy pracowników";
+                pracownicy.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.CurrentCulture));
+
+                etap = "budowanie wierszy";
+                var wiersze = new List<Wiersz>();
+                int lp = 1;
+                foreach (Pracownik pracownik in pracownicy)
+                {
+                    Pracownik pr = pracownik;
+                    try
+                    {
+                        DodajWierszePracownika(wiersze, ref lp, pr, swiadczeniaAktualne[pr], dataOdniesienia,
+                            odBiezace, doBiezace, odPoprzednie, doPoprzednie);
+                    }
+                    catch (Exception ex)
+                    {
+                        Wiersz blad = NowyWiersz();
+                        blad.Lp = (lp++).ToString();
+                        blad.NrEwid = Bezpiecznie(() => pr.Kod);
+                        blad.NazwiskoImie = "[BŁĄD: " + ex.Message + "]";
+                        wiersze.Add(blad);
+                    }
+                }
+
+                etap = "ustawienie CustomDataSource";
+                UstawDaneRaportu(wiersze);
+            }
+            catch (Exception ex)
+            {
+                string opis = "ETAP=" + (etap ?? "(null)")
+                    + " | TYP=" + ex.GetType().FullName
+                    + " | KOMUNIKAT=" + ex.Message;
+                UstawDaneRaportu(new List<Wiersz> {
+                    new Wiersz {
+                        Lp = "BŁĄD",
+                        NazwiskoImie = opis
+                    }
+                });
+            }
+        }
+
+        // Buduje grupę wierszy dla jednego pracownika (1..N wierszy).
+        static void DodajWierszePracownika(List<Wiersz> wiersze, ref int lp, Pracownik pr,
+            List<SwiadczSocjalne> aktualne,
+            Date dataOdniesienia, Date odBiezace, Date doBiezace, Date odPoprzednie, Date doPoprzednie)
+        {
+            List<ZapomogaPozycja> biezace = ZapomogiWOknie(pr, odBiezace, doBiezace);
+            List<ZapomogaPozycja> poprzednie = ZapomogiWOknie(pr, odPoprzednie, doPoprzednie);
+
+            if (aktualne.Count == 0 && biezace.Count == 0 && poprzednie.Count == 0)
+                return;
+
+            decimal sumaAktualna = 0m;
+            foreach (SwiadczSocjalne sw in aktualne) sumaAktualna += sw.Rozliczenie.Kwota.Value;
+            decimal sumaBiezace = 0m;
+            foreach (ZapomogaPozycja z in biezace) sumaBiezace += z.Kwota;
+            decimal sumaPoprzednie = 0m;
+            foreach (ZapomogaPozycja z in poprzednie) sumaPoprzednie += z.Kwota;
+
+            int ile = biezace.Count > poprzednie.Count ? biezace.Count : poprzednie.Count;
+            if (ile == 0 && aktualne.Count > 0)
+                ile = 1;
+
+            for (int i = 0; i < ile; i++)
+            {
+                Wiersz w = NowyWiersz();
+
+                if (i == 0)
+                {
+                    w.Lp = (lp++).ToString();
+                    w.NrEwid = Bezpiecznie(() => pr.Kod);
+                    w.NazwiskoImie = Bezpiecznie(() => pr.NazwiskoImię.ToString());
+                    w.DataUrodzenia = Bezpiecznie(() => pr.Historia[Date.Today].Urodzony.Data.ToString());
+                    w.JednostkaObslugujaca = Bezpiecznie(() => PobierzJednostkeObslugujaca(pr));
+                    w.DochodNaCzlonkaRodziny = Bezpiecznie(() => PobierzDochodNaCzlonkaRodziny(pr, dataOdniesienia));
+                    w.KwotaZapomogiAktualnej = aktualne.Count > 0 ? sumaAktualna.ToString("N2") : "";
+                    w.KwotaZapomogiZ2Lat = biezace.Count > 0 ? sumaBiezace.ToString("N2") : "";
+                    w.KwotaZapomogPoprzednich2Lat = poprzednie.Count > 0 ? sumaPoprzednie.ToString("N2") : "";
+                }
+
+                if (i < biezace.Count)
+                {
+                    w.DataWyplaty = biezace[i].Data.ToString();
+                    w.KwotaWyplaty = biezace[i].Kwota.ToString("N2");
+                }
+                if (i < poprzednie.Count)
+                {
+                    w.DataWyplatyPoprzedniej = poprzednie[i].Data.ToString();
+                    w.KwotaWyplatyPoprzedniej = poprzednie[i].Kwota.ToString("N2");
+                }
+
+                wiersze.Add(w);
+            }
+        }
+
+        static string Bezpiecznie(Func<string> policz)
+        {
+            try
+            {
+                return policz() ?? "";
+            }
+            catch (Exception ex)
+            {
+                return "[BŁĄD: " + ex.Message + "]";
+            }
+        }
+
+        static string PobierzJednostkeObslugujaca(Pracownik pracownik)
+        {
+            PracHistoria biezaca = null;
+            foreach (PracHistoria ph in pracownik.Historia.GetIntersectedRows(new FromTo(Date.Today, Date.Today)))
+                biezaca = ph;
+            if (biezaca == null)
+                biezaca = pracownik.Historia[Date.Today];
+
+            var wydzial = biezaca != null && biezaca.Etat != null ? biezaca.Etat.Wydzial : null;
+            if (wydzial == null)
+                return "";
+
+            ElemSlownika elem = (ElemSlownika) wydzial.Features["Jednostka obsługująca"];
+            return elem != null ? elem.Nazwa : "brak";
+        }
+
+        static string PobierzDochodNaCzlonkaRodziny(Pracownik pracownik, Date dataOdniesienia)
+        {
+            A1ZfssTuple wniosek = PracownikExt.GetAktualnyWniosekZFSS(pracownik, dataOdniesienia, dataOdniesienia.Year);
+            if (wniosek == null)
+                return PobierzDochodMigracja(pracownik);
+            if (!wniosek.CzyPrawaDoWidokuProgow())
+                return "(Brak praw do widoku)";
+            string zWniosku = wniosek._RodzajWskazywaniaDochodu == "Kwota"
+                ? wniosek._KwotaDochoduNaCzlonkaRodziny.ToString()
+                : (wniosek._ProgDochodu != null ? wniosek._ProgDochodu.ToString() : "");
+            // Wniosek istnieje, ale bez wartości (np. nie wybrano progu) - sięgamy
+            // po dane zmigrowane zamiast zostawiać pustą komórkę.
+            return !string.IsNullOrEmpty(zWniosku) ? zWniosku : PobierzDochodMigracja(pracownik);
+        }
+
+        static string PobierzDochodMigracja(Pracownik pracownik)
+        {
+            var worker = new AltOne.Skanska.Workflow.Workers.Wyliczane.WniosekZFFSPracownikaWorker
+            {
+                Pracownik = pracownik
+            };
+            return worker.GetDochodMigracja ?? "";
+        }
+
+        static Dictionary<Pracownik, List<SwiadczSocjalne>> ZbierzSwiadczeniaPosiedzenia(Session session, Date dataPosiedzenia)
+        {
+            var mapa = new Dictionary<Pracownik, List<SwiadczSocjalne>>();
+            foreach (SwiadczSocjalne sw in session.GetKadry().SwiadczeniaSoc)
+            {
+                if (!CzyZapomoga(sw))
+                    continue;
+
+                object wartoscCechy = sw.Features["PosiedzenieKomisji"];
+                if (!(wartoscCechy is Date))
+                    continue;
+                Date dataKomisji = (Date) wartoscCechy;
+                if (dataKomisji != dataPosiedzenia)
+                    continue;
+
+                Pracownik p = sw.Pracownik;
+                if (p == null)
+                    continue;
+                DodajDoMapy(mapa, p, sw);
+            }
+            return mapa;
+        }
+
+        static void DodajDoMapy(Dictionary<Pracownik, List<SwiadczSocjalne>> mapa, Pracownik p, SwiadczSocjalne sw)
+        {
+            List<SwiadczSocjalne> lista;
+            if (!mapa.TryGetValue(p, out lista))
+            {
+                lista = new List<SwiadczSocjalne>();
+                mapa[p] = lista;
+            }
+            lista.Add(sw);
+        }
+
+        static List<ZapomogaPozycja> ZapomogiWOknie(Pracownik pracownik, Date od, Date doDaty)
+        {
+            var lista = new List<ZapomogaPozycja>();
+            if (doDaty < od)
+                return lista;
+
+            foreach (SwiadczSocjalne sw in pracownik.Swiadczenia)
+            {
+                if (!CzyZapomoga(sw))
+                    continue;
+                Date data = sw.Data;
+                if (data < od || data > doDaty)
+                    continue;
+
+                ZapomogaPozycja poz = new ZapomogaPozycja();
+                poz.Data = data;
+                poz.Kwota = sw.Rozliczenie.Kwota.Value;
+                lista.Add(poz);
+            }
+
+            lista.Sort((a, b) => a.Data > b.Data ? 1 : (a.Data < b.Data ? -1 : 0));
+            return lista;
+        }
+
+        static bool CzyZapomoga(SwiadczSocjalne sw)
+        {
+            return sw.Definicja != null && NazwaZapomoga(sw.Definicja.Nazwa);
+        }
+
+        static bool CzyPasujeRodzaj(Pracownik pracownik, RodzajOsoby rodzaj)
+        {
+            if (rodzaj == RodzajOsoby.Wszyscy)
+                return true;
+
+            object wartoscCechy = pracownik.Features["CzyEmerytRencista"];
+            bool czyEmeryt = wartoscCechy is bool && (bool) wartoscCechy;
+            return rodzaj == RodzajOsoby.Emeryci ? czyEmeryt : !czyEmeryt;
+        }
+
+        static string NazwaRodzaju(RodzajOsoby rodzaj)
+        {
+            switch (rodzaj)
+            {
+                case RodzajOsoby.Emeryci:
+                    return "Emerytów";
+                case RodzajOsoby.Pracownicy:
+                    return "Pracowników";
+                default:
+                    return "Emerytów i Pracowników";
+            }
+        }
+
+        static bool NazwaZapomoga(string nazwa)
+        {
+            if (string.IsNullOrEmpty(nazwa))
+                return false;
+            string n = nazwa.ToLowerInvariant();
+            return n.Contains("zapomog") || n.Contains("zapomóg");
+        }
+
+        static Wiersz NowyWiersz()
+        {
+            return new Wiersz {
+                Lp = "",
+                NrEwid = "",
+                NazwiskoImie = "",
+                DataUrodzenia = "",
+                JednostkaObslugujaca = "",
+                DochodNaCzlonkaRodziny = "",
+                KwotaZapomogiAktualnej = "",
+                KwotaZapomogiZ2Lat = "",
+                DataWyplaty = "",
+                KwotaWyplaty = "",
+                KwotaZapomogPoprzednich2Lat = "",
+                DataWyplatyPoprzedniej = "",
+                KwotaWyplatyPoprzedniej = ""
+            };
+        }
+
+        class ZapomogaPozycja
+        {
+            public Date Data;
+            public decimal Kwota;
+        }
+
+        public class Wiersz
+        {
+            public string Lp { get; set; }
+            public string NrEwid { get; set; }
+            public string NazwiskoImie { get; set; }
+            public string DataUrodzenia { get; set; }
+            public string JednostkaObslugujaca { get; set; }
+            public string DochodNaCzlonkaRodziny { get; set; }
+            public string KwotaZapomogiAktualnej { get; set; }
+            public string KwotaZapomogiZ2Lat { get; set; }
+            public string DataWyplaty { get; set; }
+            public string KwotaWyplaty { get; set; }
+            public string KwotaZapomogPoprzednich2Lat { get; set; }
+            public string DataWyplatyPoprzedniej { get; set; }
+            public string KwotaWyplatyPoprzedniej { get; set; }
+        }
+    }
+}
