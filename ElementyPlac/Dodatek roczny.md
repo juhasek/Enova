@@ -99,6 +99,14 @@ nie jest spełniona:
    każdego miesiąca sprawdzane są nieobecności pracownika (`Pracownik.Nieobecnosci[miesiąc]`);
    każda nieobecność musi być na liście dozwolonych wyjątków (`CzyDozwolonaNieobecnosc`),
    inaczej łamie frekwencję za cały okres.
+   **Nieobecności skorygowane są pomijane** (zmiana 2026-09-29, zgłoszenie klienta): przy
+   korekcie nieobecności enova zostawia pierwotny rekord z flagą `Korygowana == true` i dodaje
+   rekord `KorektaNieobecności` z poprawionymi danymi — oba są w `Pracownik.Nieobecnosci`.
+   Algorytm pomija rekord pierwotny (linia „pominięta (skorygowana)” w zapisie obliczeń)
+   i ocenia tylko korektę. Dzięki temu urlop „na żądanie” skorygowany na zwykły urlop
+   wypoczynkowy nie łamie już frekwencji. **Do potwierdzenia (scenariusz TS-20)** przeliczeniem
+   wypłaty w GUI — zachowanie flagi `Korygowana` pochodzi z dokumentacji API, nie z testu
+   na bazie klienta.
 
 Każdy krok obliczeń zapisuje linię do `Element.ZapisObliczen.Add(...)` — widoczne na
 formularzu elementu, zakładka **Zapis obliczeń**: wskazany okres, zatrudnienie przez cały

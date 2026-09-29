@@ -27,6 +27,12 @@
   "co 12 miesięcy, płatna z dołu" Składnik.Okres.To mógł być końcem okresu naliczania, a nie
   dniem wypłaty — scenariusz TS-19).
 
+  Aktualizacja 2026-09-29 (zgłoszenie klienta): bramka frekwencji pomija nieobecności z flagą
+  Korygowana == true. Przy korekcie urlopu "na żądanie" na zwykły urlop wypoczynkowy enova
+  zostawia pierwotny rekord (oznaczony jako skorygowany) i dodaje rekord KorektaNieobecności;
+  pętla widziała oba i pierwotny "na żądanie" błędnie łamał frekwencję. TODO/UNVERIFIED:
+  potwierdzić scenariuszem TS-20 (przeliczenie wypłaty w GUI).
+
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
 -->
@@ -108,11 +114,20 @@ public void Dodatek_Roczny_Param(
     bool frekwencja = true;
     Periods miesiace = Periods.New(rocznyOkres).BreakByMonth();
     foreach (FromTo miesiac in miesiace)
-        foreach (Nieobecnosc n in Element.Pracownik.Nieobecnosci[miesiac])
+        foreach (Nieobecnosc n in Element.Pracownik.Nieobecnosci[miesiac]) {
+            // Nieobecność skorygowana (Korygowana == true) została zastąpiona rekordem
+            // KorektaNieobecności, który też jest w tej kolekcji i jest oceniany osobno.
+            // Bez tego pominięcia np. urlop "na żądanie" skorygowany na zwykły urlop
+            // wypoczynkowy nadal łamałby frekwencję.
+            if (n.Korygowana) {
+                Element.ZapisObliczen.Add($"  - pominięta (skorygowana): {n.Definicja.Nazwa} ({n.Okres})");
+                continue;
+            }
             if (!CzyDozwolonaNieobecnosc(n)) {
                 frekwencja = false;
                 Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {n.Definicja.Nazwa} ({n.Okres})");
             }
+        }
     Element.ZapisObliczen.Add($"- frekwencja 100% w całym okresie: {frekwencja}");
 
     Składnik.Podstawa1 = (pelnyRok && aktywnyNaWyplate && frekwencja) ? kwotaWpisana : DoubleCy.Zero;
