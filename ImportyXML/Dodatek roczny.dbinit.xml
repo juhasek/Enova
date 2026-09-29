@@ -36,6 +36,13 @@
   inaczej oceniany jak dotąd. TODO/UNVERIFIED: potwierdzić scenariuszami TS-20 i TS-21
   (przeliczenie wypłaty w GUI).
 
+  Poprawka 2026-09-29 (test u klienta: "brak rekordu korekty" mimo korekty na żądanie ->
+  planowy): KorektaNieobecności ma Zrodlo = pierwotna nieobecność (dekompilacja
+  Soneta.KadryPlace: KorektaNieobecności(NieobecnośćPracownika), Nieobecnosc.Nieobecnosci =
+  WgZrodlo), więc NIE występuje w Pracownik.Nieobecnosci. Korekty czytane teraz z
+  n.Nieobecnosci; pierwotna oceniana tylko, gdy korekty nie pokrywają całego jej okresu.
+  Usunięta metoda MaWidocznaKorekte.
+
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
 -->
@@ -118,18 +125,27 @@ public void Dodatek_Roczny_Param(
     Periods miesiace = Periods.New(rocznyOkres).BreakByMonth();
     foreach (FromTo miesiac in miesiace)
         foreach (Nieobecnosc n in Element.Pracownik.Nieobecnosci[miesiac]) {
-            // Nieobecność skorygowana (Korygowana == true) została zastąpiona rekordem
-            // KorektaNieobecności, który też jest w tej kolekcji i przechodzi pełną ocenę
-            // w CzyDozwolonaNieobecnosc — działa w obie strony: na żądanie -> urlop planowy
-            // nie łamie frekwencji, L4 -> urlop na żądanie nadal łamie.
-            // Pierwotny rekord pomijamy TYLKO, gdy rekord korekty jest widoczny; w przeciwnym
-            // razie oceniamy pierwotny (bezpieczniej dać 0 niż przepuścić nieobecność łamiącą).
+            // Nieobecność skorygowana (Korygowana == true): rekordy KorektaNieobecności mają
+            // jako źródło PIERWOTNĄ nieobecność (nie pracownika), więc nie ma ich
+            // w Pracownik.Nieobecnosci — są w n.Nieobecnosci. Oceniamy korekty tymi samymi
+            // regułami (działa w obie strony: na żądanie -> urlop planowy nie łamie,
+            // L4 -> urlop na żądanie nadal łamie). Pierwotną oceniamy tylko wtedy, gdy
+            // korekty nie pokrywają całego jej okresu (bezpieczniej dać 0 niż przepuścić).
             if (n.Korygowana) {
-                if (MaWidocznaKorekte(n)) {
-                    Element.ZapisObliczen.Add($"  - pominięta (skorygowana): {n.Definicja.Nazwa} ({n.Okres})");
-                    continue;
+                Periods pokryte = Periods.Empty;
+                foreach (Nieobecnosc k in n.Nieobecnosci) {
+                    pokryte += k.Okres;
+                    if (!k.Okres.IsIntersected(miesiac))
+                        continue;
+                    Element.ZapisObliczen.Add($"  - korekta: {n.Definicja.Nazwa} ({n.Okres}) -> {k.Definicja.Nazwa} ({k.Okres})");
+                    if (!CzyDozwolonaNieobecnosc(k)) {
+                        frekwencja = false;
+                        Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {k.Definicja.Nazwa} ({k.Okres}, korekta)");
+                    }
                 }
-                Element.ZapisObliczen.Add($"  - UWAGA: {n.Definicja.Nazwa} ({n.Okres}) skorygowana, ale brak rekordu korekty — oceniana jak pierwotna");
+                if ((Periods)n.Okres - pokryte == Periods.Empty)
+                    continue;
+                Element.ZapisObliczen.Add($"  - UWAGA: {n.Definicja.Nazwa} ({n.Okres}) skorygowana tylko częściowo lub brak korekty — liczona jak pierwotna nieobecność");
             }
             if (!CzyDozwolonaNieobecnosc(n)) {
                 frekwencja = false;
@@ -148,17 +164,6 @@ public Currency Dodatek_Roczny_Wylicz(
     Soneta.Place.WypElementDodatek Element, WypSkladnik Składnik)
 {
     return Składnik.Podstawa1;
-}
-
-private bool MaWidocznaKorekte(Nieobecnosc n)
-{
-    // Rekord korekty ma okres zawarty w okresie korygowanej nieobecności, a nieobecności
-    // pracownika nie mogą się nakładać — każda KorektaNieobecności przecinająca okres n
-    // dotyczy właśnie n.
-    foreach (Nieobecnosc k in n.Pracownik.Nieobecnosci[n.Okres])
-        if (k != n && k is KorektaNieobecności)
-            return true;
-    return false;
 }
 
 private bool CzyDozwolonaNieobecnosc(Nieobecnosc n)

@@ -101,136 +101,19 @@ nie jest spełniona:
    inaczej łamie frekwencję za cały okres.
    **Nieobecności skorygowane są pomijane** (zmiana 2026-09-29, zgłoszenie klienta): przy
    korekcie nieobecności enova zostawia pierwotny rekord z flagą `Korygowana == true` i dodaje
-   rekord `KorektaNieobecności` z poprawionymi danymi — oba są w `Pracownik.Nieobecnosci`.
-   Algorytm pomija rekord pierwotny (linia „pominięta (skorygowana)” w zapisie obliczeń)
-   i ocenia korektę tymi samymi regułami co każdą nieobecność. Działa to w obie strony:
+   rekord `KorektaNieobecności` z poprawionymi danymi. Korekta ma jako źródło **pierwotną
+   nieobecność**, nie pracownika — dlatego nie ma jej w `Pracownik.Nieobecnosci`, tylko
+   w `n.Nieobecnosci` (potwierdzone dekompilacją `Soneta.KadryPlace`; pierwsza wersja
+   poprawki szukała jej w nieobecnościach pracownika i w teście u klienta nie znalazła).
+   Algorytm zastępuje rekord pierwotny jego korektami (linia „korekta: … -> …” w zapisie
+   obliczeń) i ocenia je tymi samymi regułami co każdą nieobecność. Działa to w obie strony:
    - urlop „na żądanie” → zwykły urlop wypoczynkowy: frekwencja zachowana (TS-20),
    - L4 (lub inna łamiąca) → urlop „na żądanie”: frekwencja nadal złamana, wynik 0 (TS-21),
    - dozwolona → łamiąca albo łamiąca → dozwolona: decyduje wyłącznie korekta.
 
-   Zabezpieczenie: rekord pierwotny jest pomijany **tylko wtedy, gdy rekord korekty jest
-   widoczny** w nieobecnościach pracownika (`MaWidocznaKorekte` — `KorektaNieobecności`
-   przecinająca okres pierwotnej). Jeśli go nie ma (dokumentacja API wspomina, że dla
-   nieobecności bez skutków płacowych korekta może nie być osobnym wierszem), pierwotna
-   nieobecność jest oceniana jak dotąd, a w zapisie obliczeń pojawia się „UWAGA … brak rekordu
-   korekty”. Bezpieczniej dać 0 i zostawić ślad niż przepuścić nieobecność łamiącą frekwencję.
-   **Do potwierdzenia (TS-20, TS-21)** przeliczeniem wypłaty w GUI — zachowanie flagi
-   `Korygowana` pochodzi z dokumentacji API, nie z testu na bazie klienta.
-
-Każdy krok obliczeń zapisuje linię do `Element.ZapisObliczen.Add(...)` — widoczne na
-formularzu elementu, zakładka **Zapis obliczeń**: wskazany okres, zatrudnienie przez cały
-okres (tak/nie + okres zatrudnienia), aktywność na dzień wypłaty, frekwencja (tak/nie +
-lista łamiących nieobecności z nazwą i okresem), wpisana kwota, wynik końcowy.
-
-### Nazwy definicji nieobecności — zweryfikowane w bazach `Al` i `Claude`
-
-Wprost z tabeli `DefNieobecnosci` (61 definicji, te same nazwy w obu bazach), pięć wyjątków z §2 ust.4:
-
-| Wyjątek regulaminowy | Definicja `Nazwa` w `DefNieobecnosci` |
-|---|---|
-| urlop wypoczynkowy planowany (nie na żądanie) | `Urlop wypoczynkowy` — rozróżnienie „na żądanie" przez pole `Urlop.Przyczyna` na konkretnym zapisie, **nie** osobna definicja |
-| urlop okolicznościowy | `Urlop okolicznościowy` |
-| zwolnienie art. 188 KP (opieka nad dzieckiem) | `Urlop opiekuńczy (art 188 kp, dni)` **oraz** `Urlop opiekuńczy (art 188 kp, godz.)` — dwa warianty, oba w kodzie |
-| badania medycyny pracy | `Badania lekarskie` |
-| odbiór dnia wolnego za nadgodziny | **brak dedykowanej definicji Nieobecność** w tym systemie — patrz niżej |
-
-**Ważne rozróżnienie:** `Urlop opiekuńczy (art 188 kp, ...)` **to nie to samo** co
-`Zwolnienie opieka (ZUS)` — to drugie jest płatnym z ZUS zasiłkiem opiekuńczym (art. 32-35
-ustawy zasiłkowej), inna podstawa prawna niż cytowany w regulaminie art. 188 KP. Kod celowo
-używa definicji „Urlop opiekuńczy", nie „Zwolnienie opieka".
-
-**Założenie do potwierdzenia:** „odbiór dnia wolnego za nadgodziny" (§2 ust.4a.iii) nie ma
-odpowiednika w `DefNieobecnosci` tej bazy — prawdopodobnie w tym systemie realizowany jest
-jako korekta harmonogramu/grafiku pracy (nie generuje rekordu `Nieobecność`), więc **nie
-pojawi się** w pętli po `Pracownik.Nieobecnosci` i nie złamie frekwencji — co jest zgodne
-z intencją regulaminu, ale nie zostało potwierdzone testem na żywym przypadku (TS-07).
-Jeśli w Twoim systemie taki dzień JEST jednak rejestrowany jako `Nieobecność` pod inną nazwą,
-trzeba dopisać dla niej osobny `case`.
-
-## 6. Scenariusze testowe
-
-**Scenariusze prowadzone są w arkuszu Excel:**
-[`Dodatek roczny - scenariusze testowe.xlsx`](Dodatek%20roczny%20-%20scenariusze%20testowe.xlsx)
-(obok tego pliku). Arkusze:
-
-- **Scenariusze** — TS-01…TS-19: obszar (bramka algorytmu), warunki wejściowe, kroki testu,
-  oczekiwany wynik, oczekiwana treść „Zapisu obliczeń", pracownik w bazie `Claude`, pliki
-  danych testowych oraz kolumny do wypełnienia przy teście: **Status** (lista: Nieprzeprowadzony /
-  OK / Błąd / Zablokowany), **Data testu**, **Wynik rzeczywisty / uwagi**.
-- **Dane testowe (Claude)** — pięciu pracowników z bazy `Claude` (`Kod` = numer scenariusza),
-  ich nieobecności w 2026 i oczekiwany wynik wypłaty 01/2027.
-- **Informacje** — konfiguracja istotna dla testów, bramki algorytmu, sposób testowania, legenda.
-
-Testy wymagają przeliczenia wypłaty w GUI (element nie jest walidowany przez
-`dbmgr importxml`/`compile` — patrz p. 7). W scenariuszach przyjęto **okres = rok 2026,
-wypłata 01/2027**. „Dodatek = 0" oznacza element widoczny na wypłacie z kwotą 0
-(`GenerujZerowy=Tak`) wraz z powodem w „Zapisie obliczeń".
-
-Nowe scenariusze dopisuje się w arkuszu, nie w tym pliku. TS-19 (zwolnienie z dniem 31.12.2026)
-dodano 2026-09-10 w związku z korektą okresu naliczania (p. 5, bramka 2).
-
-## 7. Stan weryfikacji (na dziś)
-
-Zweryfikowane próbnym importem (`dbmgr importxml`) na bazie testowej `Al`:
-- pola `RodzajZrodla`, `DefinicjaListyPlac`, `Deklaracje.PozycjaPIT`, `OkresNaliczania`,
-  `Nieobecnosci.Urlop/Ekwiwalent` — poprawnie zmapowane na wartości z bazy,
-  idempotencja importu (TS-16) potwierdzona,
-- kod używa `Element.ZapisObliczen.Add(...)` (potwierdzone przez użytkownika jako
-  działające na żywym systemie — dokumentacja skilla znała wcześniej tylko wzorzec `=`).
-
-Nazwy definicji nieobecności (p. 5) zweryfikowane wprost w tabeli `DefNieobecnosci` bazy `Al`
-(zapytanie SQL, 61 definicji) — kod algorytmu zaktualizowany i ponownie zaimportowany.
-
-**Aktualizacja 2026-09-02 (synchronizacja z bazą `Al`):**
-- konfiguracja odczytana wprost z `dbo.DefElementow` (ID 262) — operator zmienił w GUI
-  `GenerujZerowy` → Tak oraz `Korygowany` → Tak; pozostałe pola (PIT poz. 72 = ten sam GUID,
-  ZUS, lista płac, okres naliczania) bez zmian. Plik XML doprowadzony do tego stanu.
-- algorytm: `rocznyOkres` pobierany z `Element.DodHistoria.Okres` (pole „Okres" na dodatku
-  w kartotece) zamiast `new FromTo(2026-01-01, 2026-12-31)`; dodana bramka 0 (brak okresu → 0).
-
-**Aktualizacja 2026-09-07 (ponowna synchronizacja z bazą `Al`):**
-- odczyt wprost z `dbo.DefElementow` (ID 262, guid `C973AFE6-…`) wraz z kolumną `Tekst`
-  (kod Edytora algorytmu).
-- **Jedyna zmiana operatora:** pozycja PIT. Element wskazywał `PIT-11 1a`
-  (`PozycjePIT` ID 72, guid `…-0004-0021-…`); operator przestawił na `PIT-11 1/PIT-4R 1`
-  (`PozycjePIT` ID 1, guid `…-0004-0001-…`, „Wynagrodzenia ze stosunku: pracy, służbowego,
-  spółdzielczego i z pracy nakładczej…") — standardowa pozycja dla oskładkowanego
-  i opodatkowanego dodatku pieniężnego. Plik XML doprowadzony do tego stanu.
-- **Kod algorytmu — bez zmian.** Treść w bazie `Al` jest semantycznie identyczna z wersją
-  w pliku XML: te same bramki (0–3), ta sama lista dozwolonych nieobecności, ten sam warunek
-  „na żądanie" (`PrzyczynaUrlopu.NaŻądanie`). Baza trzyma wariant z tokenami `%NAZWA%`/`%TYP%`
-  (podstawiane przez enova) i bez komentarzy; plik XML zachowuje wersję opisaną komentarzami.
-- pozostałe kolumny konfiguracji (`RodzajZrodla`=Dodatek, `Zatrudnienie`=Etat,
-  `DefinicjaListyPlac`=LPE, `OkresNaliczania` (opisany wtedy błędnie jako Jednorazowa — patrz
-  2026-09-10)/PłatnaZDołu, `GenerujZerowy`=True, `Korygowany`=True, ZUS społeczne/zdrowotne=Naliczać,
-  zaliczka wg skali, `Nieobecnosci.Urlop/Ekwiwalent`=NieWliczać) — bez zmian względem 2026-09-02.
-
-**Aktualizacja 2026-09-10 (baza `Claude` zsynchronizowana z `Al`):**
-- użytkownik wyeksportował definicję z bazy `Al` (plik `DefElementow_20260910082825.xml`,
-  rekord `DefinicjaElementu_262`) i wczytał ją do bazy `Claude` (zapis 2026-09-10 8:29).
-  Wcześniej `Claude` miał definicję z importu pliku repo (2026-09-03).
-- porównanie programowe: wszystkie 193 kolumny `DefElementow` i kod `Tekst` w `Claude` (ID 263)
-  są identyczne z `Al` (ID 262) oraz ze stanem odczytanym 2026-09-07. **Logika algorytmu
-  bez zmian** (bramki 0–3, lista wyjątków, warunek „na żądanie").
-- **korekta dokumentacji i pliku XML — okres naliczania:** kolumna `OkresNaliczaniaTyp = 3`
-  to `CoNMiesięcy` (enum `Soneta.Place.TypOkresuNaliczania`: `Jednorazowa` = 1,
-  `CoNMiesięcy` = 3), `OkresNaliczaniaIlosc = 12`. Eksport enova potwierdza to wprost
-  (`<Typ>CoNMiesięcy</Typ><Ilosc>12</Ilosc>`). Od 2026-09-02 dokumentacja i `dbinit.xml`
-  błędnie podawały `Jednorazowa` — ponowny import starego pliku cofnąłby ustawienie w bazie.
-  Plik XML poprawiony; opis w p. 2 i 4 poprawiony; dopisany scenariusz TS-19.
-- scenariusze testowe przeniesione z tabeli w tym pliku do arkusza Excel (p. 6).
-
-**Niezweryfikowane / do zrobienia przed produkcją:**
-- **dynamiczny `rocznyOkres`** — `Element.DodHistoria.Okres` jako źródło okresu wymaga
-  potwierdzenia realnym przeliczeniem (TS-17, TS-18); pole `DodHistoria.Okres` (`FromTo`)
-  potwierdzone w props `soneta-programming`, ale nie na żywym naliczeniu.
-- **bramka 2 przy okresie „co 12 miesięcy, z dołu"** — nie wiadomo, jaki okres enova podaje
-  w `Składnik.Okres` (okres naliczania czy miesiąc wypłaty); rozstrzyga TS-19.
-- import/kompilacja bazy (`dbmgr importxml`/`compile`) **nie waliduje poprawności kodu C#**
-  algorytmu Edytora — potwierdzone eksperymentalnie (celowo zepsuty kod dał identyczny wynik
-  sukcesu). Jedyna wiarygodna weryfikacja to realne przeliczenie wypłaty w GUI.
-- założenie o „odbiorze dnia za nadgodziny" bez rekordu `Nieobecność` (p. 5) — wynika
-  z braku pasującej definicji w `DefNieobecnosci`, ale nie zostało potwierdzone realnym
-  przeliczeniem (TS-07).
-- scenariusze TS-01…TS-19 (poza TS-16) nieprzeprowadzone na żywym systemie — statusy
-  prowadzone w arkuszu `Dodatek roczny - scenariusze testowe.xlsx`.
+   Zabezpieczenie: rekord pierwotny jest pomijany **tylko wtedy, gdy jego korekty pokrywają
+   cały jego okres**. Jeśli korekty nie ma albo obejmuje tylko część okresu, pierwotna
+   nieobecność jest oceniana jak dotąd, a w zapisie obliczeń pojawia się „UWAGA … skorygowana
+   tylko częściowo lub brak korekty”. Bezpieczniej dać 0 i zostawić ślad niż przepuścić
+   nieobecność łamiącą frekwencję.
+   **Do potwierdzenia (TS-20, TS-21)** przeliczeniem wypłaty w GUI po wgraniu poprawki.
