@@ -103,10 +103,19 @@ nie jest spełniona:
    korekcie nieobecności enova zostawia pierwotny rekord z flagą `Korygowana == true` i dodaje
    rekord `KorektaNieobecności` z poprawionymi danymi — oba są w `Pracownik.Nieobecnosci`.
    Algorytm pomija rekord pierwotny (linia „pominięta (skorygowana)” w zapisie obliczeń)
-   i ocenia tylko korektę. Dzięki temu urlop „na żądanie” skorygowany na zwykły urlop
-   wypoczynkowy nie łamie już frekwencji. **Do potwierdzenia (scenariusz TS-20)** przeliczeniem
-   wypłaty w GUI — zachowanie flagi `Korygowana` pochodzi z dokumentacji API, nie z testu
-   na bazie klienta.
+   i ocenia korektę tymi samymi regułami co każdą nieobecność. Działa to w obie strony:
+   - urlop „na żądanie” → zwykły urlop wypoczynkowy: frekwencja zachowana (TS-20),
+   - L4 (lub inna łamiąca) → urlop „na żądanie”: frekwencja nadal złamana, wynik 0 (TS-21),
+   - dozwolona → łamiąca albo łamiąca → dozwolona: decyduje wyłącznie korekta.
+
+   Zabezpieczenie: rekord pierwotny jest pomijany **tylko wtedy, gdy rekord korekty jest
+   widoczny** w nieobecnościach pracownika (`MaWidocznaKorekte` — `KorektaNieobecności`
+   przecinająca okres pierwotnej). Jeśli go nie ma (dokumentacja API wspomina, że dla
+   nieobecności bez skutków płacowych korekta może nie być osobnym wierszem), pierwotna
+   nieobecność jest oceniana jak dotąd, a w zapisie obliczeń pojawia się „UWAGA … brak rekordu
+   korekty”. Bezpieczniej dać 0 i zostawić ślad niż przepuścić nieobecność łamiącą frekwencję.
+   **Do potwierdzenia (TS-20, TS-21)** przeliczeniem wypłaty w GUI — zachowanie flagi
+   `Korygowana` pochodzi z dokumentacji API, nie z testu na bazie klienta.
 
 Każdy krok obliczeń zapisuje linię do `Element.ZapisObliczen.Add(...)` — widoczne na
 formularzu elementu, zakładka **Zapis obliczeń**: wskazany okres, zatrudnienie przez cały

@@ -30,8 +30,11 @@
   Aktualizacja 2026-09-29 (zgłoszenie klienta): bramka frekwencji pomija nieobecności z flagą
   Korygowana == true. Przy korekcie urlopu "na żądanie" na zwykły urlop wypoczynkowy enova
   zostawia pierwotny rekord (oznaczony jako skorygowany) i dodaje rekord KorektaNieobecności;
-  pętla widziała oba i pierwotny "na żądanie" błędnie łamał frekwencję. TODO/UNVERIFIED:
-  potwierdzić scenariuszem TS-20 (przeliczenie wypłaty w GUI).
+  pętla widziała oba i pierwotny "na żądanie" błędnie łamał frekwencję. Rekord korekty
+  oceniany jest normalnie, więc działa w obie strony (L4 -> urlop na żądanie nadal daje 0).
+  Pierwotny rekord pomijany tylko, gdy widoczny jest rekord korekty (MaWidocznaKorekte);
+  inaczej oceniany jak dotąd. TODO/UNVERIFIED: potwierdzić scenariuszami TS-20 i TS-21
+  (przeliczenie wypłaty w GUI).
 
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
@@ -116,12 +119,17 @@ public void Dodatek_Roczny_Param(
     foreach (FromTo miesiac in miesiace)
         foreach (Nieobecnosc n in Element.Pracownik.Nieobecnosci[miesiac]) {
             // Nieobecność skorygowana (Korygowana == true) została zastąpiona rekordem
-            // KorektaNieobecności, który też jest w tej kolekcji i jest oceniany osobno.
-            // Bez tego pominięcia np. urlop "na żądanie" skorygowany na zwykły urlop
-            // wypoczynkowy nadal łamałby frekwencję.
+            // KorektaNieobecności, który też jest w tej kolekcji i przechodzi pełną ocenę
+            // w CzyDozwolonaNieobecnosc — działa w obie strony: na żądanie -> urlop planowy
+            // nie łamie frekwencji, L4 -> urlop na żądanie nadal łamie.
+            // Pierwotny rekord pomijamy TYLKO, gdy rekord korekty jest widoczny; w przeciwnym
+            // razie oceniamy pierwotny (bezpieczniej dać 0 niż przepuścić nieobecność łamiącą).
             if (n.Korygowana) {
-                Element.ZapisObliczen.Add($"  - pominięta (skorygowana): {n.Definicja.Nazwa} ({n.Okres})");
-                continue;
+                if (MaWidocznaKorekte(n)) {
+                    Element.ZapisObliczen.Add($"  - pominięta (skorygowana): {n.Definicja.Nazwa} ({n.Okres})");
+                    continue;
+                }
+                Element.ZapisObliczen.Add($"  - UWAGA: {n.Definicja.Nazwa} ({n.Okres}) skorygowana, ale brak rekordu korekty — oceniana jak pierwotna");
             }
             if (!CzyDozwolonaNieobecnosc(n)) {
                 frekwencja = false;
@@ -140,6 +148,17 @@ public Currency Dodatek_Roczny_Wylicz(
     Soneta.Place.WypElementDodatek Element, WypSkladnik Składnik)
 {
     return Składnik.Podstawa1;
+}
+
+private bool MaWidocznaKorekte(Nieobecnosc n)
+{
+    // Rekord korekty ma okres zawarty w okresie korygowanej nieobecności, a nieobecności
+    // pracownika nie mogą się nakładać — każda KorektaNieobecności przecinająca okres n
+    // dotyczy właśnie n.
+    foreach (Nieobecnosc k in n.Pracownik.Nieobecnosci[n.Okres])
+        if (k != n && k is KorektaNieobecności)
+            return true;
+    return false;
 }
 
 private bool CzyDozwolonaNieobecnosc(Nieobecnosc n)
