@@ -22,6 +22,11 @@
   pliku: OkresNaliczania Typ=CoNMiesięcy, Ilosc=12 (wcześniej błędnie Jednorazowa). Kod algorytmu
   poniżej bez zmian logiki.
 
+  Aktualizacja 2026-09-29: bramka "zatrudniony na dzień wypłaty" (§5 ust.7) porównuje koniec
+  zatrudnienia z Element.Wyplata.ListaPlac.DataWyplaty zamiast Składnik.Okres.To (przy okresie
+  "co 12 miesięcy, płatna z dołu" Składnik.Okres.To mógł być końcem okresu naliczania, a nie
+  dniem wypłaty — scenariusz TS-19).
+
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
 -->

@@ -89,10 +89,12 @@ nie jest spełniona:
 1. **Zatrudnienie przez cały wskazany okres** (§3 ust.1b) — `Etat.OkresZatrudnienia`
    pokrywa cały `rocznyOkres`.
 2. **Zatrudnienie trwa na dzień wypłaty** (§5 ust.7) — porównanie końca zatrudnienia
-   z `Składnik.Okres.To`. **Do potwierdzenia (scenariusz TS-19):** przy okresie naliczania
-   „co 12 miesięcy, płatna z dołu" `Składnik.Okres` może oznaczać okres naliczania
-   (do 31.12.2026), a nie miesiąc wypłaty. Wtedy umowa rozwiązana z dniem 31.12.2026
-   przejdzie tę bramkę, choć regulamin każe dać 0.
+   z datą wypłaty listy płac: `Element.Wyplata.ListaPlac.DataWyplaty` (zmiana 2026-09-29).
+   Wcześniej kod porównywał z `Składnik.Okres.To`, co przy okresie naliczania „co 12 miesięcy,
+   płatna z dołu" mogło oznaczać koniec okresu naliczania (np. 31.12.2026), a nie dzień
+   wypłaty — umowa rozwiązana z dniem 31.12.2026 przechodziła bramkę, choć regulamin każe
+   dać 0 (scenariusz TS-19). Umowa kończąca się dokładnie w dniu wypłaty bramkę przechodzi
+   (`>=`) — pracownik jest jeszcze zatrudniony tego dnia.
 3. **Frekwencja 100% w każdym miesiącu wskazanego okresu** (§2 ust.3-4, §5 ust.5) — dla
    każdego miesiąca sprawdzane są nieobecności pracownika (`Pracownik.Nieobecnosci[miesiąc]`);
    każda nieobecność musi być na liście dozwolonych wyjątków (`CzyDozwolonaNieobecnosc`),
