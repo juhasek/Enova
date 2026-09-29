@@ -95,25 +95,22 @@ nie jest spełniona:
    wypłaty — umowa rozwiązana z dniem 31.12.2026 przechodziła bramkę, choć regulamin każe
    dać 0 (scenariusz TS-19). Umowa kończąca się dokładnie w dniu wypłaty bramkę przechodzi
    (`>=`) — pracownik jest jeszcze zatrudniony tego dnia.
-3. **Frekwencja 100% w każdym miesiącu wskazanego okresu** (§2 ust.3-4, §5 ust.5) — dla
-   każdego miesiąca sprawdzane są nieobecności pracownika (`Pracownik.Nieobecnosci[miesiąc]`);
-   każda nieobecność musi być na liście dozwolonych wyjątków (`CzyDozwolonaNieobecnosc`),
-   inaczej łamie frekwencję za cały okres.
-   **Nieobecności skorygowane są pomijane** (zmiana 2026-09-29, zgłoszenie klienta): przy
-   korekcie nieobecności enova zostawia pierwotny rekord z flagą `Korygowana == true` i dodaje
-   rekord `KorektaNieobecności` z poprawionymi danymi. Korekta ma jako źródło **pierwotną
-   nieobecność**, nie pracownika — dlatego nie ma jej w `Pracownik.Nieobecnosci`, tylko
-   w `n.Nieobecnosci` (potwierdzone dekompilacją `Soneta.KadryPlace`; pierwsza wersja
-   poprawki szukała jej w nieobecnościach pracownika i w teście u klienta nie znalazła).
-   Algorytm zastępuje rekord pierwotny jego korektami (linia „korekta: … -> …” w zapisie
-   obliczeń) i ocenia je tymi samymi regułami co każdą nieobecność. Działa to w obie strony:
+3. **Frekwencja 100% w każdym miesiącu wskazanego okresu** (§2 ust.3-4, §5 ust.5) — w całym
+   wskazanym okresie nie może być nieobecności spoza listy dozwolonych wyjątków
+   (`CzyDozwolonaNieobecnosc`); jedna łamiąca nieobecność łamie frekwencję za cały okres.
+   Nieobecności czytane są z indeksu **`NieobecnosciIdx`** (`WgPracownik` + warunek na okres),
+   a nie z `Pracownik.Nieobecnosci` (zmiana 2026-09-29, zgłoszenie klienta). To ta sama lista
+   obowiązujących nieobecności, której używa sama enova (kalendarz, wnioski urlopowe).
+   **Korekty nieobecności:** przy korekcie enova zostawia pierwotny rekord z flagą
+   `Korygowana == true` i dodaje rekord `KorektaNieobecności` z poprawionymi danymi. Korekta ma
+   jako źródło pierwotną nieobecność, nie pracownika, więc w `Pracownik.Nieobecnosci` jej nie
+   widać (pierwsza wersja poprawki szukała jej tam i w teście u klienta nie znalazła). W indeksie
+   enova trzyma pierwotną nieobecność tylko w części **niepokrytej** korektą, a korektę w jej
+   okresie (`Nieobecnosc.UpdateIdx`, potwierdzone dekompilacją `Soneta.KadryPlace`). Działa to
+   w obie strony:
    - urlop „na żądanie” → zwykły urlop wypoczynkowy: frekwencja zachowana (TS-20),
    - L4 (lub inna łamiąca) → urlop „na żądanie”: frekwencja nadal złamana, wynik 0 (TS-21),
-   - dozwolona → łamiąca albo łamiąca → dozwolona: decyduje wyłącznie korekta.
+   - korekta części okresu: niepoprawiona część oceniana jak pierwotna nieobecność.
 
-   Zabezpieczenie: rekord pierwotny jest pomijany **tylko wtedy, gdy jego korekty pokrywają
-   cały jego okres**. Jeśli korekty nie ma albo obejmuje tylko część okresu, pierwotna
-   nieobecność jest oceniana jak dotąd, a w zapisie obliczeń pojawia się „UWAGA … skorygowana
-   tylko częściowo lub brak korekty”. Bezpieczniej dać 0 i zostawić ślad niż przepuścić
-   nieobecność łamiącą frekwencję.
+   W zapisie obliczeń korekta ma dopisek „, korekta” (także gdy jest dozwolona).
    **Do potwierdzenia (TS-20, TS-21)** przeliczeniem wypłaty w GUI po wgraniu poprawki.

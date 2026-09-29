@@ -39,8 +39,9 @@
   Poprawka 2026-09-29 (test u klienta: "brak rekordu korekty" mimo korekty na żądanie ->
   planowy): KorektaNieobecności ma Zrodlo = pierwotna nieobecność (dekompilacja
   Soneta.KadryPlace: KorektaNieobecności(NieobecnośćPracownika), Nieobecnosc.Nieobecnosci =
-  WgZrodlo), więc NIE występuje w Pracownik.Nieobecnosci. Korekty czytane teraz z
-  n.Nieobecnosci; pierwotna oceniana tylko, gdy korekty nie pokrywają całego jej okresu.
+  WgZrodlo), więc NIE występuje w Pracownik.Nieobecnosci. Pętla frekwencji czyta teraz
+  indeks NieobecnosciIdx (WgPracownik) — enova trzyma w nim obowiązujące fragmenty:
+  pierwotną nieobecność minus okresy korekt + same korekty (Nieobecnosc.UpdateIdx).
   Usunięta metoda MaWidocznaKorekte.
 
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
@@ -121,37 +122,25 @@ public void Dodatek_Roczny_Param(
     Element.ZapisObliczen.Add($"- zatrudniony na dzień wypłaty: {aktywnyNaWyplate}");
 
     // 3) Frekwencja 100% w KAŻDYM miesiącu wskazanego okresu (§2 ust.3-4, §5 ust.5)
+    // Czytamy indeks NieobecnosciIdx zamiast Pracownik.Nieobecnosci — to ta sama lista
+    // "obowiązujących" nieobecności, której używa enova (kalendarz, wnioski urlopowe).
+    // Nieobecność skorygowana występuje w nim tylko w części NIEPOKRYTEJ korektą,
+    // a rekordy KorektaNieobecności (których nie ma w Pracownik.Nieobecnosci, bo ich źródłem
+    // jest pierwotna nieobecność) — w swoim okresie. Działa w obie strony: na żądanie ->
+    // urlop planowy nie łamie frekwencji, L4 -> urlop na żądanie nadal łamie.
+    // Frekwencja 100% w każdym miesiącu = brak nieobecności łamiącej w całym okresie.
     bool frekwencja = true;
-    Periods miesiace = Periods.New(rocznyOkres).BreakByMonth();
-    foreach (FromTo miesiac in miesiace)
-        foreach (Nieobecnosc n in Element.Pracownik.Nieobecnosci[miesiac]) {
-            // Nieobecność skorygowana (Korygowana == true): rekordy KorektaNieobecności mają
-            // jako źródło PIERWOTNĄ nieobecność (nie pracownika), więc nie ma ich
-            // w Pracownik.Nieobecnosci — są w n.Nieobecnosci. Oceniamy korekty tymi samymi
-            // regułami (działa w obie strony: na żądanie -> urlop planowy nie łamie,
-            // L4 -> urlop na żądanie nadal łamie). Pierwotną oceniamy tylko wtedy, gdy
-            // korekty nie pokrywają całego jej okresu (bezpieczniej dać 0 niż przepuścić).
-            if (n.Korygowana) {
-                Periods pokryte = Periods.Empty;
-                foreach (Nieobecnosc k in n.Nieobecnosci) {
-                    pokryte += k.Okres;
-                    if (!k.Okres.IsIntersected(miesiac))
-                        continue;
-                    Element.ZapisObliczen.Add($"  - korekta: {n.Definicja.Nazwa} ({n.Okres}) -> {k.Definicja.Nazwa} ({k.Okres})");
-                    if (!CzyDozwolonaNieobecnosc(k)) {
-                        frekwencja = false;
-                        Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {k.Definicja.Nazwa} ({k.Okres}, korekta)");
-                    }
-                }
-                if ((Periods)n.Okres - pokryte == Periods.Empty)
-                    continue;
-                Element.ZapisObliczen.Add($"  - UWAGA: {n.Definicja.Nazwa} ({n.Okres}) skorygowana tylko częściowo lub brak korekty — liczona jak pierwotna nieobecność");
-            }
-            if (!CzyDozwolonaNieobecnosc(n)) {
-                frekwencja = false;
-                Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {n.Definicja.Nazwa} ({n.Okres})");
-            }
-        }
+    View idx = KalendModule.GetInstance(Element).NieobecnosciIdx.WgPracownik[Element.Pracownik].CreateView();
+    idx.Condition &= RowCondition.IsIntersected("Okres", rocznyOkres);
+    foreach (NieobecnośćIdx i in idx) {
+        Nieobecnosc n = i.Nieobecnosc;
+        string korekta = n is KorektaNieobecności ? ", korekta" : "";
+        if (!CzyDozwolonaNieobecnosc(n)) {
+            frekwencja = false;
+            Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {n.Definicja.Nazwa} ({i.Okres}{korekta})");
+        } else if (korekta != "")
+            Element.ZapisObliczen.Add($"  - dozwolona: {n.Definicja.Nazwa} ({i.Okres}{korekta})");
+    }
     Element.ZapisObliczen.Add($"- frekwencja 100% w całym okresie: {frekwencja}");
 
     Składnik.Podstawa1 = (pelnyRok && aktywnyNaWyplate && frekwencja) ? kwotaWpisana : DoubleCy.Zero;
