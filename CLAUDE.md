@@ -63,7 +63,9 @@ to skompilowane projekty .NET ani DLL-e, i nie mają samodzielnego pliku
 (np. nie próbować ich budować przez `dotnet build`), chyba że w repo pojawi
 się osobny folder **Addon/** zawierający właściwy projekt `.csproj` — to
 byłby sygnał, że mowa o skompilowanym dodatku enova365, a nie o wklejanym
-skrypcie.
+skrypcie. Wyjątkiem jest **Analiza/Generator/** — to zwykłe narzędzie
+konsolowe budujące arkusz z dokumentu `.md`, uruchamiane poza enovą (korzysta
+tylko z bibliotek DevExpress z katalogu serwera), a nie dodatek do wgrania.
 
 Plik `.md` obok pliku bez rozszerzenia (o tej samej nazwie) to dokumentacja
 biznesowa danego artefaktu.
