@@ -13,14 +13,17 @@ klienta) albo w folderze `Zadania/`.
 
 | Plik | Do czego służy |
 |---|---|
-| [Analiza przedwdrożeniowa - Kadry, Płace, Czas pracy.md](Analiza%20przedwdro%C5%BCeniowa%20-%20Kadry%2C%20P%C5%82ace%2C%20Czas%20pracy.md) | Pełny zestaw pytań na warsztat, podzielony na 17 obszarów, z „czerwonymi flagami" (co zwykle oznacza customizację) i uwagami metodycznymi dla konsultanta. |
-| `Analiza przedwdrożeniowa - kwestionariusz.xlsx` | Ten sam zestaw pytań w formie arkusza roboczego do wypełniania na spotkaniu. |
-| [Rozdział 1 - Zakres procesów objętych analizą i wdrożeniem.md](Rozdzia%C5%82%201%20-%20Zakres%20proces%C3%B3w%20obj%C4%99tych%20analiz%C4%85%20i%20wdro%C5%BCeniem.md) | Macierz zakresu: 27 procesów i 482 pozycje funkcjonalne obszaru Kadry/Płace/Czas pracy, z numerem strony instrukcji producenta, wymaganym wariantem licencji i wstępną klasyfikacją S/K/D/X. Rozdział otwierający dokument analizy — to w nim zamykamy zakres. |
+| [Analiza przedwdrożeniowa - Kadry, Płace, Czas pracy.md](Analiza%20przedwdro%C5%BCeniowa%20-%20Kadry%2C%20P%C5%82ace%2C%20Czas%20pracy.md) | Cały materiał na warsztat w jednym dokumencie: **rozdział 1** to macierz zakresu (27 procesów, 482 pozycje funkcjonalne z numerem strony instrukcji producenta i wymaganym wariantem licencji), **rozdziały 2–18** to pytania warsztatowe z „czerwonymi flagami", **19–21** to podsumowanie, sygnały ostrzegawcze i uwagi metodyczne. |
+| `Analiza przedwdrożeniowa - kwestionariusz.xlsx` | Ten sam materiał w formie arkusza roboczego do wypełniania na spotkaniu. |
 
 ## Arkusze w pliku xlsx
 
 - **Instrukcja** — jak prowadzić warsztat, legenda klasyfikacji S/K/C/X.
 - **Materiały od klienta** — checklista dokumentów do zebrania przed spotkaniem.
+- **Zakres procesów** — 482 pozycje funkcjonalne z rozdziału 1; kolumny na
+  wymaganie klienta, klasyfikację (wstępnie wypełnioną propozycją konsultanta),
+  „czy na start", szacunek godzin, osobę decyzyjną i opis realizacji.
+  Dodatkowo numer strony instrukcji producenta i wymagany wariant licencji.
 - **Kwestionariusz** — 151 pytań; kolumny na odpowiedź, klasyfikację,
   „czy blokuje start", szacunek godzin i osobę decyzyjną.
 - **Czerwone flagi** — ściąga: sytuacje, które zwykle oznaczają kod, nie konfigurację.
@@ -44,10 +47,10 @@ gotowe, a nie są dopisywane później.
 
 ## Aktualizacja arkusza
 
-Arkusz `.xlsx` jest **generowany** z pliku `.md` (pytania z rozdziałów 1–17,
-checklista z rozdziału 0, czerwone flagi i tabela sygnałów). Źródłem prawdy jest
-`.md` — pytania poprawiamy tam, a arkusz odświeżamy generatorem, inaczej oba
-pliki się rozjadą.
+Arkusz `.xlsx` jest **generowany** z pliku `.md` (macierz zakresu z rozdziału 1,
+pytania z rozdziałów 2–18, checklista z rozdziału 0, czerwone flagi i tabela
+sygnałów). Źródłem prawdy jest `.md` — treść poprawiamy tam, a arkusz odświeżamy
+generatorem, inaczej oba pliki się rozjadą.
 
 Generator: [`Generator/`](Generator/) — mała konsola .NET 8 budująca arkusz
 biblioteką `DevExpress.Spreadsheet` z DLL-i serwera enova365 (nie wymaga
@@ -68,27 +71,34 @@ rozjechała parser.
 Uwagi:
 - ścieżka do serwera enova365 jest w `GenAnaliza.csproj` (`EnovaDir`); przy innej
   wersji serwera: `dotnet build -p:EnovaDir="C:\enovaServer\<wersja>\Soneta.Products.Server.Standard"`;
-- parser rozpoznaje w `.md`: nagłówki `## <nr>. <nazwa>`, numerowane pytania
-  (`1. …`, z wcięciem dla kontynuacji), pozycje `- [ ]` w rozdziale 0, akapity
-  `**Czerwone flagi …:**` oraz wiersze tabeli sygnałów w rozdziale 19 —
-  przy większej zmianie układu dokumentu trzeba poprawić też generator;
+- parser rozpoznaje w `.md`: nagłówki `## <nr>. <nazwa>`, w rozdziale 1 nagłówki
+  obszarów `### XXX — nazwa`, procesów `#### XXX-00 · nazwa` i wiersze tabeli
+  zaczynające się od identyfikatora `XXX-00-000`, numerowane pytania w rozdziałach
+  2–18 (`1. …`, z wcięciem dla kontynuacji), pozycje `- [ ]` w rozdziale 0, akapity
+  `**Czerwone flagi …:**` oraz wiersze tabeli sygnałów w rozdziale 20 —
+  numery rozdziałów są stałymi na początku `Program.cs`, więc przy przenumerowaniu
+  dokumentu trzeba je poprawić razem z nim;
 - każde uruchomienie zmienia plik `.xlsx` binarnie (metadane), więc `git diff`
   pokaże zmianę nawet przy identycznej treści.
 
-## Rozdział 1 a kwestionariusz
+## Zakres a pytania
 
-Oba pliki służą do czego innego i nie zastępują się wzajemnie:
+Dokument ma dwie części, które się nie zastępują:
 
-- **kwestionariusz** (151 pytań) to *pytania*, które zadajemy na warsztacie —
-  prowadzi rozmowę i wyciąga z klienta to, czego sam nie powie;
-- **Rozdział 1** to *zakres* — lista funkcjonalności produktu, przy której
-  zapisujemy odpowiedzi w formie nadającej się do umowy i wyceny.
+- **rozdział 1 (zakres)** to lista funkcjonalności produktu, przy której
+  zapisujemy ustalenia w formie nadającej się do umowy i wyceny;
+- **rozdziały 2–18 (pytania)** to to, o co *pytamy*, żeby te ustalenia
+  z klienta wydobyć — wyciągają rzeczy, których klient sam nie powie.
 
-Praktycznie: kwestionariuszem rozmawiamy, w Rozdziale 1 notujemy ustalenia.
-Pozycja z Rozdziału 1 oznaczona **D** powinna mieć odpowiednik w „Rejestrze
-customizacji" arkusza kwestionariusza.
+Praktycznie: pytaniami rozmawiamy, w rozdziale 1 notujemy. Pozycja zakresu
+oznaczona **C** powinna mieć odpowiednik w arkuszu „Rejestr customizacji".
 
-Lista funkcjonalności w Rozdziale 1 pochodzi ze spisu treści instrukcji
+Lista funkcjonalności w rozdziale 1 pochodzi ze spisu treści instrukcji
 producenta „Kadry Płace i HR" (2196 stron, 671 pozycji spisu treści), a kolumna
-*Instr.* podaje numer strony. Przy nowej wersji instrukcji numery stron się
-przesuną — wtedy trzeba je odświeżyć, a nie zakładać, że są wieczne.
+*Instr.* podaje numer strony. Kolumna *Lic.* jest wypełniona tylko tam, gdzie
+instrukcja wprost stawia warunek licencyjny (72 pozycje platynowe, 28 złotych,
+17 wymagających osobnej licencji na dodatek).
+
+Przy nowej wersji instrukcji numery stron się przesuną — wtedy trzeba je
+odświeżyć, a nie zakładać, że są wieczne. Sam PDF instrukcji nie leży w repo
+(trafia do `Pobrane/`, która jest wykluczona z gita).

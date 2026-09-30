@@ -16,12 +16,32 @@ internal sealed class Flaga
     public string Tresc = "";
 }
 
+internal sealed class PozycjaZakresu
+{
+    public string Obszar = "";
+    public string Proces = "";
+    public string Nr = "";
+    public string Funkcjonalnosc = "";
+    public string Instrukcja = "";
+    public string Licencja = "";
+    public string Klasyfikacja = "";
+}
+
 internal static class Program
 {
+    // rozdział 1 = zakres procesów, 2–18 = pytania warsztatowe, 20 = sygnały ostrzegawcze
+    private const int SekcjaZakresu = 1;
+    private const int PierwszaSekcjaPytan = 2;
+    private const int OstatniaSekcjaPytan = 18;
+    private const int SekcjaSygnalow = 20;
+
     private static readonly Regex RxSekcja = new(@"^##\s+(\d+)\.\s+(.+)$");
     private static readonly Regex RxPytanie = new(@"^(\d+)\.\s+(.+)$");
     private static readonly Regex RxCheck = new(@"^-\s+\[\s*\]\s+(.+)$");
     private static readonly Regex RxFlaga = new(@"^\*\*Czerwone flagi.*?:\*\*\s*(.*)$");
+    private static readonly Regex RxObszarZakresu = new(@"^###\s+([A-Z]{2,4})\s+—\s+(.+)$");
+    private static readonly Regex RxProcesZakresu = new(@"^####\s+([A-Z]{2,4}-\d{2})\s+·\s+(.+)$");
+    private static readonly Regex RxPozycjaZakresu = new(@"^\|\s*([A-Z]{2,4}-\d{2}-\d{3})\s*\|");
 
     private static int Main(string[] args)
     {
@@ -48,9 +68,12 @@ internal static class Program
         var flagi = new List<Flaga>();
         var materialy = new List<string>();
         var sygnaly = new List<(string Mowi, string Znaczy)>();
+        var zakres = new List<PozycjaZakresu>();
 
         int sekcjaNr = -1;
         string sekcjaNazwa = "";
+        string obszarZakresu = "";
+        string procesZakresu = "";
         Pytanie biezace = null;
         Flaga biezacaFlaga = null;
 
@@ -101,7 +124,45 @@ internal static class Program
                 continue;
             }
 
-            if (sekcjaNr >= 1 && sekcjaNr <= 17)
+            if (sekcjaNr == SekcjaZakresu)
+            {
+                var mObs = RxObszarZakresu.Match(line);
+                if (mObs.Success)
+                {
+                    obszarZakresu = $"{mObs.Groups[1].Value} — {Oczysc(mObs.Groups[2].Value)}";
+                    procesZakresu = "";
+                    continue;
+                }
+
+                var mProc = RxProcesZakresu.Match(line);
+                if (mProc.Success)
+                {
+                    procesZakresu = $"{mProc.Groups[1].Value} · {Oczysc(mProc.Groups[2].Value)}";
+                    continue;
+                }
+
+                if (RxPozycjaZakresu.IsMatch(line))
+                {
+                    // | Nr | Funkcjonalność | Instr. | Lic. | Wymagania | Kl. | Opis |
+                    var kol = line.Trim().Trim('|').Split('|');
+                    if (kol.Length >= 6)
+                    {
+                        zakres.Add(new PozycjaZakresu
+                        {
+                            Obszar = obszarZakresu,
+                            Proces = procesZakresu,
+                            Nr = Oczysc(kol[0]),
+                            Funkcjonalnosc = Oczysc(kol[1]),
+                            Instrukcja = Oczysc(kol[2]),
+                            Licencja = Oczysc(kol[3]),
+                            Klasyfikacja = Oczysc(kol[5])
+                        });
+                    }
+                    continue;
+                }
+            }
+
+            if (sekcjaNr >= PierwszaSekcjaPytan && sekcjaNr <= OstatniaSekcjaPytan)
             {
                 var mPyt = RxPytanie.Match(line.Trim());
                 if (mPyt.Success && !line.StartsWith(" "))
@@ -113,7 +174,7 @@ internal static class Program
                 }
             }
 
-            if (sekcjaNr == 19 && line.TrimStart().StartsWith("| „"))
+            if (sekcjaNr == SekcjaSygnalow && line.TrimStart().StartsWith("| „"))
             {
                 var parts = line.Trim().Trim('|').Split('|');
                 if (parts.Length >= 2)
@@ -124,7 +185,8 @@ internal static class Program
             biezacaFlaga = null;
         }
 
-        Console.WriteLine($"Pytania: {pytania.Count}, flagi: {flagi.Count}, materiały: {materialy.Count}, sygnały: {sygnaly.Count}");
+        Console.WriteLine($"Zakres: {zakres.Count} pozycji, pytania: {pytania.Count}, flagi: {flagi.Count}, " +
+                          $"materiały: {materialy.Count}, sygnały: {sygnaly.Count}");
 
         using var wb = new Workbook();
         wb.BeginUpdate();
@@ -133,6 +195,7 @@ internal static class Program
             wb.Worksheets[0].Name = "Instrukcja";
             BudujInstrukcje(wb.Worksheets["Instrukcja"]);
             BudujMaterialy(Dodaj(wb, "Materiały od klienta"), materialy);
+            BudujZakres(Dodaj(wb, "Zakres procesów"), zakres);
             BudujKwestionariusz(Dodaj(wb, "Kwestionariusz"), pytania);
             BudujFlagi(Dodaj(wb, "Czerwone flagi"), flagi);
             BudujSygnaly(Dodaj(wb, "Sygnały ostrzegawcze"), sygnaly);
@@ -187,11 +250,13 @@ internal static class Program
             ("", ""),
             ("Jak używać", ""),
             ("1.", "Przed spotkaniem wyślij klientowi arkusz „Materiały od klienta” i zbierz dokumenty."),
-            ("2.", "Na warsztacie idź po arkuszu „Kwestionariusz”, notuj odpowiedzi w kolumnie „Odpowiedź klienta”."),
-            ("3.", "Każde pytanie od razu klasyfikuj w kolumnie „Klasyfikacja” (S / K / C / X)."),
-            ("4.", "Wszystko, co wyszło jako C, przepisz do arkusza „Rejestr customizacji” z szacunkiem pracochłonności."),
-            ("5.", "Czego nie da się ustalić na spotkaniu – do arkusza „Otwarte pytania” z terminem i właścicielem."),
-            ("6.", "Arkusz „Czerwone flagi” to ściąga: sytuacje, które zwykle oznaczają kod, nie konfigurację."),
+            ("2.", "Przed spotkaniem ustal wariant licencji klienta – arkusz „Zakres procesów”, kolumna „Lic.” pokazuje, które pozycje wymagają wersji platynowej lub złotej."),
+            ("3.", "Na warsztacie rozmawiaj pytaniami z arkusza „Kwestionariusz”, a ustalenia zapisuj w arkuszu „Zakres procesów”."),
+            ("4.", "W arkuszu „Zakres procesów” wypełniaj kolumny „Wymagania Klienta”, „Klasyfikacja” i „Opis realizacji” – wpisana klasyfikacja to propozycja konsultanta, potwierdź ją z klientem."),
+            ("5.", "Każde pytanie i każdą pozycję zakresu klasyfikuj w kolumnie „Klasyfikacja” (S / K / C / X)."),
+            ("6.", "Wszystko, co wyszło jako C, przepisz do arkusza „Rejestr customizacji” z szacunkiem pracochłonności."),
+            ("7.", "Czego nie da się ustalić na spotkaniu – do arkusza „Otwarte pytania” z terminem i właścicielem."),
+            ("8.", "Arkusz „Czerwone flagi” to ściąga: sytuacje, które zwykle oznaczają kod, nie konfigurację."),
             ("", ""),
             ("Legenda klasyfikacji", ""),
             ("S", "Standard – działa bez zmian, wystarczy pokazać klientowi."),
@@ -213,9 +278,16 @@ internal static class Program
         }
         ws.Cells[0, 0].Font.Bold = true;
         ws.Cells[0, 0].Font.Size = 14;
-        ws.Cells[5, 0].Font.Bold = true;
-        ws.Cells[13, 0].Font.Bold = true;
-        ws.Cells[19, 0].Font.Bold = true;
+
+        // nagłówki sekcji pogrubiamy po treści, nie po numerze wiersza –
+        // inaczej każde dopisanie punktu rozjeżdża formatowanie
+        foreach (var naglowek in new[] { "Jak używać", "Legenda klasyfikacji", "Zasada" })
+        {
+            for (int i = 0; i < wiersze.Length; i++)
+            {
+                if (wiersze[i].A == naglowek) { ws.Cells[i, 0].Font.Bold = true; break; }
+            }
+        }
         ws.Columns[0].WidthInCharacters = 22;
         ws.Columns[1].WidthInCharacters = 110;
     }
@@ -235,6 +307,69 @@ internal static class Program
         ws.Columns[3].WidthInCharacters = 20;
         ws.Columns[4].WidthInCharacters = 40;
         ws.FreezeRows(0);
+    }
+
+    private static void BudujZakres(Worksheet ws, List<PozycjaZakresu> zakres)
+    {
+        Naglowek(ws, 0, "Obszar", "Proces", "Nr", "Funkcjonalność systemowa", "Instr. (str.)", "Lic.",
+            "Wymagania Klienta", "Klasyfikacja (S/K/C/X)", "Na start? (T/N)", "Szac. [h]",
+            "Osoba decyzyjna", "Opis realizacji");
+
+        for (int i = 0; i < zakres.Count; i++)
+        {
+            int r = i + 1;
+            var p = zakres[i];
+            ws.Cells[r, 0].Value = p.Obszar;
+            ws.Cells[r, 1].Value = p.Proces;
+            ws.Cells[r, 2].Value = p.Nr;
+            ws.Cells[r, 3].Value = p.Funkcjonalnosc;
+
+            // numer strony instrukcji jako liczba, jeżeli jest podany
+            if (int.TryParse(p.Instrukcja, out int str)) ws.Cells[r, 4].Value = str;
+            else ws.Cells[r, 4].Value = p.Instrukcja;
+
+            ws.Cells[r, 5].Value = p.Licencja;
+            ws.Cells[r, 7].Value = p.Klasyfikacja;
+
+            ws.Cells[r, 0].Alignment.WrapText = true;
+            ws.Cells[r, 1].Alignment.WrapText = true;
+            ws.Cells[r, 3].Alignment.WrapText = true;
+            ws.Cells[r, 6].Alignment.WrapText = true;
+            ws.Cells[r, 11].Alignment.WrapText = true;
+        }
+
+        ws.Columns[0].WidthInCharacters = 24;
+        ws.Columns[1].WidthInCharacters = 34;
+        ws.Columns[2].WidthInCharacters = 13;
+        ws.Columns[3].WidthInCharacters = 52;
+        ws.Columns[4].WidthInCharacters = 10;
+        ws.Columns[5].WidthInCharacters = 7;
+        ws.Columns[6].WidthInCharacters = 50;
+        ws.Columns[7].WidthInCharacters = 12;
+        ws.Columns[8].WidthInCharacters = 10;
+        ws.Columns[9].WidthInCharacters = 9;
+        ws.Columns[10].WidthInCharacters = 20;
+        ws.Columns[11].WidthInCharacters = 45;
+
+        ws.FreezePanes(0, 3);
+        if (zakres.Count > 0)
+            ws.AutoFilter.Apply(ws.Range.FromLTRB(0, 0, 11, zakres.Count));
+
+        try
+        {
+            var walKlas = ws.DataValidations.Add(
+                ws.Range.FromLTRB(7, 1, 7, zakres.Count),
+                DataValidationType.List, "S;K;C;X");
+            walKlas.ErrorMessage = "Dozwolone: S, K, C, X";
+
+            ws.DataValidations.Add(
+                ws.Range.FromLTRB(8, 1, 8, zakres.Count),
+                DataValidationType.List, "T;N");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Walidacja arkusza zakresu pominięta: " + ex.Message);
+        }
     }
 
     private static void BudujKwestionariusz(Worksheet ws, List<Pytanie> pytania)
