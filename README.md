@@ -1,5 +1,9 @@
 # Enova
 
+## Analiza
+
+- [Analiza przedwdrożeniowa – Kadry, Płace, Czas pracy (pytania na warsztat z klientem)](Analiza/README.md)
+
 ## Raporty
 
 - [Raport z odbić RCP – dokumentacja biznesowa](Raporty/OdbiciaRCP.md)
