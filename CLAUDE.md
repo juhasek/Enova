@@ -32,6 +32,9 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
 - **Widoki/** — definicje/modyfikacje widoków (list, formularzy) enova365.
 - **Zadania/** — opisy/specyfikacje zadań wdrożeniowych, niekoniecznie
   powiązane 1:1 z pojedynczym artefaktem powyżej.
+- **Analiza/** — szablony do analizy przedwdrożeniowej (kwestionariusz pytań
+  na warsztat z klientem w wersji `.md` i `.xlsx`). Szablony, nie ustalenia
+  konkretnego wdrożenia — notatki z konkretnego klienta trafiają do `Zadania/`.
 - **ImportyXML/** — pliki XML importu danych/konfiguracji do enova365 wg
   schematu `<session xmlns="http://www.soneta.pl/schema/business">`
   (import wg rekordów lub przez logikę biznesową), np. `*.dbinit.xml`
