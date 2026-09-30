@@ -142,7 +142,7 @@ public void Dodatek_Roczny_Param(
     // Kalkulator planu pracy (grafik). Property "Czasy" tworzy NOWY kalkulator przy każdym
     // odczycie, gdy pracownik nie jest zbuforowany — dlatego buforujemy go w zmiennej lokalnej
     // (kalkulator cache'uje wczytane dni, więc kolejne odczyty tego samego dnia są darmowe).
-    Soneta.Kalend.KalkulatorPracownika czasy = Element.Pracownik.Czasy;
+    KalkulatorPracownika czasy = Element.Pracownik.Czasy;
     View idx = KalendModule.GetInstance(Element).NieobecnosciIdx.WgPracownik[Element.Pracownik].CreateView();
     idx.Condition &= RowCondition.IsIntersected("Okres", rocznyOkres);
     foreach (NieobecnośćIdx i in idx) {
@@ -168,7 +168,7 @@ public void Dodatek_Roczny_Param(
 
         Date pierwszyRoboczy = Date.Empty;
         for (Date d = wOkresie.From; d <= wOkresie.To; ++d) {
-            Soneta.Kalend.Dzien dz = czasy.KalkPlanu[d];
+            Dzien dz = czasy.KalkPlanu[d];
             // Brak dnia w planie (np. poza okresem zatrudnienia) traktujemy zachowawczo
             // jak dzień roboczy — o takim przypadku i tak decyduje bramka 1).
             if (dz == null || dz.Czas > Time.Zero) {
