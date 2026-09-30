@@ -120,20 +120,39 @@ namespace SeopEmployeeFileSnippet {
                 // Do pliku mają trafić osoby zwolnione, które KIEDYKOLWIEK w trakcie zatrudnienia były
                 // uczestnikami programu - również takie, które zrezygnowały dużo wcześniej albo których
                 // edycja już się zakończyła. Dlatego zamiast aktualnego uczestnictwa (liczonego na koniec
-                // raportowanego okresu) sprawdzamy, czy pracownik ma w historii jakikolwiek wiersz
-                // UczestnictwoWAkcji.
+                // raportowanego okresu) przeglądamy historię wierszy UczestnictwoWAkcji pracownika.
+                //
+                // Liczy się tylko uczestnictwo z BIEŻĄCEGO okresu zatrudnienia - przy ponownym przyjęciu
+                // tej samej osoby uczestnictwo z poprzedniej umowy nie kwalifikuje jej do pliku.
                 bool kiedykolwiekUczestnik = false;
 
                 if (zwolnionyWOkresie)
                 {
+                    Date zatrudnienieOd = historia.Etat.OkresZatrudnienia.From;
+                    Date zatrudnienieDo = (Date)terminationDate;
+
+                    // Brak daty zatrudnienia (niekompletna kartoteka) - nie ma czym ograniczyć historii,
+                    // więc honorujemy każde uczestnictwo, żeby nie zgubić pracownika z pliku.
+                    bool brakDatyZatrudnienia = zatrudnienieOd == Date.Empty;
+
+                    if (brakDatyZatrudnienia)
+                        log.WriteLine($"Pracownik {p} - brak daty rozpoczęcia zatrudnienia, uczestnictwa nie ograniczono do bieżącej umowy");
+
                     foreach (AltOne.Skanska.AkcjePracownicze.UczestnictwoWAkcji u in akcjeModule.UczesWAkcji.WgPracownik[p])
                     {
+                        // Uczestnictwo "w trakcie zatrudnienia" = okres uczestnictwa zachodzi na okres
+                        // bieżącej umowy (a nie np. mieści się w nim w całości - uczestnictwo bywa
+                        // zamykane dopiero z datą końca umowy).
+                        if (!brakDatyZatrudnienia &&
+                            (u.OkresDo < zatrudnienieOd || u.OkresOd > zatrudnienieDo))
+                            continue;
+
                         kiedykolwiekUczestnik = true;
                         break;
                     }
 
                     if (!kiedykolwiekUczestnik)
-                        log.WriteLine($"Pracownik {p} - zwolniony w okresie, ale nigdy nie był uczestnikiem programu");
+                        log.WriteLine($"Pracownik {p} - zwolniony w okresie, ale nie był uczestnikiem programu w trakcie bieżącego zatrudnienia");
                 }
 
                 bool zakonczylPraceWOkresie = zwolnionyWOkresie && kiedykolwiekUczestnik;

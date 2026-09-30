@@ -33,7 +33,7 @@ Do pliku trafia pracownik, dla którego spełniony jest **przynajmniej jeden** z
 |---|---|
 | `przystapilWOkresie` | `OkresOd` aktualnego uczestnictwa mieści się w raportowanym okresie |
 | `zrezygnowalWOkresie` | `OkresDo` aktualnego uczestnictwa mieści się w raportowanym okresie |
-| `zakonczylPraceWOkresie` | data końca zatrudnienia w okresie **i** pracownik kiedykolwiek był uczestnikiem |
+| `zakonczylPraceWOkresie` | data końca zatrudnienia w okresie **i** pracownik był uczestnikiem w trakcie bieżącego zatrudnienia |
 
 Aktualne uczestnictwo wyznacza `SeopPracownikWorker` + `AktualnyParametrUczestnictwaWorker`
 na dzień `pars.Okres.To`.
@@ -59,8 +59,8 @@ mimo że byli uczestnikami programu.
 
 **Poprawka:**
 
-- „kiedykolwiek był uczestnikiem" liczone jest z **historii** uczestnictw, a nie
-  z uczestnictwa aktualnego: wystarczy dowolny wiersz `UczestnictwoWAkcji` pracownika
+- „był uczestnikiem" liczone jest z **historii** uczestnictw, a nie z uczestnictwa
+  aktualnego: wystarczy wiersz `UczestnictwoWAkcji` pracownika
   (`AkcjePracA1Module...UczesWAkcji.WgPracownik[p]`), niezależnie od tego, do której
   edycji należy i kiedy został zamknięty;
 - filtr edycji oddziału odsiewa już tylko kandydatów na przystąpienie/rezygnację —
@@ -73,8 +73,14 @@ bool kiedykolwiekUczestnik = false;
 
 if (zwolnionyWOkresie)
 {
+    Date zatrudnienieOd = historia.Etat.OkresZatrudnienia.From;
+    Date zatrudnienieDo = (Date)terminationDate;
+
     foreach (UczestnictwoWAkcji u in akcjeModule.UczesWAkcji.WgPracownik[p])
     {
+        if (u.OkresDo < zatrudnienieOd || u.OkresOd > zatrudnienieDo)
+            continue;
+
         kiedykolwiekUczestnik = true;
         break;
     }
@@ -82,6 +88,21 @@ if (zwolnionyWOkresie)
 
 bool zakonczylPraceWOkresie = zwolnionyWOkresie && kiedykolwiekUczestnik;
 ```
+
+### Ograniczenie do bieżącego okresu zatrudnienia
+
+Pod uwagę brane są wyłącznie uczestnictwa **zachodzące na bieżącą umowę** — od daty
+rozpoczęcia zatrudnienia (`Etat.OkresZatrudnienia.From`) do daty zwolnienia. Dzięki
+temu osoba przyjęta ponownie, która uczestniczyła w programie tylko przy poprzednim
+zatrudnieniu, nie trafia do pliku po kolejnym zwolnieniu.
+
+Świadomie sprawdzane jest **zachodzenie okresów**, a nie zawieranie się uczestnictwa
+w całości w okresie zatrudnienia — uczestnictwo bywa zamykane dopiero z datą końca
+umowy, a przy niepełnych danych mogłoby sięgać poza nią.
+
+Jeśli kartoteka nie ma daty rozpoczęcia zatrudnienia (`Date.Empty`), ograniczenie nie
+jest stosowane — honorowane jest każde uczestnictwo, żeby nie zgubić pracownika
+z pliku; przypadek trafia do loga.
 
 ## 5. Poprawka: kolumna Termination_Date przy umowie bezterminowej
 
@@ -105,11 +126,11 @@ ten sam subrow `Soneta.Core.Adres`, więc te same pola.
   kompilowany ani uruchomiony. Przed wysyłką pliku do operatora warto wygenerować
   raport za miesiąc, w którym wiadomo, że ktoś został zwolniony, i sprawdzić, czy
   jest na liście.
-- Warunek „kiedykolwiek był uczestnikiem" jest celowo szeroki: wystarczy **dowolny**
-  wiersz `UczestnictwoWAkcji`, również z okresu sprzed wielu lat. Jeśli klient będzie
-  chciał ograniczyć go np. do uczestnictw mieszczących się w bieżącym okresie
-  zatrudnienia (istotne przy ponownym zatrudnieniu tej samej osoby), trzeba dołożyć
-  porównanie `uczestnictwo.OkresOd` z `Etat.OkresZatrudnienia.From`.
+- Ograniczenie do bieżącego zatrudnienia opiera się na etacie z historii na koniec
+  raportowanego okresu. Przy nietypowej historii etatowej (np. przerwa w zatrudnieniu
+  rozpisana inaczej niż nowym okresem zatrudnienia) data `OkresZatrudnienia.From` może
+  nie odpowiadać temu, co klient rozumie przez „bieżące zatrudnienie" — do sprawdzenia
+  na realnym przypadku ponownego przyjęcia.
 - `Nationality` czytane jest niespójnie: przy kodzie `PL` wpisywane jest `POL`
   z obywatelstwa, ale w przeciwnym razie brany jest kod kraju z **adresu
   zamieszkania**, nie z obywatelstwa. Do potwierdzenia z klientem, które źródło jest
