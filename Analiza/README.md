@@ -43,6 +43,33 @@ gotowe, a nie są dopisywane później.
 
 ## Aktualizacja arkusza
 
-Arkusz `.xlsx` jest wyciągiem z pliku `.md` (pytania z rozdziałów 1–17, checklista
-z rozdziału 0, czerwone flagi i tabela sygnałów). Przy zmianie pytań najpierw
-poprawiamy `.md`, potem odświeżamy arkusz — inaczej oba pliki się rozjadą.
+Arkusz `.xlsx` jest **generowany** z pliku `.md` (pytania z rozdziałów 1–17,
+checklista z rozdziału 0, czerwone flagi i tabela sygnałów). Źródłem prawdy jest
+`.md` — pytania poprawiamy tam, a arkusz odświeżamy generatorem, inaczej oba
+pliki się rozjadą.
+
+Generator: [`Generator/`](Generator/) — mała konsola .NET 8 budująca arkusz
+biblioteką `DevExpress.Spreadsheet` z DLL-i serwera enova365 (nie wymaga
+uruchomionej enovy ani bazy).
+
+```bash
+cd Analiza/Generator
+dotnet build
+dotnet bin/Debug/net8.0/GenAnaliza.dll
+```
+
+Bez argumentów czyta `.md` i nadpisuje `.xlsx` w folderze `Analiza`. Opcjonalnie
+można podać własne ścieżki: `dotnet ... GenAnaliza.dll <plik.md> <plik.xlsx>`.
+Po uruchomieniu wypisuje liczbę wczytanych pytań, flag, materiałów i sygnałów —
+warto na nią zerknąć, bo spadek liczby oznacza, że zmiana formatowania w `.md`
+rozjechała parser.
+
+Uwagi:
+- ścieżka do serwera enova365 jest w `GenAnaliza.csproj` (`EnovaDir`); przy innej
+  wersji serwera: `dotnet build -p:EnovaDir="C:\enovaServer\<wersja>\Soneta.Products.Server.Standard"`;
+- parser rozpoznaje w `.md`: nagłówki `## <nr>. <nazwa>`, numerowane pytania
+  (`1. …`, z wcięciem dla kontynuacji), pozycje `- [ ]` w rozdziale 0, akapity
+  `**Czerwone flagi …:**` oraz wiersze tabeli sygnałów w rozdziale 19 —
+  przy większej zmianie układu dokumentu trzeba poprawić też generator;
+- każde uruchomienie zmienia plik `.xlsx` binarnie (metadane), więc `git diff`
+  pokaże zmianę nawet przy identycznej treści.
