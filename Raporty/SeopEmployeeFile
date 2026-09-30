@@ -99,10 +99,48 @@ namespace SeopEmployeeFileSnippet {
                 }
 
                 // ===============================
-                // ZNAJDŹ EDYCJĘ DLA ODDZIAŁU
+                // ZWOLNIENIE W OKRESIE + UCZESTNICTWO KIEDYKOLWIEK
                 // ===============================
 
                 var akcjeModule = AltOne.Skanska.AkcjePracownicze.AkcjePracA1Module.GetInstance(Context.Session);
+
+                Date? terminationDate = historia?.Etat?.OkresZatrudnienia.To;
+
+                // Umowa bezterminowa ma koniec okresu zatrudnienia ustawiony na wartość skrajną -
+                // to nie jest data zwolnienia i nie może trafić ani do filtra, ani do kolumny raportu.
+                if (terminationDate != null &&
+                    ((Date)terminationDate == Date.MaxValue || (Date)terminationDate == Date.Empty))
+                    terminationDate = null;
+
+                bool zwolnionyWOkresie =
+                    terminationDate != null &&
+                    terminationDate >= pars.Okres.From &&
+                    terminationDate <= pars.Okres.To;
+
+                // Do pliku mają trafić osoby zwolnione, które KIEDYKOLWIEK w trakcie zatrudnienia były
+                // uczestnikami programu - również takie, które zrezygnowały dużo wcześniej albo których
+                // edycja już się zakończyła. Dlatego zamiast aktualnego uczestnictwa (liczonego na koniec
+                // raportowanego okresu) sprawdzamy, czy pracownik ma w historii jakikolwiek wiersz
+                // UczestnictwoWAkcji.
+                bool kiedykolwiekUczestnik = false;
+
+                if (zwolnionyWOkresie)
+                {
+                    foreach (AltOne.Skanska.AkcjePracownicze.UczestnictwoWAkcji u in akcjeModule.UczesWAkcji.WgPracownik[p])
+                    {
+                        kiedykolwiekUczestnik = true;
+                        break;
+                    }
+
+                    if (!kiedykolwiekUczestnik)
+                        log.WriteLine($"Pracownik {p} - zwolniony w okresie, ale nigdy nie był uczestnikiem programu");
+                }
+
+                bool zakonczylPraceWOkresie = zwolnionyWOkresie && kiedykolwiekUczestnik;
+
+                // ===============================
+                // ZNAJDŹ EDYCJĘ DLA ODDZIAŁU
+                // ===============================
 
                 AltOne.Skanska.AkcjePracownicze.EdycjaAkcjiPracowniczej edycja = null;
 
@@ -120,7 +158,10 @@ namespace SeopEmployeeFileSnippet {
                     }
                 }
 
-                if (edycja == null)
+                // Brak edycji obowiązującej dla oddziału w raportowanym okresie odsiewa tylko kandydatów
+                // na przystąpienie/rezygnację. Osoba zwolniona, która była uczestnikiem programu, trafia
+                // do pliku również wtedy, gdy jej edycja już się zakończyła lub oddział nie ma bieżącej.
+                if (edycja == null && !zakonczylPraceWOkresie)
                 {
                     log.WriteLine($"Pracownik {p} - brak edycji dla oddziału {oddzial}");
                     continue;
@@ -173,13 +214,8 @@ namespace SeopEmployeeFileSnippet {
                     dataRezygnacji >= pars.Okres.From &&
                     dataRezygnacji <= pars.Okres.To;
 
-                Date? terminationDate = historia?.Etat?.OkresZatrudnienia.To;
-
-                bool zakonczylPraceWOkresie =
-                    terminationDate != null &&
-                    terminationDate >= pars.Okres.From &&
-                    terminationDate <= pars.Okres.To &&
-                    dataPrzystapienia != null;
+                // zakonczylPraceWOkresie policzone wyżej - przed filtrem edycji, bo to ono decyduje,
+                // czy brak bieżącej edycji dla oddziału ma pracownika odsiać.
 
                 // ===============================
                 // FILTR PRACOWNIKÓW
@@ -198,7 +234,9 @@ namespace SeopEmployeeFileSnippet {
                     LastName = p.Nazwisko,
                     DateOfBirth = historia?.Urodzony.Data.ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
                     HireDate = historia?.Etat?.OkresZatrudnienia.From.ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
-                    TerminationDate = historia?.Etat?.OkresZatrudnienia.To.ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
+                    TerminationDate = terminationDate == null
+                        ? ""
+                        : ((Date)terminationDate).ToString("dd-MMM-yyyy", CultureInfo.GetCultureInfo("en-US")),
                     TerminationCode = historia?.Etat?.RozwiazanieUmowy?.PrzyczynaRozwUmowyOpis,
                     TransferDate = null,
                     WorkEmail = p.EMAIL,
