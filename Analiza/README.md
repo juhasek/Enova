@@ -15,6 +15,7 @@ klienta) albo w folderze `Zadania/`.
 |---|---|
 | [Analiza przedwdrożeniowa - Kadry, Płace, Czas pracy.md](Analiza%20przedwdro%C5%BCeniowa%20-%20Kadry%2C%20P%C5%82ace%2C%20Czas%20pracy.md) | Pełny zestaw pytań na warsztat, podzielony na 17 obszarów, z „czerwonymi flagami" (co zwykle oznacza customizację) i uwagami metodycznymi dla konsultanta. |
 | `Analiza przedwdrożeniowa - kwestionariusz.xlsx` | Ten sam zestaw pytań w formie arkusza roboczego do wypełniania na spotkaniu. |
+| [Rozdział 1 - Zakres procesów objętych analizą i wdrożeniem.md](Rozdzia%C5%82%201%20-%20Zakres%20proces%C3%B3w%20obj%C4%99tych%20analiz%C4%85%20i%20wdro%C5%BCeniem.md) | Macierz zakresu: 27 procesów i 482 pozycje funkcjonalne obszaru Kadry/Płace/Czas pracy, z numerem strony instrukcji producenta, wymaganym wariantem licencji i wstępną klasyfikacją S/K/D/X. Rozdział otwierający dokument analizy — to w nim zamykamy zakres. |
 
 ## Arkusze w pliku xlsx
 
@@ -73,3 +74,21 @@ Uwagi:
   przy większej zmianie układu dokumentu trzeba poprawić też generator;
 - każde uruchomienie zmienia plik `.xlsx` binarnie (metadane), więc `git diff`
   pokaże zmianę nawet przy identycznej treści.
+
+## Rozdział 1 a kwestionariusz
+
+Oba pliki służą do czego innego i nie zastępują się wzajemnie:
+
+- **kwestionariusz** (151 pytań) to *pytania*, które zadajemy na warsztacie —
+  prowadzi rozmowę i wyciąga z klienta to, czego sam nie powie;
+- **Rozdział 1** to *zakres* — lista funkcjonalności produktu, przy której
+  zapisujemy odpowiedzi w formie nadającej się do umowy i wyceny.
+
+Praktycznie: kwestionariuszem rozmawiamy, w Rozdziale 1 notujemy ustalenia.
+Pozycja z Rozdziału 1 oznaczona **D** powinna mieć odpowiednik w „Rejestrze
+customizacji" arkusza kwestionariusza.
+
+Lista funkcjonalności w Rozdziale 1 pochodzi ze spisu treści instrukcji
+producenta „Kadry Płace i HR" (2196 stron, 671 pozycji spisu treści), a kolumna
+*Instr.* podaje numer strony. Przy nowej wersji instrukcji numery stron się
+przesuną — wtedy trzeba je odświeżyć, a nie zakładać, że są wieczne.
