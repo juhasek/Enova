@@ -44,6 +44,15 @@
   pierwotną nieobecność minus okresy korekt + same korekty (Nieobecnosc.UpdateIdx).
   Usunięta metoda MaWidocznaKorekte.
 
+  Aktualizacja 2026-09-30 (zgłoszenie klienta): nieobecność łamiąca frekwencję jest POMIJANA,
+  jeżeli w okresie dodatku przypada wyłącznie na dni wolne wg grafiku (zaplanowany czas pracy
+  = 0). Przykład: pracownik ma grafikowo wolny poniedziałek i wtorek, nieobecność obejmuje
+  tylko te dwa dni — dodatek nadal przysługuje. Plan czytany z Pracownik.Czasy.KalkPlanu[data]
+  (Soneta.Kalend.KalkulatorPracownika/KalkulatorPlanu — kalendarz wzorcowy + wyjątki DzienPlanu,
+  niezależny od wpisanych nieobecności). Oceniana jest część nieobecności wpadająca w okres
+  dodatku (i.Okres * rocznyOkres). TODO/UNVERIFIED: potwierdzić scenariuszami TS-22/TS-23
+  (przeliczenie wypłaty w GUI).
+
   GUID rekordu wygenerowany losowo (c973afe6-a410-4cb8-9428-030ab2213957) — nowy, nie koliduje
   ze standardowymi GUID-ami Soneta (te mają wzorzec z samymi zerami w części segmentów).
 -->
@@ -130,16 +139,51 @@ public void Dodatek_Roczny_Param(
     // urlop planowy nie łamie frekwencji, L4 -> urlop na żądanie nadal łamie.
     // Frekwencja 100% w każdym miesiącu = brak nieobecności łamiącej w całym okresie.
     bool frekwencja = true;
+    // Kalkulator planu pracy (grafik). Property "Czasy" tworzy NOWY kalkulator przy każdym
+    // odczycie, gdy pracownik nie jest zbuforowany — dlatego buforujemy go w zmiennej lokalnej
+    // (kalkulator cache'uje wczytane dni, więc kolejne odczyty tego samego dnia są darmowe).
+    Soneta.Kalend.KalkulatorPracownika czasy = Element.Pracownik.Czasy;
     View idx = KalendModule.GetInstance(Element).NieobecnosciIdx.WgPracownik[Element.Pracownik].CreateView();
     idx.Condition &= RowCondition.IsIntersected("Okres", rocznyOkres);
     foreach (NieobecnośćIdx i in idx) {
         Nieobecnosc n = i.Nieobecnosc;
         string korekta = n is KorektaNieobecności ? ", korekta" : "";
-        if (!CzyDozwolonaNieobecnosc(n)) {
-            frekwencja = false;
-            Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {n.Definicja.Nazwa} ({i.Okres}{korekta})");
-        } else if (korekta != "")
-            Element.ZapisObliczen.Add($"  - dozwolona: {n.Definicja.Nazwa} ({i.Okres}{korekta})");
+
+        if (CzyDozwolonaNieobecnosc(n)) {
+            if (korekta != "")
+                Element.ZapisObliczen.Add($"  - dozwolona: {n.Definicja.Nazwa} ({i.Okres}{korekta})");
+            continue;
+        }
+
+        // Nieobecność przypadająca WYŁĄCZNIE na dni wolne wg grafiku nie łamie frekwencji —
+        // pracownik i tak nie miał w tych dniach zaplanowanej pracy (np. nieobecność wpisana
+        // na wolny poniedziałek i wtorek). Plan czytamy dzień po dniu z kalkulatora planu:
+        // Czasy.KalkPlanu[data].Czas to zaplanowany czas pracy z grafiku (kalendarz wzorcowy
+        // + wyjątki DzienPlanu), NIEzależny od wpisanych nieobecności.
+        // Oceniamy tylko część nieobecności wpadającą w okres dodatku — reszta dotyczy
+        // frekwencji innego okresu rozliczeniowego.
+        FromTo wOkresie = i.Okres * rocznyOkres;
+        if (wOkresie == FromTo.Empty)
+            continue;
+
+        Date pierwszyRoboczy = Date.Empty;
+        for (Date d = wOkresie.From; d <= wOkresie.To; ++d) {
+            Soneta.Kalend.Dzien dz = czasy.KalkPlanu[d];
+            // Brak dnia w planie (np. poza okresem zatrudnienia) traktujemy zachowawczo
+            // jak dzień roboczy — o takim przypadku i tak decyduje bramka 1).
+            if (dz == null || dz.Czas > Time.Zero) {
+                pierwszyRoboczy = d;
+                break;
+            }
+        }
+
+        if (pierwszyRoboczy == Date.Empty) {
+            Element.ZapisObliczen.Add($"  - pominięta, tylko dni wolne wg grafiku: {n.Definicja.Nazwa} ({wOkresie}{korekta})");
+            continue;
+        }
+
+        frekwencja = false;
+        Element.ZapisObliczen.Add($"  - łamiąca frekwencję: {n.Definicja.Nazwa} ({i.Okres}{korekta}), dzień roboczy wg grafiku: {pierwszyRoboczy}");
     }
     Element.ZapisObliczen.Add($"- frekwencja 100% w całym okresie: {frekwencja}");
 

@@ -114,3 +114,21 @@ nie jest spełniona:
 
    W zapisie obliczeń korekta ma dopisek „, korekta” (także gdy jest dozwolona).
    **Do potwierdzenia (TS-20, TS-21)** przeliczeniem wypłaty w GUI po wgraniu poprawki.
+
+   **Nieobecność w dni wolne wg grafiku** (zmiana 2026-09-30, zgłoszenie klienta): nieobecność,
+   która normalnie łamie frekwencję, jest **pomijana**, jeżeli w okresie dodatku przypada
+   wyłącznie na dni, w których pracownik wg grafiku i tak nie miał pracować (zaplanowany czas
+   pracy = 0). Przykład z regulaminu praktyki: pracownik ma grafikowo wolny poniedziałek
+   i wtorek, nieobecność obejmuje tylko te dwa dni — dodatek nadal przysługuje. Wystarczy jeden
+   dzień roboczy wg grafiku w okresie nieobecności, żeby frekwencja została złamana.
+   Plan czytany jest z `Element.Pracownik.Czasy.KalkPlanu[data].Czas`
+   (`Soneta.Kalend.KalkulatorPracownika` → `KalkulatorPlanu`: kalendarz wzorcowy pracownika
+   plus wyjątki `DzienPlanu`) — to **plan pracy**, niezależny od wpisanych nieobecności, więc
+   wpisanie nieobecności nie zmienia wyniku tego sprawdzenia. Oceniana jest część nieobecności
+   wpadająca w okres dodatku (`i.Okres * rocznyOkres`); dni tej samej nieobecności wykraczające
+   poza okres dotyczą frekwencji innego okresu rozliczeniowego i tu się nie liczą.
+   Dzień bez planu (np. poza okresem zatrudnienia) traktowany jest zachowawczo jak dzień roboczy
+   — o takim przypadku i tak rozstrzyga bramka 1.
+   W zapisie obliczeń pominięta nieobecność ma wpis „pominięta, tylko dni wolne wg grafiku”,
+   a łamiąca — wskazanie pierwszego dnia roboczego wg grafiku.
+   **Do potwierdzenia (TS-22, TS-23)** przeliczeniem wypłaty w GUI po wgraniu poprawki.
