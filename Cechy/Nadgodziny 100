@@ -1,4 +1,4 @@
-public decimal Feature_Nadgodziny_50_nowe {
+public decimal Feature_Nadgodziny_100 {
 	get {
 
 		if (Row.Definicja == null)
@@ -41,6 +41,29 @@ public decimal Feature_Nadgodziny_50_nowe {
 		else
 			normaDobowa = ph.Etat.NormaDobowa;
 
+		// Strefy rozliczeniowe tego dnia - odbiór nadgodzin i wypłata nadgodzin (rozliczenie
+		// "Z poprzednich miesięcy"/"Wypłata nadgodzin") wypełniają normę dnia, a godziny
+		// odłożone do magazynu ("W kolejnych miesiącach") jej nie wypełniają. System robi to
+		// korygując czas pracy przed porównaniem z normą (Dzien.ZPrzeniesienia -
+		// Dzien.DoPrzeniesienia w KalkulatorNadgodzin.NadgodzinyDobowe), co jest równoważne
+		// przesunięciu samej normy. Bez tego dzień z odbiorem nadgodzin i jednocześnie
+		// wypracowanymi nadgodzinami zaniża nadwyżkę o odebrane godziny.
+		Time zPrzeniesienia = Time.Zero;
+		Time doPrzeniesienia = Time.Zero;
+		foreach (StrefaPracy stRozl in dzienRow.Strefy)
+		{
+			if (stRozl.Definicja == null || stRozl.Czas == Time.Empty)
+				continue;
+			if (stRozl.Definicja.Rozliczenie == TypRozliczenia.ZPoprzednichMiesięcy || stRozl.Definicja.Rozliczenie == TypRozliczenia.WypłataNadgodzin)
+				zPrzeniesienia += stRozl.Czas;
+			else if (stRozl.Definicja.Rozliczenie == TypRozliczenia.WKolejnychMiesiącach)
+				doPrzeniesienia += stRozl.Czas;
+		}
+
+		normaDobowa = normaDobowa - zPrzeniesienia + doPrzeniesienia;
+		if (normaDobowa < Time.Zero)
+			normaDobowa = Time.Zero;
+
 		// Chronologiczna suma stref "Praca w normie" + "Praca poza normą" (w tym "awaria") -
 		// wyznaczenie części nadwyżki ponad normę dobową przypadającej właśnie na Row, bez
 		// podwójnego naliczenia z innymi strefami "poza normą" tego samego dnia
@@ -70,16 +93,19 @@ public decimal Feature_Nadgodziny_50_nowe {
 			return 0;
 
 		Time poczatekNadwyzki = Row.OdGodziny + (Row.Czas - nadwyzkaRow);
+		Time nadwyzka100 = Time.Zero;
 
-		// Limit dobowy 50% - aktywny tylko, gdy w konfiguracji nadgodzin włączone jest "Dobowe 100"
-		// (zgodnie z regułą stosowaną przez system od 2003 roku - inaczej cały dobowy nadmiar
-		// liczy się jako 50%, bez limitu godzinowego)
+		// Limit dobowy 50% - aktywny tylko, gdy w konfiguracji nadgodzin włączone jest "Dobowe 100";
+		// nadmiar ponad limit trafia tutaj (do 100%)
 		bool limitDobowyAktywny = KalendModule.GetInstance(Row).Config.Nadgodziny.Dobowe100;
 		if (limitDobowyAktywny)
 		{
 			Time limit = kalendarz.Nadgodziny.Nadgodz50;
 			if (nadwyzkaRow > limit)
-				nadwyzkaRow = limit; // reszta -> "Nadgodziny 100 nowe"
+			{
+				nadwyzka100 = nadwyzkaRow - limit;
+				nadwyzkaRow = limit;
+			}
 		}
 
 		// Godziny nocne wymuszone na 100% (konfiguracja "Nocne 100") - wg realnego okna nocnego
@@ -90,9 +116,9 @@ public decimal Feature_Nadgodziny_50_nowe {
 			FromTimes nocOkres = kalkPracy.NocOkres(ph);
 			FromTimes oknoNadwyzki = FromTimes.New(new FromTime(poczatekNadwyzki, nadwyzkaRow));
 			Time wNocy = oknoNadwyzki.Intersection(nocOkres).Time;
-			nadwyzkaRow -= wNocy; // ta część -> "Nadgodziny 100 nowe"
+			nadwyzka100 += wNocy;
 		}
 
-		return (decimal)nadwyzkaRow.TotalHours;
+		return (decimal)nadwyzka100.TotalHours;
 	}
 }

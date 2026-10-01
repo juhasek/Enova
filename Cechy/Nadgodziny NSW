@@ -1,4 +1,4 @@
-public decimal Feature_Nadgodziny_NSW_nowe {
+public decimal Feature_Nadgodziny_NSW {
 	get {
 
 		if (Row.Definicja == null)

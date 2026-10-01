@@ -1,4 +1,4 @@
-# Nadgodziny 50 nowe – dokumentacja biznesowa
+# Nadgodziny 50 – dokumentacja biznesowa
 
 Dokumentacja biznesowa dla użytkownika.
 
@@ -18,13 +18,15 @@ cel, ale zawierała błędy (pomylenie `Row.Definicja`/`st.Definicja` w pętli s
 usunięty/niekonsekwentny blok „czarnej dziury” — patrz `Cechy/Nadgodziny 50 test.md`) i
 liczyła normę dobową jako sztywne 8h niezależnie od konfiguracji kalendarza pracownika.
 
-**„Nadgodziny 50 nowe” to nowe podejście od zera** — nie jest modyfikacją/poprawką starej
+**„Nadgodziny 50” to nowe podejście od zera** — nie jest modyfikacją/poprawką starej
 cechy, tylko osobną, równoległą implementacją zaprojektowaną tak, by wprost odtwarzać
 sposób liczenia nadgodzin 50% **przez sam system enova** (silnik `KalkulatorPracownika`/
 `CzasPracyBaseWorker`, zdekompilowany i opisany w pamięci
 `reference_enova_nadgodziny_kalkulator.md`), tylko zawężony do stref „Praca poza normą”
-(w tym „awaria”). Dopisek „nowe” w nazwie ma odróżnić ją od starej, błędnej cechy — obie
-mogą tymczasowo współistnieć w bazie na czas porównania wyników.
+(w tym „awaria”). Powstała jako równoległa implementacja obok starej cechy; po porównaniu
+wyników przejęła nazwę „Nadgodziny 50”, a stary zestaw pracuje dalej z przyrostkiem `_old`
+(`Cechy/Nadgodziny okresowe_old`, w bazie też `Nadgodziny 50_old`, `Nadgodziny 100_old`,
+`Nadgodziny NSW_old`).
 
 ## 2. Zakres (Row) i warunek wejścia
 
@@ -68,17 +70,17 @@ jedną, wspólną logikę dla każdego typu dnia:
    false`), więc limit `Nadgodz50` (2:00 na wszystkich kalendarzach) faktycznie **nie
    obowiązuje** — cały dobowy nadmiar (poza godzinami nocnymi, patrz pkt 5) liczy się jako
    50%. Gdyby klient kiedyś włączył `Dobowe 100`, cecha automatycznie zacznie stosować
-   limit i przekaże nadmiar do „Nadgodziny 100 nowe”.
+   limit i przekaże nadmiar do „Nadgodziny 100”.
 5. **Godziny nocne wymuszone na 100%** — w bazie Claude `Config.Nadgodziny.Nocne100 = true`,
    czyli ta część nadwyżki, która przypada na godziny nocne kalendarza
    (`Kalendarz.Nocne.Od`/`Do`), **nie** jest liczona jako 50% — przechodzi do
-   „Nadgodziny 100 nowe”. Okno nocne (z uwzględnieniem przejścia przez północ) wyznacza
+   „Nadgodziny 100”. Okno nocne (z uwzględnieniem przejścia przez północ) wyznacza
    sam system przez wywołanie `KalkulatorPracy.NocOkres(ph)` — cecha go nie przelicza
    ręcznie, żeby nie powielać (i nie pomylić) logiki przejścia przez dobę.
 
-## 4. Zależność z „Nadgodziny 100 nowe”
+## 4. Zależność z „Nadgodziny 100”
 
-Cecha siostrzana `Cechy/Nadgodziny 100 nowe` liczy dokładnie tę samą nadwyżkę dobową i
+Cecha siostrzana `Cechy/Nadgodziny 100` liczy dokładnie tę samą nadwyżkę dobową i
 zwraca dopełnienie: część ponad limit `Nadgodz50` (gdy `Dobowe100` aktywne) oraz część
 przypadającą na godziny nocne (gdy `Nocne100` aktywne). Suma obu cech dla danej strefy w
 danym dniu = cała nadwyżka ponad normę dobową przypadająca na tę strefę. Obie cechy są
@@ -90,7 +92,7 @@ trzymać całą logikę w jednej metodzie, patrz `reference_enova_edytor_skrypto
 
 - **Nadgodziny okresowe** (miesięczne bilansowanie normy okresu rozliczeniowego) — to
   osobny, dużo bardziej złożony mechanizm (bilansowanie między miesiącami, magazyn
-  nadgodzin). Istniejąca cecha „Nadgodziny okresowe” już to obsługuje (poprawiona wcześniej
+  nadgodzin). Istniejąca cecha „Nadgodziny okresowe_old” już to obsługuje (poprawiona wcześniej
   w tej sesji) — nowa cecha go nie duplikuje.
 - **Nadgodziny między dobami pracowniczymi jako okresowe 100%**
   (`Config.Nadgodziny.NadgodzinyMiędzyDobJakoOkr100Ext`) — rzadki przypadek graniczny z
@@ -123,3 +125,63 @@ Do utworzenia w bazie Claude/testowania potrzebna jest strefa „Praca poza norm
 została dodana jako klon konfiguracji technicznej strefy „Praca poza normą” (ID 16) pod
 nową nazwą — dokładna konfiguracja tej strefy w **produkcyjnej** bazie klienta nie była
 dostępna do porównania, więc traktować jako przybliżenie do potwierdzenia.
+
+## Strefy rozliczeniowe dnia a norma dobowa (poprawka 01.10.2026)
+
+W jednym dniu mogą wystąpić **jednocześnie odbiór nadgodzin i wypracowane nadgodziny** —
+np. pracownik odbiera 2:00 z magazynu nadgodzin (strefa „Rozliczenie nadgodzin (prac)”),
+pracuje 6:00 w normie i 3:00 poza normą (przypadek wprowadzony przez klienta na
+pracowniku `NG-08`, 14.10.2026). Strefa odbioru **nie wchodzi** do czasu pracy
+(`DefinicjaStrefy.Wchodzi = false`), więc nie było jej w chronologicznej podstawie cechy —
+i w efekcie odebrane godziny „zjadały” część normy dobowej, która powinna przypaść na
+pracę poza normą. Cecha pokazywała 1:00 zamiast 3:00.
+
+Sam system robi to inaczej: w `KalkulatorNadgodzin.NadgodzinyDobowe` (i analogicznie
+`WyliczPodstawęZaOkres` na poziomie okresu) **koryguje czas pracy przed porównaniem z
+normą**:
+
+```
+czas += dzien.ZPrzeniesienia - dzien.DoPrzeniesienia - ...
+```
+
+gdzie (`Dzien.PrzeliczPrzeniesienia`):
+
+- `ZPrzeniesienia` = suma stref o `Definicja.Rozliczenie` = **„Z poprzednich miesięcy”**
+  lub **„Wypłata nadgodzin”** (odbiór nadgodzin pracownika/firmy, wyjście prywatne,
+  wypłata nadgodzin),
+- `DoPrzeniesienia` = suma stref o `Definicja.Rozliczenie` = **„W kolejnych miesiącach”**
+  (godziny odłożone do magazynu, np. „Nadgodziny do przeniesienia”).
+
+Cecha liczy to równoważnie — przez przesunięcie samej normy dobowej (wynik identyczny,
+a model „per strefa” zostaje nietknięty):
+
+```
+normaDobowa = normaDobowa - zPrzeniesienia + doPrzeniesienia   (nie mniej niż 0)
+```
+
+Czyli: **odebrane godziny wypełniają normę dnia**, a godziny odłożone do magazynu jej nie
+wypełniają. Dla `NG-08`/14.10.2026: norma 8:00 − 2:00 = 6:00, praca 9:00 → nadwyżka 3:00
+na strefie „Praca poza normą” (przy `Dobowe 100 = false` całość jako 50%, bez godzin
+nocnych) — zgodnie z silnikiem.
+
+Ta sama korekta jest w `Nadgodziny 50`, `Nadgodziny 100` i `Nadgodziny okresowe`, więc
+granica między dobowymi a okresowymi przesuwa się spójnie i godziny nie dublują się ani
+nie znikają. `Nadgodziny NSW` nie była zmieniana (nie korzysta z normy dobowej).
+
+**Świadomie pominięte:** `NiewliczaneDoNadgodzin` / `BezDopłatyDoNadgodzin`
+(`DefinicjaStrefy.PodstawaNadgodzin` ≠ „Naliczaj”), które silnik odejmuje w tym samym
+wyrażeniu. W tej instalacji wszystkie strefy mają `PodstawaNadgodzin = Naliczaj`, a w
+modelu „per strefa” poprawnie byłoby wykluczyć taką strefę z podstawy, nie korygować nią
+normy — do zrobienia, gdy klient faktycznie zacznie używać tych ustawień.
+
+### Status poprawki
+
+Kod wgrany do bazy `Claude` (`FeatureDefs` ID 13 / 14 / 15) i zgodny bajt w bajt z plikami
+w repo. Sama poprawka **nie była jeszcze przeliczona w GUI** — środowisko robocze tego repo
+nie ma dostępu do żywej aplikacji. Do sprawdzenia u pracownika `NG-08`, 14.10.2026
+(oczekiwane: `Nadgodziny 50` = 3:00, `Nadgodziny 100` = 0:00, `Nadgodziny okresowe` = 0:00).
+Jedyny dzień w bazie ze strefą rozliczeniową to właśnie ten — w pozostałych scenariuszach
+(`NG-01`…`NG-07`, `RC-01`…`RC-09`, `LZ-01`…`LZ-04`) korekta wynosi 0, więc ich wyniki
+pozostają bez zmian. Niepewny element składni: porównania do `TypRozliczenia.*` wprost w
+kodzie cechy (nowość względem dotychczasowych cech tego repo, które sięgały tylko po
+`TypDnia`/`AlgorytmNorma`).

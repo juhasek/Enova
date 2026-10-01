@@ -1,20 +1,20 @@
-# Nadgodziny NSW nowe – dokumentacja biznesowa
+# Nadgodziny NSW – dokumentacja biznesowa
 
 Dokumentacja biznesowa dla użytkownika.
 
 ## 1. Kontekst i cel
 
 Czwarta, ostatnia cecha z „nowego” zestawu — kontekst biznesowy opisuje
-`Cechy/Nadgodziny 50 nowe.md` pkt 1. Ten dokument opisuje tylko to, co specyficzne dla NSW.
+`Cechy/Nadgodziny 50.md` pkt 1. Ten dokument opisuje tylko to, co specyficzne dla NSW.
 
 Cecha wyliczana (typu Kwota/liczba godzin, `decimal`), przypisana do wiersza strefy pracy
 (`Row` = `StrefaPracy`), dla stref „Praca poza normą” / „Praca poza normą awaria”. Liczy
 godziny takiej pracy przypadające w dniu niedzielno-świątecznym — rozliczane jako
 **nadgodziny NSW**, nie jako dobowe 50%/100% ani okresowe.
 
-Odpowiednik istniejącej cechy `Cechy/Nadgodziny NSW` — **ta cecha nie jest i nigdy nie była
-zgłoszona jako błędna**. „Nadgodziny NSW nowe” powstaje mimo to, żeby dopełnić spójny,
-równoległy zestaw czterech cech (50/100/okresowe/NSW nowe) korzystających z tej samej,
+Odpowiednik starej cechy (w bazie `Nadgodziny NSW_old`) — **ta cecha nie jest i nigdy nie była
+zgłoszona jako błędna**. „Nadgodziny NSW” powstaje mimo to, żeby dopełnić spójny,
+równoległy zestaw czterech cech (50/100/okresowe/NSW) korzystających z tej samej,
 jednolitej definicji dnia i normy co reszta zestawu — i żeby dało się porównać wynik ze
 starą cechą na tych samych danych.
 
@@ -42,11 +42,11 @@ rzeczywistości **przełącza się** między tymi dwoma warunkami zależnie od `
 dnia wprost. W praktyce różnica ujawni się tylko, jeśli w kalendarzu istnieje dzień typu
 `Świąteczny`, który **nie** ma ustawionej flagi `NadgodzinySW` — dla takiego dnia stara
 cecha zwróci NSW, nowa (zgodnie z silnikiem) zwróci `0` (godziny trafią wtedy do
-`Nadgodziny okresowe nowe`, bo tam wykluczenie jest po samym `Typ == Świąteczny`, szerzej
+`Nadgodziny okresowe`, bo tam wykluczenie jest po samym `Typ == Świąteczny`, szerzej
 niż tu). W bazie Claude nie sprawdzono, czy taki przypadek (Świąteczny bez NadgodzinySW)
 w ogóle występuje w danych klienta — do zweryfikowania przy porównaniu wyników obu cech.
 
 ## 4. Status: NIEZWERYFIKOWANE
 
-Patrz `Cechy/Nadgodziny 50 nowe.md` pkt 6 — te same ograniczenia środowiska (brak
+Patrz `Cechy/Nadgodziny 50.md` pkt 6 — te same ograniczenia środowiska (brak
 buscall/GUI, brak kompilacji na żywo) dotyczą tej cechy.
