@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Symulacja scenariusza dla RUCH-01 (Weryfikatory czasu pracy/LicznikCzasuPracy.md):
+  spoznione "Rozpocznij prace" o 16:00, plan dnia 8h, cecha LCzPGodzinaKoncaDnia = 18:30.
+
+  WAZNE OGRANICZENIE SRODOWISKA: ten import jest w trybie rekordowym (business="false"),
+  ktory NIE uruchamia logiki biznesowej/triggerow - wpis "Wejscie" NIE wywola automatycznie
+  LicznikManager.DodajWyjsciePodczasWejscia (ten trigger zyje w skompilowanym dodatku
+  wywolywanym przez UI/worker, np. przycisk "Rozpocznij prace" na pulpicie). Srodowisko
+  robocze nie ma dostepu do buscall/przegladarki, wiec nie da sie tu odpalic zywego triggera.
+
+  Wpis "Wejscie" o 16:00 to zatem REALNY punkt wejsciowy scenariusza, a wpis "Wyjscie"
+  o 18:30 to WYNIK WYLICZONY RECZNIE wg POPRAWIONEGO algorytmu LicznikManager
+  (zweryfikowany osobno w izolowanej symulacji .NET - patrz podsumowanie w rozmowie),
+  NIE wynik zywego wywolania triggera. Oznaczone w <Uwagi>.
+
+  Tabela Soneta.Kalend.WejscieWyjscieI (WejsciaWyjsciaI) nie jest guidowana: import
+  jest jednorazowy, ponowne uruchomienie dopisuje kolejne wiersze.
+  Import wg rekordow: dbmgr importxml Claude "<plik>" w trybie standard.
+-->
+<session>
+  <WejscieWyjscieI>
+    <Pracownik>c5000000-0000-0000-0000-000000000001</Pracownik>
+    <Data>2026-09-16</Data>
+    <Godzina>16:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Aktywny</Stan>
+    <Uwagi>Symulacja LicznikCzasuPracy: spoznione Rozpocznij prace (test)</Uwagi>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>c5000000-0000-0000-0000-000000000001</Pracownik>
+    <Data>2026-09-16</Data>
+    <Godzina>18:30</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Aktywny</Stan>
+    <Uwagi>SYMULACJA (wyliczone recznie wg poprawionego LicznikManager, nie zywy trigger): start 16:00 + plan 8h = 24:00, przyciete do cechy LCzPGodzinaKoncaDnia=18:30</Uwagi>
+  </WejscieWyjscieI>
+</session>

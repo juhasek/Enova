@@ -762,52 +762,76 @@ private void UsunStrefyDniaPracy(DzienPracy dzienPracy)
 }
 
 
+// Standardowa metoda GetDzienPracyInfo schodzi do Dnia planu, gdy dzień pracy nie ma czasu
+// (Czas == 0 i brak nieobecności). Przy odbiorze całego dnia wolnego za nadgodziny DzienPracy
+// istnieje i ma strefę, ale Czas nadal jest zerowy - standard pokazywał wtedy plan, a strefa
+// odbioru w ogóle nie była widoczna. Tutaj dzień pracy wygrywa zawsze, gdy cokolwiek w nim
+// jest (strefa, czas albo nieobecność). Plan zostaje tylko dla dni bez żadnej ewidencji -
+// a to typowy przypadek wniosku, bo data odbioru jest zwykle przyszła.
 public string A1GetDzienPracyInfo(Pracownik pracownik, Date data)
 {
 	if (pracownik == null || data.IsNull)
 	{
 		return string.Empty;
 	}
-	
-	var dzienPracy = this.Pracownik.DniPracy[data] as DzienPracy;
+
 	Dzien dzien = new KalkulatorPracownika(pracownik).KalkPracy[data];
+	bool maStrefy = false;
+
+	if (dzien != null)
+	{
+		foreach (IStrefaExt item in (IEnumerable<IStrefaExt>)dzien)
+		{
+			maStrefy = true;
+			break;
+		}
+	}
+
+	if (dzien == null || (!maStrefy && dzien.Czas == Time.Zero && dzien.Nieobecności == null))
+	{
+		dzien = new KalkulatorPlanu(pracownik)[data];
+	}
+
+	if (dzien == null)
+	{
+		return string.Empty;
+	}
+
 	string text = string.Empty;
-	
-		//if (dzien == null || (dzien.Czas == Time.Zero && dzien.Nieobecności == null))
-		if (dzien == null && dzien.Nieobecności == null)
+
+	// Strefy wypisujemy niezależnie od tego, czy sumują się na czas pracy - strefa odbioru
+	// nadgodzin daje Czas dnia = 0, a to właśnie ona ma być widoczna we wniosku.
+	foreach (IStrefaExt item in (IEnumerable<IStrefaExt>)dzien)
+	{
+		text += string.Format("{0} {1}{2}".TranslateIgnore(), item.Definicja.GetLocalizedNazwa(), item.OdGodziny.IsNull ? string.Format("({0})", item.Czas.ToString()) : string.Format("({0} .. {1})", item.OdGodziny.ToString(), (item.OdGodziny + item.Czas).ToString("+", System.Globalization.CultureInfo.InvariantCulture)), Environment.NewLine);
+	}
+
+	if (dzien.Nieobecności != null)
+	{
+		Nieobecnosc[] nieobecności = dzien.Nieobecności;
+		foreach (Nieobecnosc nieobecnosc in nieobecności)
 		{
-				dzien = new KalkulatorPlanu(pracownik)[data];
-		}
-		if (dzien.Definicja.Typ != TypDnia.Pracy)
-		{
-			text += "Dzień wolny lub świąteczny".Translate();
-		}
-		else if (dzien.Czas == null)
-		{
-			if (dzien.Nieobecności != null)
+			string nazwa = (nieobecnosc.Definicja != null) ? nieobecnosc.Definicja.GetLocalizedNazwa() : "?";
+
+			// Godziny ma sens pokazywać tylko przy nieobecności godzinowej - przy całodniowej
+			// OdGodziny i DoGodziny są równe (puste) i wyszłoby "(00:00 .. 00:00)".
+			if (nieobecnosc.OdGodziny == nieobecnosc.DoGodziny)
 			{
-				Nieobecnosc[] nieobecności = dzien.Nieobecności;
-				foreach (Nieobecnosc nieobecnosc in nieobecności)
-				{
-					text += string.Format("N: {0}", ((nieobecnosc.Definicja != null) ? nieobecnosc.Definicja.GetLocalizedNazwa() : "?") + Environment.NewLine);
-				}
+				text += string.Format("N: {0}{1}", nazwa, Environment.NewLine);
+			}
+			else
+			{
+				text += string.Format("N: {0} ({1} .. {2}){3}", nazwa, nieobecnosc.OdGodziny.ToString(), nieobecnosc.DoGodziny.ToString(), Environment.NewLine);
 			}
 		}
-		else
-		{
-			foreach (IStrefaExt item in (IEnumerable<IStrefaExt>)dzien)
-			{
-				text += string.Format("{0} {1} {2}".TranslateIgnore(), item.Definicja.GetLocalizedNazwa(), item.OdGodziny.IsNull ? $"({item.Czas.ToString()})" : string.Format("({0} .. {1})", item.OdGodziny.ToString(), (item.OdGodziny + item.Czas).ToString("+", System.Globalization.CultureInfo.InvariantCulture)), Environment.NewLine);
-			}
-			if (dzien.Nieobecności != null)
-			{
-				Nieobecnosc[] nieobecności = dzien.Nieobecności;
-				foreach (Nieobecnosc nieobecnosc2 in nieobecności)
-				{
-					text += string.Format("N: {0} {1} {2}", (nieobecnosc2.Definicja != null) ? nieobecnosc2.Definicja.GetLocalizedNazwa() : "?", $"({nieobecnosc2.OdGodziny.ToString()} .. {nieobecnosc2.DoGodziny})", Environment.NewLine);
-				}
-			}
-		}
-	
+	}
+
+	// Typ dnia dopisujemy dopiero wtedy, gdy nie ma czego pokazać. W standardzie sprawdzenie
+	// typu było pierwsze, więc "Dzień wolny lub świąteczny" przesłaniało strefy dnia pracy.
+	if (text.Length == 0 && dzien.Definicja != null && dzien.Definicja.Typ != TypDnia.Pracy)
+	{
+		text = "Dzień wolny lub świąteczny".Translate();
+	}
+
 	return text.TrimEnd(Environment.NewLine.ToCharArray());
 }
