@@ -29,30 +29,18 @@ public decimal Feature_Nadgodziny_100 {
 		if (dzienPracy.Definicja.NadgodzinySW || dzienPracy.Definicja.Typ == TypDnia.Świąteczny)
 			return 0;
 
-		// Norma dobowa - wg algorytmu skonfigurowanego na kalendarzu pracownika
-		// (Nadgodziny.AlgorytmDobowa): z planu dnia, ze stałej normy Etatu, albo jako większa
-		// z tych dwóch (równoważny czas pracy).
-		//
-		// Wyjątek: dzień PRACY, dla którego nie ma żadnego zaplanowanego czasu pracy
-		// (plan 0:00 - np. dzień bez wygenerowanego planu) nie ma normy do wypracowania, więc
-		// cała praca poza normą jest w nim nadgodziną dobową. Sam silnik podstawia tu normę
-		// z Etatu (AlgorytmNorma.Kalendarz: "plan, a gdy 0:00 -> norma Etatu"; Konfiguracja:
-		// zawsze norma Etatu), ale u klienta obowiązuje reguła "norma dobowa = plan dnia" -
-		// tak liczy wieloletnia cecha produkcyjna "Nadgodziny 50_old" (norma = plan dnia dla
-		// pełnego etatu) i tak potwierdził klient na NG-07 / 10.10.2026: 2:00 poza normą
-		// w dniu bez planu to 2:00 na 50%, nie okresowe.
-		//
-		// Dni WOLNE (Typ = Wolny, np. wolna sobota) ten wyjątek NIE obejmuje - tam norma
-		// zostaje z konfiguracji (zwykle 8:00 z Etatu), bo tak liczy i silnik, i stara cecha
-		// produkcyjna (osobna gałąź dla dnia wolnego z progiem 8:00).
+		// Norma dobowa - tak jak wylicza ją system (KalkulatorNadgodzin.WyliczNormęDobową),
+		// wg algorytmu skonfigurowanego na kalendarzu pracownika (Nadgodziny.AlgorytmDobowa):
+		// z planu dnia (a gdy plan 0:00 - z normy Etatu), zawsze z normy Etatu, albo większa
+		// z (plan, norma Etatu) przy równoważnym czasie pracy. Uwaga: przy pustym polu normy
+		// na etacie (StdNorma) "Etat.NormaDobowa" oddaje Kalendarz.Nadgodziny.WartośćDobowa,
+		// czyli zwykle 8:00 - nie 0:00.
 		Time planCzas = dzienPlanu != null ? dzienPlanu.Czas : Time.Zero;
 		if (planCzas == Time.Empty)
 			planCzas = Time.Zero;
 
 		Time normaDobowa;
-		if (planCzas <= Time.Zero && dzienPracy.Definicja.Typ == TypDnia.Pracy)
-			normaDobowa = Time.Zero;
-		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
+		if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
 			normaDobowa = planCzas > Time.Zero ? planCzas : ph.Etat.NormaDobowa;
 		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.RównoważnyCzasPracy)
 			normaDobowa = planCzas > ph.Etat.NormaDobowa ? planCzas : ph.Etat.NormaDobowa;
@@ -67,13 +55,13 @@ public decimal Feature_Nadgodziny_100 {
 		// wypracowanymi nadgodzinami zaniża nadwyżkę o odebrane godziny.
 		//
 		// Godzin odłożonych do magazynu (rozliczenie "W kolejnych miesiącach", strefa
-		// "Nadgodziny do przeniesienia") normą świadomie NIE korygujemy. Silnik odejmuje je od
-		// czasu pracy całego dnia, ale podstawą tej cechy są tylko strefy "Praca w normie" /
-		// "Praca poza normą" - godziny idące do magazynu są w tym wdrożeniu wpisywane w
-		// osobnych strefach ("Godziny do odbioru"), których w tej podstawie nie ma, więc nie
-		// ma czego kompensować. Podniesiona norma przeklasyfikowałaby wtedy realne nadgodziny
-		// dobowe na okresowe (zgłoszenie NG-07 / 10.10.2026: 8:00 "do odbioru" + 2:00 poza
-		// normą dawało 2:00 okresowych zamiast 2:00 na 50%).
+		// "Nadgodziny do przeniesienia") normą świadomie NIE korygujemy, choć silnik odejmuje
+		// je od czasu pracy dnia (Dzien.DoPrzeniesienia). Te godziny są realnie przepracowane
+		// i mają wypełnić normę dnia - to, że zostały oznaczone do odebrania w kolejnym
+		// miesiącu, rozlicza magazyn nadgodzin, a nie ta cecha. Odjęcie ich (czyli podniesienie
+		// normy) przeklasyfikowałoby realne nadgodziny dobowe na okresowe: zgłoszenie NG-07 /
+		// 10.10.2026 - 8:00 w strefach "Godziny do odbioru" (przeniesione do magazynu) + 2:00
+		// "Praca poza normą" to 2:00 na 50%, nie 2:00 okresowych.
 		Time zPrzeniesienia = Time.Zero;
 		foreach (StrefaPracy stRozl in dzienRow.Strefy)
 		{
@@ -87,16 +75,34 @@ public decimal Feature_Nadgodziny_100 {
 		if (normaDobowa < Time.Zero)
 			normaDobowa = Time.Zero;
 
-		// Chronologiczna suma stref "Praca w normie" + "Praca poza normą" (w tym "awaria") -
-		// wyznaczenie części nadwyżki ponad normę dobową przypadającej właśnie na Row, bez
-		// podwójnego naliczenia z innymi strefami "poza normą" tego samego dnia
+		// Chronologiczna suma czasu pracy dnia - wyznaczenie części nadwyżki ponad normę
+		// dobową przypadającej właśnie na Row, bez podwójnego naliczenia z innymi strefami
+		// "poza normą" tego samego dnia.
+		//
+		// Do podstawy wchodzą strefy, które wg samego silnika zwiększają czas pracy dnia:
+		// "Definicja.Wchodzi && Definicja.Typ == TypStrefy.Zwieksza" - dokładnie ten warunek
+		// stosuje KalkulatorPracyBase, budując rzeczywisty czas pracy doby. Są to m.in. "Praca
+		// w normie", "Praca poza normą" (+ "awaria"), "Godziny do odbioru" (+ "awaria"), "Praca
+		// zdalna", "Wyjście służbowe", "Przerwa na karmienie". Strefy informacyjne nakładające
+		// się na zmianę ("Lider zmiany", "Praca w godzinach nocnych", "Dyżur domowy", przerwy)
+		// mają Typ = "Nie wpływa", a strefy rozliczeniowe ("Nadgodziny do przeniesienia",
+		// "Rozliczenie nadgodzin", "Wypłata nadgodzin") nie wchodzą do czasu pracy - żadna
+		// z nich godzin tu nie dubluje.
+		//
+		// Dlaczego nie tylko "Praca w normie"/"Praca poza normą": godziny z pozostałych stref
+		// też wypełniają normę dobową, więc bez nich strefa "poza normą" wypadałaby za nisko
+		// i nie przekraczała normy (zgłoszenie NG-07 / 10.10.2026: 8:00 w strefach "Godziny do
+		// odbioru" wypełnia normę 8:00, więc kolejne 2:00 "poza normą" to nadgodziny dobowe
+		// 50%, a nie okresowe). Same "Godziny do odbioru" nie dostają przy tym żadnej wartości
+		// - cecha liczy tylko dla stref "Praca poza normą" - bo są rozliczane magazynem
+		// nadgodzin ("Nadgodziny do przeniesienia").
 		Time suma = Time.Zero;
 		Time nadwyzkaRow = Time.Zero;
 		foreach (StrefaPracy st in dzienRow.Strefy.OrderBy(s => s.OdGodziny))
 		{
 			if (st.Definicja == null)
 				continue;
-			bool wPodstawie = st.Definicja.Nazwa.Contains("Praca w normie") || st.Definicja.Nazwa.Contains("Praca poza normą");
+			bool wPodstawie = st.Definicja.Wchodzi && st.Definicja.Typ == TypStrefy.Zwieksza;
 			if (!wPodstawie)
 				continue;
 

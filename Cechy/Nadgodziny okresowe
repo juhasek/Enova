@@ -46,16 +46,10 @@ public decimal Feature_Nadgodziny_okresowe {
 				return (decimal)dziura.TotalHours;
 		}
 
-		// Norma dobowa - identycznie jak w "Nadgodziny 50/100": wg realnej konfiguracji
-		// kalendarza (nie sztywne 8h), z regułą klienta "norma dobowa = plan dnia" dla dnia
-		// PRACY bez zaplanowanego czasu pracy. Taki dzień nie ma więc ani normy do
-		// wypracowania, ani okna okresowych - cała praca poza normą jest w nim nadgodziną
-		// dobową (NG-07 / 10.10.2026). Dni wolnych ten wyjątek nie obejmuje; pełny opis
-		// w komentarzu w "Nadgodziny 50".
+		// Norma dobowa - identycznie jak w "Nadgodziny 50/100" (wg realnej konfiguracji
+		// kalendarza, nie sztywne 8h)
 		Time normaDobowa;
-		if (planCzas <= Time.Zero && dzienPracy.Definicja.Typ == TypDnia.Pracy)
-			normaDobowa = Time.Zero;
-		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
+		if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
 			normaDobowa = planCzas > Time.Zero ? planCzas : ph.Etat.NormaDobowa;
 		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.RównoważnyCzasPracy)
 			normaDobowa = planCzas > ph.Etat.NormaDobowa ? planCzas : ph.Etat.NormaDobowa;
@@ -70,13 +64,13 @@ public decimal Feature_Nadgodziny_okresowe {
 		// wypracowanymi nadgodzinami zaniża nadwyżkę o odebrane godziny.
 		//
 		// Godzin odłożonych do magazynu (rozliczenie "W kolejnych miesiącach", strefa
-		// "Nadgodziny do przeniesienia") normą świadomie NIE korygujemy. Silnik odejmuje je od
-		// czasu pracy całego dnia, ale podstawą tej cechy są tylko strefy "Praca w normie" /
-		// "Praca poza normą" - godziny idące do magazynu są w tym wdrożeniu wpisywane w
-		// osobnych strefach ("Godziny do odbioru"), których w tej podstawie nie ma, więc nie
-		// ma czego kompensować. Podniesiona norma przeklasyfikowałaby wtedy realne nadgodziny
-		// dobowe na okresowe (zgłoszenie NG-07 / 10.10.2026: 8:00 "do odbioru" + 2:00 poza
-		// normą dawało 2:00 okresowych zamiast 2:00 na 50%).
+		// "Nadgodziny do przeniesienia") normą świadomie NIE korygujemy, choć silnik odejmuje
+		// je od czasu pracy dnia (Dzien.DoPrzeniesienia). Te godziny są realnie przepracowane
+		// i mają wypełnić normę dnia - to, że zostały oznaczone do odebrania w kolejnym
+		// miesiącu, rozlicza magazyn nadgodzin, a nie ta cecha. Odjęcie ich (czyli podniesienie
+		// normy) przeklasyfikowałoby realne nadgodziny dobowe na okresowe: zgłoszenie NG-07 /
+		// 10.10.2026 - 8:00 w strefach "Godziny do odbioru" (przeniesione do magazynu) + 2:00
+		// "Praca poza normą" to 2:00 na 50%, nie 2:00 okresowych.
 		Time zPrzeniesienia = Time.Zero;
 		foreach (StrefaPracy stRozl in dzienRow.Strefy)
 		{
@@ -96,16 +90,20 @@ public decimal Feature_Nadgodziny_okresowe {
 		if (planCzas >= normaDobowa)
 			return 0;
 
-		// Chronologiczna suma stref "Praca w normie" + "Praca poza normą" (w tym "awaria") -
-		// wyznaczenie części mieszczącej się w oknie (plan, norma] przypadającej właśnie na Row,
-		// bez podwójnego naliczenia z innymi strefami "poza normą" tego samego dnia
+		// Chronologiczna suma czasu pracy dnia - wyznaczenie części mieszczącej się w oknie
+		// (plan, norma] przypadającej właśnie na Row, bez podwójnego naliczenia z innymi
+		// strefami "poza normą" tego samego dnia. Podstawa jak w "Nadgodziny 50/100": strefy,
+		// które wg silnika zwiększają czas pracy dnia ("Definicja.Wchodzi && Definicja.Typ ==
+		// TypStrefy.Zwieksza", warunek z KalkulatorPracyBase) - czyli także "Godziny do
+		// odbioru", które wypełniają normę dnia, choć same nie są klasyfikowane (idą do
+		// magazynu nadgodzin). Pełny opis w komentarzu w "Nadgodziny 50".
 		Time suma = Time.Zero;
 		Time okresoweRow = Time.Zero;
 		foreach (StrefaPracy st in dzienRow.Strefy.OrderBy(s => s.OdGodziny))
 		{
 			if (st.Definicja == null)
 				continue;
-			bool wPodstawie = st.Definicja.Nazwa.Contains("Praca w normie") || st.Definicja.Nazwa.Contains("Praca poza normą");
+			bool wPodstawie = st.Definicja.Wchodzi && st.Definicja.Typ == TypStrefy.Zwieksza;
 			if (!wPodstawie)
 				continue;
 

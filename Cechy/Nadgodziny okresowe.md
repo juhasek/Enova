@@ -37,10 +37,15 @@ wersja pracuje dalej jako `Nadgodziny okresowe_old`.
 3. **Norma dobowa** — identycznie jak w `Nadgodziny 50/100` (wg
    `Kalendarz.Nadgodziny.AlgorytmDobowa`, nie sztywne 8h).
 4. **Okno `(plan, norma]`** — istnieje tylko, gdy `plan < norma` (dzień zaplanowany krócej
-   niż pełna norma). Chronologiczna suma stref „Praca w normie” + „Praca poza normą” (obu
-   wariantów) z tą samą techniką `dolna`/`gorna` na sumie narastającej, co w
-   `Nadgodziny 50` — więc przy kilku strefach „poza normą” w jednym dniu godziny nie są
-   liczone podwójnie.
+   niż pełna norma, w tym dzień bez planu). Chronologiczna suma **czasu pracy dnia** —
+   stref spełniających warunek silnika `Definicja.Wchodzi && Definicja.Typ ==
+   TypStrefy.Zwieksza`, czyli także „Godziny do odbioru”, „Praca zdalna”, „Wyjście
+   służbowe” (patrz sekcja „Podstawa cechy = czas pracy dnia wg silnika” na końcu
+   dokumentu) — z tą samą techniką `dolna`/`gorna` na sumie narastającej, co w
+   `Nadgodziny 50`, więc przy kilku strefach „poza normą” w jednym dniu godziny nie są
+   liczone podwójnie. Godziny, które wypełniły już okno okresowych w innych strefach (np.
+   8:00 „Godziny do odbioru”), przestają więc być okresowe na strefie „poza normą” — ta
+   wypada powyżej normy i jest nadgodziną dobową.
 
 ## 3. Różnica względem starej cechy „Nadgodziny okresowe”
 
@@ -105,27 +110,22 @@ Czyli **odebrane godziny wypełniają normę dnia**. Dla `NG-08`/14.10.2026: nor
 2:00 odbioru, praca 6:00 w normie + 3:00 poza normą → nadwyżka 3:00 na strefie „Praca poza
 normą” (przy `Dobowe 100 = false` całość jako 50%, bez godzin nocnych).
 
-### Dlaczego `DoPrzeniesienia` NIE koryguje normy (02.10.2026)
+### Dlaczego `DoPrzeniesienia` nie koryguje normy (02.10.2026)
 
 Pierwsza wersja tej poprawki (01.10.2026) przesuwała normę w obie strony, czyli podnosiła
 ją o godziny odłożone do magazynu (`DoPrzeniesienia`). To zostało wycofane.
 
-Równoważność „korekta czasu pracy ⇔ korekta normy” zachodzi tylko wtedy, gdy obie strony
-porównania mówią o tym samym zbiorze godzin. Silnik koryguje **czas pracy całego dnia**
-(wszystkie strefy wchodzące do czasu pracy), a podstawą tej cechy są **tylko** strefy
-„Praca w normie” / „Praca poza normą” (+ „awaria”). Dla `ZPrzeniesienia` to bez znaczenia —
-strefy odbioru i wypłaty nadgodzin nie wchodzą do czasu pracy, więc nie ma ich po żadnej
-stronie. Dla `DoPrzeniesienia` już nie: w tym wdrożeniu godziny idące do magazynu są
-wpisywane w **osobnych strefach** („Godziny do odbioru” / „Godziny do odbioru awaria”),
-których w podstawie cechy nie ma — nie ma więc czego kompensować, a podniesiona norma
-„przesuwa” realne nadgodziny w kategorię okresowych.
+Godziny odłożone do magazynu są **realnie przepracowane** i mają wypełniać normę dnia; to,
+że zostały oznaczone do odebrania w kolejnym miesiącu, rozlicza magazyn nadgodzin
+(strefa „Nadgodziny do przeniesienia” i jej późniejszy odbiór), a nie ta cecha. Silnik
+odejmuje je od czasu pracy dnia, bo liczy jedną zagregowaną nadwyżkę na dobę — przy
+rozbiciu per strefa odjęcie ich (czyli podniesienie normy) przeklasyfikowałoby realne
+nadgodziny dobowe na okresowe. Zgłoszenie klienta `NG-07`, 10.10.2026: 8:00 w strefach
+„Godziny do odbioru” (w całości przeniesione do magazynu) + 2:00 „Praca poza normą” →
+**2:00 na 50%**, nie 2:00 okresowych.
 
-**Konsekwencja do decyzji klienta:** jeżeli kiedyś godziny z samej strefy „Praca poza
-normą” zostaną odłożone do magazynu (ta sama godzina w podstawie cechy **i** w
-`DoPrzeniesienia`), cecha i tak pokaże je jako 50%/100%, a silnik nie policzy ich jako
-nadgodzin dobowych (bo czekają na rozliczenie w kolejnym miesiącu). Poprawnie trzeba by
-wtedy wyłączyć te godziny z podstawy cechy, a nie korygować nimi normę — do rozstrzygnięcia,
-gdy taki przypadek faktycznie wystąpi.
+Korekta o `ZPrzeniesienia` (odbiór i wypłata nadgodzin) zostaje — tam godziny faktycznie
+nie są pracą tego dnia, a mimo to wypełniają jego normę.
 
 **Świadomie pominięte:** `NiewliczaneDoNadgodzin` / `BezDopłatyDoNadgodzin`
 (`DefinicjaStrefy.PodstawaNadgodzin` ≠ „Naliczaj”), które silnik odejmuje w tym samym
@@ -133,56 +133,55 @@ wyrażeniu. W tej instalacji wszystkie strefy mają `PodstawaNadgodzin = Nalicza
 modelu „per strefa” poprawnie byłoby wykluczyć taką strefę z podstawy, nie korygować nią
 normy — do zrobienia, gdy klient faktycznie zacznie używać tych ustawień.
 
-## Dzień pracy bez planu: norma dobowa = 0:00 (poprawka 02.10.2026)
+## Podstawa cechy = czas pracy dnia wg silnika (poprawka 02.10.2026)
 
-Zgłoszenie klienta (`NG-07`, 10.10.2026): dzień **typu „Pracy”, ale bez żadnego
-zaplanowanego czasu pracy** (plan 0:00), strefy 6:30 + 1:30 „Godziny do odbioru”, 8:00
-odłożone do magazynu („Nadgodziny do przeniesienia”) i 2:00 „Praca poza normą”. Cecha
-pokazywała te 2:00 jako **okresowe**, a stara cecha produkcyjna (`Nadgodziny 50_old`) jako
-**2:00 na 50%** — i to drugie klient potwierdził jako poprawne.
+Pierwotnie cechy sumowały chronologicznie tylko strefy, których nazwa zawiera „Praca
+w normie” lub „Praca poza normą”. To za mało: **normę dobową wypełnia każda strefa, która
+zwiększa czas pracy dnia**, a klient ma takich stref więcej (m.in. „Godziny do odbioru”
+i „Godziny do odbioru awaria”).
 
-Przyczyna nie była w korekcie o strefy rozliczeniowe (ta dla tego dnia niczego nie zmieniała
-w jedną ani w drugą stronę), a w **normie dobowej dnia bez planu**:
-
-- silnik (`KalkulatorNadgodzin.WyliczNormęDobową`) dla planu 0:00 podstawia normę z Etatu —
-  `AlgorytmNorma.Kalendarz`: „plan, a gdy 0:00 → `Etat.NormaDobowa`”, `Konfiguracja`:
-  zawsze `Etat.NormaDobowa`, `RównoważnyCzasPracy`: `max(plan, Etat.NormaDobowa)`;
-  `Etat.NormaDobowa` przy pustym polu na etacie (`StdNorma`) oddaje
-  `Kalendarz.Nadgodziny.WartośćDobowa`, czyli u tych pracowników 8:00,
-- stara cecha produkcyjna dla dnia typu „Pracy” bierze **normę = plan dnia** (dla pełnego
-  etatu), czyli 0:00 — i cały czas pracy poza normą jest nadgodziną dobową.
-
-Obowiązuje reguła klienta, więc cechy liczą teraz tak:
+Podstawa jest teraz wyznaczana dokładnie tym warunkiem, którym posługuje się sam silnik
+(`KalkulatorPracyBase`, budowa rzeczywistego czasu pracy doby):
 
 ```
-jeżeli plan dnia = 0:00 i Definicja dnia.Typ = Pracy  ->  norma dobowa = 0:00
-w pozostałych przypadkach                             ->  jak dotąd, wg AlgorytmDobowa
+Definicja.Wchodzi && Definicja.Typ == TypStrefy.Zwieksza
 ```
 
-**Dni wolne (`Typ = Wolny`) ten wyjątek nie obejmuje** — tam norma zostaje z konfiguracji
-(zwykle 8:00 z Etatu), bo tak liczy i silnik, i stara cecha produkcyjna (jej osobna gałąź
-dla dnia wolnego porównuje sumę stref z progiem 8:00). Dni niedzielno-świąteczne rozlicza
-`Nadgodziny NSW` i są odrzucane wcześniej.
+W bazie Claude daje to 9 definicji stref: „Praca w normie”, „Praca poza normą”, „Praca poza
+normą awaria”, „Godziny do odbioru”, „Godziny do odbioru awaria”, „Praca zdalna”, „Praca
+zdalna okazjonalna”, „Wyjście służbowe”, „Przerwa na karmienie”. Poza podstawą zostają:
 
-Skutek dla „okresowych”: w dniu pracy bez planu okno `(plan, norma]` jest puste
-(`plan 0:00 >= norma 0:00`), więc cecha zwraca 0:00 — godziny trafiają w całości do
-`Nadgodziny 50` / `Nadgodziny 100`.
+- strefy informacyjne nakładające się na zmianę („Lider zmiany”, „Praca w godzinach
+  nocnych”, „Delegacja służbowa”) — mają `Typ = Nie wpływa`, więc godzin nie dublują,
+- przerwy i przestoje oraz „Dyżur domowy” — `Typ = Nie wpływa`,
+- strefy rozliczeniowe („Nadgodziny do przeniesienia”, „Rozliczenie nadgodzin”, „Wypłata
+  nadgodzin”, „Wyjście prywatne”) — nie wchodzą do czasu pracy; odbiór/wypłatę cecha
+  uwzględnia obniżeniem normy (patrz sekcja wyżej).
+
+Dla zgłoszenia `NG-07` / 10.10.2026 (dzień bez planu, norma dobowa 8:00 z Etatu):
+6:30 + 1:30 „Godziny do odbioru” wypełnia normę 8:00, więc strefa „Praca poza normą”
+20:00–22:00 wypada **powyżej** normy → 2:00 nadgodzin dobowych (50%), a okno okresowych
+jest już zajęte → `Nadgodziny okresowe` = 0:00. Same „Godziny do odbioru” nie dostają
+żadnej wartości — cecha liczy wyłącznie dla stref „Praca poza normą” — bo są rozliczane
+magazynem nadgodzin.
+
+Założenie: strefy typu „Zwiększa” **nie nachodzą na siebie** w czasie (w tej instalacji nie
+nachodzą — nakładki są typu „Nie wpływa”). Gdyby zaczęły, podstawa liczyłaby te same
+godziny dwa razy; silnik robi w tym miejscu sumę przedziałów (`FromTimes`), nie sumę czasów.
 
 ### Status poprawek
 
 Kod wgrany do bazy `Claude` (`FeatureDefs` ID 13 / 14 / 15), zgodny z plikami w repo.
 Poprawki **nie były przeliczone w GUI przez autora** — środowisko robocze tego repo nie ma
-dostępu do żywej aplikacji; `NG-07` testuje klient. Oczekiwane po poprawkach:
+dostępu do żywej aplikacji; testuje klient. Oczekiwane po poprawkach:
 
 | Pracownik / dzień | `Nadgodziny 50` | `Nadgodziny 100` | `Nadgodziny okresowe` |
 | --- | --- | --- | --- |
-| `NG-07` / 10.10.2026 (strefa „Praca poza normą” 20:00–22:00) | 2:00 | 0:00 | 0:00 |
-| `NG-07` / 22.08.2026 (ten sam układ bez stref magazynu) | 2:00 | 0:00 | 0:00 |
-| `NG-08` / 14.10.2026 (strefa „Praca poza normą”, odbiór 2:00) | 3:00 | 0:00 | 0:00 |
+| `NG-07` / 10.10.2026 (8:00 „do odbioru” + 2:00 poza normą 20:00–22:00) | 2:00 | 0:00 | 0:00 |
+| `NG-07` / 22.08.2026 (ten sam układ, bez stref magazynu) | 2:00 | 0:00 | 0:00 |
+| `NG-08` / 14.10.2026 (odbiór 2:00 + 6:00 w normie + 3:00 poza normą) | 3:00 | 0:00 | 0:00 |
 
 Pozostałe scenariusze w bazie (`NG-01`…`NG-06`, `RC-01`…`RC-09`, `LZ-01`…`LZ-04`) **nie
-zmieniają wyników**: dni z planem w ogóle nie dotyczy nowa reguła, a w dniach bez planu
-(`NG-01`…`NG-03`, `LZ-04`/12.08) cały czas pracy mieści się w strefach „Praca w normie” +
-„Praca poza normą”, więc obniżenie normy do 0:00 przesuwa równocześnie dolną granicę okna
-i wynik na strefie „poza normą” zostaje ten sam (sprawdzone rachunkowo na danych z bazy,
-nie przeliczeniem w enovie).
+zmieniają wyników**: na każdym z ich dni suma stref „Praca w normie” + „Praca poza normą”
+jest równa całemu czasowi pracy dnia (sprawdzone SQL-em), więc rozszerzenie podstawy niczego
+tam nie dodaje. Jedyne dni, na których podstawa się zmieniła, to właśnie dwa dni `NG-07`.
