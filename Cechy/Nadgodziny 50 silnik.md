@@ -132,10 +132,10 @@ z przeniesieniem do magazynu – patrz pkt 4).
 
 ## 6. Ryzyka i status
 
-**NIEZWERYFIKOWANE** – środowisko robocze tego repo nie ma dostępu do żywej aplikacji, więc
-kod nie był kompilowany w edytorze skryptów ani przeliczony w GUI. Elementy użyte tu po raz
-pierwszy w tym repozytorium (wszystkie potwierdzone dekompilacją `Soneta.KadryPlace.dll`,
-ale nie kompilacją w cesze):
+**Kompilują się i działają** – potwierdzone przez użytkownika na bazie `Claude`
+(02.10.2026). Tym samym działają w edytorze skryptów enova elementy użyte tu po raz
+pierwszy w tym repozytorium (wcześniej potwierdzone tylko dekompilacją
+`Soneta.KadryPlace.dll`):
 
 - `pracownik.Czasy.Nadgodziny(FromTo, KalkulatorNadgodzin.TrybRozliczaniaNadgodzin)` oraz
   `ZestawienieNadgodzin` (`N50`, `N100`, `NSW`, `N100Doba`, `N100Okres`, `Razem`),
@@ -143,6 +143,10 @@ ale nie kompilacją w cesze):
   `Dzien.CzasPomiędzyDobamiPracowniczymi`,
 - `FromTimes.Sub`, `Add`, `Intersection`, `ToFlat`, `Time` i enumeracja po `FromTime`,
 - enumy `RozliczanieDobowych`, `TrybNadgodzMiedzyDobamiPrac`, `AlgorytmNorma`, `TypDnia`.
+
+Do sprawdzenia na danych klienta pozostaje zgodność liczb: suma `50 + 100 + NSW silnik` po
+wszystkich strefach dnia wobec zakładki Statystyka (pkt 5) oraz decyzja o wyjątku na magazyn
+nadgodzin (pkt 4).
 
 **Wydajność:** każda z czterech cech woła silnik dla swojego wiersza strefy, więc dzień
 z trzema strefami „poza normą” to kilkanaście przeliczeń dnia. `TylkoDobowe` + zakres
