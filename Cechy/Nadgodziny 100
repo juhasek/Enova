@@ -29,38 +29,61 @@ public decimal Feature_Nadgodziny_100 {
 		if (dzienPracy.Definicja.NadgodzinySW || dzienPracy.Definicja.Typ == TypDnia.Świąteczny)
 			return 0;
 
-		// Norma dobowa - tak jak wylicza ją system, wg algorytmu skonfigurowanego na kalendarzu
-		// pracownika (Nadgodziny.AlgorytmDobowa): z planu dnia, ze stałej normy Etatu, albo
-		// jako większa z tych dwóch (równoważny czas pracy)
+		// Norma dobowa - wg algorytmu skonfigurowanego na kalendarzu pracownika
+		// (Nadgodziny.AlgorytmDobowa): z planu dnia, ze stałej normy Etatu, albo jako większa
+		// z tych dwóch (równoważny czas pracy).
+		//
+		// Wyjątek: dzień PRACY, dla którego nie ma żadnego zaplanowanego czasu pracy
+		// (plan 0:00 - np. dzień bez wygenerowanego planu) nie ma normy do wypracowania, więc
+		// cała praca poza normą jest w nim nadgodziną dobową. Sam silnik podstawia tu normę
+		// z Etatu (AlgorytmNorma.Kalendarz: "plan, a gdy 0:00 -> norma Etatu"; Konfiguracja:
+		// zawsze norma Etatu), ale u klienta obowiązuje reguła "norma dobowa = plan dnia" -
+		// tak liczy wieloletnia cecha produkcyjna "Nadgodziny 50_old" (norma = plan dnia dla
+		// pełnego etatu) i tak potwierdził klient na NG-07 / 10.10.2026: 2:00 poza normą
+		// w dniu bez planu to 2:00 na 50%, nie okresowe.
+		//
+		// Dni WOLNE (Typ = Wolny, np. wolna sobota) ten wyjątek NIE obejmuje - tam norma
+		// zostaje z konfiguracji (zwykle 8:00 z Etatu), bo tak liczy i silnik, i stara cecha
+		// produkcyjna (osobna gałąź dla dnia wolnego z progiem 8:00).
 		Time planCzas = dzienPlanu != null ? dzienPlanu.Czas : Time.Zero;
+		if (planCzas == Time.Empty)
+			planCzas = Time.Zero;
+
 		Time normaDobowa;
-		if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
-			normaDobowa = planCzas != Time.Zero ? planCzas : ph.Etat.NormaDobowa;
+		if (planCzas <= Time.Zero && dzienPracy.Definicja.Typ == TypDnia.Pracy)
+			normaDobowa = Time.Zero;
+		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
+			normaDobowa = planCzas > Time.Zero ? planCzas : ph.Etat.NormaDobowa;
 		else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.RównoważnyCzasPracy)
 			normaDobowa = planCzas > ph.Etat.NormaDobowa ? planCzas : ph.Etat.NormaDobowa;
 		else
 			normaDobowa = ph.Etat.NormaDobowa;
 
 		// Strefy rozliczeniowe tego dnia - odbiór nadgodzin i wypłata nadgodzin (rozliczenie
-		// "Z poprzednich miesięcy"/"Wypłata nadgodzin") wypełniają normę dnia, a godziny
-		// odłożone do magazynu ("W kolejnych miesiącach") jej nie wypełniają. System robi to
-		// korygując czas pracy przed porównaniem z normą (Dzien.ZPrzeniesienia -
-		// Dzien.DoPrzeniesienia w KalkulatorNadgodzin.NadgodzinyDobowe), co jest równoważne
-		// przesunięciu samej normy. Bez tego dzień z odbiorem nadgodzin i jednocześnie
+		// "Z poprzednich miesięcy"/"Wypłata nadgodzin") nie wchodzą do czasu pracy, a mimo to
+		// wypełniają normę dnia: system dolicza je do czasu pracy przed porównaniem z normą
+		// (Dzien.ZPrzeniesienia w KalkulatorNadgodzin.NadgodzinyDobowe), co jest równoważne
+		// obniżeniu samej normy. Bez tego dzień z odbiorem nadgodzin i jednocześnie
 		// wypracowanymi nadgodzinami zaniża nadwyżkę o odebrane godziny.
+		//
+		// Godzin odłożonych do magazynu (rozliczenie "W kolejnych miesiącach", strefa
+		// "Nadgodziny do przeniesienia") normą świadomie NIE korygujemy. Silnik odejmuje je od
+		// czasu pracy całego dnia, ale podstawą tej cechy są tylko strefy "Praca w normie" /
+		// "Praca poza normą" - godziny idące do magazynu są w tym wdrożeniu wpisywane w
+		// osobnych strefach ("Godziny do odbioru"), których w tej podstawie nie ma, więc nie
+		// ma czego kompensować. Podniesiona norma przeklasyfikowałaby wtedy realne nadgodziny
+		// dobowe na okresowe (zgłoszenie NG-07 / 10.10.2026: 8:00 "do odbioru" + 2:00 poza
+		// normą dawało 2:00 okresowych zamiast 2:00 na 50%).
 		Time zPrzeniesienia = Time.Zero;
-		Time doPrzeniesienia = Time.Zero;
 		foreach (StrefaPracy stRozl in dzienRow.Strefy)
 		{
 			if (stRozl.Definicja == null || stRozl.Czas == Time.Empty)
 				continue;
 			if (stRozl.Definicja.Rozliczenie == TypRozliczenia.ZPoprzednichMiesięcy || stRozl.Definicja.Rozliczenie == TypRozliczenia.WypłataNadgodzin)
 				zPrzeniesienia += stRozl.Czas;
-			else if (stRozl.Definicja.Rozliczenie == TypRozliczenia.WKolejnychMiesiącach)
-				doPrzeniesienia += stRozl.Czas;
 		}
 
-		normaDobowa = normaDobowa - zPrzeniesienia + doPrzeniesienia;
+		normaDobowa = normaDobowa - zPrzeniesienia;
 		if (normaDobowa < Time.Zero)
 			normaDobowa = Time.Zero;
 
