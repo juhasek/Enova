@@ -1,5 +1,5 @@
-public override string Weryfikuj(Soneta.Kalend.DzienKalendarzaAktualizacja source, WeryfikujEventArgs args)
+public override string Weryfikuj(Soneta.Kalend.DzienKalendarzaAktualizacja dzien, WeryfikujEventArgs args)
 {
-    // Logika w Dodatkowym kodzie do kompilacji (BlokadaZmianyGodzinDAK).
-    return Soneta.Runtime.Database.Business.TblCodeFiles.BlokadaZmianyGodzinDAK.Weryfikuj(source);
+    // Logika w Dodatkowym kodzie do kompilacji
+    return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data);
 }

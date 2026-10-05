@@ -10,8 +10,8 @@ Definicje weryfikatorów tylko go wywołują.
 
 | Plik definicji | Rodzaj weryfikatora | Wywołanie |
 |---|---|---|
-| `Blokada zmiany godzin przez pracownika - plan` | `DzienPlanuAktualizacja` (dzień planu pracy na dokumencie) | `BlokadaZmianyGodzinDAK.Weryfikuj(source)` |
-| `Blokada zmiany godzin przez pracownika - czas pracy` | `DzienPracyAktualizacja` (dzień czasu pracy na dokumencie) | `BlokadaZmianyGodzinDAK.Weryfikuj(source)` |
+| `Blokada zmiany godzin przez pracownika - plan` | `DzienPlanuAktualizacja` (dzień planu pracy na dokumencie) | `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data)` |
+| `Blokada zmiany godzin przez pracownika - czas pracy` | `DzienPracyAktualizacja` (dzień czasu pracy na dokumencie) | `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data)` |
 
 Jeśli dokumenty aktualizacji dotyczą wyłącznie planu pracy, wystarczy pierwsza definicja.
 
@@ -50,7 +50,7 @@ wartości z planem.
 ## Wymagana konfiguracja
 
 1. **System → Dodatkowy kod do kompilacji**: dodaj plik z zawartością
-   `BlokadaZmianyGodzinDAK` (klasa `Soneta.Runtime.Database.Business.TblCodeFiles.BlokadaZmianyGodzinDAK`).
+   `BlokadaZmianyGodzinDAK` (metoda `A1BlokadaGodzin` w klasie `A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza`, wspólnej dla weryfikatorów kalendarza).
    **Musi być dodany przed definicjami**, inaczej definicje się nie skompilują.
 2. **Definicje weryfikatorów kalendarza**: dwie definicje rodzaju *Dzień planu aktualizacji*
    i *Dzień pracy aktualizacji* z kodem z plików (samo wywołanie).

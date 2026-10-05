@@ -4,6 +4,10 @@
 // (wersjonowanie kalendarzy). Wywoływany z definicji weryfikatorów kalendarza:
 //   - "Blokada zmiany godzin przez pracownika - plan"       (rodzaj DzienPlanuAktualizacja)
 //   - "Blokada zmiany godzin przez pracownika - czas pracy" (rodzaj DzienPracyAktualizacja)
+//
+// Metoda A1BlokadaGodzin należy do klasy A1WeryfikatoryKalendarza, wspólnej dla
+// weryfikatorów kalendarza (są w niej też inne metody, np. A1OkresZatrudnienia).
+// Ten plik zawiera tylko metodę blokady godzin - wkleić ją do istniejącej klasy.
 //----------------------------------------------------------------------------------
 
 using System;
@@ -12,8 +16,8 @@ using Soneta.Business;
 using Soneta.Kalend;
 using Soneta.Kadry;
 
-namespace Soneta.Runtime.Database.Business.TblCodeFiles {
-	public static class BlokadaZmianyGodzinDAK
+namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
+	public class A1WeryfikatoryKalendarza
 	{
 		public static string A1BlokadaGodzin(Session session, IZrodloPlanu zrodlo, Date data)
 		{
