@@ -1,0 +1,63 @@
+//element dedykowany pod Klienta
+//do podstawy wyliczenia nadgodzin dla pracowników umysłowych uwzględniane są składniki oznaczone cechą WliczajDoWynNadg
+//dla fizycznych tylko z wynagrodzenia zasadniczego
+//brak takich parametrów w konfiguracji
+//wynagrodzenie za nadgodziny należy się zawsze za przepracowane nadgodziny, sprawdzany jest oddział pracownika i zgodnie z przypisaniem inaczej liczymy czas
+//norma kodeksowa liczona za pełny miesiąc, którego dotyczy element (Element.Okres), a nie za okres listy płac -
+//przy korekcie np. sierpnia na liście wrześniowej OkresListy = wrzesień i stawka z dodatków była dzielona przez normę września
+
+public void Wynagrodzenie_Za_Nadgodziny_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, WypSkladnik Składnik) {
+    DoubleCy stawka1hCy = StawkaZaszeregowaniaNorm1h(Element.Okres.To);
+    DoubleCy stawkaZdodatkowCy = 0;
+    Fraction wymiar = Element.PracHistoria.Etat.Wymiar;
+    Time normaDobowa = Element.PracHistoria.Etat.Kalendarz.NormaDobowa;
+    YearMonth miesiacElementu = new YearMonth(Element.Okres.To);
+    FromTo okresNormy = new FromTo(miesiacElementu.FirstDay, miesiacElementu.FirstDay + (miesiacElementu.Days - 1));
+    Time normaKodeksowa = KalkulatorKodeksowy.NormaWym(wymiar, normaDobowa, okresNormy).Czas;
+    Element.ZapisObliczen.Add($"Norma kodeksowa {normaKodeksowa} (okres {okresNormy})");
+    Element.ZapisObliczen.Add($"Stawka z wyn. zasadniczego {stawka1hCy}");
+
+    foreach (WypElement e in Element.Elementy[Element.Okres]) {
+        if (e.Definicja.Features.GetBool("WliczajDoWynNadg") == true) {
+            stawkaZdodatkowCy += e.WartośćNominalna;
+            Element.ZapisObliczen.Add($"Dodatki do stawki: {e.Nazwa} kwota {e.WartośćNominalna}");
+        }
+    }
+    Element.ZapisObliczen.Add($"Suma z dodatków {stawkaZdodatkowCy}");
+    stawkaZdodatkowCy /= normaKodeksowa;
+    Element.ZapisObliczen.Add($"Stawka 1h z dodatków {stawkaZdodatkowCy}");
+
+    DoubleCy stawka1h = PrzeliczNaWalutęSystemową(Element, stawka1hCy);
+    DoubleCy stawkaZdodatkow = PrzeliczNaWalutęSystemową(Element, stawkaZdodatkowCy);
+    Składnik.Podstawa1 = stawka1hCy;
+    Składnik.Podstawa2 = stawkaZdodatkowCy;
+
+    var definicjaStanowiska = Element.PracHistoria.Etat.Definicja;
+    if (definicjaStanowiska == null)
+        throw new Exception($"Pracownik {Element.Pracownik} nie ma uzupełnionej definicji stanowiska");
+
+    ElemSlownika rodzajPracownika = (ElemSlownika)Element.PracHistoria.Etat.Definicja.Features["Rodzaj pracownika"];
+    Składnik.Podstawa3 = rodzajPracownika.Nazwa == "Umysłowy" ? stawka1h + stawkaZdodatkow : stawka1h;
+    Element.ZapisObliczen.Add($"Pracownik {rodzajPracownika} stawka za 1h {Składnik.Podstawa3}");
+
+    Odchylka odchylka = Element.Pracownik.Czasy.KalkPracy.Odchylki(Składnik.Okres);
+
+    DefinicjaStrefy pracaPozaNorma = KalendModule.GetInstance(Element).DefinicjeStref.WgNazwy["Praca poza normą"];
+    Time ppn = Czasy.KalkPracy.Praca(Składnik.Okres, pracaPozaNorma).Czas;
+
+    Element.ZapisObliczen.Add($"Praca poza normą: {ppn}");
+
+    // sprawdzamy do jakiego oddziału przypisany jest pracownik i zgodnie z przypisaniem inaczej wyliczamy czas do wynagrodzenia
+    string oddzial = Element.PracHistoria.Etat.Wydzial.Oddzial.Symbol;
+    if (ppn != Time.Zero)
+    {
+        if (oddzial.Contains("SCE"))
+            Składnik.Czas = ppn - odchylka.Minus;
+        else
+            Składnik.Czas = odchylka.Plus - odchylka.Minus;
+    }
+}
+
+public Currency Wynagrodzenie_Za_Nadgodziny_Wylicz(Soneta.Place.WypElementDodatekAutomatyczny Element, WypSkladnik Składnik) {
+    return Składnik.Podstawa3 * Składnik.Czas;
+}
