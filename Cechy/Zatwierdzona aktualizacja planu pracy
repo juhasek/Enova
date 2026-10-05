@@ -1,0 +1,24 @@
+public bool Get_Feature_PlanPracy(Context cx) {
+	// Okres sprawdzania: okres z kontekstu (np. filtr okresu na liście),
+	// a gdy go brak - miesiąc daty aktualności.
+	FromTo okres;
+	object zKontekstu = cx[typeof(FromTo), false];
+	if (zKontekstu is FromTo)
+		okres = (FromTo)zKontekstu;
+	else {
+		Date dzis = ActualDate.Today(cx);
+		okres = new FromTo(dzis.FirstDayMonth(), dzis.LastDayMonth());
+	}
+
+	// Pozycje planu pracy pracownika na dokumentach aktualizacji kalendarza;
+	// liczy się dokument zatwierdzony, którego okres zachodzi na sprawdzany okres.
+	KalendModule kalend = KalendModule.GetInstance(Session);
+	foreach (PozycjaAktualizacjiKalendarza poz in kalend.PozAktKalend.WgZrodloPlanu[Row]) {
+		DokumentAktualizacjiKalendarza dok = poz.Dokument;
+		if (dok == null || dok.Stan != StanyDokumentuAktulizacjiKalendarza.Zatwierdzony)
+			continue;
+		if (dok.Okres.From <= okres.To && dok.Okres.To >= okres.From)
+			return true;
+	}
+	return false;
+}
