@@ -1,27 +1,35 @@
 # Blokada zmiany godzin przez pracownika (dokument aktualizacji kalendarza)
 
-Para weryfikatorów kalendarza do **wersjonowania kalendarzy**. Pracownik może z pulpitu
-**złożyć nowy dokument aktualizacji kalendarza**, ale **nie może zmieniać na nim godzin
-pracy**. Godziny zmienia przełożony (pulpit kierownika) albo kadry.
+Para weryfikatorów kalendarza do **wersjonowania kalendarzy**. Pracownik **na umowę o pracę**
+może z pulpitu **złożyć nowy dokument aktualizacji kalendarza**, ale **nie może zmieniać na nim
+godzin pracy**. Godziny zmienia przełożony (pulpit kierownika) albo kadry.
 
-| Plik | Rodzaj weryfikatora | Typ wiersza |
+Cała logika jest w **Dodatkowym kodzie do kompilacji** (plik
+[`BlokadaZmianyGodzinDAK`](BlokadaZmianyGodzinDAK), opis w `BlokadaZmianyGodzinDAK.md`).
+Definicje weryfikatorów tylko go wywołują.
+
+| Plik definicji | Rodzaj weryfikatora | Wywołanie |
 |---|---|---|
-| `Blokada zmiany godzin przez pracownika - plan` | `DzienPlanuAktualizacja` | `DzienKalendarzaAktualizacja` (dzień planu pracy na dokumencie) |
-| `Blokada zmiany godzin przez pracownika - czas pracy` | `DzienPracyAktualizacja` | `DzienPracyAktualizacja` (dzień czasu pracy na dokumencie) |
+| `Blokada zmiany godzin przez pracownika - plan` | `DzienPlanuAktualizacja` (dzień planu pracy na dokumencie) | `BlokadaZmianyGodzinDAK.Weryfikuj(source)` |
+| `Blokada zmiany godzin przez pracownika - czas pracy` | `DzienPracyAktualizacja` (dzień czasu pracy na dokumencie) | `BlokadaZmianyGodzinDAK.Weryfikuj(source)` |
 
-Logika obu plików jest identyczna, różni się tylko typ wiersza. Jeśli dokumenty aktualizacji
-dotyczą wyłącznie planu pracy, wystarczy pierwszy.
+Jeśli dokumenty aktualizacji dotyczą wyłącznie planu pracy, wystarczy pierwsza definicja.
 
 ## Reguła
 
-Błąd, gdy **zalogowany użytkownik pulpitu (web) to ten sam pracownik, którego dotyczy pozycja
-dokumentu** (porównanie po `Guid`; źródło planu = pracownik albo umowa → `Umowa.Pracownik`).
+Błąd, gdy jednocześnie:
+1. pozycja dokumentu dotyczy **pracownika na umowę o pracę**, czyli źródło planu to
+   `Pracownik` (kalendarz etatu), a nie `Umowa` (cywilnoprawna z kalendarzem), i pracownik
+   jest zatrudniony na etat w dniu zmiany (`JestZatrudnionyNaEtat`),
+2. **zalogowany użytkownik pulpitu (web) to ten sam pracownik** (porównanie po `Guid`).
 
 | Kto zmienia godziny | Wynik |
 |---|---|
-| Pracownik na swoim dokumencie (pulpit pracownika) | **blokada** |
+| Pracownik na UoP na swoim dokumencie (pulpit pracownika) | **blokada** |
+| Zleceniobiorca (pozycja dla umowy cywilnoprawnej) | dozwolone |
+| Pracownik w dniu poza okresem zatrudnienia na etat | dozwolone |
 | Kierownik na dokumencie podwładnego (pulpit kierownika) | dozwolone |
-| Kierownik na dokumencie dotyczącym jego samego | **blokada** (jest „tym samym pracownikiem”) |
+| Kierownik na UoP na dokumencie dotyczącym jego samego | **blokada** (jest „tym samym pracownikiem”) |
 | Operator kadr w programie (bez użytkownika pulpitu) | dozwolone |
 
 ## Dlaczego nie blokuje samego dodania dokumentu
@@ -41,14 +49,17 @@ wartości z planem.
 
 ## Wymagana konfiguracja
 
-1. **Definicje weryfikatorów kalendarza**: dodaj dwie definicje rodzaju
-   *Dzień planu aktualizacji* i *Dzień pracy aktualizacji* i wklej kod z plików.
-2. **Powiązanie z kalendarzem** (`Kalendarz → Weryfikatory`) z **Typ = Error**, inaczej
+1. **System → Dodatkowy kod do kompilacji**: dodaj plik z zawartością
+   `BlokadaZmianyGodzinDAK` (klasa `Soneta.Runtime.Database.Business.TblCodeFiles.BlokadaZmianyGodzinDAK`).
+   **Musi być dodany przed definicjami**, inaczej definicje się nie skompilują.
+2. **Definicje weryfikatorów kalendarza**: dwie definicje rodzaju *Dzień planu aktualizacji*
+   i *Dzień pracy aktualizacji* z kodem z plików (samo wywołanie).
+3. **Powiązanie z kalendarzem** (`Kalendarz → Weryfikatory`) z **Typ = Error**, inaczej
    jest to tylko ostrzeżenie i zapis przejdzie. Weryfikator jest pobierany z kalendarza
    planu pracownika (`ZrodloPlanu.GetPlanKalendarz(data)`), czyli z **kalendarza
    wzorcowego z etatu**. Podpiąć go do **każdego** kalendarza wzorcowego, na którym są
    pracownicy korzystający z pulpitu.
-3. **Rola pulpitowa**: pełne prawa do definicji dokumentu i do tabel dokumentu (dni
+4. **Rola pulpitowa**: pełne prawa do definicji dokumentu i do tabel dokumentu (dni
    i strefy też pełne, blokadę robi weryfikator, nie prawa).
 
 ## Jak to wygląda dla pracownika
@@ -60,14 +71,8 @@ i przekazać dokument do akceptacji.
 
 ## Status
 
-- Kod kompiluje się na bibliotekach serwera 2512.5.6 (kompilacja testowa poza enovą).
-- **Niesprawdzone na żywym pulpicie**: przetestować na bazie testowej (pracownik zakłada
-  dokument → zmienia godziny → zapis ma zostać odrzucony; kierownik zmienia godziny
+- Kod do kompilacji i obie definicje kompilują się razem na bibliotekach serwera 2512.5.6
+  (kompilacja testowa poza enovą).
+- **Niesprawdzone na żywym pulpicie**: przetestować na bazie testowej (pracownik na UoP
+  zakłada dokument → zmienia godziny → zapis ma zostać odrzucony; kierownik zmienia godziny
   podwładnego → zapis przechodzi).
-
-## API użyte w skrypcie
-
-- `source.Session.Login.WebUserOperatingInstance` (`IWebUser`, `null` poza pulpitem) → `.Host`
-  (`IWebOperator`, dla pracownika = `Pracownik`)
-- `source.Pozycja.ZrodloPlanu` (`IZrodloPlanu`: `Pracownik` albo `Umowa`), `Umowa.Pracownik`
-- `Pracownik.Guid`, `source.Data`, `TranslateFormat`

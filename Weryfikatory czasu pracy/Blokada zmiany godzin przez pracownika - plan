@@ -1,48 +1,5 @@
 public override string Weryfikuj(Soneta.Kalend.DzienKalendarzaAktualizacja source, WeryfikujEventArgs args)
 {
-    // Weryfikator rodzaju "DzienPlanuAktualizacja" - dzień PLANU PRACY na dokumencie
-    // aktualizacji kalendarza (wersjonowanie kalendarzy).
-    //
-    // Cel: pracownik może z pulpitu ZŁOŻYĆ nowy dokument aktualizacji, ale nie może na nim
-    // zmieniać godzin pracy. Godziny zmienia przełożony (pulpit kierownika) albo kadry.
-    //
-    // Dzień na dokumencie powstaje dopiero wtedy, gdy ktoś zmieni komórkę w siatce
-    // (także "Wstaw serię" / "Wstaw z planu"). Samo założenie dokumentu tworzy tylko
-    // nagłówek i pozycję pracownika - dni nie - więc weryfikator nie blokuje dodania dokumentu.
-    //
-    // Blokujemy, gdy zalogowany użytkownik pulpitu (web) jest TYM SAMYM pracownikiem,
-    // którego dotyczy pozycja dokumentu. Kierownik zmieniający dni podwładnego oraz
-    // operator kadr w programie (bez użytkownika pulpitu) - bez ograniczeń.
-    //
-    // Poziom (Error / Warning) ustawiany jest na powiązaniu kalendarza z weryfikatorem
-    // (Kalendarz -> Weryfikatory, WeryfikatorKalendarza.Typ), nie w tym kodzie.
-    // Żeby blokował zapis: Typ = Error.
-
-    if (source == null || source.Pozycja == null)
-        return null;
-
-    Soneta.Business.IWebUser uzytkownikWeb = source.Session.Login.WebUserOperatingInstance;
-    if (uzytkownikWeb == null)
-        return null;
-
-    Soneta.Kadry.Pracownik zalogowany = uzytkownikWeb.Host as Soneta.Kadry.Pracownik;
-    if (zalogowany == null)
-        return null;
-
-    // Źródło planu pozycji: pracownik albo umowa (cywilnoprawna z kalendarzem).
-    Soneta.Kadry.Pracownik wlasciciel = source.Pozycja.ZrodloPlanu as Soneta.Kadry.Pracownik;
-    if (wlasciciel == null)
-    {
-        Soneta.Kadry.Umowa umowa = source.Pozycja.ZrodloPlanu as Soneta.Kadry.Umowa;
-        if (umowa != null)
-            wlasciciel = umowa.Pracownik;
-    }
-    if (wlasciciel == null)
-        return null;
-
-    // Porównanie po Guid - Host użytkownika web pochodzi z innej sesji niż wiersz dnia.
-    if (wlasciciel.Guid != zalogowany.Guid)
-        return null;
-
-    return "Nie możesz zmieniać godzin pracy na dokumencie aktualizacji kalendarza (dzień {0}). Godziny zmienia przełożony lub kadry.".TranslateFormat(source.Data);
+    // Logika w Dodatkowym kodzie do kompilacji (BlokadaZmianyGodzinDAK).
+    return Soneta.Runtime.Database.Business.TblCodeFiles.BlokadaZmianyGodzinDAK.Weryfikuj(source);
 }

@@ -1,40 +1,5 @@
 public override string Weryfikuj(Soneta.Kalend.DzienPracyAktualizacja source, WeryfikujEventArgs args)
 {
-    // Weryfikator rodzaju "DzienPracyAktualizacja" - dzień CZASU PRACY (rzeczywistego)
-    // na dokumencie aktualizacji kalendarza (wersjonowanie kalendarzy).
-    //
-    // Bliźniak weryfikatora "Blokada zmiany godzin przez pracownika - plan" - ta sama logika,
-    // inny typ wiersza. Opis w pliku .md.
-    //
-    // Blokujemy, gdy zalogowany użytkownik pulpitu (web) jest TYM SAMYM pracownikiem,
-    // którego dotyczy pozycja dokumentu. Kierownik i kadry - bez ograniczeń.
-    //
-    // Poziom (Error / Warning) ustawiany jest na powiązaniu kalendarza z weryfikatorem
-    // (Kalendarz -> Weryfikatory, WeryfikatorKalendarza.Typ). Żeby blokował zapis: Typ = Error.
-
-    if (source == null || source.Pozycja == null)
-        return null;
-
-    Soneta.Business.IWebUser uzytkownikWeb = source.Session.Login.WebUserOperatingInstance;
-    if (uzytkownikWeb == null)
-        return null;
-
-    Soneta.Kadry.Pracownik zalogowany = uzytkownikWeb.Host as Soneta.Kadry.Pracownik;
-    if (zalogowany == null)
-        return null;
-
-    Soneta.Kadry.Pracownik wlasciciel = source.Pozycja.ZrodloPlanu as Soneta.Kadry.Pracownik;
-    if (wlasciciel == null)
-    {
-        Soneta.Kadry.Umowa umowa = source.Pozycja.ZrodloPlanu as Soneta.Kadry.Umowa;
-        if (umowa != null)
-            wlasciciel = umowa.Pracownik;
-    }
-    if (wlasciciel == null)
-        return null;
-
-    if (wlasciciel.Guid != zalogowany.Guid)
-        return null;
-
-    return "Nie możesz zmieniać godzin pracy na dokumencie aktualizacji kalendarza (dzień {0}). Godziny zmienia przełożony lub kadry.".TranslateFormat(source.Data);
+    // Logika w Dodatkowym kodzie do kompilacji (BlokadaZmianyGodzinDAK).
+    return Soneta.Runtime.Database.Business.TblCodeFiles.BlokadaZmianyGodzinDAK.Weryfikuj(source);
 }
