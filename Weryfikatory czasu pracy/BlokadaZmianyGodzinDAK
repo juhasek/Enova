@@ -15,50 +15,26 @@ using Soneta.Kadry;
 namespace Soneta.Runtime.Database.Business.TblCodeFiles {
 	public static class BlokadaZmianyGodzinDAK
 	{
-		// Dzień PLANU PRACY na dokumencie aktualizacji kalendarza.
-		public static string Weryfikuj(DzienKalendarzaAktualizacja dzien)
+		public static string A1BlokadaGodzin(Session session, IZrodloPlanu zrodlo, Date data)
 		{
-			if (dzien == null || dzien.Pozycja == null)
+			Pracownik pracownik = zrodlo as Pracownik;
+			if (pracownik == null)
 				return null;
-			return Sprawdz(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data);
-		}
-
-		// Dzień CZASU PRACY na dokumencie aktualizacji kalendarza.
-		public static string Weryfikuj(DzienPracyAktualizacja dzien)
-		{
-			if (dzien == null || dzien.Pozycja == null)
-				return null;
-			return Sprawdz(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data);
-		}
-
-		// Reguła: błąd, gdy zalogowany użytkownik pulpitu (web) jest TYM SAMYM pracownikiem,
-		// którego dotyczy pozycja dokumentu, i jest to pracownik na UMOWĘ O PRACĘ.
-		//  - pozycja dla umowy cywilnoprawnej (źródło planu = Umowa) -> bez blokady,
-		//  - pracownik bez etatu w dniu, którego dotyczy zmiana     -> bez blokady,
-		//  - kierownik zmieniający dni podwładnego                  -> bez blokady,
-		//  - operator kadr w programie (brak użytkownika pulpitu)   -> bez blokady.
-		private static string Sprawdz(Session session, IZrodloPlanu zrodlo, Date data)
-		{
-			// Tylko umowa o pracę: źródłem planu jest Pracownik (kalendarz etatu),
-			// a nie Umowa (cywilnoprawna z kalendarzem).
-			Pracownik wlasciciel = zrodlo as Pracownik;
-			if (wlasciciel == null)
-				return null;
-			if (!wlasciciel.JestZatrudnionyNaEtat(FromTo.Day(data)))
+			if (!pracownik.JestZatrudnionyNaEtat(FromTo.Day(data)))
 				return null;
 
 			IWebUser uzytkownikWeb = session.Login.WebUserOperatingInstance;
 			if (uzytkownikWeb == null)
 				return null;
+			
 			Pracownik zalogowany = uzytkownikWeb.Host as Pracownik;
 			if (zalogowany == null)
 				return null;
 
-			// Porównanie po Guid - Host użytkownika web pochodzi z innej sesji niż wiersz dnia.
-			if (wlasciciel.Guid != zalogowany.Guid)
+			if (pracownik.Guid != zalogowany.Guid)
 				return null;
 
-			return string.Format("Nie możesz zmieniać godzin pracy na dokumencie aktualizacji kalendarza (dzień {0}). Godziny zmienia przełożony lub kadry.", data);
+			return string.Format("Nie możesz zmieniać godzin pracy (dzień {0}). Przywróć godziny pierwotnie wpisane", data);
 		}
 	}
 }
