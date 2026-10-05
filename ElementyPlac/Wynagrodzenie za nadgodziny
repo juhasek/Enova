@@ -12,7 +12,7 @@ public void Wynagrodzenie_Za_Nadgodziny_Param(Soneta.Place.WypElementDodatekAuto
     Fraction wymiar = Element.PracHistoria.Etat.Wymiar;
     Time normaDobowa = Element.PracHistoria.Etat.Kalendarz.NormaDobowa;
     YearMonth miesiacElementu = new YearMonth(Element.Okres.To);
-    FromTo okresNormy = new FromTo(miesiacElementu.FirstDay, miesiacElementu.FirstDay + (miesiacElementu.Days - 1));
+    FromTo okresNormy = miesiacElementu.ToFromTo();
     Time normaKodeksowa = KalkulatorKodeksowy.NormaWym(wymiar, normaDobowa, okresNormy).Czas;
     Element.ZapisObliczen.Add($"Norma kodeksowa {normaKodeksowa} (okres {okresNormy})");
     Element.ZapisObliczen.Add($"Stawka z wyn. zasadniczego {stawka1hCy}");
