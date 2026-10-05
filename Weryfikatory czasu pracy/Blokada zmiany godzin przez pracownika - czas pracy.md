@@ -4,7 +4,7 @@ Weryfikator kalendarza rodzaju **`DzienPracyAktualizacja`** (dzień czasu pracy 
 aktualizacji kalendarza). Bliźniak weryfikatora dla planu pracy: ta sama reguła (tylko
 pracownicy na umowę o pracę), inny typ wiersza (`Soneta.Kalend.DzienPracyAktualizacja`).
 
-Definicja tylko wywołuje `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data)` z Dodatkowego kodu do
+Definicja tylko wywołuje `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data, dzien.Pozycja)` z Dodatkowego kodu do
 kompilacji (plik `BlokadaZmianyGodzinDAK`).
 
 Pełny opis (reguła, konfiguracja, status testów) jest w

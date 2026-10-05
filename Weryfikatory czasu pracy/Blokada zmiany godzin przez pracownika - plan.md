@@ -10,8 +10,8 @@ Definicje weryfikatorów tylko go wywołują.
 
 | Plik definicji | Rodzaj weryfikatora | Wywołanie |
 |---|---|---|
-| `Blokada zmiany godzin przez pracownika - plan` | `DzienPlanuAktualizacja` (dzień planu pracy na dokumencie) | `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data)` |
-| `Blokada zmiany godzin przez pracownika - czas pracy` | `DzienPracyAktualizacja` (dzień czasu pracy na dokumencie) | `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data)` |
+| `Blokada zmiany godzin przez pracownika - plan` | `DzienPlanuAktualizacja` (dzień planu pracy na dokumencie) | `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data, dzien.Pozycja)` |
+| `Blokada zmiany godzin przez pracownika - czas pracy` | `DzienPracyAktualizacja` (dzień czasu pracy na dokumencie) | `A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data, dzien.Pozycja)` |
 
 Jeśli dokumenty aktualizacji dotyczą wyłącznie planu pracy, wystarczy pierwsza definicja.
 
@@ -21,7 +21,8 @@ Błąd, gdy jednocześnie:
 1. pozycja dokumentu dotyczy **pracownika na umowę o pracę**, czyli źródło planu to
    `Pracownik` (kalendarz etatu), a nie `Umowa` (cywilnoprawna z kalendarzem), i pracownik
    jest zatrudniony na etat w dniu zmiany (`JestZatrudnionyNaEtat`),
-2. **zalogowany użytkownik pulpitu (web) to ten sam pracownik** (porównanie po `Guid`).
+2. **zalogowany użytkownik pulpitu (web) to ten sam pracownik** (porównanie po `Guid`),
+3. **dzień na dokumencie różni się od planu** pracownika (patrz „Porównanie z planem” niżej).
 
 | Kto zmienia godziny | Wynik |
 |---|---|
@@ -44,8 +45,29 @@ Sprawdzone w kodzie enova 2512.5.6 (`DokumentAktualizacjiKalendarza.OnAdded`,
   `KontrolaDzienPracyAktualizacjaVerifier` uruchamia weryfikatory danego rodzaju z kalendarza
   dla każdego takiego dnia.
 
-Istnienie dnia na dokumencie oznacza więc, że ktoś zmienia godziny. Weryfikator nie porównuje
-wartości z planem.
+Sam wiersz dnia na dokumencie nie znaczy jednak, że godziny są inne. Po przywróceniu
+pierwotnych godzin wiersz zostaje (tylko zamknięcie dokumentu bez zapisu go usuwa), dlatego
+weryfikator porównuje dzień z planem.
+
+## Porównanie z planem
+
+| | Dzień na dokumencie | Dzień „pierwotny” |
+|---|---|---|
+| Plan pracy | `new KalkulatorAktualizacjiPlanu(pozycja)[data]` | `new KalkulatorPlanu(pracownik)[data]` |
+| Czas pracy | `new KalkulatorAktualizacjiPracy(pozycja)[data]` | `new KalkulatorPracy(pracownik)[data]` |
+
+Kalkulator aktualizacji liczy dzień tak, jak będzie wyglądał po zatwierdzeniu dokumentu
+(z niezapisanymi zmianami w sesji). Zwykły kalkulator liczy dzień pracownika bez dokumentu.
+Oba kalkulatory są tworzone od nowa przy każdym sprawdzeniu, bez buforowania.
+
+Dni są takie same (`A1TakiSamDzien`), gdy zgadzają się: definicja dnia, godzina od, czas oraz
+zestaw stref (bez względu na kolejność; strefy porównywane przez `Dzien.Strefa.Equals`:
+definicja strefy, od–do, czas rozliczany, czynność, lokalizacja). Wtedy weryfikator nie
+zgłasza błędu, czyli przywrócenie pierwotnych godzin zdejmuje błąd.
+
+**Do sprawdzenia na żywo:** czy po przywróceniu godzin w siatce strefy wychodzą identyczne,
+łącznie z czasem rozliczanym i czynnością. Jeśli pracownik przywróci godziny, a błąd zostanie,
+przyczyną jest najpewniej któreś z tych pól.
 
 ## Wymagana konfiguracja
 

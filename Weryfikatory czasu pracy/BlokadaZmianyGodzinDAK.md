@@ -7,26 +7,27 @@ pracy). Reguła, konfiguracja i status testów:
 
 ## Gdzie żyje w bazie
 
-Metoda `A1BlokadaGodzin` jest w klasie
+Metody `A1BlokadaGodzin` i `A1TakiSamDzien` są w klasie
 `A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza`.
 To wspólna klasa weryfikatorów kalendarza, w której są też inne metody (np.
 `A1OkresZatrudnienia`, `A1WeryfikujNormeWOkresieRozliczeniowym`). Plik w repo zawiera
-**tylko** metodę blokady godzin. Przy wgrywaniu trzeba ją wkleić do istniejącej klasy,
+**tylko** te dwie metody. Przy wgrywaniu trzeba je wkleić do istniejącej klasy,
 nie zastępować całego pliku.
 
 ## Metoda
 
 ```csharp
-public static string A1BlokadaGodzin(Session session, IZrodloPlanu zrodlo, Date data)
+public static string A1BlokadaGodzin(Session session, IZrodloPlanu zrodlo, Date data, IPozycjaAktualizacji pozycja)
+public static bool A1TakiSamDzien(Dzien a, Dzien b)
 ```
 
 Wywoływana z obu definicji weryfikatorów:
 
 ```csharp
-return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data);
+return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data, dzien.Pozycja);
 ```
 
-Zwraca `null`, gdy nie ma blokady, albo komunikat błędu.
+`A1BlokadaGodzin` zwraca `null`, gdy nie ma blokady, albo komunikat błędu. Wymaga `using System.Linq;` w pliku klasy (dla `Cast`/`ToArray` w `A1TakiSamDzien`).
 
 ## Uwagi do kodu
 
