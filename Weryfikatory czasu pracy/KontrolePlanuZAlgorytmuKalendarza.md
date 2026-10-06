@@ -66,7 +66,7 @@ Ciało metody `Weryfikuj` w każdej definicji to jedno wywołanie. Prefiks klasy
 | Nazwa | Wywołanie |
 |---|---|
 | A1_Praca do 12h (dzień) | `return K.A1Praca12h(new KalkulatorPlanu(dzien.Kalendarz.Pracownik), dzien.Data);` |
-| A1_Norma dobowa niepełnosprawnych (dzień) | `return K.A1NormaDobowaNiepelnosprawnych(new KalkulatorPlanu(dzien.Kalendarz.Pracownik), dzien.Data);` |
+| A1_Norma niepełnosprawnych (dzień) | `return K.A1NormaDobowaNiepelnosprawnych(new KalkulatorPlanu(dzien.Kalendarz.Pracownik), dzien.Data);` |
 
 **Plan pracy** (rodzaj 40), sygnatura
 `public override string Weryfikuj(Soneta.Kadry.Pracownik pracownik, WeryfikujEventArgs args)`:
@@ -76,11 +76,11 @@ Ciało metody `Weryfikuj` w każdej definicji to jedno wywołanie. Prefiks klasy
 | A1_Odpoczynek dobowy 11h | `return K.A1Przerwa11hWMiesiacu(pracownik, args.Miesiąc);` |
 | A1_Doba pracownicza | `return K.A1DobaPracowniczaWMiesiacu(pracownik, args.Miesiąc);` |
 | A1_Praca do 12h | `return K.A1Praca12hWMiesiacu(pracownik, args.Miesiąc);` |
-| A1_Norma dobowa niepełnosprawnych | `return K.A1NormaDobowaNiepelnosprawnychWMiesiacu(pracownik, args.Miesiąc);` |
+| A1_Norma niepełnosprawnych | `return K.A1NormaDobowaNiepelnosprawnychWMiesiacu(pracownik, args.Miesiąc);` |
 | A1_Norma średniotygodniowa 48h | `return K.A1NormaSredniotygodniowa48h(pracownik, args.Miesiąc);` |
 | A1_Odpoczynek tygodniowy 35h | `return K.A1OdpoczynekTygodniowy35h(pracownik, args.Miesiąc);` |
 | A1_Dni wolne i święta w miesiącu | `return K.A1DniWolneIswietaWMiesiacu(pracownik, args.Miesiąc);` |
-| A1_Plan ponad normę okresu rozliczeniowego | `return K.A1PlanPonadNormeOkresuRozliczeniowego(pracownik, args.Miesiąc);` |
+| A1_Plan ponad normę okresu rozl. | `return K.A1PlanPonadNormeOkresuRozliczeniowego(pracownik, args.Miesiąc);` |
 
 ## Podpięcie do kalendarzy
 
@@ -89,15 +89,15 @@ Ciało metody `Weryfikuj` w każdej definicji to jedno wywołanie. Prefiks klasy
 | Definicja | Podstawowy system_1_8:16 (ID 47) | 3 miesięczny (ID 45) |
 |---|---|---|
 | A1_Praca do 12h (dzień) | Ostrzeżenie | Ostrzeżenie |
-| A1_Norma dobowa niepełnosprawnych (dzień) | Ostrzeżenie | — (w algorytmie liczona, ale nie zwracana) |
+| A1_Norma niepełnosprawnych (dzień) | Ostrzeżenie | — (w algorytmie liczona, ale nie zwracana) |
 | A1_Odpoczynek dobowy 11h | Ostrzeżenie | Ostrzeżenie |
 | A1_Doba pracownicza | Ostrzeżenie | Ostrzeżenie |
 | A1_Praca do 12h | Ostrzeżenie | Ostrzeżenie |
-| A1_Norma dobowa niepełnosprawnych | Ostrzeżenie | — |
+| A1_Norma niepełnosprawnych | Ostrzeżenie | — |
 | A1_Norma średniotygodniowa 48h | Ostrzeżenie | Ostrzeżenie |
 | A1_Odpoczynek tygodniowy 35h | Ostrzeżenie | Ostrzeżenie |
 | A1_Dni wolne i święta w miesiącu | Ostrzeżenie | — (zakomentowana) |
-| A1_Plan ponad normę okresu rozliczeniowego | **Błąd** | — (zwraca zawsze `null`) |
+| A1_Plan ponad normę okresu rozl. | **Błąd** | — (zwraca zawsze `null`) |
 
 Tak odtwarza się dotychczasowe zachowanie obu kalendarzy. Do obu są już podpięte
 `A1_Okres zatrudnienia`, `A1_Norma w okresie rozliczeniowym` i `A1_Ilość dni wolnych w okresie`
@@ -116,8 +116,23 @@ Tak odtwarza się dotychczasowe zachowanie obu kalendarzy. Do obu są już podpi
 5. Test: pracownik na kalendarzu ID 47, dzień planu 13h → ostrzeżenie „przekraczający
    dopuszczalną normę godzinową (12:00)”; plan okresu ponad normę → zapis zablokowany.
 
+Pole `Nazwa` definicji ma maksymalnie 40 znaków (stąd skróty „niepełnosprawnych”, „rozl.”).
+
 Status: kod skompilowany lokalnie przeciw bibliotekom enova 2512.5.6 (cała klasa z bazy +
 nowe metody + ciała wszystkich 10 definicji) — **bez błędów**. Nie sprawdzony na żywo w enova.
+
+### Stan w bazie testowej (2026-10-06)
+
+Wgrane bezpośrednio SQL-em, w jednej transakcji (kroki 1–4):
+- `CodeFiles` ID 13 (`A1WeryfikatoryKalendarza`) — klasa uzupełniona o nowe metody,
+- `DefWeryfKalend` ID **2038–2047** (kolejność jak w tabelach definicji, `RuntimeInfoProject` = 29),
+- `WeryfKalend` — podpięcia do kalendarzy 47 i 45 wg tabeli podpięć,
+- `Kalendarze.Algorytm` kalendarzy 45 i 47 wyczyszczony (= „Edycja algorytmu” wyłączona).
+  Poprzednia treść: pliki `KontrolePlanuZAlgorytmuKalendarza - archiwum algorytmu kalendarza 47/45`.
+
+Zdublowane weryfikatory (pkt 2 słabych miejsc) celowo zostawione. `dbmgr compile Al`
+kończy się bez błędów. Test na żywo (krok 5) jeszcze nie wykonany. Przed testem trzeba
+zrestartować serwer enova albo odświeżyć bazę, bo zmiany wprowadzone SQL-em omijają cache aplikacji.
 
 ## Słabe miejsca
 
@@ -144,7 +159,7 @@ enova sortuje weryfikatory wg poziomu (najpierw Błąd), więc problem znika.
 Przekroczenie normy okresu daje dziś **dwa błędy** o tym samym. Dni wolne liczą dwie
 **różne** reguły (miesiąc vs okres rozliczeniowy, inna definicja wymaganej liczby) — mogą dać
 sprzeczne komunikaty. Rekomendacja: zostawić po jednej kontroli na regułę. Najprościej:
-nie podpinać `A1_Plan ponad normę okresu rozliczeniowego` i `A1_Dni wolne i święta w miesiącu`
+nie podpinać `A1_Plan ponad normę okresu rozl.` i `A1_Dni wolne i święta w miesiącu`
 tam, gdzie są `A1_Norma…` i `A1_Ilość dni wolnych…`.
 
 ### 3. Limit 12h w systemie podstawowym

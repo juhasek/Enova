@@ -1,0 +1,348 @@
+// Archiwum: zakładka Algorytm kalendarza ID 45 (baza testowa) sprzed przeniesienia kontroli do
+// definicji weryfikatorów (KontrolePlanuZAlgorytmuKalendarza). Przywrócenie: wkleić w Algorytm kalendarza.
+
+          public override string SprawdźDzieńKalendarza(DzienKalendarza dzień)
+        {
+            return null;
+        }
+        public override string SprawdźKalendarz(Kalendarz kalendarz, YearMonth miesiąc)
+        {
+            return null;
+        }
+        public override string SprawdźDzieńPlanu(DzienPlanu dzień)
+        {
+            KalkulatorPlanu kp = new KalkulatorPlanu(dzień.Kalendarz.Pracownik);
+            return SprawdźDzień(kp, dzień.Data, false);
+        }
+        public override string SprawdźPlan(Pracownik pracownik, YearMonth miesiąc)
+        {
+					  try {throw new ArgumentNullException();} catch {}
+            string kontrolaDnia = null;
+            KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
+            Pracownik p = kp.Pracownik;
+            kp.LoadOkres(miesiąc.ToFromTo());
+            foreach (Date d in miesiąc.ToFromTo())
+	            if (p[d].Etat.EfektywnyOkres.Contains(d))
+	            {
+	                string s = SprawdźDzień(kp, d, true);
+	                Append(ref kontrolaDnia, FormatError(pracownik, d, s));
+	            }
+            //string kontrolaNormy8h = FormatError(pracownik, miesiąc, KontrolaNormy8h(kp, miesiąc));         
+            string kontrolaNormyŚredniotygodniowej = FormatError(pracownik, miesiąc, KontrolaNormyŚredniotygodniowej(kp, miesiąc));
+            string kontrolaPrzerwa35h = FormatError(pracownik, miesiąc, KontrolaPrzerwa35h(kp, miesiąc));
+            //string controlRequiredCountOfFreeOrHolidayDays = FormatError(pracownik, miesiąc, ControlRequiredCountOfFreeOrHolidayDays(miesiąc, pracownik));
+            FromTo periodFromTo = pracownik.WyliczOkresRoliczeniowyNadgodzin(miesiąc.FirstDay);
+						//if (!((periodFromTo.To.Month - periodFromTo.From.Month) == 1 || (periodFromTo.To.Month - periodFromTo.From.Month) == -11))	// błąd w wyliczaniu okresu rozliczeniowego - jeżeli wynikiem jest przedział wiekszy niż 2 mies
+            //periodFromTo = pracownik.WyliczOkresRoliczeniowyNadgodzin(miesiąc.AddMonths(1).FirstDay);
+						string controlToManyWorkDaysInPeriod = FormatError(pracownik, periodFromTo, ControlToManyWorkDaysInPeriod(periodFromTo, miesiąc.FirstDay, pracownik));
+            //return Result(kontrolaDnia, kontrolaNormyŚredniotygodniowej, kontrolaPrzerwa35h, controlRequiredCountOfFreeOrHolidayDays, controlToManyWorkDaysInPeriod); // w przypdku tylko ostrzeżeń
+            // mając błędy i ostrzeżenia - błędy przez Error(Result(...)), ostrzeżenia przez Result(), łączymy przez Append()
+            var error = Error(Result(controlToManyWorkDaysInPeriod));
+            var warning = Result(kontrolaDnia, kontrolaNormyŚredniotygodniowej, kontrolaPrzerwa35h /*controlRequiredCountOfFreeOrHolidayDays*/);  
+            Append(ref error, warning);
+            return error;
+        }
+string ControlToManyWorkDaysInPeriod(FromTo period, Date monthFirstDay, Pracownik employee)
+{
+					//try {throw new ArgumentNullException();} catch {}
+					string result = null;
+          Soneta.Kalend._Pracownik.CzasPracyEtatWorker czasPracyEtatWorker = new Soneta.Kalend._Pracownik.CzasPracyEtatWorker();
+          czasPracyEtatWorker.Pracownik = employee;
+          czasPracyEtatWorker.Okres = period;
+						
+					if (czasPracyEtatWorker.Norma.Czas > czasPracyEtatWorker.Normatywny.Czas)
+            {
+                Append(ref result, string.Format("Zaplanowano czas pracy przekraczający normę czas pracy w okresie rozliczeniowym. Dozwolone: {0}, zaplanowano: {1}", czasPracyEtatWorker.Normatywny.Czas.ToString(), czasPracyEtatWorker.Norma.Czas.ToString()));
+            }
+					
+					//return result;
+					return null;
+}
+       
+
+ string ControlRequiredCountOfFreeOrHolidayDays(YearMonth month, Pracownik employee)
+ {
+     string result = null;
+     int freeOrHolidayDaysOfMonthCount = 0;
+     int freeOrHolidayDaysOfEmployeeCount = 0;
+     foreach (Date d in month.ToFromTo())
+     {
+         if (Date.FreeOrHoliday(d))
+         {
+             freeOrHolidayDaysOfMonthCount++;
+         }
+     }
+     KalkulatorPlanu kp = new KalkulatorPlanu(employee);
+     foreach (Date d in month.ToFromTo())
+     {
+         Dzien day = kp[d];
+         if (day.Definicja.Typ.ToString() == "Świąteczny" || day.Definicja.Typ.ToString() == "Wolny")
+         {
+             freeOrHolidayDaysOfEmployeeCount++;
+         }
+     }
+     if (freeOrHolidayDaysOfEmployeeCount < freeOrHolidayDaysOfMonthCount)
+     {
+         Append(ref result, string.Format("Nie zaplanowano wymaganej liczby dni wolnych i świąt dla pracownika. Wymagane: {0}, zaplanowano: {1}", freeOrHolidayDaysOfMonthCount, freeOrHolidayDaysOfEmployeeCount));
+     }
+     return result;
+ }
+
+ string KontrolaPrzerwa35h(KalkulatorPlanu kp, YearMonth miesiąc)
+ {
+     string result = null;
+     foreach (FromTo okres in OkresRozliczeniowy(kp.Pracownik, miesiąc))
+     {
+         Kalendarz k = kp.Pracownik[Date.Min(okres.To, miesiąc.LastDay)].Etat.Kalendarz;
+         int m = k.Nadgodziny.Okres;
+         FromTo teoretyczny = TeoretycznyOkresRozliczeniowy(m, miesiąc);
+         FromTo sprawdzany = okres * teoretyczny;
+         Date d = sprawdzany.From;
+         while (d <= sprawdzany.To)
+         {
+             FromTo tydzień = new FromTo(d, d + 6);
+             if (tydzień.To <= okres.To)
+             {   //Sprawdzamy tylko gdy cały tydzień mieści się w okresie zatrudnienia
+                 int dni = kp.Norma(tydzień).Dni;
+                 if (dni == 7)
+                     Append(ref result, string.Format("W  tygodniu '{0}' nie zaplanowano 35 godzinnej przerwy", tydzień));
+             }
+             d += 7;
+         }
+     }
+     return result;
+ }
+
+ string KontrolaNormy8h(KalkulatorPlanu kp, YearMonth miesiąc)
+ {
+     string result = null;
+     foreach (FromTo okres in OkresRozliczeniowy(kp.Pracownik, miesiąc))
+     {
+         Kalendarz k = kp.Pracownik[Date.Min(okres.To, miesiąc.LastDay)].Etat.Kalendarz;
+         int m = k.Nadgodziny.Okres;
+         FromTo teoretyczny = TeoretycznyOkresRozliczeniowy(m, miesiąc);
+         FromTo sprawdzany = okres * teoretyczny;
+         CzasDni norma = kp.Norma(sprawdzany);
+         Time limit = new Time(8 * norma.Dni, 0);
+         if (norma.Czas > limit)
+             Append(ref result, string.Format("Zaplanowany w okresie ({0}) czas pracy ({1}) przekracza dopuszczalny 8 godzinny czas pracy ({2})", sprawdzany, norma.Czas, limit));
+     }
+     return result;
+ }
+        
+string KontrolaNormyŚredniotygodniowej(KalkulatorPlanu kp, YearMonth miesiąc)
+{
+    string result = null;
+    Periods okresy = OkresRozliczeniowy(kp.Pracownik, miesiąc);
+    foreach (FromTo okres in okresy)
+    {
+        Kalendarz k = kp.Pracownik[Date.Min(okres.To, miesiąc.LastDay)].Etat.Kalendarz;
+        int m = k.Nadgodziny.Okres;
+        FromTo okresRozliczeniowy = TeoretycznyOkresRozliczeniowy(m, miesiąc) * okres;
+        Time norma = NormaŚredniotygodniowa48h(kp, okresRozliczeniowy, false);
+        Time plan = kp.Norma(okresRozliczeniowy).Czas;
+        if (norma < plan)
+            Append(ref result, string.Format("Zaplanowany w okresie ({0}) czas pracy ({1}) przekracza dopuszczalny średniotygodniowy czas pracy ({2})", okresRozliczeniowy, plan, norma));
+    }
+    return result;
+}
+
+
+Time NormaŚredniotygodniowa48h(KalkulatorPlanu kp, FromTo okres, bool obniżona)
+{
+    int dni = okres.Days;
+    int tygodniePełne = dni / 7;
+    Date d = okres.From + tygodniePełne * 7;
+    Time normaNiepełne = Time.Zero;
+    while (d <= okres.To)
+    {
+        if (d.DayOfWeek != DayOfWeek.Sunday && !Date.IsHoliday(d))
+            normaNiepełne += new Time(obniżona ? 8 : 12, 0);
+        d++;
+    }
+    normaNiepełne = Time.Min(normaNiepełne, new Time(obniżona ? 40 : 48, 0));
+    Time normaPełne = new Time(tygodniePełne * (obniżona ? 40 : 48), 0);
+    return normaPełne + normaNiepełne;
+}
+
+Periods OkresRozliczeniowy(Pracownik p, YearMonth miesiąc)
+{
+    Periods z = Periods.Empty;
+    foreach (PracHistoria ph in p.Historia)
+        z += ph.Etat.EfektywnyOkres;
+    z = z.ToFlat();
+    FromTo m = miesiąc.ToFromTo();
+    Periods result = Periods.Empty;
+    foreach (FromTo o in z)
+        if (o.IsIntersected(m))
+            result += o;
+    return result;
+}
+
+FromTo TeoretycznyOkresRozliczeniowy(int c, YearMonth miesiąc)
+{
+    int m = miesiąc.Month;
+    int r = miesiąc.Year;
+    int b = ((m - 1) / c) * c + 1;
+    int e = b + c - 1;
+    return new FromTo(new YearMonth(r, b).FirstDay, new YearMonth(r, e).LastDay);
+}
+
+/*string SprawdźDzień(KalkulatorPlanu kp, Date d, bool plan)
+{
+    string kontrolaPrzerwy11h = plan ? KontrolaPrzerwy11h(kp, d) : null;
+    string kontrolaDobaPracownicza = plan ? KontrolaDobaPracownicza(kp, d) : null;
+    string controlWorkHoursForDisabled = ControlWorkHoursForDisabled(kp, d);
+    string controlWork12h = ControlWork12h(kp, d);
+    return  Result(kontrolaPrzerwy11h, kontrolaDobaPracownicza, controlWorkHoursForDisabled, controlWork12h);
+}*/
+
+//zmiana TK
+
+string SprawdźDzień(KalkulatorPlanu kp, Date d, bool plan)
+{
+    string kontrolaPrzerwy11h = plan ? KontrolaPrzerwy11h(kp, d) : null;
+    string kontrolaDobaPracownicza = plan ? KontrolaDobaPracownicza(kp, d) : null;
+    string controlWorkHoursForDisabled = ControlWorkHoursForDisabled(kp, d);
+    string controlWork12h = ControlWork12h(kp, d);
+    return  Result(kontrolaPrzerwy11h, kontrolaDobaPracownicza, controlWork12h);
+}
+
+string KontrolaDobaPracownicza(KalkulatorPlanu kp, Date d)
+{
+    string result = null;
+    Dzien dzisiaj = kp[d];
+    if (dzisiaj.OdGodziny == Time.Empty)
+        return null;
+    Dzien wczoraj = kp[d - 1];
+    if (wczoraj.OdGodziny != Time.Empty)
+        if (wczoraj.OdGodziny > dzisiaj.OdGodziny)  //Wszystko ok o ile nie zaczynamy pracy wcześniej niż poprzedniego dnia.
+            Append(ref result, "Zaplanowano czas pracy należący do poprzedniej doby pracowniczej. Poprzednia doba kończy się o godzine " + wczoraj.OdGodziny + ".");
+    Dzien jutro = kp[d + 1];
+    if (jutro.OdGodziny != Time.Empty)
+        if (dzisiaj.OdGodziny > jutro.OdGodziny)        //Wszystko ok o ile nie zaczynamy pracy później niż następnego dnia.
+            Append(ref result, "Zaplanowano czas pracy należący do następnej doby pracowniczej. Następna doba zaczyna się o godzine " + jutro.OdGodziny + ".");
+    return result;
+}
+
+string KontrolaPrzerwy11h(KalkulatorPlanu kp, Date d)
+{
+    Dzien dzn = kp[d];
+    FromTimes ft = FromTimes.Empty;
+    foreach (IStrefa strefa in dzn)
+        if (strefa.Definicja == null)
+            return null;
+        else if (strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza && strefa.Czas != Time.Zero && strefa.OdGodziny != Time.Empty)
+            ft = ft.Add(new FromTime(strefa));
+    ft = ft.ToFlat();
+    Time end = Time.Empty;
+    foreach (FromTime f in ft)
+    {
+        if (end != Time.Empty)
+            if ((f.From - end) >= new Time(11, 0))
+                return null;
+        end = f.To;
+    }
+    if (end == Time.Empty || dzn.OdGodziny + Time.Midnight - end >= new Time(11, 0))
+        return null;
+    return "Nie wprowadzono wymaganej przepisami prawa jedenastogodzinnej przerwy.";
+}
+
+string ControlWorkHoursForDisabled(KalkulatorPlanu kp, Date date)
+{
+    Kalendarz calendar = kp.Pracownik[date].Etat.Kalendarz;
+    if (calendar == null)
+        return null;
+    Time plane = kp[date].Czas;
+    if (plane == Time.Zero)
+        return null;
+    var pracownik = kp.Pracownik;
+    foreach (var hist in pracownik.Historia)
+    {
+        if (date >= hist.StopienNiepelnosp.Okres.From && date <= hist.StopienNiepelnosp.Okres.To)
+        {
+            if (hist.StopienNiepelnosp.Stopien.ToString() == "Umiarkowany" || hist.StopienNiepelnosp.Stopien.ToString() == "Znaczny")
+            {
+                if (hist.Etat.PracownikNiepelnosprawnyZgodaNaPrace8h)
+                {
+                    if (new Time(8, 0) < plane)
+                    {
+                        return "Dla pracownika niepełnosprawnego zaplanowano czas pracy przekaczający dopuszczalną normę (08:00)";
+                    }
+                }
+                else
+                {
+                    if (new Time(7, 0) < plane)
+                    {
+                        return "Dla pracownika niepełnosprawnego zaplanowano czas pracy przekaczający dopuszczalną normę (07:00)";
+                    }
+                }
+            }
+            if (hist.StopienNiepelnosp.Stopien.ToString() == "Lekki")
+            {
+                if (new Time(8, 0) < plane)
+                {
+                    return "Dla pracownika niepełnosprawnego zaplanowano czas pracy przekaczający dopuszczalną normę (08:00)";
+                }
+            }
+        }
+    }
+    return null;
+}
+
+
+ string ControlWork12h(KalkulatorPlanu kp, Date d)
+ {
+     string result = null;
+     Dzien dzisiaj = kp[d];
+     if (dzisiaj.OdGodziny == Time.Empty)
+     {
+         return null;
+     }
+     if (dzisiaj.Czas > new Time(12, 0))
+     {
+         Append(ref result, "Zaplanowano czas pracy (" + dzisiaj.Czas.ToString() + ") przekraczający dopuszczalną normę godzinową (12:00)");
+     }
+     return result;
+ }
+
+ string Result(params string[] pars)
+ {
+     string result = null;
+     foreach (string s in pars)
+         Append(ref result, s);
+     return result;
+ }
+
+ string FormatError(Pracownik pracownik, object obj, string msg)
+ {
+     if (msg == null || msg == "")
+         return msg;
+     string result = "";
+     foreach (string s in msg.Split('\n'))
+         if (s != "")
+             Append(ref result, string.Format("{0}, {1}, {2}", pracownik, obj, s));
+     return result;
+ }
+
+ static bool error = true;
+ static string Error(string msg)
+ {
+     if (!error || msg == null || msg == "")
+         return msg;
+     return "!" + msg;
+ }
+        
+void Trace(object value)
+{
+    Log log = new Log("Weryfikacja kalendarza");
+    log.WriteLine(value == null ? "(null)" : value.ToString());
+}
+void Append(ref string s, string msg)
+{
+    if (msg != null && msg != "")
+        if (s == null || s == "")
+            s = msg;
+        else
+            s += "\n" + msg;
+}
