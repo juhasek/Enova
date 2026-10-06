@@ -1,0 +1,116 @@
+public decimal Feature_Nadgodziny_NSW_silnik {
+	get {
+
+		// Zestaw "silnik": ILOŚĆ nadgodzin bierzemy z silnika enova (ten sam kod, który liczy
+		// zakładkę Kalendarz/Statystyka), a cecha odpowiada tylko na pytanie, KTÓRA strefa dnia
+		// je wypracowała - zwykła czy awaryjna. Norma dobowa, przeniesienia, nieobecności
+		// częściowe, limity, dni świąteczne i reguła "godziny między dobami pracowniczymi"
+		// zostają po stronie silnika i nie są tu liczone po raz drugi.
+
+		if (Row.Definicja == null)
+			return 0;
+
+		// Rozbicie dotyczy tylko stref "poza normą" - zwykłej i awaryjnej
+		if (!Row.Definicja.Nazwa.Contains("Praca poza normą"))
+			return 0;
+
+		if (Row.OdGodziny == Time.Empty || Row.Czas <= Time.Zero)
+			return 0;
+
+		DzienPracy dzienRow = Row.Dzien;
+		Pracownik pracownik = dzienRow.Pracownik;
+		Date data = dzienRow.Data;
+
+		PracHistoria ph = pracownik[data];
+		if (ph == null || ph.Etat == null || ph.Etat.Kalendarz == null)
+			return 0;
+
+		Kalendarz kalendarz = ph.Etat.Kalendarz;
+		if (!kalendarz.Nadgodziny.Rozliczaj)
+			return 0;
+
+		KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
+		Dzien dzienPracy = kalkPracy[data];
+		Dzien dzienPlanu = pracownik.Czasy.KalkPlanu[data];
+
+		if (dzienPracy == null || dzienPracy.Definicja == null)
+			return 0;
+
+		// Rzeczywiste okna pracy dnia (Dzien.Praca = suma przedziałów stref zwiększających czas
+		// pracy; godziny nachodzące na siebie nie dublują się)
+		FromTimes pracaDnia = dzienPracy.Praca;
+		if (pracaDnia == FromTimes.Empty)
+			return 0;
+
+		Time oknoRowOd = Row.OdGodziny;
+		Time oknoRowCzas = Row.Czas;
+
+		// === 1. ILE: nadgodziny dobowe tego dnia wg silnika
+		ZestawienieNadgodzin zn = pracownik.Czasy.Nadgodziny(new FromTo(data, data), KalkulatorNadgodzin.TrybRozliczaniaNadgodzin.TylkoDobowe);
+		Time dobowe = zn.N50 + zn.N100 + zn.NSW;
+
+		// Korekta na magazyn nadgodzin: godziny odłożone do magazynu (strefa "Nadgodziny do
+		// przeniesienia") silnik odejmuje od czasu pracy dnia, więc dla takiego dnia pokazałby
+		// mniej albo 0:00. Na tych cechach pracują elementy wynagrodzenia, więc potrzebny jest
+		// obraz "jak przepracowano" - dla dni z przeniesieniem liczymy nadwyżkę tym samym
+		// wzorem co silnik (KalkulatorNadgodzin.NadgodzinyDobowe + WyliczNormęDobową), ale bez
+		// odjęcia DoPrzeniesienia. To jedyne miejsce, w którym cecha powtarza wzór silnika.
+		if (dzienPracy.DoPrzeniesienia > Time.Zero)
+		{
+			Time planCzas = dzienPlanu != null ? dzienPlanu.Czas : Time.Zero;
+			if (planCzas == Time.Empty)
+				planCzas = Time.Zero;
+
+			Time normaDobowa;
+			if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.Kalendarz)
+				normaDobowa = planCzas > Time.Zero ? planCzas : ph.Etat.NormaDobowa;
+			else if (kalendarz.Nadgodziny.AlgorytmDobowa == AlgorytmNorma.RównoważnyCzasPracy)
+				normaDobowa = planCzas > ph.Etat.NormaDobowa ? planCzas : ph.Etat.NormaDobowa;
+			else
+				normaDobowa = ph.Etat.NormaDobowa;
+
+			Time czasBezMagazynu = dzienPracy.Czas + dzienPracy.ZPrzeniesienia;
+			if (KalendModule.GetInstance(Row).Config.Nadgodziny.NadgodzinyMiędzyDobJakoOkr100Ext == TrybNadgodzMiedzyDobamiPrac.Warunkowo)
+				czasBezMagazynu -= dzienPracy.CzasPomiędzyDobamiPracowniczymi;
+
+			Time nadwyzkaBezMagazynu = czasBezMagazynu > normaDobowa ? czasBezMagazynu - normaDobowa : Time.Zero;
+			if (nadwyzkaBezMagazynu > dobowe)
+				dobowe = nadwyzkaBezMagazynu;
+		}
+
+		// === 2. KTÓRE GODZINY: ostatnie "dobowe" godzin czasu pracy dnia. Silnik robi to samo,
+		// gdy musi wiedzieć, które godziny nadwyżki wypadły w nocy: dzien.Praca.Sub(norma),
+		// a z reszty pierwsze N50 godzin (KalkulatorNadgodzin.NadgodzinyDobowe). Przy
+		// ustawieniu kalendarza "Rozliczanie dobowych wg: stref" pierwszeństwo mają godziny
+		// poza planem, czyli praca przed rozpoczęciem zmiany i w "czarnej dziurze".
+		FromTimes nadgodzinyDnia = FromTimes.Empty;
+		if (dobowe > Time.Zero)
+		{
+			FromTimes kandydaci = pracaDnia;
+			if (kalendarz.Nadgodziny.RozliczanieDobowych == RozliczanieDobowych.WgStref && dzienPlanu != null)
+			{
+				FromTimes pozaPlanemWgStref = pracaDnia.Sub(dzienPlanu.Praca).ToFlat();
+				if (pozaPlanemWgStref.Time >= dobowe)
+					kandydaci = pozaPlanemWgStref;
+			}
+
+			Time doOdciecia = kandydaci.Time > dobowe ? kandydaci.Time - dobowe : Time.Zero;
+			nadgodzinyDnia = doOdciecia > Time.Zero ? kandydaci.Sub(doOdciecia) : kandydaci;
+		}
+
+		// === 3. Kwalifikacja dnia - dokładnie jak w silniku: flaga b2003 (data >= 2003 i
+		// wyłączone "Dobowe 100") przełącza warunek dnia niedzielno-świątecznego
+		bool dobowe100 = KalendModule.GetInstance(Row).Config.Nadgodziny.Dobowe100;
+		bool dzienNSW = dobowe100 ? (dzienPracy.Definicja.Typ != TypDnia.Pracy) : dzienPracy.Definicja.NadgodzinySW;
+
+		// Tu liczymy tylko dni niedzielno-świąteczne - w nich cała nadwyżka jest nadgodziną ŚW
+		if (!dzienNSW)
+			return 0;
+
+		if (nadgodzinyDnia == FromTimes.Empty)
+			return 0;
+
+		// Część przypadająca na tę strefę - stąd wprost wychodzi podział awaria / zwykłe
+		return (decimal)nadgodzinyDnia.Intersection(new FromTime(oknoRowOd, oknoRowCzas)).Time.TotalHours;
+	}
+}

@@ -1,0 +1,77 @@
+public string Feature_WeryfikacjaAlokacjiZmianaDnia {
+    get {
+        // Tutaj umieść kod wyliczajacy wartość cechy
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			if(Row.Features.GetBool("Zatwierdzono")) return "";
+
+			Soneta.Web.Business.Workers.PracownikWebUserInfoWorker webInfo = new Soneta.Web.Business.Workers.PracownikWebUserInfoWorker();
+			webInfo.Pracownik = Row.Pracownik;
+		//	if(webInfo.UICulture == Soneta.Tools.CoreTools.CultureEN
+
+			CzasDni czasDnia = Row.Pracownik.Czasy.Norma(FromTo.Day(Row.Data));
+      Time normaNaDzien = czasDnia != null ? czasDnia.Czas : Time.Zero;
+			int zwiekszajCzas = Row.Strefy.Where(s => s.Definicja.Features.GetBool("ZwiekszajCzas")).Sum(s => s.Czas.TotalMinutes);
+			int pomniejszajCzas = Row.Strefy.Where(s => s.Definicja.Features.GetBool("PomniejszajCzas")).Sum(s => s.Czas.TotalMinutes);
+
+			CzasDni czasNieobecnosci = Row.Pracownik.Czasy.NormaNie(FromTo.Day(Row.Data));
+
+      Time czasPrzepracowanyWDniu = Row.Czas + new Time(zwiekszajCzas) - new Time(pomniejszajCzas) + czasNieobecnosci.Czas;
+      if (czasPrzepracowanyWDniu.TotalMinutes != normaNaDzien.TotalMinutes)
+      {
+				if(webInfo.UICulture == Soneta.Tools.CoreTools.CultureEN)
+					sb.AppendLine($"Day {Row.Data}, hours of working time were allocated on {czasPrzepracowanyWDniu}. The time allocated should comply with the {normaNaDzien}-hours working time standard.");
+				if(webInfo.UICulture == Soneta.Tools.CoreTools.CulturePL)
+					sb.AppendLine($"W dniu {Row.Data}, zaalokowano {czasPrzepracowanyWDniu} czasu pracy. Alokacja powinna być zgodna z normą {normaNaDzien}.");
+      }
+
+			int minutyPrzerwy = Row.Strefy.Where(s => s.Definicja.Nazwa == "Przerwa bezpłatna").Sum(s => s.Czas.TotalMinutes);
+			Time czasPrzerwy = new Time(minutyPrzerwy);
+			if(new Time(minutyPrzerwy) > new Time(30))
+			{
+				if(webInfo.UICulture == Soneta.Tools.CoreTools.CulturePL)
+					sb.AppendLine($"W dniu {Row.Data}, zaalokowano {czasPrzerwy} przerwy bezpłatnej. Alokacja nie może być większa niż 0:30.");
+				if(webInfo.UICulture == Soneta.Tools.CoreTools.CultureEN)
+					sb.AppendLine($"Day {Row.Data}, of an hour of lunch break was allocated on {czasPrzerwy}. The time allocated may not be greater than 0:30 of an hour.");
+			}
+
+			KalkulatorPlanu kalk = Row.Pracownik.Czasy.KalkPlanu;
+			DzienPlanu dzienPlanu = (DzienPlanu)Row.Pracownik.DniPlanu[Row.Data];
+			DzienPracy dzienPracy = (DzienPracy)Row.Pracownik.DniPracy[Row.Data];
+			Dzien dzien = kalk[Row.Data];
+			Time rozpoczeciePracy = Row.OdGodziny;
+
+			if(dzienPracy != null)
+			{
+				if(dzienPlanu != null)
+				{
+					if(rozpoczeciePracy != dzienPlanu.OdGodziny)
+					{
+						if(webInfo.UICulture == Soneta.Tools.CoreTools.CulturePL)
+							sb.AppendLine($"W dniu {Row.Data}, godzina rozpoczęcia pracy jest inna niż {dzienPlanu.OdGodziny}");
+						if(webInfo.UICulture == Soneta.Tools.CoreTools.CultureEN)
+							sb.AppendLine($"On the day {Row.Data}, the work start time is different than {dzienPlanu.OdGodziny}");
+					}
+				}
+				else
+				{
+					if(rozpoczeciePracy > dzien.Definicja.WejścieDo || rozpoczeciePracy < dzien.Definicja.Praca.OdGodziny)
+					{
+						if(webInfo.UICulture == Soneta.Tools.CoreTools.CulturePL)
+							sb.AppendLine($"W dniu {Row.Data}, godzina rozpoczęcia pracy jest inna niż {dzien.Definicja.Praca.OdGodziny} - {dzien.Definicja.WejścieDo}");
+						if(webInfo.UICulture == Soneta.Tools.CoreTools.CultureEN)
+							sb.AppendLine($"On the day {Row.Data}, the work start time is different than {dzien.Definicja.Praca.OdGodziny} - {dzien.Definicja.WejścieDo}");
+					}
+				}
+			}
+			else
+				return string.Empty;
+
+      return sb.ToString();
+    }
+}
+
+// W kodzie możesz używać następujacych zmiennych:
+// Row: DzienPracy - Wiersz przeliczanej cechy
+// Table: DniPracy - Tabela wiersza przeliczanej cechy
+// Module: KalendModule - Moduł, w którym znajduje się tabela
+// Session: Session - Obiekt sesji dający dostęp do wszystkich danych programu

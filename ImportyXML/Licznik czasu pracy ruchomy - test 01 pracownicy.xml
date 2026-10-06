@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  1 kompletny pracownik etatowy do bazy Claude pod scenariusz testowy licznika
+  czasu pracy (LicznikManager, CodeFiles.ID=14) NA KALENDARZU RUCHOMYM "Ruchomy"
+  (Kalendarze.ID=26, guid D48185DD-CB4D-4CFE-ACD6-B11E11F1523C, juz istniejacy
+  w bazie jako wzorzec - NIE tworzony ani modyfikowany przez ten plik).
+  Kalendarz ruchomy jest wymagany, zeby zadzialal cap godziny konca dnia z cechy
+  globalnej LCzPGodzinaKoncaDnia (LicznikManager.IsStandGroupCalend musi zwrocic
+  false) - zob. "Weryfikatory czasu pracy/LicznikCzasuPracy.md".
+  Kod = RUCH-01.
+  Struktura wg Demo/100.Kadry.gold.xml, wzorem "Nadgodziny nowe rownowazny - test 01 pracownicy.xml".
+  Import wg rekordow: dbmgr importxml Claude "<plik>" w trybie standard.
+  Guid staly (c5000000-...-0000000000NN) => idempotentne.
+-->
+<session fromto="(wszystko)">
+  <Pracownik id="P1" guid="c5000000-0000-0000-0000-000000000001" class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>RUCH-01</Kod>
+    <Nazwisko>Lewandowski</Nazwisko>
+    <Imie>Tomasz</Imie>
+    <PESEL>86051512345</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="PH1" guid="c5000000-0000-0001-0000-000000000001">
+        <Pracownik>P1</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>Lewandowski</Nazwisko>
+        <Imie>Tomasz</Imie>
+        <Urodzony><Data>1986-05-15</Data><Miejsce>Łódź</Miejsce></Urodzony>
+        <PESEL>86051512345</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>D48185DD-CB4D-4CFE-ACD6-B11E11F1523C</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,100.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="PH1_2">
+            <Host>PH1</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="PH1_AZAM">
+            <Host>PH1</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Łódź</Miejscowosc>
+              <Wojewodztwo>łódzkie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Piotrkowska</Ulica>
+              <NrDomu>100</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="PH1_AZAMIESZK">
+            <Host>PH1</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="PH1_AKOR">
+            <Host>PH1</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+</session>

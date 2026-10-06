@@ -1,0 +1,99 @@
+//----------------------------------------------------------------------------------
+// Dodatkowy kod do kompilacji (System -> Dodatkowy kod do kompilacji)
+// Blokada zmiany godzin pracy przez pracownika na dokumencie aktualizacji kalendarza
+// (wersjonowanie kalendarzy). Wywoływany z definicji weryfikatorów kalendarza:
+//   - "Blokada zmiany godzin przez pracownika - plan"       (rodzaj DzienPlanuAktualizacja)
+//   - "Blokada zmiany godzin przez pracownika - czas pracy" (rodzaj DzienPracyAktualizacja)
+//
+// Metody A1BlokadaGodzin i A1TakiSamDzien należą do klasy A1WeryfikatoryKalendarza, wspólnej
+// dla weryfikatorów kalendarza (są w niej też inne metody, np. A1OkresZatrudnienia).
+// Ten plik zawiera tylko metody blokady godzin - wkleić je do istniejącej klasy
+// (i dopisać using System.Linq, jeśli go nie ma).
+//----------------------------------------------------------------------------------
+
+using System;
+using System.Linq;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kalend;
+using Soneta.Kadry;
+
+namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
+	public class A1WeryfikatoryKalendarza
+	{
+		public static string A1BlokadaGodzin(Session session, IZrodloPlanu zrodlo, Date data, IPozycjaAktualizacji pozycja)
+		{
+			Pracownik pracownik = zrodlo as Pracownik;
+			if (pracownik == null)
+				return null;
+			if (!pracownik.JestZatrudnionyNaEtat(FromTo.Day(data)))
+				return null;
+
+			IWebUser uzytkownikWeb = session.Login.WebUserOperatingInstance;
+			if (uzytkownikWeb == null)
+				return null;
+
+			Pracownik zalogowany = uzytkownikWeb.Host as Pracownik;
+			if (zalogowany == null)
+				return null;
+
+			if (pracownik.Guid != zalogowany.Guid)
+				return null;
+
+			// Porównanie z planem: dzień na dokumencie liczony tak, jak policzy go enova po
+			// zatwierdzeniu dokumentu (kalkulator aktualizacji), kontra dzień pracownika bez
+			// tego dokumentu (zwykły kalkulator). Gdy są takie same - pracownik niczego nie
+			// zmienił albo przywrócił pierwotne godziny - brak błędu.
+			Dzien naDokumencie = null;
+			Dzien wPlanie = null;
+			PozycjaAktualizacjiKalendarza pozycjaPlanu = pozycja as PozycjaAktualizacjiKalendarza;
+			PozycjaAktualizacjiCzasu pozycjaCzasu = pozycja as PozycjaAktualizacjiCzasu;
+			if (pozycjaPlanu != null)
+			{
+				naDokumencie = new KalkulatorAktualizacjiPlanu(pozycjaPlanu)[data];
+				wPlanie = new KalkulatorPlanu(pracownik)[data];
+			}
+			else if (pozycjaCzasu != null)
+			{
+				naDokumencie = new KalkulatorAktualizacjiPracy(pozycjaCzasu)[data];
+				wPlanie = new KalkulatorPracy(pracownik)[data];
+			}
+			if (naDokumencie != null && wPlanie != null && A1TakiSamDzien(naDokumencie, wPlanie))
+				return null;
+
+			return string.Format("Nie możesz zmieniać godzin pracy (dzień {0}). Przywróć godziny pierwotnie wpisane", data);
+		}
+
+		// Dzień taki sam: ta sama definicja dnia, godzina od, czas oraz ten sam zestaw stref
+		// (definicja strefy, od-do, czas rozliczany, czynność, lokalizacja - wg Dzien.Strefa.Equals).
+		// Strefy porównywane bez względu na kolejność.
+		public static bool A1TakiSamDzien(Dzien a, Dzien b)
+		{
+			if (a.Definicja != b.Definicja || a.OdGodziny != b.OdGodziny || a.Czas != b.Czas)
+				return false;
+
+			IStrefaExt[] strefyA = a.Cast<IStrefaExt>().ToArray();
+			IStrefaExt[] strefyB = b.Cast<IStrefaExt>().ToArray();
+			if (strefyA.Length != strefyB.Length)
+				return false;
+
+			bool[] uzyte = new bool[strefyB.Length];
+			foreach (IStrefaExt sa in strefyA)
+			{
+				bool znaleziona = false;
+				for (int i = 0; i < strefyB.Length; i++)
+				{
+					if (!uzyte[i] && sa.Equals(strefyB[i]))
+					{
+						uzyte[i] = true;
+						znaleziona = true;
+						break;
+					}
+				}
+				if (!znaleziona)
+					return false;
+			}
+			return true;
+		}
+	}
+}

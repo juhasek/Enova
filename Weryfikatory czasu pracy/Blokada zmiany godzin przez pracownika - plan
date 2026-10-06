@@ -1,0 +1,5 @@
+public override string Weryfikuj(Soneta.Kalend.DzienKalendarzaAktualizacja dzien, WeryfikujEventArgs args)
+{
+    // Logika w Dodatkowym kodzie do kompilacji
+    return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1BlokadaGodzin(dzien.Session, dzien.Pozycja.ZrodloPlanu, dzien.Data, dzien.Pozycja);
+}

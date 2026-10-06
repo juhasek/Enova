@@ -32,6 +32,26 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
 - **Widoki/** — definicje/modyfikacje widoków (list, formularzy) enova365.
 - **Zadania/** — opisy/specyfikacje zadań wdrożeniowych, niekoniecznie
   powiązane 1:1 z pojedynczym artefaktem powyżej.
+- **Analiza/** — szablony do analizy przedwdrożeniowej (kwestionariusz pytań
+  na warsztat z klientem w wersji `.md` i `.xlsx`). Szablony, nie ustalenia
+  konkretnego wdrożenia — notatki z konkretnego klienta trafiają do `Zadania/`.
+- **ImportyXML/** — pliki XML importu danych/konfiguracji do enova365 wg
+  schematu `<session xmlns="http://www.soneta.pl/schema/business">`
+  (import wg rekordów lub przez logikę biznesową), np. `*.dbinit.xml`
+  definiujące rekordy zamiast ręcznego wpisywania w GUI. Pola oznaczone
+  w pliku jako TODO/UNVERIFIED wymagają potwierdzenia próbnym importem
+  (`dbmgr importxml`) na bazie testowej przed użyciem produkcyjnym —
+  środowisko robocze tego repo nie ma dostępu do DLL/live-testu, więc
+  takie pliki nie są tworzone jako w pełni zweryfikowane.
+- **Pobrane/** — pliki wejściowe przekazywane przez użytkownika do analizy
+  (eksporty z enova365, wydruki, zrzuty ekranu, DLL-e klientów, logi).
+  Katalog roboczy, a nie artefakt enova365 — wynik analizy trafia do
+  właściwego folderu tematycznego powyżej. Gdy użytkownik mówi o pliku
+  „do analizy” bez podania ścieżki, najpierw szukać go tutaj.
+  Zawartość jest wykluczona z gita (`.gitignore`, poza `README.md`) —
+  **nie commitować** plików z tego katalogu (np. przez `git add -f`), bo
+  mogą zawierać dane osobowe/płacowe. Wnioski i wynikowe artefakty zapisywać
+  w folderach tematycznych, bez kopiowania surowych danych.
 
 ### Ważne: format plików
 
@@ -43,7 +63,9 @@ to skompilowane projekty .NET ani DLL-e, i nie mają samodzielnego pliku
 (np. nie próbować ich budować przez `dotnet build`), chyba że w repo pojawi
 się osobny folder **Addon/** zawierający właściwy projekt `.csproj` — to
 byłby sygnał, że mowa o skompilowanym dodatku enova365, a nie o wklejanym
-skrypcie.
+skrypcie. Wyjątkiem jest **Analiza/Generator/** — to zwykłe narzędzie
+konsolowe budujące arkusz z dokumentu `.md`, uruchamiane poza enovą (korzysta
+tylko z bibliotek DevExpress z katalogu serwera), a nie dodatek do wgrania.
 
 Plik `.md` obok pliku bez rozszerzenia (o tej samej nazwie) to dokumentacja
 biznesowa danego artefaktu.

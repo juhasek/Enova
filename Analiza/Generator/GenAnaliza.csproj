@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>GenAnaliza</AssemblyName>
+    <RootNamespace>GenAnaliza</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Katalog serwera enova365 z bibliotekami DevExpress.
+       Inna wersja serwera: dotnet build -p:EnovaDir="C:\enovaServer\<wersja>\Soneta.Products.Server.Standard" -->
+  <PropertyGroup Condition="'$(EnovaDir)' == ''">
+    <EnovaDir>C:\enovaServer\2512.5.6\Soneta.Products.Server.Standard</EnovaDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="DevExpress.Spreadsheet.v24.1.Core">
+      <HintPath>$(EnovaDir)\DevExpress.Spreadsheet.v24.1.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Docs.v24.1">
+      <HintPath>$(EnovaDir)\DevExpress.Docs.v24.1.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Data.v24.1">
+      <HintPath>$(EnovaDir)\DevExpress.Data.v24.1.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Office.v24.1.Core">
+      <HintPath>$(EnovaDir)\DevExpress.Office.v24.1.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Drawing.v24.1">
+      <HintPath>$(EnovaDir)\DevExpress.Drawing.v24.1.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Printing.v24.1.Core">
+      <HintPath>$(EnovaDir)\DevExpress.Printing.v24.1.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing.Common">
+      <HintPath>$(EnovaDir)\System.Drawing.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

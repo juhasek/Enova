@@ -1,0 +1,51 @@
+
+public override string Weryfikuj(Pracownik pracownik, WeryfikujEventArgs args) {
+
+    var miesiac = args.Miesiąc;
+    FromTo okres = pracownik.WyliczOkresRoliczeniowyNadgodzin(miesiac.LastDay);
+    if (okres == FromTo.Empty)
+        return null;
+
+    var kalkulator = new KalkulatorPlanu(pracownik);
+    var kalkKodeks = new KalkulatorKodeksowyPracownika(pracownik);
+
+    FromTo doBiezacego = new FromTo(okres.From, miesiac.LastDay);
+    Time zaplanowanoDoBiezacego = kalkulator.Norma(doBiezacego).Czas;
+    Time normaKodeksowaDoBiezacego = kalkKodeks.Norma(doBiezacego).Czas;
+
+    Time deficyt = normaKodeksowaDoBiezacego - zaplanowanoDoBiezacego;
+    if (deficyt <= Time.Zero)
+        return null;
+
+    Date startPo = miesiac.LastDay + 1;
+    FromTo poBiezacym = FromTo.Empty;
+    Time maxKompensacja = Time.Zero;
+    if (startPo <= okres.To) {
+        poBiezacym = new FromTo(startPo, okres.To);
+        Time teoretycznaBezSwiat = NormaTeoretycznaBezSwiat(pracownik, poBiezacym);
+        Time normaKodeksowaPo = kalkKodeks.Norma(poBiezacym).Czas;
+        maxKompensacja = teoretycznaBezSwiat - normaKodeksowaPo;
+    }
+
+    if (deficyt > maxKompensacja)
+        return ("Zaplanowano za malo godzin do miesiaca {0} (brakuje {1}); w pozostalych miesiacach " +
+               "okresu rozliczeniowego {2} maksymalna mozliwa kompensacja to {3} - {4}")
+               .TranslateFormat(miesiac, deficyt, poBiezacym, maxKompensacja, pracownik);
+
+    return null;
+}
+
+Time NormaTeoretycznaBezSwiat(Pracownik pracownik, FromTo zakres) {
+    Time suma = Time.Zero;
+    foreach (Date d in zakres) {
+        if (d.DayOfWeek == DayOfWeek.Saturday || d.DayOfWeek == DayOfWeek.Sunday)
+            continue;
+        if (Date.Holidays(d.Year).Contains(d))
+            continue;
+        var ph = pracownik[d];
+        if (ph == null || ph.Etat == null)
+            continue;
+        suma += ph.Etat.NormaDobowa;
+    }
+    return suma;
+}

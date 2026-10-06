@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Import wg rekordow (business="false") do tabeli Kalendarze (typ wiersza KalendarzBase,
+  podtyp selektora Soneta.Kalend.Kalendarz). Tworzy NOWA definicje kalendarza pracy
+  o nazwie "Kwartał rozliczeniowy od 1.02" (pole Nazwa ma limit 30 znakow).
+
+  Cel: kalendarz identyczny z podstawowym "Standard", ale z 3-miesiecznym (kwartalnym)
+  okresem rozliczeniowym czasu pracy liczonym od 1 lutego. Okresy rozliczeniowe wypadaja
+  wiec: 01.02-30.04, 01.05-31.07, 01.08-31.10, 01.11-31.01.
+
+  Jak to jest ustawione (zakladka kalendarza "Ogolne", grupa "Rozliczany okres"):
+    - Nadgodziny.TypOkresu = Miesieczny        ("Typ okresu")
+    - Nadgodziny.Okres     = 3                 ("Okres" - liczba miesiecy = kwartal)
+    - Nadgodziny.OdDnia    = 2026-02-01        ("Poczatek pierwszego okresu"; musi byc
+                                                1. dniem miesiaca - wymog weryfikatora
+                                                Nadgodziny.TypOkresuOdDniaVerifier).
+      UWAGA: przy Nadgodziny.Rocznie = False (kwartal przechodzi przez przelom roku)
+      o wyznaczeniu granic okresu decyduje wylacznie MIESIAC z pola OdDnia (luty),
+      rok 2026 jest tylko czytelna wartoscia poczatkowa - metoda
+      Kalendarz.WyliczOkresRoliczeniowyNadgodzin / Nadgodziny.OkresRozliczeniowyOkresowych
+      liczy okresy modulo liczba miesiecy od tego miesiaca.
+    - Nadgodziny.Przesuniecie = 0              ("Opoznienie rozliczenia (miesiace)" - to NIE
+                                                jest przesuniecie granic okresu, tylko
+                                                opoznienie samego rozliczenia; zostaje 0)
+    - Nadgodziny.Rocznie      = False          (dla TypOkresu = Miesieczny i tak wymuszone;
+                                                pole "Rozliczenie w obrebie roku kalendarzowego")
+
+  Pozostale pola przepisane 1:1 z kalendarza "Standard" tej bazy (dbo.Kalendarze ID 1),
+  aby nowy kalendarz zachowywal sie tak samo poza dlugoscia okresu rozliczeniowego.
+  Import wg rekordow pomija logike biznesowa (brak OnAdded/Clear), dlatego caly podrekord
+  <Nadgodziny> jest wypelniony jawnie.
+
+  Wzor skladni (element KalendarzBase + class + <Typ> + zagniezdzony <Nadgodziny>):
+  Soneta.KadryPlace.Kalend.Kalend.dbinit.xml (wlasny plik inicjujacy Sonety).
+  Format Time: "H:MM" (np. 8:00, 40:00, 2:00) - jak w dbinit Sonety (<Nadgodz50>2:00</Nadgodz50>).
+
+  GUID rekordu wygenerowany losowo (nie koliduje ze standardowymi GUID-ami Sonety, ktore
+  maja wzorzec z zerami). Plik idempotentny - ponowny import aktualizuje rekord po GUID.
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <KalendarzBase guid="7f3a9c14-2e5b-4d86-b1a0-9c6e8d4f2071"
+                 class="Soneta.Kalend.Kalendarz,Soneta.KadryPlace">
+    <Typ>Kalendarz</Typ>
+    <Nazwa>Kwartał rozliczeniowy od 1.02</Nazwa>
+
+    <!-- pola przepisane z kalendarza "Standard" -->
+    <NormaDobowa>8:00</NormaDobowa>
+    <PierwszyPrzepracowany>LiczOdDatyZatrudnienia</PierwszyPrzepracowany>
+    <UwzglWymiarEtatu>True</UwzglWymiarEtatu>
+    <BladBraku>False</BladBraku>
+    <DefinicjaDnia>00000000-0006-0002-0001-000000000000</DefinicjaDnia>
+    <BezWeryfikacjiRegul>False</BezWeryfikacjiRegul>
+    <WeryfikacjaRegul>Tak</WeryfikacjaRegul>
+    <RuchomyCzasPracy>False</RuchomyCzasPracy>
+    <RownowaznyCzasPracy>False</RownowaznyCzasPracy>
+
+    <Nadgodziny>
+      <Rozliczaj>True</Rozliczaj>
+      <Bilansowanie>_50_100_SW</Bilansowanie>
+      <Rozliczanie>Zawsze100</Rozliczanie>
+      <Nadgodz50>2:00</Nadgodz50>
+      <PodstawaWgNormyKP>False</PodstawaWgNormyKP>
+
+      <!-- algorytmy naliczania normy - jak "Standard" -->
+      <AlgorytmDobowa>Konfiguracja</AlgorytmDobowa>
+      <WartoscDobowa>8:00</WartoscDobowa>
+      <RozliczanieDobowych>WgCzasu</RozliczanieDobowych>
+      <AlgorytmTygodniowa>Konfiguracja</AlgorytmTygodniowa>
+      <WartoscTygodniowa>40:00</WartoscTygodniowa>
+      <WartoscDobowaTygodniowa>8:00</WartoscDobowaTygodniowa>
+
+      <!-- ROZLICZANY OKRES: kwartal od 1 lutego -->
+      <TypOkresu>Miesięczny</TypOkresu>
+      <Okres>3</Okres>
+      <DlaKazdejUmowy>Domyślnie</DlaKazdejUmowy>
+      <DoboweMiesiecznie>False</DoboweMiesiecznie>
+      <SwiateczneMiesiecznie>False</SwiateczneMiesiecznie>
+      <NieujemneBilansowanieOkresowe>False</NieujemneBilansowanieOkresowe>
+      <BilansowanieMiesiecznie>False</BilansowanieMiesiecznie>
+      <OdDnia>2026-02-01</OdDnia>
+      <Rocznie>False</Rocznie>
+      <Przesuniecie>0</Przesuniecie>
+      <PriorytetOkresowych>False</PriorytetOkresowych>
+    </Nadgodziny>
+
+    <Nocne>
+      <Rozliczaj>True</Rozliczaj>
+      <Od>0:00</Od>
+      <Do>0:00</Do>
+      <Limit>0:00</Limit>
+    </Nocne>
+  </KalendarzBase>
+</session>
