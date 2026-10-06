@@ -61,3 +61,13 @@ samego kodu a nie z domysłu, jest to zaznaczone.
   bankowe/niepełnosprawność/paszport/projekty), zabezpieczenia (limit 100 aktualizacji, wymuszona
   kolejność chronologiczna per pracownik), GUI i konfiguracja. To jest mechanizm, dla którego
   `Ext.dll` blokuje ręczną edycję kartoteki (§1 w [Pozostale-funkcje.md](Pozostale-funkcje.md)).
+
+## Zawartość — dodatek „Workery” (inne wdrożenie, sieć handlowa)
+
+- **[Workery - czas pracy, RCP, raporty, przelewy.md](Workery%20-%20czas%20pracy%2C%20RCP%2C%20raporty%2C%20przelewy.md)**
+  — opis biznesowy osobnego dodatku AltOne dla innego klienta (w pełni zdekompilowany): reguły
+  i limity stref nieproduktywnych w czasie pracy (on-boarding, awanse, powroty, szkolenia, mycie
+  chłodni), zgody na pracę w nocy/nadgodzinach, norma okresu przy planowaniu, import zdarzeń RCP
+  z bazy Oracle, uzupełnianie MPK, raporty CSV na SFTP (produktywność, BZU), eksport użytkowników
+  do platformy szkoleniowej (SharePoint), raporty e-mail, kontrole kadrowe i eksport przelewów
+  ISO 20022; na końcu zależności i ryzyka (m.in. dane logowania zaszyte w DLL).
