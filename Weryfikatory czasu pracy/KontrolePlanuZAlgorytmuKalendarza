@@ -25,38 +25,44 @@ using Soneta.Tools;
 namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 	public class A1WeryfikatoryKalendarza
 	{
-		// Norma dobowa osoby z niepełnosprawnością: 7h (umiarkowany/znaczny bez zgody na 8h) albo 8h.
-		public static string A1NormaDobowaNiepelnosprawnych(KalkulatorPlanu kp, Date date)
+		// Norma dobowa osoby z niepełnosprawnością: umiarkowany/znaczny - 7h (8h przy zgodzie na pracę 8h na etacie),
+		// lekki - 8h. Stopień i zgoda z zapisu historii obowiązującego w dniu; stopień z danych o niepełnosprawności
+		// albo z danych PFRON (wyższy z nich), okres jak w enova (OkresExt).
+		public static string A1NormaDobowaNiepelnosprawnych(KalkulatorPlanuBase kalkulator, Date data)
 		{
-			Kalendarz calendar = kp.Pracownik[date].Etat.Kalendarz;
-			if (calendar == null)
-				return null;
-			Time plane = kp[date].Czas;
-			if (plane == Time.Zero)
-				return null;
-			foreach (var hist in kp.Pracownik.Historia)
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
 			{
-				if (date >= hist.StopienNiepelnosp.Okres.From && date <= hist.StopienNiepelnosp.Okres.To)
-				{
-					if (hist.StopienNiepelnosp.Stopien.ToString() == "Umiarkowany" || hist.StopienNiepelnosp.Stopien.ToString() == "Znaczny")
-					{
-						if (hist.Etat.PracownikNiepelnosprawnyZgodaNaPrace8h)
-						{
-							if (new Time(8, 0) < plane)
-								return "Dla pracownika niepełnosprawnego zaplanowano czas pracy przekraczający dopuszczalną normę (08:00)";
-						}
-						else
-						{
-							if (new Time(7, 0) < plane)
-								return "Dla pracownika niepełnosprawnego zaplanowano czas pracy przekraczający dopuszczalną normę (07:00)";
-						}
-					}
-					if (hist.StopienNiepelnosp.Stopien.ToString() == "Lekki")
-					{
-						if (new Time(8, 0) < plane)
-							return "Dla pracownika niepełnosprawnego zaplanowano czas pracy przekraczający dopuszczalną normę (08:00)";
-					}
-				}
+				return null;
+			}
+			Time plan = kalkulator[data].Czas;
+			if (plan == Time.Zero)
+			{
+				return null;
+			}
+			PracHistoria historia = pracownik[data];
+			if (historia == null)
+			{
+				return null;
+			}
+
+			StNiepełnosprawności stopien = StNiepełnosprawności.Brak;
+			if (historia.StopienNiepelnosp.OkresExt.Contains(data))
+				stopien = historia.StopienNiepelnosp.Stopien;
+			if (historia.PFRON.OkresExt.Contains(data) && historia.PFRON.Stopien > stopien)
+				stopien = historia.PFRON.Stopien;
+			if (stopien == StNiepełnosprawności.Brak)
+			{
+				return null;
+			}
+
+			Time norma = new Time(8, 0);
+			if ((stopien == StNiepełnosprawności.Umiarkowany || stopien == StNiepełnosprawności.Znaczny)
+				&& !historia.Etat.PracownikNiepelnosprawnyZgodaNaPrace8h)
+				norma = new Time(7, 0);
+
+			if (plan > norma)
+			{
+				return "Dla dnia ({0}) zaplanowano czas ({1}) przekraczający dopuszczalną normę ({2}) dla osoby z niepełnosprawnością w stopniu {3} - {4}".TranslateFormat(data, plan, norma, stopien, pracownik);
 			}
 			return null;
 		}

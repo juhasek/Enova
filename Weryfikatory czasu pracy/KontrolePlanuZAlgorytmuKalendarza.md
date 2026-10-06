@@ -66,7 +66,7 @@ Ciało metody `Weryfikuj` w każdej definicji to jedno wywołanie. Prefiks klasy
 | Nazwa | Wywołanie |
 |---|---|
 | A1_Praca do 12h (dzień) | `return K.A1Praca12h(new KalkulatorPlanu(dzien.Kalendarz.Pracownik), dzien.Data);` |
-| A1_Norma niepełnosprawnych (dzień) | `return K.A1NormaDobowaNiepelnosprawnych(new KalkulatorPlanu(dzien.Kalendarz.Pracownik), dzien.Data);` |
+| A1_Norma niepełnosprawnych (dzień) | `var pracownik = dzien.Kalendarz.Pracownik; if (pracownik == null) return null; return K.A1NormaDobowaNiepelnosprawnych(new KalkulatorPlanu(pracownik), dzien.Data);` |
 
 **Plan pracy** (rodzaj 40), sygnatura
 `public override string Weryfikuj(Soneta.Kadry.Pracownik pracownik, WeryfikujEventArgs args)`:
@@ -239,7 +239,14 @@ Dodatkowo sprawdza **cały** okres rozliczeniowy, nie tylko edytowany miesiąc. 
 ### 8. Norma niepełnosprawnych
 
 Sprawdza tylko normę dobową. Nie ma limitu tygodniowego (35h / 40h) ani zakazu pracy w nocy
-i w nadgodzinach. Stopień porównywany przez `ToString()` z tekstem.
+i w nadgodzinach.
+
+**Poprawione (2026-10-06):** wejście `(KalkulatorPlanuBase, Date)` i komunikat przez `TranslateFormat`
+(na wzór wbudowanej „Normy dobowej”). Stopień i zgoda na 8h czytane z zapisu historii
+obowiązującego w dniu (`pracownik[data]`), a nie z pierwszego pasującego zapisu. Stopień porównywany
+z enumem `StNiepełnosprawności`, a nie tekstem. Brany wyższy stopień z danych o niepełnosprawności
+i z danych PFRON, okres `OkresExt` (jak enova przy limicie urlopu). Definicja 2039 pomija dzień
+kalendarza bez pracownika.
 
 ### 9. Wydajność
 
