@@ -2,20 +2,16 @@
 // Dodatkowy kod do kompilacji (System -> Dodatkowy kod do kompilacji)
 // Kontrole planu pracy przeniesione z zakładki Algorytm definicji kalendarza
 // (SprawdźDzieńPlanu / SprawdźPlan) do definicji weryfikatorów kalendarza.
-// Każda kontrola to osobna metoda, żeby na każdym kalendarzu dało się podpiąć
-// tylko potrzebne kontrole z wybranym poziomem (Ostrzeżenie / Błąd).
 //
-//   Dzień planu (rodzaj 30) - wywołanie przy zapisie jednego dnia planu:
-//     A1Praca12h, A1NormaDobowaNiepelnosprawnych
-//   Plan pracy (rodzaj 40) - wywołanie dla miesiąca edytowanego dnia:
-//     A1Przerwa11hWMiesiacu, A1DobaPracowniczaWMiesiacu, A1Praca12hWMiesiacu,
-//     A1NormaDobowaNiepelnosprawnychWMiesiacu, A1NormaSredniotygodniowa48h,
-//     A1OdpoczynekTygodniowy35h, A1DniWolneIswietaWMiesiacu,
-//     A1PlanPonadNormeOkresuRozliczeniowego
+// Stan zgodny z bazą testową (CodeFiles ID 13) na 2026-10-06. Aktywne:
+//   A1NormaDobowaNiepelnosprawnych - definicja "A1_Norma niepełnosprawnych (dzień)" (Dzień planu)
+//   A1NormaSredniotygodniowa48h    - definicja "A1_Norma średniotygodniowa 48h" (Plan pracy)
+// Pozostałe kontrole wyłączone (zakomentowane na końcu pliku albo usunięte) - zastąpione
+// standardowymi weryfikatorami enova lub niepotrzebne; ich definicje są zablokowane.
 //
 // Metody należą do klasy A1WeryfikatoryKalendarza, wspólnej dla weryfikatorów
 // kalendarza (są w niej też inne metody, np. A1OkresZatrudnienia).
-// Ten plik zawiera tylko nowe metody - wkleić je do istniejącej klasy.
+// Ten plik zawiera tylko metody z tego przeniesienia - wkleić je do istniejącej klasy.
 //----------------------------------------------------------------------------------
 
 using System;
@@ -29,52 +25,6 @@ using Soneta.Tools;
 namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 	public class A1WeryfikatoryKalendarza
 	{
-		// ---------- Kontrole jednego dnia planu ----------
-
-		// Odpoczynek dobowy 11h liczony w obrębie jednego dnia: największa przerwa między strefami
-		// pracy albo czas od końca pracy do godziny rozpoczęcia tego dnia w dobie następnej.
-		public static string A1Przerwa11h(KalkulatorPlanu kp, Date d)
-		{
-			Dzien dzn = kp[d];
-			FromTimes ft = FromTimes.Empty;
-			foreach (IStrefa strefa in dzn)
-				if (strefa.Definicja == null)
-					return null;
-				else if (strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza && strefa.Czas != Time.Zero && strefa.OdGodziny != Time.Empty)
-					ft = ft.Add(new FromTime(strefa));
-			ft = ft.ToFlat();
-			Time end = Time.Empty;
-			foreach (FromTime f in ft)
-			{
-				if (end != Time.Empty)
-					if ((f.From - end) >= new Time(11, 0))
-						return null;
-				end = f.To;
-			}
-			if (end == Time.Empty || dzn.OdGodziny + Time.Midnight - end >= new Time(11, 0))
-				return null;
-			return "Nie wprowadzono wymaganej przepisami prawa jedenastogodzinnej przerwy.";
-		}
-
-		// Doba pracownicza: praca nie może zaczynać się wcześniej niż dnia poprzedniego
-		// ani później niż dnia następnego.
-		public static string A1DobaPracownicza(KalkulatorPlanu kp, Date d)
-		{
-			string result = null;
-			Dzien dzisiaj = kp[d];
-			if (dzisiaj.OdGodziny == Time.Empty)
-				return null;
-			Dzien wczoraj = kp[d - 1];
-			if (wczoraj.OdGodziny != Time.Empty)
-				if (wczoraj.OdGodziny > dzisiaj.OdGodziny)
-					A1Dopisz(ref result, "Zaplanowano czas pracy należący do poprzedniej doby pracowniczej. Poprzednia doba kończy się o godzinie " + wczoraj.OdGodziny + ".");
-			Dzien jutro = kp[d + 1];
-			if (jutro.OdGodziny != Time.Empty)
-				if (dzisiaj.OdGodziny > jutro.OdGodziny)
-					A1Dopisz(ref result, "Zaplanowano czas pracy należący do następnej doby pracowniczej. Następna doba zaczyna się o godzinie " + jutro.OdGodziny + ".");
-			return result;
-		}
-
 		// Norma dobowa osoby z niepełnosprawnością: 7h (umiarkowany/znaczny bez zgody na 8h) albo 8h.
 		public static string A1NormaDobowaNiepelnosprawnych(KalkulatorPlanu kp, Date date)
 		{
@@ -111,38 +61,6 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 			return null;
 		}
 
-		// Plan dnia nie może przekraczać 12 godzin.
-		public static string A1Praca12h(KalkulatorPlanu kp, Date d)
-		{
-			Dzien dzisiaj = kp[d];
-			if (dzisiaj.OdGodziny == Time.Empty)
-				return null;
-			if (dzisiaj.Czas > new Time(12, 0))
-				return "Zaplanowano czas pracy (" + dzisiaj.Czas.ToString() + ") przekraczający dopuszczalną normę godzinową (12:00)";
-			return null;
-		}
-
-		// ---------- Te same kontrole dla wszystkich dni miesiąca (rodzaj Plan pracy) ----------
-
-		public static string A1Przerwa11hWMiesiacu(Pracownik pracownik, YearMonth miesiąc)
-		{
-			return A1KontrolaDniMiesiaca(pracownik, miesiąc, A1Przerwa11h);
-		}
-
-		public static string A1DobaPracowniczaWMiesiacu(Pracownik pracownik, YearMonth miesiąc)
-		{
-			return A1KontrolaDniMiesiaca(pracownik, miesiąc, A1DobaPracownicza);
-		}
-
-		public static string A1NormaDobowaNiepelnosprawnychWMiesiacu(Pracownik pracownik, YearMonth miesiąc)
-		{
-			return A1KontrolaDniMiesiaca(pracownik, miesiąc, A1NormaDobowaNiepelnosprawnych);
-		}
-
-		public static string A1Praca12hWMiesiacu(Pracownik pracownik, YearMonth miesiąc)
-		{
-			return A1KontrolaDniMiesiaca(pracownik, miesiąc, A1Praca12h);
-		}
 
 		// ---------- Kontrole miesiąca / okresu rozliczeniowego (rodzaj Plan pracy) ----------
 
@@ -165,68 +83,11 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 			return A1ZPracownikiem(pracownik, miesiąc, result);
 		}
 
-		// Odpoczynek tygodniowy 35h - w praktyce: ostrzeżenie, gdy w kolejnych 7 dniach
-		// (liczonych od początku okresu rozliczeniowego) zaplanowano 7 dni pracy.
-		public static string A1OdpoczynekTygodniowy35h(Pracownik pracownik, YearMonth miesiąc)
-		{
-			KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
-			kp.LoadOkres(miesiąc.ToFromTo());
-			string result = null;
-			foreach (FromTo okres in A1OkresyZatrudnieniaWMiesiacu(pracownik, miesiąc))
-			{
-				Kalendarz k = pracownik[Date.Min(okres.To, miesiąc.LastDay)].Etat.Kalendarz;
-				int m = k.Nadgodziny.Okres;
-				FromTo teoretyczny = A1TeoretycznyOkresRozliczeniowy(m, miesiąc);
-				FromTo sprawdzany = okres * teoretyczny;
-				Date d = sprawdzany.From;
-				while (d <= sprawdzany.To)
-				{
-					FromTo tydzień = new FromTo(d, d + 6);
-					if (tydzień.To <= okres.To)
-					{   // Sprawdzamy tylko gdy cały tydzień mieści się w okresie zatrudnienia
-						int dni = kp.Norma(tydzień).Dni;
-						if (dni == 7)
-							A1Dopisz(ref result, string.Format("W tygodniu '{0}' nie zaplanowano 35 godzinnej przerwy", tydzień));
-					}
-					d += 7;
-				}
-			}
-			return A1ZPracownikiem(pracownik, miesiąc, result);
-		}
 
-		// Liczba dni wolnych i świąt w planie nie może być mniejsza niż w miesiącu kalendarzowym.
-		public static string A1DniWolneIswietaWMiesiacu(Pracownik pracownik, YearMonth miesiąc)
-		{
-			int dniWolneMiesiaca = 0;
-			int dniWolnePracownika = 0;
-			foreach (Date d in miesiąc.ToFromTo())
-				if (Date.FreeOrHoliday(d))
-					dniWolneMiesiaca++;
-			KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
-			kp.LoadOkres(miesiąc.ToFromTo());
-			foreach (Date d in miesiąc.ToFromTo())
-			{
-				Dzien day = kp[d];
-				if (day.Definicja.Typ.ToString() == "Świąteczny" || day.Definicja.Typ.ToString() == "Wolny")
-					dniWolnePracownika++;
-			}
-			if (dniWolnePracownika < dniWolneMiesiaca)
-				return A1ZPracownikiem(pracownik, miesiąc, string.Format("Nie zaplanowano wymaganej liczby dni wolnych i świąt dla pracownika. Wymagane: {0}, zaplanowano: {1}", dniWolneMiesiaca, dniWolnePracownika));
-			return null;
-		}
 
-		// Plan w okresie rozliczeniowym nadgodzin nie może przekroczyć normy czasu pracy etatu
-		// (CzasPracyEtatWorker: Norma = zaplanowano, Normatywny = dozwolone).
-		public static string A1PlanPonadNormeOkresuRozliczeniowego(Pracownik pracownik, YearMonth miesiąc)
-		{
-			FromTo okres = pracownik.WyliczOkresRoliczeniowyNadgodzin(miesiąc.FirstDay);
-			Soneta.Kalend._Pracownik.CzasPracyEtatWorker worker = new Soneta.Kalend._Pracownik.CzasPracyEtatWorker();
-			worker.Pracownik = pracownik;
-			worker.Okres = okres;
-			if (worker.Norma.Czas > worker.Normatywny.Czas)
-				return A1ZPracownikiem(pracownik, okres, string.Format("Zaplanowano czas pracy przekraczający normę czasu pracy w okresie rozliczeniowym. Dozwolone: {0}, zaplanowano: {1}", worker.Normatywny.Czas, worker.Norma.Czas));
-			return null;
-		}
+
+
+
 
 		// ---------- Pomocnicze ----------
 
@@ -304,5 +165,101 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 				else
 					s += "\n" + msg;
 		}
-	}
+	}	
 }
+
+
+// poprzednie wersję weryfikatorów, które były zapisane na definicji Kalendarza w zakładce algorytm
+
+		// Plan w okresie rozliczeniowym nadgodzin nie może przekroczyć normy czasu pracy etatu
+		// (CzasPracyEtatWorker: Norma = zaplanowano, Normatywny = dozwolone).
+		/*public static string A1PlanPonadNormeOkresuRozliczeniowego(Pracownik pracownik, YearMonth miesiąc)
+		{
+			FromTo okres = pracownik.WyliczOkresRoliczeniowyNadgodzin(miesiąc.FirstDay);
+			Soneta.Kalend._Pracownik.CzasPracyEtatWorker worker = new Soneta.Kalend._Pracownik.CzasPracyEtatWorker();
+			worker.Pracownik = pracownik;
+			worker.Okres = okres;
+			if (worker.Norma.Czas > worker.Normatywny.Czas)
+				return A1ZPracownikiem(pracownik, okres, string.Format("Zaplanowano czas pracy przekraczający normę czasu pracy w okresie rozliczeniowym. Dozwolone: {0}, zaplanowano: {1}", worker.Normatywny.Czas, worker.Norma.Czas));
+			return null;
+		}
+
+
+		// Liczba dni wolnych i świąt w planie nie może być mniejsza niż w miesiącu kalendarzowym.
+		public static string A1DniWolneIswietaWMiesiacu(Pracownik pracownik, YearMonth miesiąc)
+		{
+			int dniWolneMiesiaca = 0;
+			int dniWolnePracownika = 0;
+			foreach (Date d in miesiąc.ToFromTo())
+				if (Date.FreeOrHoliday(d))
+					dniWolneMiesiaca++;
+			KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
+			kp.LoadOkres(miesiąc.ToFromTo());
+			foreach (Date d in miesiąc.ToFromTo())
+			{
+				Dzien day = kp[d];
+				if (day.Definicja.Typ.ToString() == "Świąteczny" || day.Definicja.Typ.ToString() == "Wolny")
+					dniWolnePracownika++;
+			}
+			if (dniWolnePracownika < dniWolneMiesiaca)
+				return A1ZPracownikiem(pracownik, miesiąc, string.Format("Nie zaplanowano wymaganej liczby dni wolnych i świąt dla pracownika. Wymagane: {0}, zaplanowano: {1}", dniWolneMiesiaca, dniWolnePracownika));
+			return null;
+		}
+
+		// Plan dnia nie może przekraczać 12 godzin.
+		public static string A1Praca12h(KalkulatorPlanu kp, Date d)
+		{
+			Dzien dzisiaj = kp[d];
+			if (dzisiaj.OdGodziny == Time.Empty)
+				return null;
+			if (dzisiaj.Czas > new Time(12, 0))
+				return "Zaplanowano czas pracy (" + dzisiaj.Czas.ToString() + ") przekraczający dopuszczalną normę godzinową (12:00)";
+			return null;
+		}
+
+		// ---------- Kontrole jednego dnia planu ----------
+
+		// Odpoczynek dobowy 11h liczony w obrębie jednego dnia: największa przerwa między strefami
+		// pracy albo czas od końca pracy do godziny rozpoczęcia tego dnia w dobie następnej.
+		public static string A1Przerwa11h(KalkulatorPlanu kp, Date d)
+		{
+			Dzien dzn = kp[d];
+			FromTimes ft = FromTimes.Empty;
+			foreach (IStrefa strefa in dzn)
+				if (strefa.Definicja == null)
+					return null;
+				else if (strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza && strefa.Czas != Time.Zero && strefa.OdGodziny != Time.Empty)
+					ft = ft.Add(new FromTime(strefa));
+			ft = ft.ToFlat();
+			Time end = Time.Empty;
+			foreach (FromTime f in ft)
+			{
+				if (end != Time.Empty)
+					if ((f.From - end) >= new Time(11, 0))
+						return null;
+				end = f.To;
+			}
+			if (end == Time.Empty || dzn.OdGodziny + Time.Midnight - end >= new Time(11, 0))
+				return null;
+			return "Nie wprowadzono wymaganej przepisami prawa jedenastogodzinnej przerwy.";
+		}
+
+		// Doba pracownicza: praca nie może zaczynać się wcześniej niż dnia poprzedniego
+		// ani później niż dnia następnego.
+		public static string A1DobaPracownicza(KalkulatorPlanu kp, Date d)
+		{
+			string result = null;
+			Dzien dzisiaj = kp[d];
+			if (dzisiaj.OdGodziny == Time.Empty)
+				return null;
+			Dzien wczoraj = kp[d - 1];
+			if (wczoraj.OdGodziny != Time.Empty)
+				if (wczoraj.OdGodziny > dzisiaj.OdGodziny)
+					A1Dopisz(ref result, "Zaplanowano czas pracy należący do poprzedniej doby pracowniczej. Poprzednia doba kończy się o godzinie " + wczoraj.OdGodziny + ".");
+			Dzien jutro = kp[d + 1];
+			if (jutro.OdGodziny != Time.Empty)
+				if (dzisiaj.OdGodziny > jutro.OdGodziny)
+					A1Dopisz(ref result, "Zaplanowano czas pracy należący do następnej doby pracowniczej. Następna doba zaczyna się o godzinie " + jutro.OdGodziny + ".");
+			return result;
+		}*/
+

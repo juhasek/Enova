@@ -130,6 +130,23 @@ Wgrane bezpośrednio SQL-em, w jednej transakcji (kroki 1–4):
 - `Kalendarze.Algorytm` kalendarzy 45 i 47 wyczyszczony (= „Edycja algorytmu” wyłączona).
   Poprzednia treść: pliki `KontrolePlanuZAlgorytmuKalendarza - archiwum algorytmu kalendarza 47/45`.
 
+**Aktualizacja (2026-10-06, po decyzji użytkownika):** w kodzie zostały tylko
+`A1NormaDobowaNiepelnosprawnych` i `A1NormaSredniotygodniowa48h`. Reszta kontroli jest
+zakomentowana na końcu pliku albo usunięta — zostaną zastąpione standardowymi weryfikatorami
+enova albo nie są potrzebne. Skutki w bazie:
+- aktywne i podpięte zostały: **2039** „A1_Norma niepełnosprawnych (dzień)” (kalendarz 47,
+  Ostrzeżenie) i **2044** „A1_Norma średniotygodniowa 48h” (kalendarze 45 i 47, Ostrzeżenie),
+- **zablokowane** (`Blokada` = 1): 2038, 2040–2043, 2045–2047. Wywołanie metody w ich kodzie
+  jest zakomentowane, a definicja zwraca `null`. Robimy tak, bo enova generuje kod do
+  kompilacji także dla zablokowanych definicji, a wołane metody już nie istnieją. Przywrócenie
+  definicji: odkomentować metodę w klasie, odkomentować wywołanie, zdjąć blokadę i podpiąć ją.
+- podpięcia zablokowanych definicji do kalendarzy usunięte (w GUI: Typ = „Brak”). Musi tak być,
+  bo zakładka Weryfikatory kalendarza ładuje tylko aktywne definicje i szuka podpięć przez
+  `Single(...)`. Zablokowana, a podpięta definicja wywróciłaby tę zakładkę wyjątkiem.
+
+Uwaga: `dbmgr compile Al` zwracał kod 0 także wtedy, gdy definicje wołały nieistniejące
+metody. Nie potwierdza więc kompilacji definicji weryfikatorów. Kompilację sprawdzono lokalnie.
+
 Zdublowane weryfikatory (pkt 2 słabych miejsc) celowo zostawione. `dbmgr compile Al`
 kończy się bez błędów. Test na żywo (krok 5) jeszcze nie wykonany. Przed testem trzeba
 zrestartować serwer enova albo odświeżyć bazę, bo zmiany wprowadzone SQL-em omijają cache aplikacji.
