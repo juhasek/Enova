@@ -185,6 +185,17 @@ Kalendarz ID 47 to system podstawowy (`RownowaznyCzasPracy` = 0). Tam plan powy�
 dobowej (8h) to zaplanowane nadgodziny, a kontrola sprawdza dopiero 12h. Dzień 10h przejdzie
 bez uwag. Limit 12h pasuje do równoważnego systemu (kalendarz ID 45).
 
+**Rozwiązane (2026-10-06):** `A1Praca12h` przeniesiona do sekcji zakomentowanej (definicja 2038
+dalej zablokowana). Zastępuje ją nowy weryfikator `A1NormaDobowa` — definicja **2048**
+„A1_Norma dobowa” (Dzień planu), podpięta do kalendarzy 45 i 47 jako Ostrzeżenie:
+`var pracownik = dzien.Kalendarz.Pracownik; if (pracownik == null) return null;
+return K.A1NormaDobowa(new KalkulatorPlanu(pracownik), dzien.Data);`.
+Limit = `Etat.NormaDobowa` z zapisu historii obowiązującego w dniu (pole „Norma dobowa” na
+etacie, a gdy puste — `Nadgodziny.WartoscDobowa` kalendarza etatu); gdy kalendarz etatu ma
+`RownowaznyCzasPracy` — 12h. W odróżnieniu od wbudowanej „Normy dobowej” uwzględnia normę
+z etatu i równoważny system (wbudowana na kalendarzu 45 z Wartością dobową 8:00 zgłaszałaby
+każdy dzień 10–12h).
+
 ### 4. Okres rozliczeniowy liczony na dwa sposoby
 
 **Rozwiązane dla 48h (2026-10-06).** `A1NormaSredniotygodniowa48h` przepisana na wzór

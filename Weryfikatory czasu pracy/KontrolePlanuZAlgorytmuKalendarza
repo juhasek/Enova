@@ -4,6 +4,7 @@
 // (SprawdźDzieńPlanu / SprawdźPlan) do definicji weryfikatorów kalendarza.
 //
 // Stan zgodny z bazą testową (CodeFiles ID 13) na 2026-10-06. Aktywne:
+//   A1NormaDobowa                  - definicja "A1_Norma dobowa" (Dzień planu), zastępuje A1Praca12h
 //   A1NormaDobowaNiepelnosprawnych - definicja "A1_Norma niepełnosprawnych (dzień)" (Dzień planu)
 //   A1NormaSredniotygodniowa48h    - definicja "A1_Norma średniotygodniowa 48h" (Plan pracy)
 // Pozostałe kontrole wyłączone (zakomentowane na końcu pliku albo usunięte) - zastąpione
@@ -25,6 +26,42 @@ using Soneta.Tools;
 namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 	public class A1WeryfikatoryKalendarza
 	{
+		// Norma dobowa: limit = norma dobowa z etatu (Etat.NormaDobowa - pole na etacie, a gdy puste,
+		// Nadgodziny.WartoscDobowa z kalendarza etatu); w równoważnym systemie czasu pracy
+		// (RownowaznyCzasPracy na kalendarzu etatu) limit = 12h.
+		public static string A1NormaDobowa(KalkulatorPlanuBase kalkulator, Date data)
+		{
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+			{
+				return null;
+			}
+			PracHistoria historia = pracownik[data];
+			if (historia == null || historia.Etat.Kalendarz == null)
+			{
+				return null;
+			}
+			Time plan = kalkulator[data].Czas;
+			if (plan == Time.Zero)
+			{
+				return null;
+			}
+
+			Kalendarz kalendarz = historia.Etat.Kalendarz;
+			Time norma = kalendarz.RownowaznyCzasPracy ? new Time(12, 0) : historia.Etat.NormaDobowa;
+			if (norma == Time.Zero || norma == Time.Empty)
+			{
+				return null;
+			}
+
+			if (plan > norma)
+			{
+				if (kalendarz.RownowaznyCzasPracy)
+					return "Dla dnia ({0}) zaplanowano czas ({1}) przekraczający dopuszczalną normę dobową w równoważnym systemie czasu pracy ({2}) - {3}".TranslateFormat(data, plan, norma, pracownik);
+				return "Dla dnia ({0}) zaplanowano czas ({1}) przekraczający dopuszczalną normę dobową ({2}) - {3}".TranslateFormat(data, plan, norma, pracownik);
+			}
+			return null;
+		}
+
 		// Norma dobowa osoby z niepełnosprawnością: umiarkowany/znaczny - 7h (8h przy zgodzie na pracę 8h na etacie),
 		// lekki - 8h. Stopień i zgoda z zapisu historii obowiązującego w dniu; stopień z danych o niepełnosprawności
 		// albo z danych PFRON (wyższy z nich), okres jak w enova (OkresExt).
