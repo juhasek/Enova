@@ -65,105 +65,41 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 		// ---------- Kontrole miesiąca / okresu rozliczeniowego (rodzaj Plan pracy) ----------
 
 		// Plan w okresie rozliczeniowym nie może przekroczyć przeciętnie 48h tygodniowo.
-		public static string A1NormaSredniotygodniowa48h(Pracownik pracownik, YearMonth miesiąc)
+		// Okres rozliczeniowy wg kalendarza pracownika (WyliczOkresRoliczeniowyNadgodzin), przycięty do zatrudnienia.
+		// Limit: 48h za każdy pełny tydzień + 12h za każdy dzień niepełnego tygodnia (bez niedziel i świąt), maks. 48h.
+		public static string A1NormaSredniotygodniowa48h(KalkulatorPlanuBase kalkulator, Date data)
 		{
-			KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
-			kp.LoadOkres(miesiąc.ToFromTo());
-			string result = null;
-			foreach (FromTo okres in A1OkresyZatrudnieniaWMiesiacu(pracownik, miesiąc))
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
 			{
-				Kalendarz k = pracownik[Date.Min(okres.To, miesiąc.LastDay)].Etat.Kalendarz;
-				int m = k.Nadgodziny.Okres;
-				FromTo okresRozliczeniowy = A1TeoretycznyOkresRozliczeniowy(m, miesiąc) * okres;
-				Time norma = A1NormaSredniotygodniowa(okresRozliczeniowy, false);
-				Time plan = kp.Norma(okresRozliczeniowy).Czas;
-				if (norma < plan)
-					A1Dopisz(ref result, string.Format("Zaplanowany w okresie ({0}) czas pracy ({1}) przekracza dopuszczalny średniotygodniowy czas pracy ({2})", okresRozliczeniowy, plan, norma));
+				return null;
 			}
-			return A1ZPracownikiem(pracownik, miesiąc, result);
-		}
-
-
-
-
-
-
-
-		// ---------- Pomocnicze ----------
-
-		// Kontrola dnia dla każdego dnia miesiąca, w którym pracownik ma efektywny etat.
-		static string A1KontrolaDniMiesiaca(Pracownik pracownik, YearMonth miesiąc, Func<KalkulatorPlanu, Date, string> kontrola)
-		{
-			string result = null;
-			KalkulatorPlanu kp = new KalkulatorPlanu(pracownik);
-			kp.LoadOkres(miesiąc.ToFromTo());
-			foreach (Date d in miesiąc.ToFromTo())
-				if (pracownik[d].Etat.EfektywnyOkres.Contains(d))
-					A1Dopisz(ref result, A1ZPracownikiem(pracownik, d, kontrola(kp, d)));
-			return result;
-		}
-
-		static Time A1NormaSredniotygodniowa(FromTo okres, bool obniżona)
-		{
-			int dni = okres.Days;
-			int tygodniePełne = dni / 7;
-			Date d = okres.From + tygodniePełne * 7;
-			Time normaNiepełne = Time.Zero;
-			while (d <= okres.To)
+			Periods periods = pracownik.WyliczOkresRoliczeniowyNadgodzin(data).ToPeriods();
+			Periods pozaZatrudnieniem = Periods.Empty;
+			foreach (FromTo item in periods)
 			{
-				if (d.DayOfWeek != DayOfWeek.Sunday && !Date.IsHoliday(d))
-					normaNiepełne += new Time(obniżona ? 8 : 12, 0);
-				d++;
+				pozaZatrudnieniem += item.ToPeriods() - kalkulator.ZrodloPlanu.GetPlanOkresZatrudnienia(item);
 			}
-			normaNiepełne = Time.Min(normaNiepełne, new Time(obniżona ? 40 : 48, 0));
-			Time normaPełne = new Time(tygodniePełne * (obniżona ? 40 : 48), 0);
-			return normaPełne + normaNiepełne;
-		}
+			periods -= pozaZatrudnieniem;
 
-		// Okresy zatrudnienia (efektywne okresy etatu) nachodzące na miesiąc.
-		static Periods A1OkresyZatrudnieniaWMiesiacu(Pracownik p, YearMonth miesiąc)
-		{
-			Periods z = Periods.Empty;
-			foreach (PracHistoria ph in p.Historia)
-				z += ph.Etat.EfektywnyOkres;
-			z = z.ToFlat();
-			FromTo m = miesiąc.ToFromTo();
-			Periods result = Periods.Empty;
-			foreach (FromTo o in z)
-				if (o.IsIntersected(m))
-					result += o;
-			return result;
-		}
+			Time limit = Time.Zero;
+			foreach (FromTo item in periods)
+			{
+				int tygodniePelne = item.Days / 7;
+				Time limitNiepelnegoTygodnia = Time.Zero;
+				for (Date dt = item.From + tygodniePelne * 7; dt <= item.To; dt++)
+				{
+					if (dt.DayOfWeek != DayOfWeek.Sunday && !Date.IsHoliday(dt))
+						limitNiepelnegoTygodnia += new Time(12, 0);
+				}
+				limit += new Time(tygodniePelne * 48, 0) + Time.Min(limitNiepelnegoTygodnia, new Time(48, 0));
+			}
 
-		// Okres rozliczeniowy c-miesięczny liczony od stycznia, zawierający miesiąc.
-		static FromTo A1TeoretycznyOkresRozliczeniowy(int c, YearMonth miesiąc)
-		{
-			int m = miesiąc.Month;
-			int r = miesiąc.Year;
-			int b = ((m - 1) / c) * c + 1;
-			int e = b + c - 1;
-			return new FromTo(new YearMonth(r, b).FirstDay, new YearMonth(r, e).LastDay);
-		}
-
-		// Każda linia komunikatu poprzedzona pracownikiem i okresem/dniem.
-		static string A1ZPracownikiem(Pracownik pracownik, object obj, string msg)
-		{
-			if (msg == null || msg == "")
-				return msg;
-			string result = "";
-			foreach (string s in msg.Split('\n'))
-				if (s != "")
-					A1Dopisz(ref result, string.Format("{0}, {1}, {2}", pracownik, obj, s));
-			return result;
-		}
-
-		static void A1Dopisz(ref string s, string msg)
-		{
-			if (msg != null && msg != "")
-				if (s == null || s == "")
-					s = msg;
-				else
-					s += "\n" + msg;
+			Time plan = kalkulator.Norma(periods).Czas;
+			if (plan > limit)
+			{
+				return "Zaplanowany czas pracy ({0}) przekracza przeciętnie 48h tygodniowo ({1}) o ({2}) w okresie rozliczeniowym ({3}) - {4}".TranslateFormat(plan, limit, plan - limit, periods, pracownik);
+			}
+			return null;
 		}
 	}	
 }

@@ -77,7 +77,7 @@ Ciało metody `Weryfikuj` w każdej definicji to jedno wywołanie. Prefiks klasy
 | A1_Doba pracownicza | `return K.A1DobaPracowniczaWMiesiacu(pracownik, args.Miesiąc);` |
 | A1_Praca do 12h | `return K.A1Praca12hWMiesiacu(pracownik, args.Miesiąc);` |
 | A1_Norma niepełnosprawnych | `return K.A1NormaDobowaNiepelnosprawnychWMiesiacu(pracownik, args.Miesiąc);` |
-| A1_Norma średniotygodniowa 48h | `return K.A1NormaSredniotygodniowa48h(pracownik, args.Miesiąc);` |
+| A1_Norma średniotygodniowa 48h | `return K.A1NormaSredniotygodniowa48h(new KalkulatorPlanu(pracownik), args.Miesiąc.LastDay);` |
 | A1_Odpoczynek tygodniowy 35h | `return K.A1OdpoczynekTygodniowy35h(pracownik, args.Miesiąc);` |
 | A1_Dni wolne i święta w miesiącu | `return K.A1DniWolneIswietaWMiesiacu(pracownik, args.Miesiąc);` |
 | A1_Plan ponad normę okresu rozl. | `return K.A1PlanPonadNormeOkresuRozliczeniowego(pracownik, args.Miesiąc);` |
@@ -186,6 +186,19 @@ dobowej (8h) to zaplanowane nadgodziny, a kontrola sprawdza dopiero 12h. Dzień 
 bez uwag. Limit 12h pasuje do równoważnego systemu (kalendarz ID 45).
 
 ### 4. Okres rozliczeniowy liczony na dwa sposoby
+
+**Rozwiązane dla 48h (2026-10-06).** `A1NormaSredniotygodniowa48h` przepisana na wzór
+`A1WeryfikujNormeWOkresieRozliczeniowym`: wejście `(KalkulatorPlanuBase, Date)`, okres z
+`pracownik.WyliczOkresRoliczeniowyNadgodzin(data)` przycięty do zatrudnienia przez
+`ZrodloPlanu.GetPlanOkresZatrudnienia` (tak jak wbudowana „Norma w okresie rozliczeniowym”),
+jeden komunikat przez `TranslateFormat` z „- {pracownik}” na końcu. Sekcja „Pomocnicze”
+(`A1TeoretycznyOkresRozliczeniowy`, `A1OkresyZatrudnieniaWMiesiacu`, `A1NormaSredniotygodniowa`,
+`A1ZPracownikiem`, `A1Dopisz`, `A1KontrolaDniMiesiaca`) usunięta. Definicja 2044 woła teraz
+`A1NormaSredniotygodniowa48h(new KalkulatorPlanu(pracownik), args.Miesiąc.LastDay)`.
+Zakomentowane stare wersje na końcu pliku nadal odwołują się do usuniętych helperów —
+przy ewentualnym przywróceniu trzeba je przepisać tym samym wzorem.
+
+Opis pierwotnego problemu (dotyczy już tylko zakomentowanej kontroli 35h):
 
 48h i 35h liczą okres „teoretycznie”: od stycznia co `Nadgodziny.Okres` miesięcy
 (`A1TeoretycznyOkresRozliczeniowy`). Norma okresu używa `WyliczOkresRoliczeniowyNadgodzin`
