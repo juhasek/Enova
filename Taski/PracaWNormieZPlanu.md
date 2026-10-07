@@ -77,7 +77,12 @@ kasuje i dodaje strefy, a sam wiersz dnia może się wtedy nie zmienić.
   odtworzone jak w generatorze enova) — **bez błędów**.
 - Odejmowanie przedziałów (`FromTimes.Sub`) sprawdzone na prawdziwej klasie
   enova dla scenariuszy z pliku testowego generatora czasu pracy.
-- **Niesprawdzone na żywo**: definicja nie jest jeszcze założona w bazie,
-  wyzwalacze przy imporcie z menu niepotwierdzone. Test: plik
+- **Baza Claude (2026-10-07):** definicja założona SQL-em jako kopia
+  istniejącej definicji typu „Brak” na Pracownikach — `TaskDefs` ID 284,
+  wyzwalacze `TaskTriggers` ID 179 (DniPracy) i 180 (StrefyPracy). Po wstawieniu
+  trzeba było podbić `RuntimeProjects.Stamp` projektu Business (ID 2), inaczej
+  `dbmgr compile` bierze stary cache. Skompilowana biblioteka zawiera klasy
+  `Task_Praca_w_normie_z_planu` i oba wyzwalacze — kompilacja bez błędów.
+- **Niesprawdzone na żywo**: działanie wyzwalaczy przy zapisie/imporcie z menu. Test: plik
   `ImportyXML/Generator czasu pracy/Czas pracy - test PP-01 wrzesien 2026.xml`
   (tabela oczekiwanych wyników w `Generator czasu pracy.md`).
