@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Odbicia RCP pracownika testowego DOBA1 (baza Al): 30.01.2026 wejscie 5:45, wyjscie 11:45,
+  przy planie 30.01 14:00 do 20:00 i wolnym 29.01. Stan Nieoznaczony = jak swiezo pobrane
+  z czytnika, przed "Weryfikuj dane z RCP".
+  Tabela WejsciaWyjsciaI nie jest guidowana: import jednorazowy (ponowny dopisze duplikaty).
+  Import wedlug rekordow:  dbmgr importxml Al [plik] w trybie standard
+-->
+<session>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000015</Pracownik>
+    <Data>2026-01-30</Data>
+    <Godzina>5:45</Godzina>
+    <Typ>Wejscie</Typ>
+    <Stan>Nieoznaczony</Stan>
+  </WejscieWyjscieI>
+  <WejscieWyjscieI>
+    <Pracownik>a1d10000-0000-0000-0000-000000000015</Pracownik>
+    <Data>2026-01-30</Data>
+    <Godzina>11:45</Godzina>
+    <Typ>Wyjscie</Typ>
+    <Stan>Nieoznaczony</Stan>
+  </WejscieWyjscieI>
+</session>

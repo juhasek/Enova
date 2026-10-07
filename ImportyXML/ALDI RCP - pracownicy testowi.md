@@ -78,3 +78,20 @@ kroki robi tester ręcznie w GUI:
 - „Magazyn nadgodzin rozliczany od" — **puste** (do włączenia, patrz wyżej).
 
 Backup bazy przed importem: `C:\enovaServer\Projekty\Al_przed_pracownikami_RCP.bac`.
+
+## Scenariusz DOBA1 — odbicia przed zmianą po dniu wolnym (dodane 2026-10-07)
+
+Odtworzenie przypadku klienta: pracownik przyszedł rano w dniu, w którym plan zaczyna się
+po południu, a poprzedni dzień jest wolny. Import RCP przenosi takie odbicia na poprzednią dobę.
+
+- Pracownik **DOBA1** (`TEST-DOBA1 Doba`, guid `a1d10000-…-000000000015`), etat 1/1 od 2026-01-01,
+  kalendarz Standard + własny kalendarz pracownika z wyjątkami planu:
+  26.01 12:00–22:15, 27–28.01 14:15–22:15, **29.01 Wolny**, **30.01 14:00–20:00**, 31.01 14:15–22:30.
+  Plik: `ALDI RCP - scenariusz DOBA1 - pracownik i plan.xml` (idempotentny).
+- Odbicia: **30.01.2026 Wejście 5:45, Wyjście 11:45**, stan Nieoznaczony.
+  Plik: `ALDI RCP - scenariusz DOBA1 - odbicia.xml` (jednorazowy, tabela nieguidowana).
+- Oczekiwany wynik przy konfiguracji RCP → Ogólne jak u klienta (Początek doby = Zawsze wg
+  kalendarza, tolerancja doby minus 2:00, plus 3:00): po „Importuj dane z RCP” czas pracy na
+  **29.01 jako +5:45..+11:45**, na 30.01 brak pracy (log: „przesunięcie początku na dzień 29.01”).
+
+Backup bazy przed importem: `C:\enovaServer\Projekty\Al_przed_DOBA1.bac`.
