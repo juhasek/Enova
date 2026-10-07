@@ -13,19 +13,19 @@ Option Explicit
 ' strefa po nazwie definicji strefy - importer enova sam je wyszukuje.
 '
 ' Arkusz "Dane": jeden wiersz = jeden dzien jednego pracownika.
-'   A = Kod pracownika, B = Data, C..V = Strefa 1..20.
-' Komorka strefy to tekst: nazwa definicji strefy, a po niej godziny - zaleznie od konfiguracji strefy:
-'   "Nadgodziny 50% 16:00 2:00"  -> strefa od 16:00, czas 2:00
-'   "Dyzur domowy 4:00"          -> strefa bez godziny od, sam czas 4:00
-' Komorka jest czytana OD KONCA: ostatni element to zawsze Czas, przedostatni (jesli jest godzina)
-' to Od godziny, cala reszta to nazwa strefy (moze zawierac spacje, cyfry i znak %).
+'   A = Kod pracownika, B = Data, potem 20 stref po 3 kolumny (C..BJ):
+'   Strefa N nazwa | Strefa N godzina od | Strefa N czas
+' Nazwa = nazwa definicji strefy w enova. Godzina od jest opcjonalna (zalezy od konfiguracji strefy),
+' czas jest wymagany. Godziny jako tekst G:MM albo godzina Excela (np. wpisane 16:00).
+' Strefa z pustymi wszystkimi trzema kolumnami jest pomijana.
 '
 ' Import enova dla istniejacego dnia KASUJE wszystkie jego strefy i wpisuje te z pliku. Dlatego wiersz
 ' z jakimkolwiek bledem jest pomijany w calosci (czesciowy import skasowalby pozostale strefy dnia).
 ' Strefa "Praca w normie" NIE jest w pliku - dopisuje ja Task w enova na podstawie planu pracy.
 
 Private Const KOL_PIERWSZEJ_STREFY As Long = 3   ' C
-Private Const MAKS_STREF As Long = 20             ' C..V
+Private Const MAKS_STREF As Long = 20             ' C..BJ, po 3 kolumny na strefe
+Private Const KOLUMN_NA_STREFE As Long = 3
 
 Sub GenerujCzasPracy()
     Dim wsCfg As Worksheet, wsDane As Worksheet, wsBledy As Worksheet
@@ -96,25 +96,52 @@ Sub GenerujCzasPracy()
         Dim k As Long
         For k = 0 To MAKS_STREF - 1
             Dim kol As Long
-            kol = KOL_PIERWSZEJ_STREFY + k
-            Dim tekst As String
-            tekst = CStr(wsDane.Cells(r, kol).Value)
-            If Trim(tekst) <> "" Then
-                Dim nazwa As String, odGodz As String, czas As String, opisBledu As String
-                If ParsujStrefe(tekst, nazwa, odGodz, czas, opisBledu) Then
+            kol = KOL_PIERWSZEJ_STREFY + k * KOLUMN_NA_STREFE
+            Dim nazwa As String, vOd As Variant, vCzas As Variant
+            nazwa = NormalizujNazwe(CStr(wsDane.Cells(r, kol).Value))
+            vOd = wsDane.Cells(r, kol + 1).Value
+            vCzas = wsDane.Cells(r, kol + 2).Value
+
+            If nazwa <> "" Or Not PustaKomorka(vOd) Or Not PustaKomorka(vCzas) Then
+                Dim minOd As Long, minCzas As Long, opisBledu As String, kolBledu As Long
+                opisBledu = ""
+                minOd = -1
+                minCzas = MinutyZWartosci(vCzas)
+                If nazwa = "" Then
+                    opisBledu = "Strefa " & (k + 1) & ": brak nazwy strefy."
+                    kolBledu = kol
+                ElseIf PustaKomorka(vCzas) Then
+                    opisBledu = "Strefa " & (k + 1) & ": brak czasu."
+                    kolBledu = kol + 2
+                ElseIf minCzas < 0 Then
+                    opisBledu = "Strefa " & (k + 1) & ": czas nie jest w formacie G:MM."
+                    kolBledu = kol + 2
+                ElseIf minCzas = 0 Or minCzas > 24 * 60 Then
+                    opisBledu = "Strefa " & (k + 1) & ": czas musi byc wiekszy od 0:00 i nie wiekszy niz 24:00."
+                    kolBledu = kol + 2
+                ElseIf Not PustaKomorka(vOd) Then
+                    minOd = MinutyZWartosci(vOd)
+                    If minOd < 0 Or minOd >= 48 * 60 Then
+                        opisBledu = "Strefa " & (k + 1) & ": godzina od nie jest w formacie G:MM (0:00-47:59)."
+                        kolBledu = kol + 1
+                    End If
+                End If
+
+                If opisBledu = "" Then
                     strefyXml = strefyXml & "<StrefaPracy Definicja=""" & EscXml(nazwa) & """"
-                    If odGodz <> "" Then strefyXml = strefyXml & " OdGodziny=""" & odGodz & """"
-                    strefyXml = strefyXml & " Czas=""" & czas & """ />" & vbCrLf
+                    If minOd >= 0 Then strefyXml = strefyXml & " OdGodziny=""" & FormatMinuty(minOd) & """"
+                    strefyXml = strefyXml & " Czas=""" & FormatMinuty(minCzas) & """ />" & vbCrLf
                     liczbaStref = liczbaStref + 1
                 Else
-                    DopiszBlad wsBledy, liczbaBledow, r, KolumnaLitera(kol), tekst, opisBledu
+                    DopiszBlad wsBledy, liczbaBledow, r, KolumnaLitera(kolBledu), _
+                        CStr(wsDane.Cells(r, kolBledu).Text), opisBledu
                     bladWiersza = True
                 End If
             End If
         Next k
 
         If liczbaStref = 0 And Not bladWiersza Then
-            DopiszBlad wsBledy, liczbaBledow, r, "C:V", "", _
+            DopiszBlad wsBledy, liczbaBledow, r, "C:BJ", "", _
                 "Brak stref. Wiersz pominiety - import skasowalby istniejace strefy tego dnia."
             bladWiersza = True
         End If
@@ -189,15 +216,10 @@ NastepnyWiersz:
     MsgBox podsumowanie, IIf(wierszeBledne > 0, vbExclamation, vbInformation), "Generator czasu pracy"
 End Sub
 
-' Rozbiera tekst komorki strefy na nazwe, godzine od (opcjonalna) i czas.
-' Zwraca False i opis bledu, gdy tekstu nie da sie jednoznacznie odczytac.
-Private Function ParsujStrefe(ByVal tekst As String, ByRef nazwa As String, ByRef odGodz As String, _
-                             ByRef czas As String, ByRef opisBledu As String) As Boolean
-    nazwa = "": odGodz = "": czas = "": opisBledu = ""
-
-    ' Twarde spacje / tabulatory / nowe linie -> zwykla spacja, potem zwiniecie wielokrotnych spacji
+' Nazwa strefy: twarde spacje/tabulatory -> spacja, zwiniecie wielokrotnych spacji, Trim.
+Private Function NormalizujNazwe(ByVal s As String) As String
     Dim t As String
-    t = Replace(tekst, Chr(160), " ")
+    t = Replace(s, Chr(160), " ")
     t = Replace(t, vbTab, " ")
     t = Replace(t, vbCr, " ")
     t = Replace(t, vbLf, " ")
@@ -205,65 +227,31 @@ Private Function ParsujStrefe(ByVal tekst As String, ByRef nazwa As String, ByRe
     Do While InStr(t, "  ") > 0
         t = Replace(t, "  ", " ")
     Loop
+    NormalizujNazwe = t
+End Function
 
-    Dim czesci() As String
-    czesci = Split(t, " ")
-    Dim n As Long
-    n = UBound(czesci) + 1
-
-    Dim minCzas As Long
-    minCzas = MinutyZTekstu(czesci(n - 1))
-    If minCzas < 0 Then
-        opisBledu = "Na koncu nie ma czasu w formacie G:MM (np. 2:00)."
-        Exit Function
+Private Function PustaKomorka(v As Variant) As Boolean
+    If IsEmpty(v) Then
+        PustaKomorka = True
+    ElseIf VarType(v) = vbString Then
+        PustaKomorka = (Trim(Replace(CStr(v), Chr(160), " ")) = "")
+    Else
+        PustaKomorka = False
     End If
-    If minCzas = 0 Then
-        opisBledu = "Czas strefy jest zerowy."
-        Exit Function
-    End If
-    If minCzas > 24 * 60 Then
-        opisBledu = "Czas strefy dluzszy niz 24:00."
-        Exit Function
-    End If
+End Function
 
-    Dim koniecNazwy As Long
-    koniecNazwy = n - 2
-    If n >= 3 Then
-        Dim minOd As Long
-        minOd = MinutyZTekstu(czesci(n - 2))
-        If minOd >= 0 Then
-            If minOd >= 48 * 60 Then
-                opisBledu = "Godzina od poza zakresem (max 47:59)."
-                Exit Function
-            End If
-            odGodz = FormatMinuty(minOd)
-            koniecNazwy = n - 3
-        End If
+' Wartosc komorki godziny -> minuty; -1 gdy to nie jest godzina.
+' Akceptuje tekst "G:MM"/"GG:MM" oraz godzine/liczbe Excela (ulamek doby, np. 16:00 = 0,6667;
+' wartosci powyzej doby, np. 30:00 = 1,25, tez sa poprawne).
+Private Function MinutyZWartosci(v As Variant) As Long
+    MinutyZWartosci = -1
+    If IsEmpty(v) Or IsError(v) Then Exit Function
+    If VarType(v) = vbString Then
+        MinutyZWartosci = MinutyZTekstu(Trim(Replace(CStr(v), Chr(160), " ")))
+    ElseIf VarType(v) = vbDate Or IsNumeric(v) Then
+        If CDbl(v) < 0 Then Exit Function
+        MinutyZWartosci = CLng(Round(CDbl(v) * 24 * 60))
     End If
-
-    If koniecNazwy < 0 Then
-        opisBledu = "Brak nazwy strefy przed godzinami."
-        Exit Function
-    End If
-
-    Dim i As Long
-    For i = 0 To koniecNazwy
-        If i > 0 Then nazwa = nazwa & " "
-        nazwa = nazwa & czesci(i)
-    Next i
-
-    ' Dwa czasy bez nazwy pomiedzy, np. "Nadgodziny 16:00 18:00 2:00" - nazwa konczy sie godzina
-    If MinutyZTekstu(czesci(koniecNazwy)) >= 0 Then
-        If koniecNazwy = 0 Then
-            opisBledu = "Brak nazwy strefy przed godzinami."
-        Else
-            opisBledu = "Za duzo godzin - oczekiwano: nazwa [od] czas."
-        End If
-        Exit Function
-    End If
-
-    czas = FormatMinuty(minCzas)
-    ParsujStrefe = True
 End Function
 
 ' "G:MM" / "GG:MM" -> minuty; -1 gdy to nie jest godzina.
@@ -272,6 +260,7 @@ Private Function MinutyZTekstu(ByVal s As String) As Long
     Dim p As Long
     p = InStr(s, ":")
     If p < 2 Or p > 3 Then Exit Function
+    If Len(s) = p + 5 And Mid(s, p + 3, 3) = ":00" Then s = Left(s, p + 2)   ' "16:00:00"
     If Len(s) <> p + 2 Then Exit Function
     Dim h As String, m As String
     h = Left(s, p - 1)

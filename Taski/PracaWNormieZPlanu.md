@@ -83,6 +83,7 @@ kasuje i dodaje strefy, a sam wiersz dnia może się wtedy nie zmienić.
   trzeba było podbić `RuntimeProjects.Stamp` projektu Business (ID 2), inaczej
   `dbmgr compile` bierze stary cache. Skompilowana biblioteka zawiera klasy
   `Task_Praca_w_normie_z_planu` i oba wyzwalacze — kompilacja bez błędów.
-- **Niesprawdzone na żywo**: działanie wyzwalaczy przy zapisie/imporcie z menu. Test: plik
+- **Potwierdzone na żywo (2026-10-07):** import pliku testowego PP-01 z menu
+  uruchomił wyzwalacze i Task dopisał „Praca w normie”. Test: plik
   `ImportyXML/Generator czasu pracy/Czas pracy - test PP-01 wrzesien 2026.xml`
   (tabela oczekiwanych wyników w `Generator czasu pracy.md`).
