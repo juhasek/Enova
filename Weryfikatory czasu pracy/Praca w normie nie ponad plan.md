@@ -40,4 +40,4 @@ Podpięta jako **Błąd** — zapis dnia jest blokowany, dopóki nadwyżka nie z
   pilnuje tylko górnej granicy.
 - Kontrola działa na każdym zapisie dnia, także z importu i z RCP. Importy, które dopisują Pracę w normie
   z planu, nie przekraczają planu, więc nie powinny jej uruchamiać.
-- Niesprawdzone na żywo.
+- Sprawdzone na żywo 2026-10-07 (baza testowa): po restarcie serwera blokuje zapis nadmiaru Pracy w normie.
