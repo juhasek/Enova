@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Pracownik testowy ODB14 do bazy Al: plan 6:00 do 14:00, a pierwsze odbicie dopiero o 14:00
+  (pracownik przyszedl na popoludnie zamiast na rano, odpracowal dlugosc planu do 22:00).
+
+  Plan pracy (wyjatki w kalendarzu pracownika): 02.02.2026 do 06.02.2026 (pn do pt) 6:00 do 14:00.
+  Pozostale dni wg kalendarza Standard (etat od 2026-01-01).
+
+  Odbicia RCP w osobnym pliku (tabela nieguidowana, import jednorazowy):
+    "ALDI RCP - scenariusz ODB14 - odbicia.xml"
+
+  Import wedlug rekordow:  dbmgr importxml Al [plik] w trybie standard
+  Guidy stale (a1d10000...16), wiec reimport tego pliku jest idempotentny.
+-->
+<session fromto="(wszystko)">
+  <Pracownik id="E01" guid="a1d10000-0000-0000-0000-000000000016"
+             class="Soneta.Kadry.PracownikFirmy,Soneta.KadryPlace">
+    <Wydzial />
+    <Wlasciciel />
+    <Typ>Pracownik</Typ>
+    <Kod>ODB14</Kod>
+    <Nazwisko>TEST-ODB14</Nazwisko>
+    <Imie>Popoludnie</Imie>
+    <PESEL>90020212347</PESEL>
+    <Wieloetatowosc>NieDotyczy</Wieloetatowosc>
+    <Net><WidocznyWNet>False</WidocznyWNet></Net>
+    <Historia addnew="true">
+      <PracHistoria id="EH01" guid="a1d10000-0000-0001-0000-000000000016">
+        <Pracownik>E01</Pracownik>
+        <Aktualnosc>(wszystko)</Aktualnosc>
+        <Nazwisko>TEST-ODB14</Nazwisko>
+        <Imie>Popoludnie</Imie>
+        <Urodzony><Data>1990-02-02</Data><Miejsce>Warszawa</Miejsce></Urodzony>
+        <PESEL>90020212347</PESEL>
+        <IdentyfikatorPodatkowy>PESEL</IdentyfikatorPodatkowy>
+        <ImieOjca>Jan</ImieOjca>
+        <ImieMatki>Maria</ImieMatki>
+        <Plec>M</Plec>
+        <Podatki>
+          <TypProgow>Standardowe</TypProgow>
+          <KosztyRodzaj>JedenStosPracy</KosztyRodzaj>
+          <KosztyMnoznik>1.00</KosztyMnoznik>
+          <UlgaMnoznik>1.00</UlgaMnoznik>
+          <UlgaCzesc>Ulga112</UlgaCzesc>
+          <NaPITAdresZameldowania>False</NaPITAdresZameldowania>
+        </Podatki>
+        <StPokrewienstwa>Brak</StPokrewienstwa>
+        <KasaChorych><Kod>07R</Kod><OdDnia>2026-01-01</OdDnia></KasaChorych>
+        <OddzialNFZ><KodGminy /></OddzialNFZ>
+        <PodstawaFP><Naliczaj>Warunkowo</Naliczaj></PodstawaFP>
+        <PodstawaFGSP><Naliczaj>Zawsze</Naliczaj></PodstawaFGSP>
+        <Etat>
+          <Wydzial>00000000-0005-0001-0001-000000000000</Wydzial>
+          <DataZawarcia>2026-01-01</DataZawarcia>
+          <DataRozpPracy>2026-01-01</DataRozpPracy>
+          <Okres>2026-01-01...</Okres>
+          <Podstawa>UmowyOPrace</Podstawa>
+          <TypUmowy>NaCzasNieokreślony</TypUmowy>
+          <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
+          <Stanowisko>Specjalista</Stanowisko>
+          <Funkcja>Specjalista</Funkcja>
+          <Kalendarz>00000000-0006-0003-0001-000000000000</Kalendarz>
+          <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
+          <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
+          <TypStawki>Dowolna</TypStawki>
+          <Zaszeregowanie>
+            <Wymiar>1/1</Wymiar>
+            <Stawka>6,000.00 PLN</Stawka>
+            <RodzajStawki>Miesieczna</RodzajStawki>
+            <Element>00000000-0007-0002-0002-000000000000</Element>
+          </Zaszeregowanie>
+          <Ubezpieczenia>
+            <Tyub4>00000000-0005-0002-0110-000000000000</Tyub4>
+            <ObowiazkoweOd>2026-01-01</ObowiazkoweOd>
+            <Emerytalne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Emerytalne>
+            <Rentowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Rentowe>
+            <Chorobowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Chorobowe>
+            <Wypadkowe><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna></Wypadkowe>
+            <Zdrowotne><Typ>Obowiazkowe</Typ><Od>2026-01-01</Od><Do>(max)</Do><Przyczyna>NieDotyczy</Przyczyna><Skladka>0.00</Skladka></Zdrowotne>
+          </Ubezpieczenia>
+          <PracownikZwolniony>False</PracownikZwolniony>
+        </Etat>
+        <Nieobecnosci><OkresZasilkowy>Standardowy_6_9</OkresZasilkowy></Nieobecnosci>
+        <GUS>
+          <GlowneMiejscePracy>True</GlowneMiejscePracy>
+          <PopMiejsceZatrudnienia>NieDotyczy</PopMiejsceZatrudnienia>
+          <KodWyksztalcenia>Wyższe</KodWyksztalcenia>
+        </GUS>
+        <Dodatkowe_historii>
+          <PracHistoria2 id="EH01_2">
+            <Host>EH01</Host>
+            <Dokument><Rodzaj>Niezdefiniowany</Rodzaj></Dokument>
+            <Kontakt><EMAIL /><TelefonKomorkowy /></Kontakt>
+            <Powiadomic />
+            <Wojsko><Stosunek>0</Stosunek></Wojsko>
+            <Obywatelstwo>
+              <Nazwa>polskie</Nazwa>
+              <PodstZdrowCudzoziemca>Brak</PodstZdrowCudzoziemca>
+              <RodzajNumeruPodatnika>Nieokreślony</RodzajNumeruPodatnika>
+            </Obywatelstwo>
+            <StanRodzinny><StanCywilny>nieokreślony</StanCywilny></StanRodzinny>
+            <Wyksztalcenie><Kod>NieDotyczy</Kod></Wyksztalcenie>
+            <PFRON>
+              <MiejsceZamieszkania>0</MiejsceZamieszkania>
+              <PoziomWyksztalcenia>BezWykształcenia</PoziomWyksztalcenia>
+              <TypSchorzenia>NieDotyczy</TypSchorzenia>
+              <TypSchorzeniaSOD>Niezdefiniowany</TypSchorzeniaSOD>
+              <Stopien>Brak</Stopien>
+              <Okres>(pusty)</Okres>
+              <PomocPubliczna>WgKonfiguracji</PomocPubliczna>
+            </PFRON>
+            <PIT40><Naliczaj>False</Naliczaj></PIT40>
+          </PracHistoria2>
+        </Dodatkowe_historii>
+        <Adresy>
+          <AdresExt id="EH01_AZAM">
+            <Host>EH01</Host><Typ>Zameldowania</Typ>
+            <Adres>
+              <KodPocztowy>0</KodPocztowy>
+              <Miejscowosc>Warszawa</Miejscowosc>
+              <Wojewodztwo>mazowieckie</Wojewodztwo>
+              <Kraj>Polska</Kraj>
+              <Ulica>Testowa</Ulica>
+              <NrDomu>1</NrDomu>
+            </Adres>
+          </AdresExt>
+          <AdresExt id="EH01_AZAMIESZK">
+            <Host>EH01</Host><Typ>Zamieszkania</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+          <AdresExt id="EH01_AKOR">
+            <Host>EH01</Host><Typ>Korespondencyjny</Typ>
+            <Adres><KodPocztowy>0</KodPocztowy><Wojewodztwo>nieokreślone</Wojewodztwo></Adres>
+          </AdresExt>
+        </Adresy>
+      </PracHistoria>
+    </Historia>
+  </Pracownik>
+
+  <KalendarzBase guid="a1d10000-0000-0002-0000-000000000016" class="Soneta.Kalend.KalendarzPracownika,Soneta.KadryPlace">
+    <Typ>KalendarzPracownika</Typ>
+    <Nazwa>ODB14</Nazwa>
+    <Blokada>False</Blokada>
+    <UwzglWymiarEtatu>False</UwzglWymiarEtatu>
+    <BladBraku>False</BladBraku>
+    <DefinicjaDnia>00000000-0006-0002-0001-000000000000</DefinicjaDnia>
+    <Pracownik>a1d10000-0000-0000-0000-000000000016</Pracownik>
+    <Dni>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-02-02</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-02-03</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-02-04</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-02-05</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+      <DzienKalendarzaBase class="Soneta.Kalend.DzienPlanu,Soneta.KadryPlace">
+        <Typ>KalendarzPracownika</Typ>
+        <Data>2026-02-06</Data>
+        <Definicja>00000000-0006-0002-0001-000000000000</Definicja>
+        <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+        <Strefy>
+          <StrefaKalendarza>
+            <Definicja>00000000-0006-0001-0001-000000000000</Definicja>
+            <Praca><OdGodziny>6:00</OdGodziny><Czas>8:00</Czas></Praca>
+          </StrefaKalendarza>
+        </Strefy>
+      </DzienKalendarzaBase>
+    </Dni>
+  </KalendarzBase>
+</session>

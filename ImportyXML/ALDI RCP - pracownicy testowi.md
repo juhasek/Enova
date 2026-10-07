@@ -121,3 +121,21 @@ Słabe strony tolerancji 10:00 (do przetestowania):
    wyjście przed ok. 9:00 w dniu wolnym idzie na dzień wcześniej.
 7. Algorytm weryfikacji ALDI (okno −2 h / +17 h od startu planu) nie korzysta z tolerancji —
    może uznać dzień za kompletny, a import rozbije parę.
+
+## Scenariusz ODB14 — pierwsze odbicie dopiero o końcu planu (dodane 2026-10-07)
+
+Zgłoszenie klienta: plan 6:00–14:00, pierwsze odbicie dopiero o 14:00, zakończenie po długości
+planu; dane nie trafiają na kalendarz.
+
+- Pracownik **ODB14** (`TEST-ODB14 Popoludnie`, guid `a1d10000-…-000000000016`), etat 1/1 od
+  2026-01-01, plan 02–06.02.2026 (pn–pt) 6:00–14:00 jako wyjątki w kalendarzu pracownika.
+  Plik: `ALDI RCP - scenariusz ODB14 - pracownik i plan.xml` (idempotentny).
+- Odbicia: **03.02.2026 Wejście 14:00, Wyjście 22:00**, stan Nieoznaczony.
+  Plik: `ALDI RCP - scenariusz ODB14 - odbicia.xml` (jednorazowy).
+- Oczekiwanie z analizy kodu (do potwierdzenia importem): weryfikator ALDI — okno dnia 4:00–23:00,
+  para kompletna → Aktywne; import zostawia na 03.02 (14:00 ≥ 6:00 − 10:00), wygładzanie ±0:10
+  nie dotyczy → dzień 03.02 14:00–22:00, 8:00, Praca w normie (= plan).
+  Jeśli wynik jest inny, przyczyna leży poza analizowanym kodem (np. podział ALDI lub inne
+  ustawienia „Etat” u klienta).
+
+Backup bazy przed importem: `C:\enovaServer\Projekty\Al_przed_ODB14.bac`.
