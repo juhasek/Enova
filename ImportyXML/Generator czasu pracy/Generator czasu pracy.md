@@ -23,21 +23,25 @@ strefa po nazwie definicji (ten sam mechanizm, co `Generator planu pracy`).
 |---|---|
 | A | Kod pracownika |
 | B | Data dnia |
-| C..V | Strefa 1..20 (puste komórki pomijane) |
+| C, D, E | Strefa 1 nazwa, Strefa 1 godzina od, Strefa 1 czas |
+| F, G, H | Strefa 2 nazwa, godzina od, czas |
+| … | analogicznie, po 3 kolumny na strefę |
+| BH, BI, BJ | Strefa 20 nazwa, godzina od, czas |
 
-Komórka strefy = nazwa definicji strefy, a po niej godziny — zależnie od
-konfiguracji strefy:
+- **Nazwa** — nazwa definicji strefy dokładnie jak w enova.
+- **Godzina od** — opcjonalna, zależnie od konfiguracji strefy (np. „Dyżur
+  domowy” bez godziny). Może przekraczać 24:00 (do 47:59) — tak enova zapisuje
+  zdarzenia doby rozpoczętej dzień wcześniej.
+- **Czas** — czas trwania strefy (nie godzina „do”), wymagany, > 0:00 i ≤ 24:00.
 
-| Komórka | Wynik |
-|---|---|
-| `Nadgodziny 50% 16:00 2:00` | strefa „Nadgodziny 50%”, od 16:00, czas 2:00 |
-| `Dyżur domowy 4:00` | strefa „Dyżur domowy”, bez godziny od, czas 4:00 |
+| Nazwa | Godzina od | Czas | Wynik |
+|---|---|---|---|
+| Nadgodziny 50% | 16:00 | 2:00 | strefa od 16:00, czas 2:00 |
+| Dyżur domowy | | 4:00 | strefa bez godziny od, czas 4:00 |
 
-Komórka jest czytana **od końca**: ostatni element to zawsze **czas trwania**
-(nie godzina „do”), przedostatni — jeśli wygląda jak godzina `G:MM` — to
-godzina od, a cała reszta to nazwa (może zawierać spacje, cyfry, `%`).
-Godzina od może przekraczać 24:00 (do 47:59) — tak enova zapisuje zdarzenia
-doby rozpoczętej dzień wcześniej.
+Godziny mogą być wpisane jako godzina Excela (kolumny mają format `[g]:mm`)
+albo jako tekst `G:MM` (także `G:MM:00`). Strefa z trzema pustymi kolumnami
+jest pomijana.
 
 ## Błędy
 
@@ -49,8 +53,8 @@ import dnia usunąłby pozostałe strefy. Z tego samego powodu pomijane są:
 - wiersze bez żadnej strefy,
 - powtórzony ten sam pracownik + dzień (import zostawiłby tylko jeden z wierszy).
 
-Wykrywane błędy komórki: brak czasu na końcu, czas zerowy lub > 24:00, brak
-nazwy, za dużo godzin (np. `Nadgodziny 16:00 18:00 2:00`), godzina od ≥ 48:00.
+Wykrywane błędy strefy: godziny bez nazwy, brak czasu, czas nie w formacie
+godziny, czas zerowy lub > 24:00, godzina od nie w formacie godziny lub ≥ 48:00.
 Makro **nie sprawdza**, czy nazwa strefy istnieje w enova — to zgłosi import
 („Definicja strefy o nazwie '...' nie została znaleziona”).
 
@@ -103,4 +107,5 @@ wynik po imporcie i działaniu Taska:
 ## Status
 
 - Format XML — potwierdzony kodem importu i deserializacją (bez importu na żywo).
-- Makro VBA — nieprzetestowane w Excelu (brak Excela w środowisku repo).
+- Import pliku testowego + Task — POTWIERDZONE na żywo w bazie Claude (2026-10-07).
+- Makro VBA (układ 3 kolumny na strefę, 2026-10-07) — nieprzetestowane w Excelu (brak Excela w środowisku repo).
