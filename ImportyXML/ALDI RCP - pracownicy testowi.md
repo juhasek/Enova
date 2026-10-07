@@ -95,3 +95,29 @@ po południu, a poprzedni dzień jest wolny. Import RCP przenosi takie odbicia n
   **29.01 jako +5:45..+11:45**, na 30.01 brak pracy (log: „przesunięcie początku na dzień 29.01”).
 
 Backup bazy przed importem: `C:\enovaServer\Projekty\Al_przed_DOBA1.bac`.
+
+### Wynik testu DOBA1 (2026-10-07)
+
+| Tolerancja doby minus | Wynik importu |
+|---|---|
+| 2:00 (jak u klienta) | DP **29.01** +5:45..+11:45 → podział ALDI: Praca poza normą 6:00 + Nadgodziny do przeniesienia 6:00 (wpis w magazynie nadgodzin); 30.01 pusty |
+| **10:00** | DP **30.01** 5:45–11:45; 29.01 pusty — **zgodnie z oczekiwaniem** |
+
+Reguła importu (Początek doby = Zawsze wg kalendarza): wejście przechodzi na dzień poprzedni,
+gdy jest wcześniej niż *start planu dnia − tolerancja minus*; wyjście — gdy wcześniej niż
+*start + tolerancja plus* i nie poprzedza go odbicie przypisane do tego samego dnia.
+
+Słabe strony tolerancji 10:00 (do przetestowania):
+1. Dzień ze startem planu ≤ 10:00 — wejście po północy (powrót z przerwy przy pracy przeciągniętej
+   po północy) zostaje na nowej dobie, para rozbija się między dni.
+2. Ponowny import tych samych odbić na inny dzień (po zmianie planu/tolerancji, import zaznaczonych)
+   → praca na dwóch dniach; duplikaty i „Nadpisz dane” działają tylko na dniu docelowym.
+3. Doba ustalana wg planu z chwili importu — późniejsza zmiana planu nie przelicza zapisów.
+4. Samotne wyjście (brak wejścia) i typ „Niezdefiniowany” (import traktuje jak wyjście) przed
+   start + 3:00 → dzień poprzedni.
+5. Import okresami z „Nadpisz dane”: wyjście po północy z pierwszego dnia nowego okresu kasuje
+   wcześniejsze zapisy ostatniego dnia poprzedniego okresu.
+6. Dzień wolny bierze start z ostatniego dnia z planem (do 14 dni wstecz) — po rannej zmianie
+   wyjście przed ok. 9:00 w dniu wolnym idzie na dzień wcześniej.
+7. Algorytm weryfikacji ALDI (okno −2 h / +17 h od startu planu) nie korzysta z tolerancji —
+   może uznać dzień za kompletny, a import rozbije parę.
