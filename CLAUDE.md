@@ -30,6 +30,9 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
   reguły naliczania) enova365.
 - **Cechy/** — definicje cech (atrybutów) obiektów enova365.
 - **Widoki/** — definicje/modyfikacje widoków (list, formularzy) enova365.
+- **Taski/** — kod definicji zadań enova365 (Taski z algorytmem, tabela
+  `TaskDefs`) i ich wyzwalaczy (`TaskTriggers`), np. automatyczne akcje
+  przy zapisie danych. Nie mylić z folderem `Zadania/`.
 - **Zadania/** — opisy/specyfikacje zadań wdrożeniowych, niekoniecznie
   powiązane 1:1 z pojedynczym artefaktem powyżej.
 - **Analiza/** — szablony do analizy przedwdrożeniowej (kwestionariusz pytań

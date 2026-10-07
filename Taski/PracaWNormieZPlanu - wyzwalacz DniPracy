@@ -1,0 +1,5 @@
+public override GuidedRow[] GetGuidedRows() {
+    if (DzienPracy.Pracownik == null)
+        return new GuidedRow[0];
+    return new GuidedRow[] { DzienPracy.Pracownik };
+}

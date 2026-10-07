@@ -1,0 +1,97 @@
+//** begin enable condition **
+// Task "Praca w normie z planu" - definicja zadania na tabeli Pracownicy, typ definicji "Brak",
+// wyzwalacze na tabelach DniPracy i StrefyPracy (zwracaja pracownika zmienionego dnia).
+//
+// Przy zapisie dnia pracy dopisuje strefy "Praca w normie" na godziny z planu pracy, ktorych
+// nie zajmuja juz inne strefy wliczane do czasu pracy (Wchodzi + Zwieksza) z godzina od.
+// Dzien pomijany, gdy: ma juz strefe "Praca w normie", w planie nie ma godzin pracy,
+// albo strefy z pliku pokrywaja caly plan.
+//
+// Cala praca dzieje sie tutaj, a metoda zwraca false - dzieki temu enova nie tworzy
+// rekordow zadan (Tasks) przy kazdym zapisie.
+public override bool IsEnable() {
+    const string NazwaStrefyNormy = "Praca w normie";
+
+    Soneta.Kalend.KalendModule kalend = Soneta.Kalend.KalendModule.GetInstance(Row);
+    Soneta.Kalend.DefinicjaStrefy defNorma = kalend.DefinicjeStref.WgNazwy[NazwaStrefyNormy];
+    if (defNorma == null)
+        return false;
+
+    // Dni tego pracownika zmienione w biezacym zapisie (sam dzien albo jego strefy)
+    System.Collections.Generic.Dictionary<Date, Soneta.Kalend.DzienPracy> dni = new System.Collections.Generic.Dictionary<Date, Soneta.Kalend.DzienPracy>();
+    foreach (object o in kalend.DniPracy.Rows.Changed) {
+        Soneta.Kalend.DzienPracy d = o as Soneta.Kalend.DzienPracy;
+        if (d == null || d.State == Soneta.Business.RowState.Deleted || d.State == Soneta.Business.RowState.Detached)
+            continue;
+        if (d.Pracownik == Row)
+            dni[d.Data] = d;
+    }
+    foreach (object o in kalend.StrefyPracy.Rows.Changed) {
+        Soneta.Kalend.StrefaPracy s = o as Soneta.Kalend.StrefaPracy;
+        if (s == null || s.State == Soneta.Business.RowState.Deleted || s.State == Soneta.Business.RowState.Detached)
+            continue;
+        Soneta.Kalend.DzienPracy d = s.Dzien;
+        if (d == null || d.State == Soneta.Business.RowState.Deleted || d.State == Soneta.Business.RowState.Detached)
+            continue;
+        if (d.Pracownik == Row)
+            dni[d.Data] = d;
+    }
+    if (dni.Count == 0)
+        return false;
+
+    Soneta.Kalend.KalkulatorPracownika czasy = Row.Czasy;
+
+    foreach (Soneta.Kalend.DzienPracy dzien in dni.Values) {
+        bool maNorme = false;
+        Soneta.Kalend.FromTimes zajete = Soneta.Kalend.FromTimes.Empty;
+        foreach (Soneta.Kalend.StrefaPracy s in dzien.Strefy) {
+            if (s.Definicja == defNorma) {
+                maNorme = true;
+                break;
+            }
+            if (s.Definicja != null && s.Definicja.Wchodzi && s.Definicja.Typ == Soneta.Kalend.TypStrefy.Zwieksza
+                && s.Praca.OdGodziny != Time.Empty && s.Praca.Czas > Time.Zero)
+                zajete = zajete.Add(new Soneta.Kalend.FromTime(s.Praca.OdGodziny, s.Praca.Czas));
+        }
+        if (maNorme)
+            continue;
+
+        Soneta.Kalend.Dzien plan = czasy.KalkPlanu[dzien.Data];
+        if (plan == null || plan.Czas == Time.Zero)
+            continue;
+
+        Soneta.Kalend.FromTimes okresy = plan.Praca;
+        if (okresy.Count == 0)
+            okresy = Soneta.Kalend.FromTimes.New(new Soneta.Kalend.FromTime(plan.OdGodziny, plan.Czas));
+        okresy = okresy.Sub(zajete);
+
+        foreach (Soneta.Kalend.FromTime ft in okresy) {
+            if (ft.Time <= Time.Zero)
+                continue;
+            Soneta.Kalend.StrefaPracy nowa = new Soneta.Kalend.StrefaPracy(dzien);
+            kalend.StrefyPracy.AddRow(nowa);
+            nowa.Definicja = defNorma;
+            nowa.Praca.OdGodziny = ft.From;
+            nowa.Praca.Czas = ft.Time;
+        }
+    }
+    return false;
+}
+//** end enable condition **
+
+//** begin active condition **
+public override bool IsActive() {
+    return false;
+}
+//** end active condition **
+
+//** begin realised condition **
+public override bool IsRealised() {
+    return false;
+}
+//** end realised condition **
+
+//** begin action **
+public override void Action() {
+}
+//** end action **
