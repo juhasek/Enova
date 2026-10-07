@@ -185,6 +185,11 @@ Kalendarz ID 47 to system podstawowy (`RownowaznyCzasPracy` = 0). Tam plan powy�
 dobowej (8h) to zaplanowane nadgodziny, a kontrola sprawdza dopiero 12h. Dzień 10h przejdzie
 bez uwag. Limit 12h pasuje do równoważnego systemu (kalendarz ID 45).
 
+**Stan 2026-10-07:** definicja 2039 „A1_Norma niepełnosprawnych (dzień)” celowo zablokowana i odpięta od
+kalendarza 47 (zablokowana, a podpięta wywracałaby zakładkę Weryfikatory). Przy odblokowaniu podpiąć
+ponownie w GUI jako Ostrzeżenie. Podpięcia wstawione SQL-em są widoczne w GUI dopiero po restarcie
+serwera enova — wcześniej zakładka pokazuje „Brak”, a próba włączenia kończy się błędem duplikatu klucza.
+
 **Rozwiązane (2026-10-06):** `A1Praca12h` przeniesiona do sekcji zakomentowanej (definicja 2038
 dalej zablokowana). Zastępuje ją nowy weryfikator `A1NormaDobowa` — definicja **2048**
 „A1_Norma dobowa” (Dzień planu), podpięta do kalendarzy 45 i 47 jako Ostrzeżenie:
