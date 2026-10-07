@@ -13,13 +13,23 @@ Dla każdego zmienionego w danym zapisie dnia pracy:
    ponownie go wyzwala).
 2. Plan pracy dnia (`Pracownik.Czasy.KalkPlanu[data]` — kalendarz wzorcowy +
    wyjątki z kalendarza indywidualnego) nie ma godzin → pomijany.
-3. Godziny pracy z planu (`Dzien.Praca`) **minus** strefy dnia, które wchodzą
-   do czasu pracy i go zwiększają (`Wchodzi` + `Typ = Zwiększa`) i mają
-   godzinę od → to, co zostanie, dostaje strefy „Praca w normie”.
+3. Godziny pracy z planu (`Dzien.Praca`) **minus** strefy dnia z zaznaczonym
+   `Wchodzi` (dowolnego typu — także przerwy) i godziną od → to, co zostanie,
+   dostaje strefy „Praca w normie”. Warunek jest identyczny z weryfikatorem
+   enova `DefinicjaDnia.StrefyVerifier` („Strefy wliczane do czasu faktycznie
+   przepracowanego nie mogą na siebie zachodzić”).
 
-Przykład — plan 8–12 i 13–17, strefa z pliku „Praca poza normą” 15:00 4:00:
-„Praca w normie” 8–12 i 13–15. Strefy nie wchodzące do czasu pracy
-(np. „Nadgodziny 50%”, „Dyżur domowy”) niczego nie zabierają.
+Przykłady — plan 8–12 i 13–17:
+- „Praca poza normą” 15:00 4:00 → „Praca w normie” 8–12 i 13–15,
+- „Przerwa bezpłatna” 11:00 2:00 (Wchodzi, typ „Nie wpływa”) → 8–11 i 13–17.
+
+Strefy nie wchodzące do czasu pracy (np. „Nadgodziny 50%”, „Dyżur domowy”)
+niczego nie zabierają.
+
+**Poprawka 2026-10-07:** pierwsza wersja odejmowała tylko strefy
+`Wchodzi` + `Typ = Zwiększa`. Przy „Przerwie bezpłatnej” 11–13 (typ „Nie
+wpływa”) norma nachodziła na przerwę i zapis dnia kończył się błędem
+weryfikatora nachodzenia stref.
 
 Strefy bez godziny od nie są odejmowane (nie da się ich umieścić na osi
 czasu). Gdy w bazie nie ma definicji strefy „Praca w normie”, task nic nie

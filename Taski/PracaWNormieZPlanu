@@ -3,7 +3,9 @@
 // wyzwalacze na tabelach DniPracy i StrefyPracy (zwracaja pracownika zmienionego dnia).
 //
 // Przy zapisie dnia pracy dopisuje strefy "Praca w normie" na godziny z planu pracy, ktorych
-// nie zajmuja juz inne strefy wliczane do czasu pracy (Wchodzi + Zwieksza) z godzina od.
+// nie zajmuja juz inne strefy wliczane do czasu pracy (Wchodzi, dowolny typ - np. przerwa) z godzina od.
+// Warunek jak w weryfikatorze enova DefinicjaDnia.StrefyVerifier ("Strefy wliczane do czasu faktycznie
+// przepracowanego nie moga na siebie zachodzic"), inaczej dopisana norma nachodzi na przerwe.
 // Dzien pomijany, gdy: ma juz strefe "Praca w normie", w planie nie ma godzin pracy,
 // albo strefy z pliku pokrywaja caly plan.
 //
@@ -49,7 +51,7 @@ public override bool IsEnable() {
                 maNorme = true;
                 break;
             }
-            if (s.Definicja != null && s.Definicja.Wchodzi && s.Definicja.Typ == Soneta.Kalend.TypStrefy.Zwieksza
+            if (s.Definicja != null && s.Definicja.Wchodzi
                 && s.Praca.OdGodziny != Time.Empty && s.Praca.Czas > Time.Zero)
                 zajete = zajete.Add(new Soneta.Kalend.FromTime(s.Praca.OdGodziny, s.Praca.Czas));
         }
