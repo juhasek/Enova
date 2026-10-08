@@ -34,6 +34,18 @@ Private Const ARK_KRAJE As String = "Kraje"
 Private Const ARK_CFG As String = "Konfiguracja"
 
 Sub GenerujDiety()
+    ' Brak ktoregos arkusza (np. zmieniona nazwa) - czytelny komunikat zamiast bledu 9 VBA.
+    Dim nazwa As Variant, brak As String
+    For Each nazwa In Array(ARK_CFG, ARK_ZAGR, ARK_PM, ARK_KRAJE)
+        If Not ArkuszIstnieje(CStr(nazwa)) Then brak = brak & "  - " & nazwa & vbCrLf
+    Next nazwa
+    If brak <> "" Then
+        MsgBox "W skoroszycie brakuje arkuszy o nazwach:" & vbCrLf & brak & vbCrLf & _
+               "Przywroc te nazwy (bez zmian, bez polskich znakow) i uruchom makro ponownie.", _
+               vbCritical, "Generator diet"
+        Exit Sub
+    End If
+
     Dim wsCfg As Worksheet
     Set wsCfg = ThisWorkbook.Worksheets(ARK_CFG)
 
@@ -324,6 +336,16 @@ End Function
 ' ---------------------------------------------------------------------------------------
 ' Pomocnicze
 ' ---------------------------------------------------------------------------------------
+
+Private Function ArkuszIstnieje(nazwa As String) As Boolean
+    Dim ws As Worksheet
+    For Each ws In ThisWorkbook.Worksheets
+        If ws.Name = nazwa Then
+            ArkuszIstnieje = True
+            Exit Function
+        End If
+    Next ws
+End Function
 
 ' Arkusz "Kraje": A Kod | B Nazwa | C Waluta | D Identyfikator (GUID z enova).
 Private Sub WczytajKraje(kraje As Object, waluty As Object)

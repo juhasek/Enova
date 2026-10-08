@@ -84,6 +84,15 @@ Arkusz „Kraje” = słownik `KrajeDelegacji` (122 kraje). GUID-y są systemowe
 (`00000000-0019-0001-<ID>-000000000000`) — identyczne w bazach Claude i Al.
 Waluta z arkusza jest domyślną walutą `WartoscDiet`, gdy kolumna Waluta jest pusta.
 
+## Typowe problemy
+
+- **Arkusz „Dane”, arkusz „Bledy” z „Strefa 1: brak czasu.”** — do skoroszytu
+  zaimportowano `modGeneratorCzasuPracy.bas` (generator czasu pracy) zamiast
+  `modGeneratorDiet.bas`. Usunąć ten moduł, zaimportować `modGeneratorDiet.bas`,
+  przywrócić nazwę arkusza „Diety zagraniczne”, usunąć arkusz „Bledy”, uruchomić
+  `GenerujDiety` (2026-10-08, pierwszy test użytkownika).
+- Brak któregoś arkusza (zmieniona nazwa) — makro wypisuje brakujące nazwy i kończy.
+
 ## Status
 
 - Format XML i zachowanie importu: **sprawdzone** `dbmgr importxml` na bazie Claude
