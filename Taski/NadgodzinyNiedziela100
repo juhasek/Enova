@@ -18,8 +18,12 @@
 //     "Wyplata nadgodzin"),
 //   - podstawa nadgodzin "Nie wliczaj" / "Nie naliczaj",
 //   - inna systemowa strefa nadgodzin (Nadgodziny 50%, 100% okresowe, SW) - reczne rozliczenie.
-// Przy kazdej zmianie dnia strefa "Nadgodziny 100%" jest ukladana od nowa (takze reczna);
-// gdy juz jest poprawna - nic sie nie dzieje.
+// Przy kazdej zmianie dnia strefy "Nadgodziny 100%" sa ukladane od nowa (takze reczne);
+// gdy juz sa poprawne - nic sie nie dzieje.
+//
+// Kody kosztowe: nadwyzka jest brana z OSTATNICH godzin pracy (strefy konczace sie najpozniej);
+// kazda czesc dostaje cechy "Projekt" i "Task" strefy pracy, z ktorej pochodzi (np. "Praca poza
+// norma" z wniosku o nadgodziny). Czesci z tymi samymi kodami - jedna strefa "Nadgodziny 100%".
 //
 // Wersjonowanie kalendarzy: dzien pracy jest wtedy "tylko do odczytu". Realizacja wniosku
 // o nadgodziny (RozliczenieCzasuPracy.WykonajInt) i zatwierdzenie DAK zapisuja dzien z wewnetrznie
@@ -35,6 +39,13 @@ public override bool IsEnable() {
     Soneta.Kalend.DefinicjaStrefy defN100 = kalend.DefinicjeStref[Soneta.Kalend.DefinicjaStrefy.N100];
     if (defN100 == null)
         return false;
+
+    // Cechy (kody kosztowe) przepisywane ze strefy pracy na strefe "Nadgodziny 100%".
+    // Brak definicji cechy w bazie = cecha pomijana.
+    const string NazwaCechyProjekt = "Projekt";
+    const string NazwaCechyTask = "Task";
+    Soneta.Business.FeatureDefinition defProjekt = kalend.StrefyPracy.FeatureDefinitions[NazwaCechyProjekt, false];
+    Soneta.Business.FeatureDefinition defTask = kalend.StrefyPracy.FeatureDefinitions[NazwaCechyTask, false];
 
     // Dni tego pracownika zmienione w biezacym zapisie (sam dzien albo jego strefy)
     System.Collections.Generic.Dictionary<Date, Soneta.Kalend.DzienPracy> dni = new System.Collections.Generic.Dictionary<Date, Soneta.Kalend.DzienPracy>();
@@ -85,15 +96,14 @@ public override bool IsEnable() {
         // Czas pracy dnia jak w silniku: strefy wchodzace do czasu pracy i zwiekszajace go
         Soneta.Kalend.FromTimes praca = Soneta.Kalend.FromTimes.Empty;
         Time bezGodzin = Time.Zero;
-        Time istniejace = Time.Zero;
         bool pomin = false;
         System.Collections.Generic.List<Soneta.Kalend.StrefaPracy> strefyN100 = new System.Collections.Generic.List<Soneta.Kalend.StrefaPracy>();
+        System.Collections.Generic.List<Soneta.Kalend.StrefaPracy> strefyPracy = new System.Collections.Generic.List<Soneta.Kalend.StrefaPracy>();
         foreach (Soneta.Kalend.StrefaPracy s in dzien.Strefy) {
             if (s.Definicja == null || s.Praca.Czas <= Time.Zero)
                 continue;
             if (s.Definicja == defN100) {
                 strefyN100.Add(s);
-                istniejace += s.Praca.Czas;
                 continue;
             }
             Guid g = s.Definicja.Guid;
@@ -107,6 +117,7 @@ public override bool IsEnable() {
                 pomin = true;
             if (!s.Definicja.Wchodzi || s.Definicja.Typ != Soneta.Kalend.TypStrefy.Zwieksza)
                 continue;
+            strefyPracy.Add(s);
             if (s.Praca.OdGodziny != Time.Empty)
                 praca = praca.Add(new Soneta.Kalend.FromTime(s.Praca.OdGodziny, s.Praca.Czas));
             else
@@ -118,10 +129,63 @@ public override bool IsEnable() {
         Time czas = praca.Time + bezGodzin;
         Time nadwyzka = czas > norma ? czas - norma : Time.Zero;
 
-        // Juz poprawnie - nic nie zmieniamy (chroni przed petla wyzwalacza)
-        if (nadwyzka == Time.Zero && strefyN100.Count == 0)
-            continue;
-        if (nadwyzka > Time.Zero && strefyN100.Count == 1 && istniejace == nadwyzka)
+        // Podzial nadwyzki na strefy pracy, od ostatnich godzin: kazda czesc dostaje cechy
+        // (kody kosztowe) strefy, z ktorej pochodzi. Strefy bez godziny od - na koncu kolejki.
+        System.Collections.Generic.List<Time> docCzas = new System.Collections.Generic.List<Time>();
+        System.Collections.Generic.List<object> docProjekt = new System.Collections.Generic.List<object>();
+        System.Collections.Generic.List<object> docTask = new System.Collections.Generic.List<object>();
+        Time zostalo = nadwyzka;
+        System.Collections.Generic.List<Soneta.Kalend.StrefaPracy> kolejka = new System.Collections.Generic.List<Soneta.Kalend.StrefaPracy>(strefyPracy);
+        while (zostalo > Time.Zero && kolejka.Count > 0) {
+            // strefa konczaca sie najpozniej (bez godzin od = najnizszy priorytet)
+            int najIdx = 0;
+            for (int i = 1; i < kolejka.Count; i++) {
+                Soneta.Kalend.StrefaPracy a = kolejka[i];
+                Soneta.Kalend.StrefaPracy b = kolejka[najIdx];
+                bool aMa = a.Praca.OdGodziny != Time.Empty;
+                bool bMa = b.Praca.OdGodziny != Time.Empty;
+                if (aMa && (!bMa || a.Praca.OdGodziny + a.Praca.Czas > b.Praca.OdGodziny + b.Praca.Czas))
+                    najIdx = i;
+            }
+            Soneta.Kalend.StrefaPracy zrodlo = kolejka[najIdx];
+            kolejka.RemoveAt(najIdx);
+            Time czesc = zrodlo.Praca.Czas < zostalo ? zrodlo.Praca.Czas : zostalo;
+            zostalo -= czesc;
+            object vProjekt = defProjekt != null ? zrodlo.Features[NazwaCechyProjekt] : null;
+            object vTask = defTask != null ? zrodlo.Features[NazwaCechyTask] : null;
+            // te same kody kosztowe - jedna strefa
+            int poz = -1;
+            for (int i = 0; i < docCzas.Count; i++)
+                if (object.Equals(docProjekt[i], vProjekt) && object.Equals(docTask[i], vTask))
+                    poz = i;
+            if (poz >= 0)
+                docCzas[poz] += czesc;
+            else {
+                docCzas.Add(czesc);
+                docProjekt.Add(vProjekt);
+                docTask.Add(vTask);
+            }
+        }
+
+        // Juz poprawnie (te same czasy i kody) - nic nie zmieniamy (chroni przed petla wyzwalacza)
+        bool zgodne = strefyN100.Count == docCzas.Count;
+        if (zgodne) {
+            bool[] uzyte = new bool[docCzas.Count];
+            foreach (Soneta.Kalend.StrefaPracy s in strefyN100) {
+                object sProjekt = defProjekt != null ? s.Features[NazwaCechyProjekt] : null;
+                object sTask = defTask != null ? s.Features[NazwaCechyTask] : null;
+                bool znaleziona = false;
+                for (int i = 0; i < docCzas.Count && !znaleziona; i++) {
+                    if (!uzyte[i] && docCzas[i] == s.Praca.Czas && object.Equals(docProjekt[i], sProjekt) && object.Equals(docTask[i], sTask)) {
+                        uzyte[i] = true;
+                        znaleziona = true;
+                    }
+                }
+                if (!znaleziona)
+                    zgodne = false;
+            }
+        }
+        if (zgodne)
             continue;
 
         // Dzien tylko do odczytu (wersjonowanie) - odblokowanie jak w enova na czas zmiany
@@ -142,11 +206,17 @@ public override bool IsEnable() {
             foreach (Soneta.Kalend.StrefaPracy s in strefyN100)
                 s.Delete();
 
-            if (nadwyzka > Time.Zero) {
+            for (int i = 0; i < docCzas.Count; i++) {
+                if (docCzas[i] <= Time.Zero)
+                    continue;
                 Soneta.Kalend.StrefaPracy nowa = new Soneta.Kalend.StrefaPracy(dzien);
                 kalend.StrefyPracy.AddRow(nowa);
                 nowa.Definicja = defN100;
-                nowa.Praca.Czas = nadwyzka;
+                nowa.Praca.Czas = docCzas[i];
+                if (defProjekt != null && docProjekt[i] != null)
+                    nowa.Features[NazwaCechyProjekt] = docProjekt[i];
+                if (defTask != null && docTask[i] != null)
+                    nowa.Features[NazwaCechyTask] = docTask[i];
             }
         }
         finally {

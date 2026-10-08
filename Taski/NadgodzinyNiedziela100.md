@@ -162,3 +162,29 @@ Oba elementy są niepubliczne → dostęp przez refleksję.
 prawdziwej bibliotece (`Soneta.Kalend.DniPracy.ForceWriteMode` bool
 internal, `Soneta.Kalend.DzienPracy.RecalculateRO()` internal). Wgrane do
 bazy Claude (TaskDefs 285, stamp podbity). Niesprawdzone na żywo.
+
+## Kody kosztowe (cechy Projekt i Task) — 2026-10-08
+
+Pracownik we wniosku o nadgodziny wypełnia cechy **Projekt** i **Task**
+(kody kosztowe), które trafiają na strefę „Praca poza normą”. Strefa
+„Nadgodziny 100%” dopisywana przez Task dostaje te same kody:
+
+1. Nadwyżka ponad normę jest brana z **ostatnich godzin pracy** — strefy
+   pracy (Wchodzi + Zwiększa) od tej, która kończy się najpóźniej; strefy bez
+   godziny od na końcu kolejki.
+2. Każda część nadwyżki dostaje cechy Projekt i Task strefy, z której
+   pochodzi.
+3. Części z tymi samymi kodami są łączone w jedną strefę „Nadgodziny 100%”;
+   różne kody → kilka stref (suma = nadwyżka, silnik sumuje czas stref).
+4. Idempotencja porównuje czas **i** kody każdej strefy — zmiana kodów na
+   strefie pracy przelicza strefy „Nadgodziny 100%”.
+
+Przykład 13.09 (Praca poza normą 7–20 i 21–23, kody P1/T1, norma 8h):
+jedna strefa „Nadgodziny 100%” 7:00 z Projekt=P1, Task=T1. Gdyby 21–23 miało
+kody P2/T2: „Nadgodziny 100%” 2:00 (P2/T2) + 5:00 (P1/T1).
+
+Nazwy cech są stałymi na początku kodu (`NazwaCechyProjekt`,
+`NazwaCechyTask`); brak definicji cechy w bazie = cecha pomijana bez błędu.
+W bazie Claude tych cech nie ma — **niesprawdzone na danych**. Cechy muszą
+być zwykłymi (nie algorytmicznymi) cechami tabeli StrefyPracy, inaczej zapis
+wartości się nie uda.
