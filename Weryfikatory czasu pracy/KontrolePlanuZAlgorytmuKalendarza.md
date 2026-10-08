@@ -277,3 +277,27 @@ Wszystkie definicje A1 wołają jedną klasę. Błąd kompilacji w tym pliku wy�
 weryfikatory A1 naraz. Repo trzyma tylko fragmenty tej klasy (np. `BlokadaZmianyGodzinDAK`
 i ten plik), a nie całą klasę z bazy — przy wklejaniu łatwo coś zgubić lub zdublować metodę.
 Wzorcem jest zawartość bazy (`CodeFiles`).
+
+## Inwentaryzacja 2026-10-08: stary algorytm kalendarza a obecne weryfikatory (baza testowa)
+
+Źródło „przed”: archiwa algorytmu kalendarzy 45 i 47 (`SprawdźDzieńPlanu` i `SprawdźPlan`;
+`SprawdźDzieńKalendarza` i `SprawdźKalendarz` zwracały `null`). Kalendarz 1 „Standard” nie miał algorytmu.
+W starym algorytmie wszystkie kontrole były ostrzeżeniami, poza normą okresu na kal. 47 (błąd).
+
+| Kontrola w starym algorytmie | Kal. 45 (przed) | Kal. 47 (przed) | Obecnie kal. 45 | Obecnie kal. 47 |
+|---|---|---|---|---|
+| Odpoczynek dobowy 11h (`KontrolaPrzerwy11h`, przy zapisie planu) | Ostrz. | Ostrz. | **brak** | std. Odpoczynek dobowy (1 — dzień planu, 3 — dzień pracy), Ostrz. |
+| Doba pracownicza (`KontrolaDobaPracownicza`, przy zapisie planu) | Ostrz. | Ostrz. | **brak** | **brak** (std. 11h tego nie obejmuje) |
+| Praca do 12h (`ControlWork12h`) | Ostrz. | Ostrz. | 2048 A1_Norma dobowa (12h — równoważny), Ostrz. | 2048 A1_Norma dobowa (8h), **Błąd** |
+| Norma niepełnosprawnych (`ControlWorkHoursForDisabled`) | liczona, niezwracana | Ostrz. | — | 2039 celowo zablokowana i odpięta |
+| Norma średniotygodniowa 48h | Ostrz. | Ostrz. | 2044, Ostrz. | 2044, **Błąd** |
+| Odpoczynek tygodniowy 35h (`KontrolaPrzerwa35h`) | Ostrz. | Ostrz. | **brak** | std. Odpoczynek tygodniowy (17 — plan), Ostrz. |
+| Dni wolne i święta w miesiącu | wyłączona | Ostrz. | (1036 A1_Ilość dni wolnych w okresie, Błąd) | 1036, Błąd — inna reguła (okres zamiast miesiąca) |
+| Plan ponad normę okresu (`ControlToManyWorkDaysInPeriod`) | zwracała zawsze `null` | **Błąd** | 37 A1_Norma w okresie rozl., Błąd | 37, Błąd |
+| Norma 8h (`KontrolaNormy8h`) | zakomentowana | zakomentowana | — | — |
+
+Poza starym algorytmem (już wcześniej lub nowe): 35 A1_Okres zatrudnienia, 37, 1036 (kal. 1/45/47, Błąd),
+2049 A1_Praca w normie nie ponad plan (45/47, Błąd), 2051 A1_Magazyn nadgodzin - umowy cywilne (1/45/47, Błąd).
+
+**Luki:** kal. 45 — brak 11h, 35h i doby pracowniczej; kal. 47 — brak doby pracowniczej.
+**Zaostrzenia na kal. 47:** 2048 i 2044 jako Błąd (wcześniej ostrzeżenia), a limit dobowy 8h zamiast 12h.
