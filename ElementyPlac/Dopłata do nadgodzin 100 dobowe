@@ -1,0 +1,28 @@
+public void Dopłata_Do_N_Godz_100_Dobowe_Param(Soneta.Place.WypElementNadgodziny Element, WypSkladnik Składnik) {
+   DoubleCy podstawa1;
+   if (!Element.PracHistoria.Etat.WynagrodzenieAkordowe || !Płace.Config.Etat.NadgodzinyAkordowe60)
+      podstawa1 = Element.PracHistoria.Etat.Kalendarz.Nadgodziny.PodstawaWgNormyKP ? StawkaZaszeregowaniaNorm1h(Element.Okres.To) + WnagrodzenieZaNadgodziny(Element) : StawkaZaszeregowania1h(Element.Okres.To) + WnagrodzenieZaNadgodziny(Element);
+   else
+      using (Soneta.Business.LogCatcher listener = new Soneta.Business.LogCatcher("Urlop")) {
+         using (Pracownik.Session.Logout(true)) {
+            var naliczanie = new NaliczanieWypoczynkowy(Element, Składnik);
+            naliczanie.NaliczPodstawy();
+            var procent = new Percent(0.6m);
+            podstawa1 = Składnik.Podstawa1 * procent;
+            Składnik.Podstawa1 = Składnik.Podstawa2 = DoubleCy.Zero;
+            naliczanie.Log.WriteLine("Podstawa nadgodzin (urlop * {0}):  {1}", procent, podstawa1);
+         }
+         if (!listener.IsEmpty)
+            Element.ZapisObliczen += listener.ToString();
+      }
+   Składnik.Podstawa1 = podstawa1;
+
+   Składnik.Procent = Element.Definicja.Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent;
+   ZestawienieNadgodzin zestNad = NadgodzinyDobaOkres(Element, Składnik);
+   // Nadgodziny dobowe 100% + świąteczne (niedziele/święta wolne wg rozkładu, art. 151^1 §1 pkt 1 KP)
+   Składnik.Czas = zestNad.N100Doba + zestNad.NSW;
+}
+
+public Currency Dopłata_Do_N_Godz_100_Dobowe_Wylicz(Soneta.Place.WypElementNadgodziny Element, WypSkladnik Składnik) {
+   return ((Currency)(Składnik.Podstawa1 * Składnik.Procent) * Składnik.Czas);
+}
