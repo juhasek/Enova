@@ -97,6 +97,5 @@ Waluta z arkusza jest domyślną walutą `WartoscDiet`, gdy kolumna Waluta jest 
 
 - Format XML i zachowanie importu: **sprawdzone** `dbmgr importxml` na bazie Claude
   (pracownik DIET-01, ID 1021) — 2026-10-08.
-- Makro VBA: **nieuruchomione** (brak Excela w środowisku roboczym). Pliki `Przyklad - *.xml`
-  odpowiadają jego wynikowi dla przykładowych wierszy i zostały zaimportowane poprawnie.
-- Nieprzetestowane: import tych plików z GUI enova (zamiast `dbmgr`), zestawienia na umowach.
+- Makro VBA: **działa** — użytkownik wygenerował XML w Excelu (2026-10-08, po poprawce `mOd` → `miesOd`).
+- Nieprzetestowane: import pliku wygenerowanego przez makro u użytkownika, import tych plików z GUI enova (zamiast `dbmgr`), zestawienia na umowach.
