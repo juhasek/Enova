@@ -20,8 +20,22 @@ public void Dopłata_Do_N_Godz_100_Dobowe_Param(Soneta.Place.WypElementNadgodzin
    // Dodatek 100% na sztywno - współczynnik z kreatora algorytmu nie jest wypełniony w edytorze C#
    Składnik.Procent = new Percent(1m);
    ZestawienieNadgodzin zestNad = NadgodzinyDobaOkres(Element, Składnik);
-   // Nadgodziny dobowe 100% + świąteczne (niedziele/święta wolne wg rozkładu, art. 151^1 §1 pkt 1 KP)
-   Składnik.Czas = zestNad.N100Doba + zestNad.NSW;
+   // Nadgodziny dobowe w niedziele/święta (dzień typu Świąteczny) mają być 100% (art. 151^1 §1 pkt 1 KP),
+   // a silnik liczy je jak w zwykły dzień (N50 do limitu). Część N50 z takich dni przenosimy tutaj.
+   // Element "Dopłata do nadgodzin 50%" musi odjąć te same godziny (n50Swieta).
+   Soneta.Types.Time n50Swieta = Soneta.Types.Time.Zero;
+   if (zestNad.N50 > Soneta.Types.Time.Zero) {
+      foreach (Date d in Składnik.Okres) {
+         var dzien = Element.Pracownik.Czasy.KalkPracy[d];
+         if (dzien == null || dzien.Definicja == null || dzien.Definicja.Typ != Soneta.Kalend.TypDnia.Świąteczny)
+            continue;
+         ZestawienieNadgodzin zd = Element.Pracownik.Czasy.Nadgodziny(new FromTo(d, d), Soneta.Kalend.KalkulatorNadgodzin.TrybRozliczaniaNadgodzin.TylkoDobowe);
+         n50Swieta += zd.N50;
+      }
+      if (n50Swieta > zestNad.N50)
+         n50Swieta = zestNad.N50;
+   }
+   Składnik.Czas = zestNad.N100Doba + n50Swieta;
 }
 
 public Currency Dopłata_Do_N_Godz_100_Dobowe_Wylicz(Soneta.Place.WypElementNadgodziny Element, WypSkladnik Składnik) {
