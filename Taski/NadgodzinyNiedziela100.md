@@ -80,3 +80,9 @@ Dni zapisane przed założeniem taska trzeba „dotknąć” (otworzyć i zapisa
 - Mechanizm stref ręcznie potwierdzony przez użytkownika (strefa
   „Nadgodziny 100%” 7h na 13.09 → statystyka zgodna). Sam task
   **niesprawdzony na żywo**.
+- **Baza Claude (2026-10-08):** definicja założona SQL-em jako kopia
+  `TaskDefs` 284 — `TaskDefs` ID **285** „Nadgodziny 100% w niedziele”
+  (klasa `Task_Nadgodziny_100_w_niedziele642765867`), wyzwalacze
+  `TaskTriggers` **181** (DniPracy) i **182** (StrefyPracy). Po podbiciu
+  `RuntimeProjects.Stamp` (ID 2) `dbmgr compile` bez błędów — biblioteka
+  `4bb49.dll` zawiera klasę taska i oba wyzwalacze.
