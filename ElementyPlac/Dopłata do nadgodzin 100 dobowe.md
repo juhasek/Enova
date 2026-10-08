@@ -57,3 +57,12 @@ godziny zostaną zapłacone podwójnie.
 
 Przykład 13.09.2026 (praca 7–20 i 21–23 = 15h): 8h okresowe, 7h dobowe 100%
 (6h przeniesione z N50 + 1h nocna).
+
+## Uproszczenie — 2026-10-08 (wersja obowiązująca)
+
+Przeniesienie N50 z niedziel w algorytmie zostało **wycofane**: statystyka
+(Kalendarz → Statystyka) i tak pokazywała 50%, bo liczy samym silnikiem.
+Podział niedzieli robi teraz Task `Taski/NadgodzinyNiedziela100` (strefa
+„Nadgodziny 100%” na nadwyżkę ponad normę), więc silnik sam daje N100Doba.
+Algorytm elementu: `Składnik.Czas = zestNad.N100Doba;` + procent 100% na sztywno.
+Element 50% nie wymaga zmian.
