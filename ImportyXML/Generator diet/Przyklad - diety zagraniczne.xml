@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<session fromto="2026-09-01...2026-10-31">
+  <Pracownik where="Kod=DIET-01">
+    <ZestawieniaDiet>
+      <ZestawienieDietZagr><Okres>2026-09-01...2026-09-30</Okres><Diety>20</Diety></ZestawienieDietZagr>
+      <ZestawienieDietZagr><Okres>2026-10-01...2026-10-15</Okres><Diety>11</Diety></ZestawienieDietZagr>
+    </ZestawieniaDiet>
+  </Pracownik>
+</session>
