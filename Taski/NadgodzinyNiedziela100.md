@@ -86,3 +86,8 @@ Dni zapisane przed założeniem taska trzeba „dotknąć” (otworzyć i zapisa
   `TaskTriggers` **181** (DniPracy) i **182** (StrefyPracy). Po podbiciu
   `RuntimeProjects.Stamp` (ID 2) `dbmgr compile` bez błędów — biblioteka
   `4bb49.dll` zawiera klasę taska i oba wyzwalacze.
+- **Poprawka 2026-10-08:** kod w `TaskDefs.Code` musi mieć same końce linii
+  CRLF. Przy mieszanych (plik repo ma LF) formularz definicji zadania
+  zgłaszał `TaskDefRoslynAlgorithmExtender.EnableCondition GET: length
+  (-6838) must be a non-negative value`. Znormalizowane, ponowna kompilacja
+  bez błędów.
