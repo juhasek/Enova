@@ -191,15 +191,15 @@ Private Function BudujZagr(ByRef bledy As String, ByRef liczba As Long, ByRef mi
             "<Diety>" & CLng(vDiety) & "</Diety></ZestawienieDietZagr>" & vbCrLf
 
         ' Zakres sesji (fromto) = pelne miesiace od pierwszego do ostatniego wiersza.
-        Dim mOd As Date, mDo As Date
-        mOd = DateSerial(Year(dOd), Month(dOd), 1)
-        mDo = DateSerial(Year(dDo), Month(dDo) + 1, 0)
+        Dim miesOd As Date, miesDo As Date
+        miesOd = DateSerial(Year(dOd), Month(dOd), 1)
+        miesDo = DateSerial(Year(dDo), Month(dDo) + 1, 0)
         If liczba = 0 Then
-            minOd = mOd
-            maxDo = mDo
+            minOd = miesOd
+            maxDo = miesDo
         Else
-            If mOd < minOd Then minOd = mOd
-            If mDo > maxDo Then maxDo = mDo
+            If miesOd < minOd Then minOd = miesOd
+            If miesDo > maxDo Then maxDo = miesDo
         End If
         liczba = liczba + 1
 Nastepny:
