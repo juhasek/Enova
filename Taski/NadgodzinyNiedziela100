@@ -1,0 +1,155 @@
+//** begin enable condition **
+// Task "Nadgodziny 100% w niedziele" - definicja zadania na tabeli Pracownicy, typ definicji "Brak",
+// wyzwalacze na tabelach DniPracy i StrefyPracy (zwracaja pracownika zmienionego dnia).
+//
+// Przy pracy w niedziele silnik nadgodzin liczy pierwsze godziny (do normy dobowej) jako okresowe,
+// a nadwyzke jak w zwykly dzien: 50% do limitu, 100% ponad limit/w nocy. Wg KP nadwyzka w niedziele
+// ma byc w calosci 100% (art. 151^1 par. 1 pkt 1).
+// Gdy dzien ma wpisana systemowa strefe "Nadgodziny 100%", silnik bierze nadgodziny dobowe wprost
+// z niej (bez wlasnego podzialu 50/100), a okresowe = czas pracy minus te godziny.
+// Task dopisuje wiec na ostatnie godziny pracy strefe "Nadgodziny 100%" = czas pracy - norma dobowa.
+//
+// Dzien obslugiwany, gdy definicja dnia jest typu Swiateczny BEZ "Nadgodziny swiateczne"
+// (swieta z ta opcja zostaja jako nadgodziny swiateczne). Przy kazdej zmianie dnia strefy
+// "Nadgodziny 100%" tego dnia sa ukladane od nowa (takze reczne); gdy juz sa poprawne - nic sie nie dzieje.
+//
+// Cala praca dzieje sie tutaj, a metoda zwraca false - dzieki temu enova nie tworzy
+// rekordow zadan (Tasks) przy kazdym zapisie.
+public override bool IsEnable() {
+    Soneta.Kalend.KalendModule kalend = Soneta.Kalend.KalendModule.GetInstance(Row);
+    Soneta.Kalend.DefinicjaStrefy defN100 = kalend.DefinicjeStref[Soneta.Kalend.DefinicjaStrefy.N100];
+    if (defN100 == null)
+        return false;
+
+    // Dni tego pracownika zmienione w biezacym zapisie (sam dzien albo jego strefy)
+    System.Collections.Generic.Dictionary<Date, Soneta.Kalend.DzienPracy> dni = new System.Collections.Generic.Dictionary<Date, Soneta.Kalend.DzienPracy>();
+    foreach (object o in kalend.DniPracy.Rows.Changed) {
+        Soneta.Kalend.DzienPracy d = o as Soneta.Kalend.DzienPracy;
+        if (d == null || d.State == Soneta.Business.RowState.Deleted || d.State == Soneta.Business.RowState.Detached)
+            continue;
+        if (d.Pracownik == Row)
+            dni[d.Data] = d;
+    }
+    foreach (object o in kalend.StrefyPracy.Rows.Changed) {
+        Soneta.Kalend.StrefaPracy s = o as Soneta.Kalend.StrefaPracy;
+        if (s == null || s.State == Soneta.Business.RowState.Deleted || s.State == Soneta.Business.RowState.Detached)
+            continue;
+        Soneta.Kalend.DzienPracy d = s.Dzien;
+        if (d == null || d.State == Soneta.Business.RowState.Deleted || d.State == Soneta.Business.RowState.Detached)
+            continue;
+        if (d.Pracownik == Row)
+            dni[d.Data] = d;
+    }
+    if (dni.Count == 0)
+        return false;
+
+    Soneta.Kalend.KalkulatorPracownika czasy = Row.Czasy;
+
+    foreach (Soneta.Kalend.DzienPracy dzien in dni.Values) {
+        // Definicja dnia wg planu (ta sama, ktora widzi silnik nadgodzin)
+        Soneta.Kalend.Dzien plan = czasy.KalkPlanu[dzien.Data];
+        if (plan == null || plan.Definicja == null)
+            continue;
+        if (plan.Definicja.Typ != Soneta.Kalend.TypDnia.Świąteczny || plan.Definicja.NadgodzinySW)
+            continue;
+
+        Soneta.Kadry.PracHistoria ph = Row[dzien.Data];
+        if (ph == null)
+            continue;
+        Time norma = ph.Etat.NormaDobowa;
+
+        // Czas pracy dnia jak w silniku: strefy wchodzace do czasu pracy i zwiekszajace go
+        Soneta.Kalend.FromTimes praca = Soneta.Kalend.FromTimes.Empty;
+        Time bezGodzin = Time.Zero;
+        Soneta.Kalend.FromTimes istniejace = Soneta.Kalend.FromTimes.Empty;
+        Time istniejaceBezGodzin = Time.Zero;
+        System.Collections.Generic.List<Soneta.Kalend.StrefaPracy> strefyN100 = new System.Collections.Generic.List<Soneta.Kalend.StrefaPracy>();
+        foreach (Soneta.Kalend.StrefaPracy s in dzien.Strefy) {
+            if (s.Definicja == null || s.Praca.Czas <= Time.Zero)
+                continue;
+            if (s.Definicja == defN100) {
+                strefyN100.Add(s);
+                if (s.Praca.OdGodziny != Time.Empty)
+                    istniejace = istniejace.Add(new Soneta.Kalend.FromTime(s.Praca.OdGodziny, s.Praca.Czas));
+                else
+                    istniejaceBezGodzin += s.Praca.Czas;
+                continue;
+            }
+            if (!s.Definicja.Wchodzi || s.Definicja.Typ != Soneta.Kalend.TypStrefy.Zwieksza)
+                continue;
+            if (s.Praca.OdGodziny != Time.Empty)
+                praca = praca.Add(new Soneta.Kalend.FromTime(s.Praca.OdGodziny, s.Praca.Czas));
+            else
+                bezGodzin += s.Praca.Czas;
+        }
+
+        Time czas = praca.Time + bezGodzin;
+        Time nadwyzka = czas > norma ? czas - norma : Time.Zero;
+
+        // Docelowo: ostatnie godziny pracy ponad norme (bez godzin od, gdy praca nie ma godzin)
+        Soneta.Kalend.FromTimes docelowe = Soneta.Kalend.FromTimes.Empty;
+        Time doceloweBezGodzin = Time.Zero;
+        if (nadwyzka > Time.Zero) {
+            if (bezGodzin == Time.Zero)
+                docelowe = praca.Sub(praca.Intersection(norma));
+            else
+                doceloweBezGodzin = nadwyzka;
+        }
+
+        // Juz poprawnie - nic nie zmieniamy (chroni przed petla wyzwalacza)
+        bool zgodne = istniejaceBezGodzin == doceloweBezGodzin && istniejace.Count == docelowe.Count
+            && istniejace.Time == docelowe.Time;
+        if (zgodne) {
+            int i = 0;
+            foreach (Soneta.Kalend.FromTime a in istniejace) {
+                int j = 0;
+                foreach (Soneta.Kalend.FromTime b in docelowe) {
+                    if (j == i && (a.From != b.From || a.Time != b.Time))
+                        zgodne = false;
+                    j++;
+                }
+                i++;
+            }
+        }
+        if (zgodne)
+            continue;
+
+        foreach (Soneta.Kalend.StrefaPracy s in strefyN100)
+            s.Delete();
+
+        foreach (Soneta.Kalend.FromTime ft in docelowe) {
+            if (ft.Time <= Time.Zero)
+                continue;
+            Soneta.Kalend.StrefaPracy nowa = new Soneta.Kalend.StrefaPracy(dzien);
+            kalend.StrefyPracy.AddRow(nowa);
+            nowa.Definicja = defN100;
+            nowa.Praca.OdGodziny = ft.From;
+            nowa.Praca.Czas = ft.Time;
+        }
+        if (doceloweBezGodzin > Time.Zero) {
+            Soneta.Kalend.StrefaPracy nowa = new Soneta.Kalend.StrefaPracy(dzien);
+            kalend.StrefyPracy.AddRow(nowa);
+            nowa.Definicja = defN100;
+            nowa.Praca.Czas = doceloweBezGodzin;
+        }
+    }
+    return false;
+}
+//** end enable condition **
+
+//** begin active condition **
+public override bool IsActive() {
+    return false;
+}
+//** end active condition **
+
+//** begin realised condition **
+public override bool IsRealised() {
+    return false;
+}
+//** end realised condition **
+
+//** begin action **
+public override void Action() {
+}
+//** end action **
