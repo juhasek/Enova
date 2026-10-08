@@ -24,3 +24,12 @@ nadmiar trafia do N50/N100 jak w zwykły dzień.
 **Uwaga:** jeśli w schemacie płac jest osobny element płacący `NSW`
 (dopłata do nadgodzin świątecznych), trzeba go wyłączyć — inaczej te same
 godziny zostaną zapłacone dwa razy.
+
+## Procent — poprawka z 2026-10-08
+
+Standardowy kod brał procent dodatku z
+`Element.Definicja.Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent`. Przy
+algorytmie z edytora C# współczynnik kreatora nie jest wypełniony, więc
+procent wynosił 0 i element liczył 0 zł mimo poprawnej liczby godzin.
+Teraz procent jest ustawiony na sztywno: `new Percent(1m)` = 100%
+(`Percent(0.6m)` w tym samym kodzie oznacza 60%).
