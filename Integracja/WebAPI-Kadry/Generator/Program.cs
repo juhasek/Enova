@@ -607,6 +607,7 @@ static class Program
         var sc = Scenariusze();
         ZapiszPostman(sc, katalog);
         ZapiszXlsx(sc, katalog);
+        Mapowanie.ZapiszXlsx(katalog);
         Console.WriteLine($"Scenariusze: {sc.Count}, żądania Postman: {sc.Count(s => s.Usluga != null)}");
         return 0;
     }
