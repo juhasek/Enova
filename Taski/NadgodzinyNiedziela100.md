@@ -91,3 +91,36 @@ Dni zapisane przed założeniem taska trzeba „dotknąć” (otworzyć i zapisa
   zgłaszał `TaskDefRoslynAlgorithmExtender.EnableCondition GET: length
   (-6838) must be a non-negative value`. Znormalizowane, ponowna kompilacja
   bez błędów.
+## Poprawki i zabezpieczenia — 2026-10-08 (wersja obowiązująca)
+
+**Błąd „Próba zmiany wartości pola 'Praca.Od godziny' - pole w trybie tylko do
+odczytu”** (NG-04, 18.10.2026): strefa „Nadgodziny 100%” nie wchodzi do czasu
+pracy, a enova pozwala wpisać godzinę od tylko strefom z `Wchodzi`
+(`StrefaPracy.EnabledOdGodziny`). Task zapisuje teraz **jedną strefę z samym
+czasem** (bez godzin od) — dla silnika wystarcza, bo czyta tylko czas strefy.
+Punkty 3 i „ostatnie godziny pracy” z opisu wyżej są nieaktualne.
+
+**Pomijanie dni (zabezpieczenie 1):** strefa „Nadgodziny 100%” wyłącza w
+silniku całe liczenie dobowych dnia — także przeniesienia (magazyn),
+niewliczane do nadgodzin i bez dopłaty. Żeby nie rozliczyć godzin podwójnie,
+Task **nie rusza** dnia, w którym jest strefa:
+- z rozliczeniem „W kolejnych miesiącach”, „Z poprzednich miesięcy”,
+  „Wypłata nadgodzin” (przeniesienia/odbiór),
+- z podstawą nadgodzin „Nie wliczaj” / „Nie naliczaj”,
+- inna systemowa strefa nadgodzin (Nadgodziny 50%, 100% okresowe, ŚW) —
+  znak ręcznego rozliczenia.
+Taki dzień rozlicza się ręcznie. Nieobecność częściowa w niedzielę nie jest
+uwzględniana (silnik ją dolicza do czasu) — przypadek marginalny.
+
+**Kontrola (zabezpieczenie 2):** weryfikator kalendarza „A1_Nadgodziny 100% w
+niedziele” (Dzień pracy), kod w `Weryfikatory czasu pracy/Nadgodziny 100 w
+niedziele - kontrola`. Ostrzega, gdy w obsługiwanej niedzieli strefa
+„Nadgodziny 100%” ≠ praca ponad normę (dni sprzed Taska, zapis bez operatora,
+zmiana normy/etatu po zapisie dnia). **Podpinać jako Ostrzeżenie, nie Błąd** —
+`Saver.ClientSave` uruchamia weryfikatory PRZED Taskami (i ponownie po nich),
+więc Błąd zablokowałby zapis, zanim Task dopisze strefę.
+
+**Baza Claude:** TaskDefs 285 zaktualizowany; DefWeryfKalend **1040**
+(kod w definicji, nie w CodeFiles — w tej bazie nie ma
+`A1WeryfikatoryKalendarza`), podpięty jako Ostrzeżenie do kalendarza
+„Test nadgodziny nowe” (28).
