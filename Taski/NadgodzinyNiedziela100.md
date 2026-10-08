@@ -124,3 +124,41 @@ więc Błąd zablokowałby zapis, zanim Task dopisze strefę.
 (kod w definicji, nie w CodeFiles — w tej bazie nie ma
 `A1WeryfikatoryKalendarza`), podpięty jako Ostrzeżenie do kalendarza
 „Test nadgodziny nowe” (28).
+
+## Wnioski o nadgodziny przy wersjonowaniu — 2026-10-08
+
+Najważniejszy przypadek klienta: pracownik składa wniosek o nadgodziny na
+niedzielę, a czas pracy przekracza normę (8h). Klient ma włączone
+wersjonowanie kalendarzy.
+
+**Mechanizm enova (dekompilacja 2512.5.6):**
+- `DzienPracy.CalcReadOnly()` — przy `WersjonowanieCzas` kalendarza dzień
+  pracy jest tylko do odczytu, chyba że `DniPracy.ForceWriteMode` (pole
+  `internal`).
+- Realizacja wniosku (`RozliczenieCzasuPracy.WykonajInt`) włącza
+  `ForceWriteMode`, dopisuje strefę ze „zlecenia” (np. „Praca poza normą”),
+  wyłącza `ForceWriteMode` i woła `RecalculateRO()` (`internal`) na
+  zmienionych dniach. Tak samo zatwierdzenie DAK.
+- Task uruchamia się dopiero potem (`Saver.doEventsAndTasks`), na dniu już
+  zablokowanym — bez odblokowania dopisanie strefy kończy się błędem „tylko
+  do odczytu” i wycofaniem całej realizacji wniosku / zatwierdzenia DAK.
+
+**Rozwiązanie (zaakceptowane przez użytkownika):** Task, gdy dzień jest
+tylko do odczytu, robi to samo co enova: na czas zmiany włącza
+`ForceWriteMode` i przelicza stan dnia (`RecalculateRO`), potem przywraca.
+Oba elementy są niepubliczne → dostęp przez refleksję.
+- Dzień po odblokowaniu dalej tylko do odczytu (blokada okresu) → pomijany.
+- Brak pola/metody po aktualizacji enova → dzień pomijany bez błędu
+  (kontrola „A1_Nadgodziny 100% w niedziele” pokaże ostrzeżenie).
+- Wniosek z odbiorem czasem wolnym („Nadgodziny do przeniesienia”) → dzień
+  pomijany jak dotąd (godziny idą do magazynu).
+
+**Ryzyka:**
+- Zależność od wewnętrznych elementów enova — **sprawdzać po każdej
+  aktualizacji** (test: wniosek na niedzielę > 8h).
+- Dopisana strefa nie trafia do historii wersji dnia (`DzienPracyHistoria`).
+
+**Status:** kompiluje się lokalnie na DLL 2512.5.6; refleksja sprawdzona na
+prawdziwej bibliotece (`Soneta.Kalend.DniPracy.ForceWriteMode` bool
+internal, `Soneta.Kalend.DzienPracy.RecalculateRO()` internal). Wgrane do
+bazy Claude (TaskDefs 285, stamp podbity). Niesprawdzone na żywo.

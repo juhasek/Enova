@@ -21,6 +21,13 @@
 // Przy kazdej zmianie dnia strefa "Nadgodziny 100%" jest ukladana od nowa (takze reczna);
 // gdy juz jest poprawna - nic sie nie dzieje.
 //
+// Wersjonowanie kalendarzy: dzien pracy jest wtedy "tylko do odczytu". Realizacja wniosku
+// o nadgodziny (RozliczenieCzasuPracy.WykonajInt) i zatwierdzenie DAK zapisuja dzien z wewnetrznie
+// wlaczonym DniPracy.ForceWriteMode, a Task uruchamia sie juz po jego wylaczeniu. Task odblokowuje
+// dzien tak samo jak enova (ForceWriteMode + RecalculateRO, oba internal - przez refleksje) tylko
+// na czas dopisania strefy. Gdy dzien dalej jest tylko do odczytu (np. blokada okresu) albo
+// mechanizm zniknie po aktualizacji enova - dzien jest pomijany bez bledu (kontrola pokaze ostrzezenie).
+//
 // Cala praca dzieje sie tutaj, a metoda zwraca false - dzieki temu enova nie tworzy
 // rekordow zadan (Tasks) przy kazdym zapisie.
 public override bool IsEnable() {
@@ -52,6 +59,15 @@ public override bool IsEnable() {
         return false;
 
     Soneta.Kalend.KalkulatorPracownika czasy = Row.Czasy;
+
+    // Wewnetrzne elementy enova do odblokowania dnia przy wersjonowaniu (null = brak, dzien pomijany)
+    System.Reflection.FieldInfo poleForceWrite = null;
+    for (Type t = kalend.DniPracy.GetType(); t != null && poleForceWrite == null; t = t.BaseType)
+        poleForceWrite = t.GetField("ForceWriteMode", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+    if (poleForceWrite != null && poleForceWrite.FieldType != typeof(bool))
+        poleForceWrite = null;
+    System.Reflection.MethodInfo metodaRecalcRO = typeof(Soneta.Kalend.DzienPracy).GetMethod("RecalculateRO",
+        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public, null, Type.EmptyTypes, null);
 
     foreach (Soneta.Kalend.DzienPracy dzien in dni.Values) {
         // Definicja dnia wg planu (ta sama, ktora widzi silnik nadgodzin)
@@ -108,14 +124,36 @@ public override bool IsEnable() {
         if (nadwyzka > Time.Zero && strefyN100.Count == 1 && istniejace == nadwyzka)
             continue;
 
-        foreach (Soneta.Kalend.StrefaPracy s in strefyN100)
-            s.Delete();
+        // Dzien tylko do odczytu (wersjonowanie) - odblokowanie jak w enova na czas zmiany
+        bool odblokowany = false;
+        if (dzien.IsReadOnly()) {
+            if (poleForceWrite == null || metodaRecalcRO == null)
+                continue;
+            poleForceWrite.SetValue(kalend.DniPracy, true);
+            metodaRecalcRO.Invoke(dzien, null);
+            odblokowany = true;
+            if (dzien.IsReadOnly()) {
+                poleForceWrite.SetValue(kalend.DniPracy, false);
+                metodaRecalcRO.Invoke(dzien, null);
+                continue;
+            }
+        }
+        try {
+            foreach (Soneta.Kalend.StrefaPracy s in strefyN100)
+                s.Delete();
 
-        if (nadwyzka > Time.Zero) {
-            Soneta.Kalend.StrefaPracy nowa = new Soneta.Kalend.StrefaPracy(dzien);
-            kalend.StrefyPracy.AddRow(nowa);
-            nowa.Definicja = defN100;
-            nowa.Praca.Czas = nadwyzka;
+            if (nadwyzka > Time.Zero) {
+                Soneta.Kalend.StrefaPracy nowa = new Soneta.Kalend.StrefaPracy(dzien);
+                kalend.StrefyPracy.AddRow(nowa);
+                nowa.Definicja = defN100;
+                nowa.Praca.Czas = nadwyzka;
+            }
+        }
+        finally {
+            if (odblokowany) {
+                poleForceWrite.SetValue(kalend.DniPracy, false);
+                metodaRecalcRO.Invoke(dzien, null);
+            }
         }
     }
     return false;

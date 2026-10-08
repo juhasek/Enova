@@ -1,0 +1,1822 @@
+{
+  "info": {
+    "name": "Integracja WebAPI - Kadry (scenariusze testowe)",
+    "description": "Ramki testowe usług IStaff / IStrukturaWydzialowa dodatku WebAPI oraz diagnostyki WCF.Core. Wywołania przez MethodInvoker (POST /api/MethodInvoker/InvokeServiceMethod). Uruchamiać w kolejności folderów na BAZIE TESTOWEJ. Opis scenariuszy: Scenariusze testowe.xlsx.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0 Diagnostyka",
+      "item": [
+        {
+          "name": "D-01 Połączenie i wersje (GetWebServiceInfo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('D-01', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceCore}}\",\n  \"MethodName\": \"GetWebServiceInfo\",\n  \"MethodArgs\": {\n  \"pars\": { }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Potwierdzić, że MethodInvoker odpowiada, operator się loguje, i odczytać wersję enova oraz biblioteki WCF.Core (analiza: rozjazd wersji 2510 / 2606).\r\n\r\n**Warunki wstępne:** Dodatek WebAPI i WCF.Core wgrane na serwer testowy; środowisko Postman uzupełnione.\r\n\r\n**Oczekiwany wynik:** IsException = false; ResultInstance.Data zawiera WersjaEnova, WersjaBibliotekiWS, LoginSuccess = true.\r\n\r\n**Kontrola w enova:** Zanotować WersjaEnova i WersjaBibliotekiWS w kolumnie Uwagi.\r\n"
+          }
+        },
+        {
+          "name": "D-02 Mapa usług na kontrolery Dynamic WebAPI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('D-02', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceCore}}\",\n  \"MethodName\": \"GetServicesToControllersMap\",\n  \"MethodArgs\": {\n  \"pars\": { }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Sprawdzić, czy usługi dodatku (IStaff, IStrukturaWydzialowa) mają kontrolery Dynamic WebAPI (/api/{usługa}/{metoda}); w kodzie dodatku brak DynamicApiControllerAttribute.\r\n\r\n**Warunki wstępne:** D-01 OK.\r\n\r\n**Oczekiwany wynik:** Lista par Service -> Controller.\r\n\r\n**Kontrola w enova:** Jeśli IStaff / IStrukturaWydzialowa NIE występują - dodatek działa tylko przez MethodInvoker (stary endpoint). Wpisać wynik w Uwagi.\r\n"
+          }
+        },
+        {
+          "name": "D-03 Dokumentacja usługi IStaff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('D-03', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceCore}}\",\n  \"MethodName\": \"GetDocumentation\",\n  \"MethodArgs\": {\n  \"pars\": { \"TypUslugi\": \"{{serviceStaff}}\", \"Wersja\": 2, \"SchemaJson\": true, \"DlaZapisu\": true, \"DynamicApi\": false }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Wygenerować dokumentację/wzorzec JSON metod dodatku i porównać z ramkami w tej kolekcji (nazwy pól, wymagalność).\r\n\r\n**Warunki wstępne:** D-01 OK.\r\n\r\n**Oczekiwany wynik:** Zwrócona dokumentacja z przykładowym JSON-em UpsertEmployee / UpsertTermination.\r\n\r\n**Kontrola w enova:** Rozbieżności z ramkami odnotować w Uwagi.\r\n"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 Wydziały",
+      "item": [
+        {
+          "name": "W-01 Lista oddziałów firmy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-01', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"GetOddzialy\",\n  \"MethodArgs\": {\n  \"pars\": { \"LastID\": 0, \"PacketSize\": 100 }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Odczyt oddziałów (GetOddzialy); każde wywołanie robi ResyncCaches - zmierzyć czas.\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** Lista oddziałów (Identifier, Symbol, Locked).\r\n\r\n**Kontrola w enova:** Porównać z Narzędzia → Firma → Oddziały. Zanotować czas odpowiedzi.\r\n"
+          }
+        },
+        {
+          "name": "W-02 Lista wydziałów",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-02', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"GetWydzialy\",\n  \"MethodArgs\": {\n  \"pars\": { \"LastID\": 0, \"PacketSize\": 200, \"UpdateDate\": { \"Year\": 2026, \"Month\": 10, \"Day\": 1 } }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Odczyt drzewa wydziałów (GetWydzialy) i wybór ID wydziału nadrzędnego do W-03.\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** Lista wydziałów z Code, Name, Parents, StartDate, EndDate.\r\n\r\n**Kontrola w enova:** Wpisać ID wybranego wydziału nadrzędnego do zmiennej parentWydzialId.\r\n"
+          }
+        },
+        {
+          "name": "W-03 Nowy wydział",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-03', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));",
+                  "if (r && r.ID) { pm.collectionVariables.set('testWydzialId', r.ID); console.log('testWydzialId = ' + r.ID); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"UpsertWydzial\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"Code\": \"API-TEST-01\",\n    \"Name\": \"Wydział testowy API\",\n    \"Parents\": [ { \"StartDate\": \"2026-01-01T00:00:00\", \"ParentID\": {{parentWydzialId}} } ],\n    \"StartDate\": \"2026-01-01T00:00:00\",\n    \"Locked\": false\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Założenie wydziału pod wskazanym rodzicem. Analiza: wynik nie ustawia Success = true.\r\n\r\n**Warunki wstępne:** parentWydzialId uzupełnione (W-02); kod API-TEST-01 nie istnieje.\r\n\r\n**Oczekiwany wynik:** Zwrócone ID i Kod nowego wydziału. (Ryzyko: Success = false mimo zapisu.)\r\n\r\n**Kontrola w enova:** Kadry → Wydziały: wydział API-TEST-01 istnieje pod właściwym rodzicem, okres od 2026-01-01.\r\n"
+          }
+        },
+        {
+          "name": "W-04 Zmiana nazwy wydziału",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-04', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"UpsertWydzial\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"ID\": {{testWydzialId}},\n    \"Code\": \"API-TEST-01\",\n    \"Name\": \"Wydział testowy API - zmiana\",\n    \"Parents\": [ ],\n    \"StartDate\": \"2026-01-01T00:00:00\",\n    \"Locked\": false\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Modyfikacja nazwy po ID. Analiza: Kod/Nazwa ustawiane bez daty - sprawdzić, czy powstaje nowy zapis historii, czy nadpisywany jest bieżący.\r\n\r\n**Warunki wstępne:** W-03 OK (testWydzialId ustawione).\r\n\r\n**Oczekiwany wynik:** Success / ID zwrócone; nazwa zmieniona.\r\n\r\n**Kontrola w enova:** Historia danych wydziału: czy jest nowy zapis z datą, czy nadpisano poprzedni.\r\n"
+          }
+        },
+        {
+          "name": "W-05 Nowy wydział bez rodzica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-05', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"UpsertWydzial\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"Code\": \"API-TEST-02\",\n    \"Name\": \"Wydział testowy API\",\n    \"Parents\": [ ],\n    \"StartDate\": \"2026-01-01T00:00:00\",\n    \"Locked\": false\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Walidacja: brak Parents przy nowym wydziale.\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** Odrzucone z komunikatem „Należy podac ID wydzialu nadrzednego”.\r\n\r\n**Kontrola w enova:** Wydział API-TEST-02 NIE powstał.\r\n"
+          }
+        },
+        {
+          "name": "W-06 Parents = null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-06', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"UpsertWydzial\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"Code\": \"API-TEST-03\",\n    \"Name\": \"Wydział testowy API\",\n    \"Parents\": null,\n    \"StartDate\": \"2026-01-01T00:00:00\",\n    \"Locked\": false\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: Parents = null powoduje NullReferenceException zamiast czytelnego błędu.\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** Odrzucone z czytelnym komunikatem. (Ryzyko: NullReferenceException.)\r\n\r\n**Kontrola w enova:** Zanotować treść błędu.\r\n"
+          }
+        },
+        {
+          "name": "W-07 Nieistniejące ID wydziału",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-07', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"UpsertWydzial\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"ID\": 999999,\n    \"Code\": \"API-TEST-01\",\n    \"Name\": \"Nie istnieje\",\n    \"Parents\": [ ],\n    \"StartDate\": \"2026-01-01T00:00:00\",\n    \"Locked\": false\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Modyfikacja wydziału o nieistniejącym ID.\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** Odrzucone z czytelnym komunikatem. (Ryzyko: NullReferenceException.)\r\n\r\n**Kontrola w enova:** Zanotować treść błędu.\r\n"
+          }
+        },
+        {
+          "name": "W-08 Usunięcie wydziału przez operatora bez uprawnień",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-08', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operatorOgraniczony}}\",\n  \"Password\": \"{{passwordOgraniczony}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"DeleteWydzial\",\n  \"MethodArgs\": {\n  \"pars\": { \"ID\": {{testWydzialId}} }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: dodatek przekazuje pustą nazwę metody do kontroli uprawnień - DeleteWydzial może nie podlegać kontroli praw.\r\n\r\n**Warunki wstępne:** W-03 OK. Operator {{operatorOgraniczony}} bez prawa do zmian wydziałów (Konfiguracja).\r\n\r\n**Oczekiwany wynik:** Odrzucone - brak uprawnień. (Ryzyko: wydział usunięty.)\r\n\r\n**Kontrola w enova:** Wydział API-TEST-01 nadal istnieje.\r\n"
+          }
+        },
+        {
+          "name": "W-09 Usunięcie wydziału",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('W-09', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceWydzialy}}\",\n  \"MethodName\": \"DeleteWydzial\",\n  \"MethodArgs\": {\n  \"pars\": { \"ID\": {{testWydzialId}} }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Usunięcie testowego wydziału. Analiza: wynik nie ustawia Success; zwraca ID nawet, gdy wydziału nie było.\r\n\r\n**Warunki wstępne:** W-03 OK; wydział bez pracowników.\r\n\r\n**Oczekiwany wynik:** Wydział usunięty, zwrócone ID. (Ryzyko: Success = false.)\r\n\r\n**Kontrola w enova:** Wydział API-TEST-01 nie istnieje. Powtórzyć żądanie - zanotować wynik dla nieistniejącego ID.\r\n"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 Pracownik",
+      "item": [
+        {
+          "name": "P-01 Nowy pracownik - komplet danych",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-01', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Założenie pracownika ze wszystkimi sekcjami. Analiza: przy nowym pracowniku DataAktualizacji jest pomijana; Tyub4 ustawiany na sztywno 0110.\r\n\r\n**Warunki wstępne:** Kod {{kodTest}} nie istnieje. Istnieją: wydział {{wydzialKod}}, stanowisko {{stanowisko}}, US {{kodUS}}, cechy „Typ pracownika” (historia) i „Numer koncernowy” (pracownik).\r\n\r\n**Oczekiwany wynik:** Success = true, „Employee was successfully added/updated”.\r\n\r\n**Kontrola w enova:** Kartoteka: dane osobowe, płeć = mężczyzna (z PESEL), 3 adresy (woj. małopolskie), US, etat (wydział, stanowisko, wymiar, typ umowy), tytuł ubezp. 0110, rachunek PL61…, kontakty tel./e-mail domyślne, cechy. Data początku zapisu historii - zanotować.\r\n"
+          }
+        },
+        {
+          "name": "P-02 Ponowne wysłanie tych samych danych",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-02', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Idempotentność: drugi raz ta sama ramka nie może dublować rachunków ani kontaktów.\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Brak duplikatów rachunków i kontaktów; nie powstał nowy zapis historii (data 2026-01-01 = istniejący zapis).\r\n"
+          }
+        },
+        {
+          "name": "P-03 Aktualizacja istniejącego bez daty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-03', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": null, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Nie-Powinno-Sie-Zapisac\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Walidacja: istniejący pracownik bez DataAktualizacji.From.\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Success = false, „No employee updated/added”.\r\n\r\n**Kontrola w enova:** Nazwisko bez zmian.\r\n"
+          }
+        },
+        {
+          "name": "P-04 Aktualizacja danych osobowych z datą",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-04', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 3, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": null,\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Zmiana nazwiska od 2026-03-01 tworzy nowy zapis historii.\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Historia: nowy zapis od 2026-03-01 z nowym nazwiskiem; zapis od 2026-01-01 ze starym. Etat bez zmian.\r\n"
+          }
+        },
+        {
+          "name": "P-05a Przygotowanie: zmiana wymiaru w przyszłości",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-05a', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 9, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 2 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Przygotowanie do P-05b - zapis historii od 2026-09-01 z wymiarem 1/2.\r\n\r\n**Warunki wstępne:** P-04 OK.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Historia: zapis od 2026-09-01 z wymiarem 1/2.\r\n"
+          }
+        },
+        {
+          "name": "P-05b Zmiana wsteczna nie może nadpisać przyszłych zapisów",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-05b', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 4, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza (krytyczne): dane z datą X trafiają do WSZYSTKICH późniejszych zapisów historii.\r\n\r\n**Warunki wstępne:** P-05a OK.\r\n\r\n**Oczekiwany wynik:** Success = true; zapis od 2026-09-01 zachowuje wymiar 1/2. (Ryzyko: nadpisany na 1/1.)\r\n\r\n**Kontrola w enova:** Historia: zapis 2026-04-01 wymiar 1/1, zapis 2026-09-01 wymiar 1/2 - zanotować faktyczny stan.\r\n"
+          }
+        },
+        {
+          "name": "P-06 Adres bez województwa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-06', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 9, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Nowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": null,\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: Wojewodztwo zawsze nadpisywane (brak w JSON = nieokreślone).\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Success = true; ulica = Nowa, województwo nadal małopolskie. (Ryzyko: nieokreślone.)\r\n\r\n**Kontrola w enova:** Adres zamieszkania w zapisie od 2026-09-01.\r\n"
+          }
+        },
+        {
+          "name": "P-07 Zablokowany rachunek nie może zostać odblokowany",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-07', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 9, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": null,\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61 1090 1014 0000 0712 1981 2874\", \"Domyslne\": true } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: Blokada zawsze ustawiana z DTO (brak = false).\r\n\r\n**Warunki wstępne:** P-01 OK. W enova ręcznie zaznaczyć Blokada na rachunku PL61….\r\n\r\n**Oczekiwany wynik:** Success = true; rachunek nie zdublowany, Blokada pozostaje. (Ryzyko: odblokowany.)\r\n\r\n**Kontrola w enova:** Rachunki pracownika: jeden rachunek PL61…, stan blokady.\r\n"
+          }
+        },
+        {
+          "name": "P-08 Kontakty: telefon stacjonarny i dwa e-maile domyślne",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-08', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 9, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": null,\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 0, \"Kontakt\": \"12 345 67 89\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.drugi@example.com\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: telefon stacjonarny nie trafia do pola kontaktowego; kilka domyślnych tego samego rodzaju.\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Dane kontaktowe: ile domyślnych e-maili; czy telefon stacjonarny jest w polu Telefon. Zapisać stan.\r\n"
+          }
+        },
+        {
+          "name": "P-09 Nieistniejący wydział (JednostkaOrg)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-09', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 9, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"NIEISTNIEJE-XYZ\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Walidacja słownika wydziałów.\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Odrzucone: „Nie udało się pobrać wydziału o kodzie …”. Nic nie zapisane.\r\n\r\n**Kontrola w enova:** Etat bez zmian.\r\n"
+          }
+        },
+        {
+          "name": "P-10 Nieistniejące stanowisko",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-10', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 9, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"Stanowisko Nieistniejące XYZ\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Walidacja słownika stanowisk (wyszukiwanie po nazwie).\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Odrzucone: „Nie udało się pobrać definicji stanowiska …”.\r\n\r\n**Kontrola w enova:** Etat bez zmian.\r\n"
+          }
+        },
+        {
+          "name": "P-11 Cechy przez listę Features",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-11', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 9, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": null,\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": [ { \"Name\": \"{{cechaWebApi}}\", \"Value\": \"wartość z API\" } ]\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Zapis cechy z flagą „Dostęp przez WebAPI” / „Obsługa WCF” przez ogólny mechanizm biblioteki.\r\n\r\n**Warunki wstępne:** P-01 OK. Na Pracowniku istnieje cecha {{cechaWebApi}} (tekstowa) z flagą dostępu przez WebAPI.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Cecha ma wartość „wartość z API”. Powtórzyć z cechą bez flagi - zanotować komunikat.\r\n"
+          }
+        },
+        {
+          "name": "P-12 Data odcięcia - aktualizacja pracownika",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('P-12', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 5, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Odcięte\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": null,\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Dane starsze niż data odcięcia są odrzucane.\r\n\r\n**Warunki wstępne:** W Narzędzia → Opcje → strona konfiguracji dodatku ustawić „Data odcięcia” = 2026-06-01. Po teście wyczyścić.\r\n\r\n**Oczekiwany wynik:** Success = false, „Data older than the cut-off date - synchronization skipped”.\r\n\r\n**Kontrola w enova:** Brak zapisu historii od 2026-05-01.\r\n"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 Rozwiązanie umowy",
+      "item": [
+        {
+          "name": "R-01 Rozwiązanie umowy - standard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-01', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertTermination\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"PracownikKod\": \"{{kodTest}}\",\n    \"OkresUmowyOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n    \"OkresUmowyDo\": { \"Year\": 2026, \"Month\": 12, \"Day\": 31 },\n    \"TerminationDate\": { \"Year\": 2026, \"Month\": 10, \"Day\": 31 },\n    \"TerminationReason\": \"{{przyczyna}}\",\n    \"RejestracjaZus\": true\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Zakończenie etatu, przyczyna, wyrejestrowanie z ZUS. Analiza: daty Do ubezpieczeń = data rozwiązania + 1.\r\n\r\n**Warunki wstępne:** P-01 OK (etat od 2026-01-01). Data odcięcia wyczyszczona. Przyczyna {{przyczyna}} istnieje w słowniku.\r\n\r\n**Oczekiwany wynik:** Success = true, „The employee's contract has been updated successfully”.\r\n\r\n**Kontrola w enova:** Etat: okres 2026-01-01…2026-10-31 we wszystkich zapisach od tej umowy; przyczyna rozwiązania; ubezpieczenia: Wyrejestrowany, data Do (zanotować - 31.10 czy 01.11?) i data na ZUS ZWUA.\r\n"
+          }
+        },
+        {
+          "name": "R-02 Zwykła aktualizacja po rozwiązaniu nie może cofnąć rozwiązania",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-02', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 10, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API-Zmiana\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza (krytyczne): UpsertEmployee czyści pola rozwiązania i ustawia okres etatu z DTO (brak OkresZatrudnieniaDo = bez końca).\r\n\r\n**Warunki wstępne:** R-01 OK.\r\n\r\n**Oczekiwany wynik:** Success = true; etat nadal kończy się 2026-10-31, przyczyna rozwiązania zachowana. (Ryzyko: rozwiązanie cofnięte.)\r\n\r\n**Kontrola w enova:** Etat w zapisach od 2026-10-01: data końca, przyczyna, kod zwolnienia, wyrejestrowanie.\r\n"
+          }
+        },
+        {
+          "name": "R-03 Przyczyna spoza słownika",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-03', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertTermination\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"PracownikKod\": \"{{kodTest}}\",\n    \"OkresUmowyOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n    \"OkresUmowyDo\": { \"Year\": 2026, \"Month\": 12, \"Day\": 31 },\n    \"TerminationDate\": { \"Year\": 2026, \"Month\": 10, \"Day\": 31 },\n    \"TerminationReason\": \"PRZYCZYNA SPOZA SŁOWNIKA\",\n    \"RejestracjaZus\": true\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: przyczyna szukana po nazwie; brak = pusta przyczyna, a wynik i tak Success = true.\r\n\r\n**Warunki wstępne:** R-01 OK.\r\n\r\n**Oczekiwany wynik:** Odrzucone z komunikatem. (Ryzyko: Success = true i pusta przyczyna.)\r\n\r\n**Kontrola w enova:** Przyczyna rozwiązania na etacie.\r\n"
+          }
+        },
+        {
+          "name": "R-04 Niezgodny początek umowy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-04', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertTermination\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"PracownikKod\": \"{{kodTest}}\",\n    \"OkresUmowyOd\": { \"Year\": 2025, \"Month\": 1, \"Day\": 1 },\n    \"OkresUmowyDo\": { \"Year\": 2026, \"Month\": 12, \"Day\": 31 },\n    \"TerminationDate\": { \"Year\": 2026, \"Month\": 10, \"Day\": 31 },\n    \"TerminationReason\": \"{{przyczyna}}\",\n    \"RejestracjaZus\": true\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** OkresUmowyOd nie pasuje do żadnego etatu.\r\n\r\n**Warunki wstępne:** P-01 OK.\r\n\r\n**Oczekiwany wynik:** Success = false, „Employee's contract was not updated”.\r\n\r\n**Kontrola w enova:** Etat bez zmian.\r\n"
+          }
+        },
+        {
+          "name": "R-05 Nieistniejący pracownik",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-05', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertTermination\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"PracownikKod\": \"NIEISTNIEJE-XYZ\",\n    \"OkresUmowyOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n    \"OkresUmowyDo\": { \"Year\": 2026, \"Month\": 12, \"Day\": 31 },\n    \"TerminationDate\": { \"Year\": 2026, \"Month\": 10, \"Day\": 31 },\n    \"TerminationReason\": \"{{przyczyna}}\",\n    \"RejestracjaZus\": true\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Walidacja kodu pracownika.\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** Odrzucone: „Employee code (PersonID) not found: NIEISTNIEJE-XYZ”.\r\n\r\n**Kontrola w enova:** —\r\n"
+          }
+        },
+        {
+          "name": "R-06a Przygotowanie: drugi pracownik",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-06a', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 11, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest2}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"90010112349\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 11, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 11, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ ],\n    \"DaneKontaktowe\": [ ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Pracownik do testów R-06b i R-07 (etat od 2026-11-01).\r\n\r\n**Warunki wstępne:** Kod {{kodTest2}} nie istnieje.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Pracownik {{kodTest2}} istnieje, tytuł ubezp. 0110.\r\n"
+          }
+        },
+        {
+          "name": "R-06b Rozwiązanie bez rejestracji w ZUS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-06b', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertTermination\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"PracownikKod\": \"{{kodTest2}}\",\n    \"OkresUmowyOd\": { \"Year\": 2026, \"Month\": 11, \"Day\": 1 },\n    \"OkresUmowyDo\": { \"Year\": 2026, \"Month\": 12, \"Day\": 31 },\n    \"TerminationDate\": { \"Year\": 2026, \"Month\": 11, \"Day\": 30 },\n    \"TerminationReason\": \"{{przyczyna}}\",\n    \"RejestracjaZus\": false\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: RejestracjaZus = false usuwa tytuł ubezpieczenia (Tyub4) z całego zapisu historii.\r\n\r\n**Warunki wstępne:** R-06a OK.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Etat do 2026-11-30; tytuł ubezpieczenia - zanotować czy pusty; wpływ na deklaracje ZUS.\r\n"
+          }
+        },
+        {
+          "name": "R-07 NO SHOW - pracownik nie podjął pracy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-07', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Brak wyjątku', () => pm.expect(j.IsException, j.ExceptionMessage).to.eql(false));",
+                  "pm.test('Success = true', () => pm.expect(r && r.Success, r && r.Description).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertTermination\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"PracownikKod\": \"{{kodTest2}}\",\n    \"OkresUmowyOd\": { \"Year\": 2026, \"Month\": 11, \"Day\": 1 },\n    \"OkresUmowyDo\": { \"Year\": 2026, \"Month\": 12, \"Day\": 31 },\n    \"TerminationDate\": { \"Year\": 2026, \"Month\": 11, \"Day\": 1 },\n    \"TerminationReason\": \"NO SHOW\",\n    \"RejestracjaZus\": true\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** TerminationReason = NO SHOW i data rozwiązania = początek umowy czyści okres etatu.\r\n\r\n**Warunki wstępne:** R-06a OK.\r\n\r\n**Oczekiwany wynik:** Success = true.\r\n\r\n**Kontrola w enova:** Etat: okres pusty, pola rozwiązania wyczyszczone.\r\n"
+          }
+        },
+        {
+          "name": "R-08 Data odcięcia - rozwiązanie umowy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('R-08', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertTermination\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"PracownikKod\": \"{{kodTest}}\",\n    \"OkresUmowyOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n    \"OkresUmowyDo\": { \"Year\": 2026, \"Month\": 12, \"Day\": 31 },\n    \"TerminationDate\": { \"Year\": 2026, \"Month\": 10, \"Day\": 15 },\n    \"TerminationReason\": \"{{przyczyna}}\",\n    \"RejestracjaZus\": true\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Analiza: UpsertTermination nie sprawdza daty odcięcia.\r\n\r\n**Warunki wstępne:** R-01 OK. Ustawić „Data odcięcia” = 2026-12-01. Po teście wyczyścić.\r\n\r\n**Oczekiwany wynik:** Odrzucone (zgodnie z ideą daty odcięcia). (Ryzyko: rozwiązanie przetworzone.)\r\n\r\n**Kontrola w enova:** Etat: data końca - czy zmieniona na 2026-10-15.\r\n"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 Techniczne i bezpieczeństwo",
+      "item": [
+        {
+          "name": "T-01 Błędne hasło",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('T-01', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"zle-haslo\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 }, \"To\": null },\n    \"Kod\": \"{{kodTest}}\",\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Odrzucenie żądania przy złym haśle operatora.\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** IsException = true / błąd logowania.\r\n\r\n**Kontrola w enova:** —\r\n"
+          }
+        },
+        {
+          "name": "T-02 Brak wymaganego pola Kod",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "let r = j.ResultInstance;",
+                  "if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { } }",
+                  "console.log('T-02', JSON.stringify(j, null, 2));",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Żądanie odrzucone (wyjątek lub Success = false)', () => pm.expect(j.IsException === true || (r != null && r.Success === false), JSON.stringify(r)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"{{serviceStaff}}\",\n  \"MethodName\": \"UpsertEmployee\",\n  \"MethodArgs\": {\n  \"pars\": {\n    \"DataAktualizacji\": { \"From\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 }, \"To\": null },\n    \"DataUrodzenia\": \"1985-03-15T00:00:00\",\n    \"Imie\": \"Jan\",\n    \"ImieDrugie\": \"\",\n    \"Nazwisko\": \"Testowy-API\",\n    \"NazwiskoRodowe\": \"Testowy-API\",\n    \"ImieOjca\": \"Adam\",\n    \"ImieMatki\": \"Ewa\",\n    \"PESEL\": \"85031512351\",\n    \"Obywatelstwo\": \"polskie\",\n    \"MiejsceUrodzenia\": \"Kraków\",\n    \"AdresZameldowania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresZamieszkania\": { \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"AdresDoKorespondencji\": { \"NazwaFirmy\": \"\", \"Ulica\": \"Testowa\", \"NrDomu\": \"1\", \"NrLokalu\": \"2\", \"KodPocztowyS\": \"30-001\", \"Miejscowosc\": \"Kraków\", \"Poczta\": \"Kraków\", \"KodKraju\": \"PL\", \"Kraj\": \"Polska\", \"Wojewodztwo\": 6, \"Powiat\": \"Kraków\", \"Gmina\": \"Kraków\" },\n    \"Podatki\": { \"KodUrzeduSkarbowego\": \"{{kodUS}}\", \"IdentyfikatorPodatkowy\": 1 },\n    \"KodPrawaDostepu\": \"{{wydzialKod}}\",\n    \"Zatrudnienie\": {\n      \"OkresZatrudnieniaOd\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"OkresZatrudnieniaDo\": null,\n      \"DataZawarciaUmowy\": { \"Year\": 2025, \"Month\": 12, \"Day\": 15 },\n      \"DataRozpoczeciaPracy\": { \"Year\": 2026, \"Month\": 1, \"Day\": 1 },\n      \"JednostkaOrg\": \"{{wydzialKod}}\",\n      \"ZatrudnienieNaPodstawie\": 1,\n      \"TypUmowy\": 1,\n      \"RodzajZatrudnienia\": 0,\n      \"Stanowisko\": \"{{stanowisko}}\",\n      \"Wymiar\": { \"Numerator\": 1, \"Denominator\": 1 },\n      \"TypPracownika\": \"{{typPracownika}}\"\n    },\n    \"PKID\": \"{{pkid}}\",\n    \"Rachunki\": [ { \"Numer\": \"PL61109010140000071219812874\", \"Kraj\": null, \"SWIFT\": null, \"KodBanku\": null, \"Domyslne\": true, \"Blokada\": false } ],\n    \"DaneKontaktowe\": [\n      { \"Rodzaj\": 1, \"Kontakt\": \"600100200\", \"Opis\": \"test API\", \"Domyslny\": true },\n      { \"Rodzaj\": 2, \"Kontakt\": \"jan.testowy@example.com\", \"Opis\": \"test API\", \"Domyslny\": true }\n    ],\n    \"Features\": []\n  }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "MethodInvoker",
+                "InvokeServiceMethod"
+              ]
+            },
+            "description": "**Cel:** Walidacja wymagalności pól (Required.Always).\r\n\r\n**Warunki wstępne:** —\r\n\r\n**Oczekiwany wynik:** Odrzucone - błąd deserializacji z nazwą pola.\r\n\r\n**Kontrola w enova:** Zanotować komunikat.\r\n"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "testWydzialId",
+      "value": ""
+    }
+  ]
+}

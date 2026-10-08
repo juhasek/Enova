@@ -46,6 +46,10 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
   (`dbmgr importxml`) na bazie testowej przed użyciem produkcyjnym —
   środowisko robocze tego repo nie ma dostępu do DLL/live-testu, więc
   takie pliki nie są tworzone jako w pełni zweryfikowane.
+- **Integracja/** — analizy, specyfikacje i materiały testowe integracji enova365
+  z systemami zewnętrznymi (WebAPI, synchronizacje), np. kolekcje Postman i scenariusze
+  testowe. Każda integracja w osobnym podkatalogu; wszystko dotyczące danej integracji
+  trafia tam (nie do `Zadania/`). Uzupełnionych środowisk Postman (hasła) nie commitować.
 - **Pobrane/** — pliki wejściowe przekazywane przez użytkownika do analizy
   (eksporty z enova365, wydruki, zrzuty ekranu, DLL-e klientów, logi).
   Katalog roboczy, a nie artefakt enova365 — wynik analizy trafia do
@@ -66,7 +70,8 @@ to skompilowane projekty .NET ani DLL-e, i nie mają samodzielnego pliku
 (np. nie próbować ich budować przez `dotnet build`), chyba że w repo pojawi
 się osobny folder **Addon/** zawierający właściwy projekt `.csproj` — to
 byłby sygnał, że mowa o skompilowanym dodatku enova365, a nie o wklejanym
-skrypcie. Wyjątkiem jest **Analiza/Generator/** — to zwykłe narzędzie
+skrypcie. Wyjątkiem jest **Integracja/*/Generator/** (konsolówka budująca kolekcję
+Postman i arkusz scenariuszy) oraz **Analiza/Generator/** — to zwykłe narzędzie
 konsolowe budujące arkusz z dokumentu `.md`, uruchamiane poza enovą (korzysta
 tylko z bibliotek DevExpress z katalogu serwera), a nie dodatek do wgrania.
 
