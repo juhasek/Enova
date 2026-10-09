@@ -208,25 +208,39 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
         if (phm == null || !phm.Etat.OkresZatrudnienia.Contains(mDo))
             continue;
         double zasadnicze = 0, zmienne = 0;
-        if (ZASADNICZE_NOMINALNE)
-            zasadnicze = ZasadniczeNominalne(mDo).Value;
+        bool jestWyplata = false;
         foreach (WypElement e in place.WypElementy.WgPracownik[prac]) {
             if (e.Okres.To < mOd || e.Okres.To > mDo)
                 continue;
             if (e.Definicja == null || e.Definicja == Element.Definicja)
                 continue;
             if (e.RodzajZrodla == RodzajŹródłaWypłaty.Etat) {
+                jestWyplata = true;
                 if (!ZASADNICZE_NOMINALNE)
                     zasadnicze += (double)e.Wartosc;
             }
             else if (e.Definicja.Nieobecnosci.Ekwiwalent.Typ != TypPodstawyUrlopu.NieWliczać)
                 zmienne += (double)e.Wartosc;
         }
+        // do średniej wchodzą tylko miesiące z wypłatą (naliczone wynagrodzenie zasadnicze za ten miesiąc)
+        if (!jestWyplata) {
+            Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: brak wypłaty - miesiąc pominięty");
+            continue;
+        }
+        if (ZASADNICZE_NOMINALNE)
+            zasadnicze = ZasadniczeNominalne(mDo).Value;
         miesiecy++;
         sumaP1 += zasadnicze + zmienne;
         Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: zasadnicze {zasadnicze:0.00} + zmienne {zmienne:0.00}");
     }
-    double podstawa1 = miesiecy > 0 ? System.Math.Round(sumaP1 / miesiecy, 2) : 0;
+    double podstawa1;
+    if (miesiecy > 0)
+        podstawa1 = System.Math.Round(sumaP1 / miesiecy, 2);
+    else {
+        // brak jakiejkolwiek wypłaty w 3 miesiącach (np. nowo zatrudniony) - zasadnicze nominalne z miesiąca rezerwy
+        podstawa1 = System.Math.Round(ZasadniczeNominalne(koniec).Value, 2);
+        Element.ZapisObliczen.Add("Podstawa 1 - brak wypłat w 3 miesiącach: przyjęto zasadnicze nominalne z miesiąca rezerwy");
+    }
     double stawka1 = alfaW > 0 ? podstawa1 / alfaW / normaH : 0;
     Element.ZapisObliczen.Add($"Podstawa 1 (średnia z {miesiecy} mies.): {podstawa1:0.00}; za 1 dzień {podstawa1 / alfaW:0.00}; za 1 godz. {stawka1:0.0000}");
 
@@ -506,25 +520,39 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
         if (phm == null || !phm.Etat.OkresZatrudnienia.Contains(mDo))
             continue;
         double zasadnicze = 0, zmienne = 0;
-        if (ZASADNICZE_NOMINALNE)
-            zasadnicze = ZasadniczeNominalne(mDo).Value;
+        bool jestWyplata = false;
         foreach (WypElement e in place.WypElementy.WgPracownik[prac]) {
             if (e.Okres.To < mOd || e.Okres.To > mDo)
                 continue;
             if (e.Definicja == null || e.Definicja == Element.Definicja)
                 continue;
             if (e.RodzajZrodla == RodzajŹródłaWypłaty.Etat) {
+                jestWyplata = true;
                 if (!ZASADNICZE_NOMINALNE)
                     zasadnicze += (double)e.Wartosc;
             }
             else if (e.Definicja.Nieobecnosci.Ekwiwalent.Typ != TypPodstawyUrlopu.NieWliczać)
                 zmienne += (double)e.Wartosc;
         }
+        // do średniej wchodzą tylko miesiące z wypłatą (naliczone wynagrodzenie zasadnicze za ten miesiąc)
+        if (!jestWyplata) {
+            Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: brak wypłaty - miesiąc pominięty");
+            continue;
+        }
+        if (ZASADNICZE_NOMINALNE)
+            zasadnicze = ZasadniczeNominalne(mDo).Value;
         miesiecy++;
         sumaP1 += zasadnicze + zmienne;
         Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: zasadnicze {zasadnicze:0.00} + zmienne {zmienne:0.00}");
     }
-    double podstawa1 = miesiecy > 0 ? System.Math.Round(sumaP1 / miesiecy, 2) : 0;
+    double podstawa1;
+    if (miesiecy > 0)
+        podstawa1 = System.Math.Round(sumaP1 / miesiecy, 2);
+    else {
+        // brak jakiejkolwiek wypłaty w 3 miesiącach (np. nowo zatrudniony) - zasadnicze nominalne z miesiąca rezerwy
+        podstawa1 = System.Math.Round(ZasadniczeNominalne(koniec).Value, 2);
+        Element.ZapisObliczen.Add("Podstawa 1 - brak wypłat w 3 miesiącach: przyjęto zasadnicze nominalne z miesiąca rezerwy");
+    }
     double stawka1 = alfaW > 0 ? podstawa1 / alfaW / normaH : 0;
     Element.ZapisObliczen.Add($"Podstawa 1 (średnia z {miesiecy} mies.): {podstawa1:0.00}; za 1 dzień {podstawa1 / alfaW:0.00}; za 1 godz. {stawka1:0.0000}");
 
