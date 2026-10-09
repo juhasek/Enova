@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # Buduje "Rezerwa urlopowa.dbinit.xml" (import wg rekordów, dbmgr importxml) z plików kodu w tym katalogu:
-#   "Rezerwa urlopowa"                  - algorytm elementu (wspólny dla rezerwy i budżetu)
-#   "Cecha widoku rezerwy (wzorzec)"    - wzorzec cechy kolumny widoku
-#   "Cecha widoku rezerwy MPK"          - cecha MPK
+#   "Rezerwa urlopowa"                                   - algorytm elementu (wspólny dla rezerwy i budżetu)
+#   "RezerwaUrlopowa (Dodatkowy kod kompilacji)"         - wspólny kod cech widoku (tabela CodeFiles)
+# Cechy widoku to jednolinijkowe wywołania metod z Dodatkowego kodu kompilacji.
 # GUID-y są stałe - ponowny import aktualizuje te same rekordy.
 set -euo pipefail
 cd "$(dirname "$0")"
 OUT="Rezerwa urlopowa.dbinit.xml"
 ALG="$(cat 'Rezerwa urlopowa')"
-WZ="$(cat 'Cecha widoku rezerwy (wzorzec)')"
+KOD_WSPOLNY="$(cat 'RezerwaUrlopowa (Dodatkowy kod kompilacji)')"
+KLASA="Soneta.Runtime.Database.Business.TblCodeFiles.RezerwaUrlopowa"
 
 element() { # guid nazwa skrot
 cat <<EOF
@@ -96,13 +97,8 @@ bool SourceFilter(object sender, SourceFilterArgs args) {
 EOF
 }
 
-cecha() { # guid nazwa element wyrazenie opis
-  local metoda kod
-  metoda="Feature_${2// /_}"
-  kod="${WZ//__METODA__/$metoda}"
-  kod="${kod//__ELEMENT__/$3}"
-  kod="${kod//__WYRAZENIE__/$4}"
-  kod="${kod//__TYP__/decimal}"
+cecha() { # guid nazwaCechy nazwaElementu metodaKlasy opis
+  local metodaCechy="Feature_${2// /_}"
 cat <<EOF
   <FeatureDefinition guid="$1">
     <TableName>Pracownicy</TableName>
@@ -113,7 +109,10 @@ cat <<EOF
     <Precision>2</Precision>
     <Algorithm>GetArgs</Algorithm>
     <Code><![CDATA[
-$kod
+public decimal Get_${metodaCechy}(Context cx) {
+    // miesiąc = data aktualności listy; kod wspólny: Dodatkowy kod kompilacji "RezerwaUrlopowa"
+    return ${KLASA}.$4(Row, cx, "$3");
+}
 ]]></Code>
   </FeatureDefinition>
 EOF
@@ -131,6 +130,12 @@ plan dc76af63-a30b-4292-8140-3bb0651cc013 "REZURL" "Rezerwa urlopowa" 0d94d59b-a
 plan f7985482-87b0-431b-a64a-3a4a06910e91 "BUDREZURL" "Budżet rezerwy urlopowej" d3e398ac-8c59-4992-95f8-5d348839b194
 
 cat <<EOF
+  <CodeFile guid="5b8f3e2a-7c41-4d9a-b6e1-2f0a9c7d4e13">
+    <Name>RezerwaUrlopowa</Name>
+    <Text><![CDATA[
+$KOD_WSPOLNY
+]]></Text>
+  </CodeFile>
   <FeatureDefinition guid="42b41ec7-094b-432c-b3bf-e5a42d123e5e">
     <TableName>Pracownicy</TableName>
     <Name>Rezerwa MPK</Name>
@@ -139,25 +144,28 @@ cat <<EOF
     <TypeNumber>String</TypeNumber>
     <Algorithm>GetArgs</Algorithm>
     <Code><![CDATA[
-$(cat 'Cecha widoku rezerwy MPK')
+public string Get_Feature_Rezerwa_MPK(Context cx) {
+    // MPK z wydziału pracownika na datę aktualności listy; kod wspólny: Dodatkowy kod kompilacji "RezerwaUrlopowa"
+    return ${KLASA}.CentrumKosztow(Row, cx);
+}
 ]]></Code>
   </FeatureDefinition>
 EOF
-cecha 74672aea-f02b-41df-a16a-3b2544fccd39 "Rezerwa urlop zaległy"      "$R" "(decimal)e.Podstawa3.Value" "Urlop zaległy (dni)"
-cecha e65c8bb2-d14c-4bb6-b984-9cb80171d62e "Rezerwa urlop bieżący"      "$R" "(decimal)e.Podstawa4.Value" "Urlop bieżący proporcjonalny (dni)"
-cecha 1804550f-d0d4-4755-b85e-b8191e060181 "Rezerwa urlop wykorzystany" "$R" "(decimal)e.Podstawa5.Value" "Urlop wykorzystany do końca miesiąca (dni)"
-cecha f7a0acc9-3dc3-4402-bed9-98978e0ce08a "Rezerwa godziny"            "$R" "(decimal)e.Czas.TotalHours" "Godziny rezerwy"
-cecha acc59bd7-e26a-4250-9a17-85ff21352d1e "Rezerwa podstawa 1"         "$R" "(decimal)e.Podstawa1.Value" "Podstawa 1 - średnia z 3 miesięcy"
-cecha af64f82d-4f33-4f4e-a65e-9a9422a764d4 "Rezerwa podstawa 2"         "$R" "(decimal)e.Podstawa2.Value" "Podstawa 2 - standard enova"
-cecha 9d147894-6f79-4506-87ba-1d0c5c2c2c6d "Rezerwa kwota"              "$R" "(decimal)e.Wartosc" "Kwota rezerwy"
-cecha 1bdb5d86-6ee5-4560-b2c8-cfb354cf478c "Rezerwa narzuty"            "$R" "(decimal)e.Narzuty" "Narzuty pracodawcy od rezerwy"
-cecha 701e0952-965a-4b6a-ba40-01c2a107ef3d "Budżet urlop zaległy"       "$B" "(decimal)e.Podstawa3.Value" "Urlop zaległy na 01.01 roku następnego (dni)"
-cecha d431e061-0917-4869-893e-ef733b449670 "Budżet urlop należny"       "$B" "(decimal)e.Podstawa4.Value" "Limit urlopu na rok następny (dni)"
-cecha 344e5905-794e-49e5-acae-6a8b151c25f4 "Budżet godziny"             "$B" "(decimal)e.Czas.TotalHours" "Godziny budżetu"
-cecha 6e64397a-72db-4a9e-878f-7ecc423ed2a3 "Budżet podstawa 1"          "$B" "(decimal)e.Podstawa1.Value" "Podstawa 1 - średnia z 3 miesięcy"
-cecha 133c3199-d5ff-4e2c-8e3a-c3af356f50a7 "Budżet podstawa 2"          "$B" "(decimal)e.Podstawa2.Value" "Podstawa 2 - standard enova"
-cecha 282d09b8-2bd3-4d8e-b59e-ab35eae39e3f "Budżet kwota"               "$B" "(decimal)e.Wartosc" "Kwota budżetu rezerwy"
-cecha 3d1e09c5-2998-43dd-8946-a279ef3d26ba "Budżet narzuty"             "$B" "(decimal)e.Narzuty" "Narzuty pracodawcy od budżetu"
+cecha 74672aea-f02b-41df-a16a-3b2544fccd39 "Rezerwa urlop zaległy"      "$R" UrlopZalegly      "Urlop zaległy (dni)"
+cecha e65c8bb2-d14c-4bb6-b984-9cb80171d62e "Rezerwa urlop bieżący"      "$R" UrlopBiezacy      "Urlop bieżący proporcjonalny (dni)"
+cecha 1804550f-d0d4-4755-b85e-b8191e060181 "Rezerwa urlop wykorzystany" "$R" UrlopWykorzystany "Urlop wykorzystany do końca miesiąca (dni)"
+cecha f7a0acc9-3dc3-4402-bed9-98978e0ce08a "Rezerwa godziny"            "$R" Godziny           "Godziny rezerwy"
+cecha acc59bd7-e26a-4250-9a17-85ff21352d1e "Rezerwa podstawa 1"         "$R" Podstawa1         "Podstawa 1 - średnia z 3 miesięcy"
+cecha af64f82d-4f33-4f4e-a65e-9a9422a764d4 "Rezerwa podstawa 2"         "$R" Podstawa2         "Podstawa 2 - standard enova"
+cecha 9d147894-6f79-4506-87ba-1d0c5c2c2c6d "Rezerwa kwota"              "$R" Kwota             "Kwota rezerwy"
+cecha 1bdb5d86-6ee5-4560-b2c8-cfb354cf478c "Rezerwa narzuty"            "$R" Narzuty           "Narzuty pracodawcy od rezerwy"
+cecha 701e0952-965a-4b6a-ba40-01c2a107ef3d "Budżet urlop zaległy"       "$B" UrlopZalegly      "Urlop zaległy na 01.01 roku następnego (dni)"
+cecha d431e061-0917-4869-893e-ef733b449670 "Budżet urlop należny"       "$B" UrlopBiezacy      "Limit urlopu na rok następny (dni)"
+cecha 344e5905-794e-49e5-acae-6a8b151c25f4 "Budżet godziny"             "$B" Godziny           "Godziny budżetu"
+cecha 6e64397a-72db-4a9e-878f-7ecc423ed2a3 "Budżet podstawa 1"          "$B" Podstawa1         "Podstawa 1 - średnia z 3 miesięcy"
+cecha 133c3199-d5ff-4e2c-8e3a-c3af356f50a7 "Budżet podstawa 2"          "$B" Podstawa2         "Podstawa 2 - standard enova"
+cecha 282d09b8-2bd3-4d8e-b59e-ab35eae39e3f "Budżet kwota"               "$B" Kwota             "Kwota budżetu rezerwy"
+cecha 3d1e09c5-2998-43dd-8946-a279ef3d26ba "Budżet narzuty"             "$B" Narzuty           "Narzuty pracodawcy od budżetu"
 echo '</session>'
 } > "$OUT"
 echo "Zapisano: $OUT"

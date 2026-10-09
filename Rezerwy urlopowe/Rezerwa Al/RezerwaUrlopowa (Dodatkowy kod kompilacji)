@@ -1,0 +1,94 @@
+using System;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kadry;
+using Soneta.Place;
+
+// Dodatkowy kod do kompilacji (System → Dodatkowy kod do kompilacji, plik "RezerwaUrlopowa").
+// Wspólny kod cech widoku rezerwy urlopowej i budżetu rezerwy (kategoria cech "Rezerwa urlopowa" na Pracownicy).
+// Każda cecha woła jedną metodę, np.:
+//   return Soneta.Runtime.Database.Business.TblCodeFiles.RezerwaUrlopowa.Kwota(Row, cx, "Rezerwa urlopowa");
+namespace Soneta.Runtime.Database.Business.TblCodeFiles {
+
+    public static class RezerwaUrlopowa {
+
+        // ---------------- kolumny z elementu planowanej listy płac ----------------
+        // Pola elementu (patrz algorytm "Rezerwa urlopowa"): Podstawa1/2 = podstawy miesięczne,
+        // Podstawa3/4/5 = urlop zaległy / bieżący / wykorzystany (dni), Czas = godziny rezerwy.
+
+        public static decimal UrlopZalegly(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : Grosze(elementPlanu.Podstawa3.Value);
+        }
+
+        public static decimal UrlopBiezacy(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : Grosze(elementPlanu.Podstawa4.Value);
+        }
+
+        public static decimal UrlopWykorzystany(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : Grosze(elementPlanu.Podstawa5.Value);
+        }
+
+        public static decimal Godziny(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : Grosze(elementPlanu.Czas.TotalHours);
+        }
+
+        public static decimal Podstawa1(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : Grosze(elementPlanu.Podstawa1.Value);
+        }
+
+        public static decimal Podstawa2(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : Grosze(elementPlanu.Podstawa2.Value);
+        }
+
+        public static decimal Kwota(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : System.Math.Round((decimal)elementPlanu.Wartosc, 2);
+        }
+
+        public static decimal Narzuty(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            PlanowanyElementWypłaty elementPlanu = ElementPlanu(pracownik, kontekst, nazwaElementu);
+            return elementPlanu == null ? 0m : System.Math.Round((decimal)elementPlanu.Narzuty, 2);
+        }
+
+        // ---------------- MPK ----------------
+        // Centrum kosztów z wydziału pracownika na datę aktualności listy;
+        // gdy wydział nie ma centrum kosztów - z najbliższego wydziału nadrzędnego.
+        public static string CentrumKosztow(Pracownik pracownik, Context kontekst) {
+            PracHistoria historiaPracownika = pracownik[ActualDate.Today(kontekst)];
+            if (historiaPracownika == null)
+                return "";
+            Wydzial wydzial = historiaPracownika.Etat.Wydzial;
+            while (wydzial != null && wydzial.CentrumKosztow == null)
+                wydzial = wydzial.Nadrzedny;
+            return wydzial == null ? "" : wydzial.CentrumKosztow.ToString();
+        }
+
+        // ---------------- wspólne ----------------
+        // Ostatnio naliczona pozycja elementu (rezerwa / budżet) pracownika na planowanej liście płac
+        // za miesiąc daty aktualności listy; null, gdy plan za ten miesiąc nie był naliczany.
+        public static PlanowanyElementWypłaty ElementPlanu(Pracownik pracownik, Context kontekst, string nazwaElementu) {
+            Date dataAktualnosci = ActualDate.Today(kontekst);
+            PlaceModule place = PlaceModule.GetInstance(pracownik.Session);
+            PlanowanyElementWypłaty ostatniElement = null;
+            foreach (PlanowanyElementWypłaty elementPlanu in place.PlanElementyWyp.WgPracownik[pracownik]) {
+                if (elementPlanu.Definicja == null || elementPlanu.Definicja.Nazwa != nazwaElementu)
+                    continue;
+                if (elementPlanu.Okres.To.Year != dataAktualnosci.Year || elementPlanu.Okres.To.Month != dataAktualnosci.Month)
+                    continue;
+                if (ostatniElement == null || elementPlanu.ID > ostatniElement.ID)
+                    ostatniElement = elementPlanu;
+            }
+            return ostatniElement;
+        }
+
+        private static decimal Grosze(double wartosc) {
+            return System.Math.Round((decimal)wartosc, 2);
+        }
+    }
+}

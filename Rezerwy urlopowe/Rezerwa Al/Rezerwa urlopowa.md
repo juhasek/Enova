@@ -27,7 +27,8 @@ narzuty pracodawcy liczy standardowy silnik płac, a rezerwa nie trafia na żadn
 | Element wynagrodzenia (Dodatek automatyczny) | **Budżet rezerwy urlopowej** | Ten sam kod; tryb budżetu rozpoznawany po nazwie zaczynającej się od „Budżet”. |
 | Definicja planowanej listy płac | **REZURL – Rezerwa urlopowa** | Element = „Rezerwa urlopowa”, algorytm domyślny. |
 | Definicja planowanej listy płac | **BUDREZURL – Budżet rezerwy urlopowej** | Element = „Budżet rezerwy urlopowej”. |
-| Cechy (tabela Pracownicy, kategoria „Rezerwa urlopowa”) | Rezerwa MPK, Rezerwa urlop zaległy / bieżący / wykorzystany, Rezerwa godziny, Rezerwa podstawa 1 / 2, Rezerwa kwota, Rezerwa narzuty; Budżet urlop zaległy / należny, Budżet godziny, Budżet podstawa 1 / 2, Budżet kwota, Budżet narzuty | Pliki `Cecha widoku rezerwy MPK` i `Cecha widoku rezerwy (wzorzec)`. |
+| Cechy (tabela Pracownicy, kategoria „Rezerwa urlopowa”) | Rezerwa MPK, Rezerwa urlop zaległy / bieżący / wykorzystany, Rezerwa godziny, Rezerwa podstawa 1 / 2, Rezerwa kwota, Rezerwa narzuty; Budżet urlop zaległy / należny, Budżet godziny, Budżet podstawa 1 / 2, Budżet kwota, Budżet narzuty | Każda cecha to jedno wywołanie metody klasy `RezerwaUrlopowa` (niżej). |
+| Dodatkowy kod kompilacji (System → Dodatkowy kod do kompilacji, `CodeFiles`) | **RezerwaUrlopowa** | Plik `RezerwaUrlopowa (Dodatkowy kod kompilacji)`: wspólne wyszukanie elementu planu za miesiąc daty aktualności + metody kolumn (UrlopZalegly, UrlopBiezacy, UrlopWykorzystany, Godziny, Podstawa1, Podstawa2, Kwota, Narzuty, CentrumKosztow). Projekt bazy „Business” (ten sam co cechy). |
 
 Pola elementu na planowanej wypłacie: Podstawa 1, Podstawa 2 (miesięcznie), Podstawa 3/4/5 =
 urlop zaległy / bieżący / wykorzystany w dniach (budżet: zaległy na 01.01 / limit roku
