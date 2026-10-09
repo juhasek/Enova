@@ -1,0 +1,9 @@
+<Project Sdk="Soneta.Sdk">
+  <!-- Dodatek enova365 "Rezerwy urlopowe" - logika, dane (business.xml), konfiguracja.
+       Plan: Addon/Plan RezerwyUrlopowe. Budowanie: dotnet build (generator business.xml uruchamia Soneta.Sdk). -->
+  <PropertyGroup>
+    <TargetFramework>$(SonetaTargetFramework)</TargetFramework>
+    <RootNamespace>A1.Rezerwy</RootNamespace>
+    <AssemblyName>A1.RezerwyUrlopowe</AssemblyName>
+  </PropertyGroup>
+</Project>

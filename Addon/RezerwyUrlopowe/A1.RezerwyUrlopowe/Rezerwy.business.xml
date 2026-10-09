@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module xmlns="http://www.enova.pl/schema/business_struct.xsd"
+        name="Rezerwy"
+        namespace="A1.Rezerwy"
+        versionName="soneta"
+        description="Rezerwy pracownicze liczone z danych kadrowo-płacowych: rezerwa urlopowa miesięczna i budżet rezerwy urlopowej, z historią miesięcy.">
+
+  <using>Soneta.Core</using>
+  <using>Soneta.Kadry</using>
+  <using>Soneta.Place</using>
+
+  <enum name="RodzajRezerwyUrlopowej"/>
+  <enum name="StanRezerwyUrlopowej"/>
+  <enum name="WariantPodstawyRezerwy"/>
+
+  <!-- Kopia konfiguracji z chwili naliczenia (audyt) - tylko do odczytu w GUI. -->
+  <subrow name="ParametryNaliczenia">
+    <col name="WariantPodstawy" type="WariantPodstawyRezerwy" description="Podstawa decydująca o kwocie: podstawa 1, podstawa 2 albo wyższa z obu."/>
+    <col name="ZasadniczeNominalne" type="boolean" description="Zasadnicze w podstawie 1 nominalne z kartoteki (Tak) albo naliczone na listach płac (Nie)."/>
+    <col name="MiesiecyPodstawy" type="int" description="Liczba miesięcy, z których liczona jest średnia podstawy 1."/>
+    <col name="PomijajMiesiaceBezWyplaty" type="boolean" description="Miesiące bez naliczonej wypłaty nie wchodzą do średniej podstawy 1."/>
+    <col name="ZaokraglajKolejnyUrlop" type="boolean" description="Bieżący proporcjonalny kolejnego urlopu zaokrąglany w górę do pełnego dnia."/>
+    <col name="DopuszczajUjemna" type="boolean" description="Ujemny stan urlopu daje ujemną rezerwę (Tak) albo rezerwę zero (Nie)."/>
+    <col name="PpkWNarzutach" type="boolean" description="Wpłata pracodawcy PPK doliczana do narzutów."/>
+    <col name="BudzetZPelnymLimitem" type="boolean" description="Budżet: zaległy na 01.01 plus pełny limit roku następnego (Tak) albo tylko zaległy (Nie)."/>
+    <col name="WspolczynnikEkwiwalentu" type="decimal" description="Współczynnik do ekwiwalentu z konfiguracji enova na koniec miesiąca rezerwy."/>
+  </subrow>
+
+  <table name="RezerwaUrlopowa" tablename="RezerwyUrlopowe" guided="Root"
+         caption="Rezerwa urlopowa" tablecaption="Rezerwy urlopowe"
+         description="Rezerwa urlopowa albo budżet rezerwy za jeden miesiąc. Nagłówek z parametrami naliczenia, stanem (naliczona, zamknięta) i sumami pozycji pracowników.">
+    <key name="WgOkresu" keyunique="true" keyprimary="true">
+      <keycol name="Rodzaj"/>
+      <keycol name="Rok"/>
+      <keycol name="Miesiac"/>
+    </key>
+    <col name="Rodzaj" type="RodzajRezerwyUrlopowej" required="true" important="true" description="Rezerwa miesięczna albo budżet rezerwy."/>
+    <col name="Rok" type="int" required="true" important="true" description="Rok okresu rezerwy."/>
+    <col name="Miesiac" type="int" required="true" important="true" description="Miesiąc okresu rezerwy (1-12)."/>
+    <col name="StanRezerwy" type="StanRezerwyUrlopowej" required="true" description="Naliczona albo zamknięta (zamknięta blokuje ponowne naliczenie)."/>
+    <col name="DataNaliczenia" type="datetime" description="Data i godzina ostatniego naliczenia."/>
+    <col name="NaliczylOperator" type="string" length="80" description="Operator, który ostatnio naliczył rezerwę."/>
+    <col name="DataZamkniecia" type="datetime" description="Data i godzina zamknięcia miesiąca."/>
+    <col name="ZamknalOperator" type="string" length="80" description="Operator, który zamknął miesiąc."/>
+    <col name="Parametry" type="ParametryNaliczenia" description="Kopia konfiguracji użytej do naliczenia."/>
+    <col name="LiczbaPozycji" type="int" description="Liczba pozycji pracowników."/>
+    <col name="GodzinyRazem" type="double" description="Suma godzin rezerwy."/>
+    <col name="KwotaRazem" type="currency" description="Suma kwot rezerwy."/>
+    <col name="NarzutyRazem" type="currency" description="Suma narzutów pracodawcy."/>
+    <col name="Opis" type="string" length="200" description="Opis lub uwagi do rezerwy."/>
+  </table>
+
+  <table name="PozycjaRezerwyUrlopowej" tablename="PozRezerwUrlop"
+         caption="Pozycja rezerwy urlopowej" tablecaption="Pozycje rezerwy urlopowej"
+         description="Rezerwa urlopowa jednego pracownika w miesiącu. Migawka stanu urlopu, podstaw, kwoty i narzutów z chwili naliczenia wraz z zapisem obliczeń.">
+    <key name="WgPracownika" keyunique="true">
+      <keycol name="Rezerwa"/>
+      <keycol name="Pracownik"/>
+    </key>
+    <key name="WgPracownikaHistoria">
+      <keycol name="Pracownik"/>
+    </key>
+    <col name="Rezerwa" type="RezerwaUrlopowa" required="true" readonly="true" keyprimary="true"
+         children="Pozycje" delete="cascade" relguided="inner" relright="true"
+         description="Rezerwa (miesiąc), do której należy pozycja."/>
+    <col name="Pracownik" type="Pracownik" required="true" important="true" description="Pracownik pozycji."/>
+    <col name="Wydzial" type="Wydzial" description="Wydział pracownika na koniec miesiąca (migawka)."/>
+    <col name="CentrumKosztow" type="CentrumKosztow" description="MPK z wydziału lub najbliższego wydziału nadrzędnego (migawka)."/>
+    <col name="WymiarEtatu" type="double" description="Wymiar etatu na koniec miesiąca."/>
+    <col name="GodzinNaDzien" type="double" description="Godzin w dniu urlopu z uwzględnieniem wymiaru (przeliczanie godzin na dni)."/>
+    <col name="ZaleglyGodz" type="double" description="Urlop zaległy w godzinach (budżet: na 01.01 roku następnego)."/>
+    <col name="BiezacyGodz" type="double" description="Urlop bieżący proporcjonalny w godzinach (budżet: limit roku następnego)."/>
+    <col name="WykorzystanyGodz" type="double" description="Urlop wykorzystany od 01.01 do końca miesiąca w godzinach."/>
+    <col name="GodzinyRezerwy" type="double" description="Godziny rezerwy: zaległy plus bieżący minus wykorzystany."/>
+    <col name="Podstawa1" type="currency" description="Podstawa 1: średnia z miesięcy z wypłatą."/>
+    <col name="MiesiecyPodstawy1" type="int" description="Liczba miesięcy, które weszły do średniej podstawy 1."/>
+    <col name="Podstawa2" type="currency" description="Podstawa 2: podstawa ekwiwalentu wg standardu enova (miesięcznie)."/>
+    <col name="StawkaGodzinowa" type="double" description="Stawka za 1 godzinę urlopu wg wariantu podstawy."/>
+    <col name="Kwota" type="currency" description="Kwota rezerwy: godziny rezerwy razy stawka."/>
+    <col name="Narzuty" type="currency" description="Narzuty pracodawcy z planowanej listy płac."/>
+    <col name="PlanowanyElement" type="PlanowanyElementWypłaty" delete="setnull" description="Planowany element wypłaty (narzuty, księgowanie)."/>
+    <col name="Ostrzezenia" type="string" length="200" description="Ostrzeżenia naliczenia, np. brak wypłaty za miesiąc."/>
+    <col name="ZapisObliczen" type="text" description="Zapis obliczeń pozycji."/>
+  </table>
+
+</module>

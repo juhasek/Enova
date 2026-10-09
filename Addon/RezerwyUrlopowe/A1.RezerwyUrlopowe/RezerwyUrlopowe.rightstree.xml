@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drzewo uprawnień: Kadry i płace / Rezerwy urlopowe. Pozycje dziedziczą prawa z rezerwy (relguided inner). -->
+<RightTreePaths>
+  <Module Name="Rezerwy" Path="Kadry i płace/Rezerwy urlopowe">
+    <Type Name="A1.Rezerwy.RezerwaUrlopowa" Path="" />
+  </Module>
+</RightTreePaths>
