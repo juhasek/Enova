@@ -775,6 +775,12 @@ public Currency %NAZWA%_Wylicz(Soneta.Place.WypElementDodatekAutomatyczny Elemen
     <Symbol>REZURL</Symbol>
     <Nazwa>Rezerwa urlopowa</Nazwa>
     <Blokada>False</Blokada>
+    <!-- import wg rekordów nie uzupełnia numeracji ani ewidencji (GUI robi to samo) - bez wzoru
+         każda planowana lista dostaje numer "*" i druga lista łamie klucz Numer.WgNumeruDokumentu -->
+    <Numeracja>
+      <Wzor>Definicja.Symbol/Data.Year:4/Data.Month:2/*</Wzor>
+    </Numeracja>
+    <DefinicjaED>00000000-0007-0005-0004-000000000000</DefinicjaED>
     <Element>0d94d59b-a616-4833-8251-55857735b070</Element>
     <Algorytm><![CDATA[
 public override SourceFilterDelegate FiltrNaliczania {
@@ -792,6 +798,12 @@ bool SourceFilter(object sender, SourceFilterArgs args) {
     <Symbol>BUDREZURL</Symbol>
     <Nazwa>Budżet rezerwy urlopowej</Nazwa>
     <Blokada>False</Blokada>
+    <!-- import wg rekordów nie uzupełnia numeracji ani ewidencji (GUI robi to samo) - bez wzoru
+         każda planowana lista dostaje numer "*" i druga lista łamie klucz Numer.WgNumeruDokumentu -->
+    <Numeracja>
+      <Wzor>Definicja.Symbol/Data.Year:4/Data.Month:2/*</Wzor>
+    </Numeracja>
+    <DefinicjaED>00000000-0007-0005-0004-000000000000</DefinicjaED>
     <Element>d3e398ac-8c59-4992-95f8-5d348839b194</Element>
     <Algorytm><![CDATA[
 public override SourceFilterDelegate FiltrNaliczania {

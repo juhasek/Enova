@@ -74,6 +74,12 @@ cat <<EOF
     <Symbol>$2</Symbol>
     <Nazwa>$3</Nazwa>
     <Blokada>False</Blokada>
+    <!-- import wg rekordów nie uzupełnia numeracji ani ewidencji (GUI robi to samo) - bez wzoru
+         każda planowana lista dostaje numer "*" i druga lista łamie klucz Numer.WgNumeruDokumentu -->
+    <Numeracja>
+      <Wzor>Definicja.Symbol/Data.Year:4/Data.Month:2/*</Wzor>
+    </Numeracja>
+    <DefinicjaED>00000000-0007-0005-0004-000000000000</DefinicjaED>
     <Element>$4</Element>
     <Algorytm><![CDATA[
 public override SourceFilterDelegate FiltrNaliczania {

@@ -90,6 +90,9 @@ Symulacja limitu uwzględnia urlopy już wprowadzone na wrzesień–grudzień (j
   kwot) do wykonania w GUI na bazie z danymi.
 - 1. test w GUI (2026-10-09): „Błędny typ naliczania wypłaty. Element: Rezerwa urlopowa” – brak pola
   Naliczanie (płatna z góry/z dołu = 0). Poprawione: `OkresNaliczania.Naliczanie = PłatnaZDołu`, ponowny import.
+- Zapis planu (2026-10-09): „Istnieje już inny zapis w kluczu Numer.WgNumeruDokumentu: *, *” – import wg
+  rekordów zostawił pusty wzór numeracji i ewidencję definicji planowanej listy. Poprawione: wzór
+  `Definicja.Symbol/Data.Year:4/Data.Month:2/*` (domyślny enova), DefinicjaED = „Planowana lista płac-ewidencja” (RUEW).
 - Elementy krytyczne do pierwszego testu: (a) czy dodatek automatyczny pojawia się na planowanej liście
   (RU-01), (b) zgodność podstawy 2 ze standardem (RU-11), (c) symulacja budżetu bez zapisu limitów (RU-16/17).
 
