@@ -87,7 +87,7 @@ Symulacja limitu uwzględnia urlopy już wprowadzone na wrzesień–grudzień (j
 - Zaimportowane do lokalnej bazy **Al** (elementy ID 268/269, DefPlanListPlac ID 1/2, cechy FeatureDefs 4–19),
   kopia bazy przed zmianą: `Al_przed_rezerwa_20261009.bak` (domyślny katalog backupów SQL Server).
 - Kod skompilowany kontrolnie bez błędów. **NIESPRAWDZONE na żywych danych** – lokalna baza Al nie ma
-  wypłat ani limitów; test wg `Rezerwa urlopowa - scenariusze testowe.xlsx` (21 scenariuszy + kalkulator
+  wypłat ani limitów; test wg `Rezerwa urlopowa - scenariusze testowe.xlsx` (30 scenariuszy + kalkulator
   kwot) do wykonania w GUI na bazie z danymi.
 - 1. test w GUI (2026-10-09): „Błędny typ naliczania wypłaty. Element: Rezerwa urlopowa” – brak pola
   Naliczanie (płatna z góry/z dołu = 0). Poprawione: `OkresNaliczania.Naliczanie = PłatnaZDołu`, ponowny import.
@@ -109,7 +109,7 @@ Symulacja limitu uwzględnia urlopy już wprowadzone na wrzesień–grudzień (j
 | Budżet – symulacja limitu na 01.01 w niezapisywanej sesji | 5 |
 | Widok – 16 cech + konfiguracja widoku listy | 5 |
 | Definicje planowanych list, import/instalacja na bazie testowej | 2 |
-| Testy (21 scenariuszy, dane testowe, ~2 rundy poprawek) | 12 |
+| Testy (30 scenariuszy, dane testowe, ~2 rundy poprawek) | 12 |
 | Dokumentacja, instrukcja, szkolenie (kadry/płace, prezentacja dla Zarządu) | 4 |
 | Wdrożenie produkcyjne + asysta przy 1. zamknięciu miesiąca i 1. budżecie | 3 |
 | **Razem** | **53** |
