@@ -132,6 +132,7 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
                 if (dl == null)
                     continue;
                 Soneta.Kalend.LimitNieobecnosci pierwszy = null;
+                double biezacyKolejnyH = 0, biezacyPierwszyH = 0;
                 foreach (Soneta.Kalend.LimitNieobecnosci l in kalend.LimNieobecnosci.WgPracownik[prac, dl]) {
                     if (l.Okres.To < poczatekRoku || l.Okres.From > koniecRoku)
                         continue;
@@ -146,9 +147,20 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
                     if (mRazem <= 0 || mDo <= 0)
                         continue;
                     double nalH = (l.LimitGodz + l.ZmianaGodz - l.WykorzystanyPoprzGodz).TotalHours;
-                    biezacyH += nalH * mDo / mRazem;
-                    log.WriteLine($"Limit {dl.Nazwa} {l.Okres}: należny {nalH:0.00} h x {mDo}/{mRazem} mies.");
+                    if (l.PierwszyUrlop)
+                        biezacyPierwszyH += nalH * mDo / mRazem;
+                    else
+                        biezacyKolejnyH += nalH * mDo / mRazem;
+                    string rodzaj = l.PierwszyUrlop ? "pierwszy urlop" : "kolejny urlop";
+                    log.WriteLine($"Limit {dl.Nazwa} {l.Okres} ({rodzaj}): należny {nalH:0.00} h x {mDo}/{mRazem} mies.");
                 }
+                // kolejny urlop: część proporcjonalną zaokrąglamy w górę do pełnego dnia; pierwszy urlop - bez zaokrąglenia
+                if (biezacyKolejnyH > 0) {
+                    double dniKolejny = System.Math.Ceiling(System.Math.Round(biezacyKolejnyH / godzNaDzien, 6));
+                    log.WriteLine($"Kolejny urlop: {biezacyKolejnyH / godzNaDzien:0.00} dni -> zaokrąglone w górę {dniKolejny:0} dni = {dniKolejny * godzNaDzien:0.00} h");
+                    biezacyKolejnyH = dniKolejny * godzNaDzien;
+                }
+                biezacyH += biezacyKolejnyH + biezacyPierwszyH;
                 if (pierwszy != null)
                     zaleglyH += pierwszy.PrzeniesienieGodz.TotalHours;
                 // wykorzystany od 01.01 do końca miesiąca rezerwy (nieobecności pomniejszające ten limit)
@@ -505,6 +517,7 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
                 if (dl == null)
                     continue;
                 Soneta.Kalend.LimitNieobecnosci pierwszy = null;
+                double biezacyKolejnyH = 0, biezacyPierwszyH = 0;
                 foreach (Soneta.Kalend.LimitNieobecnosci l in kalend.LimNieobecnosci.WgPracownik[prac, dl]) {
                     if (l.Okres.To < poczatekRoku || l.Okres.From > koniecRoku)
                         continue;
@@ -519,9 +532,20 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
                     if (mRazem <= 0 || mDo <= 0)
                         continue;
                     double nalH = (l.LimitGodz + l.ZmianaGodz - l.WykorzystanyPoprzGodz).TotalHours;
-                    biezacyH += nalH * mDo / mRazem;
-                    log.WriteLine($"Limit {dl.Nazwa} {l.Okres}: należny {nalH:0.00} h x {mDo}/{mRazem} mies.");
+                    if (l.PierwszyUrlop)
+                        biezacyPierwszyH += nalH * mDo / mRazem;
+                    else
+                        biezacyKolejnyH += nalH * mDo / mRazem;
+                    string rodzaj = l.PierwszyUrlop ? "pierwszy urlop" : "kolejny urlop";
+                    log.WriteLine($"Limit {dl.Nazwa} {l.Okres} ({rodzaj}): należny {nalH:0.00} h x {mDo}/{mRazem} mies.");
                 }
+                // kolejny urlop: część proporcjonalną zaokrąglamy w górę do pełnego dnia; pierwszy urlop - bez zaokrąglenia
+                if (biezacyKolejnyH > 0) {
+                    double dniKolejny = System.Math.Ceiling(System.Math.Round(biezacyKolejnyH / godzNaDzien, 6));
+                    log.WriteLine($"Kolejny urlop: {biezacyKolejnyH / godzNaDzien:0.00} dni -> zaokrąglone w górę {dniKolejny:0} dni = {dniKolejny * godzNaDzien:0.00} h");
+                    biezacyKolejnyH = dniKolejny * godzNaDzien;
+                }
+                biezacyH += biezacyKolejnyH + biezacyPierwszyH;
                 if (pierwszy != null)
                     zaleglyH += pierwszy.PrzeniesienieGodz.TotalHours;
                 // wykorzystany od 01.01 do końca miesiąca rezerwy (nieobecności pomniejszające ten limit)
