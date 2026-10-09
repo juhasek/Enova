@@ -2,7 +2,8 @@
 <module xmlns="http://www.enova.pl/schema/business_struct.xsd"
         name="Rezerwy"
         namespace="A1.Rezerwy"
-        versionName="soneta"
+        versionName="A1Rezerwy"
+        versionNumber="1"
         description="Rezerwy pracownicze liczone z danych kadrowo-płacowych: rezerwa urlopowa miesięczna i budżet rezerwy urlopowej, z historią miesięcy.">
 
   <using>Soneta.Core</using>

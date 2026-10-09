@@ -7,17 +7,17 @@ namespace A1.Rezerwy;
 
 /// <summary>
 /// Algorytm elementów wynagrodzenia „Rezerwa urlopowa (dodatek)” i „Budżet rezerwy urlopowej (dodatek)”.
-/// Definicja elementu: Algorytm = Klasa algorytmu, nazwa klasy = A1.Rezerwy.AlgorytmRezerwyUrlopowej
-/// (enova generuje: new A1.Rezerwy.AlgorytmRezerwyUrlopowej(Pracownik).Podstawa / .Wartosc).
+/// Definicja elementu: Algorytm = Klasa algorytmu, nazwa klasy = A1.Rezerwy.AlgorytmRezerwy (pole ma limit 30 znaków)
+/// (enova generuje: new A1.Rezerwy.AlgorytmRezerwy(Pracownik).Podstawa / .Wartosc).
 ///
 /// Element liczy się tylko na planowanej liście płac (Rodzaj naliczania = Tylko planowane; dodatkowo kontrola
 /// PlanowaneWynagrodzenie). Pola składnika jak w rozwiązaniu skryptowym:
 ///   Podstawa1/2 = podstawy miesięczne, Podstawa3/4/5 = urlop zaległy / bieżący / wykorzystany (dni),
 ///   Czas = godziny rezerwy, Ilosc = stawka za 1 godzinę.
 /// </summary>
-public class AlgorytmRezerwyUrlopowej : AlgorytmBase {
+public class AlgorytmRezerwy : AlgorytmBase {
 
-    public AlgorytmRezerwyUrlopowej(Pracownik pracownik) : base(pracownik) { }
+    public AlgorytmRezerwy(Pracownik pracownik) : base(pracownik) { }
 
     public override void Podstawa(WypElement Element, WypSkladnik Składnik) {
         Składnik.Podstawa1 = DoubleCy.Zero;
