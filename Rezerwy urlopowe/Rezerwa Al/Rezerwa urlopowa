@@ -204,8 +204,19 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
 
     // ---------------- 4. PODSTAWA 2 - standard enova (ekwiwalent za urlop) ----------------
     double p2dzien = 0, stawka2 = 0;
+    // diagnostyka: standard liczy z elementów zasadniczych miesiąca zapisanych na listach płac
+    int zasW = 0, zasZatw = 0;
+    foreach (WypElement e in place.WypElementy.WgPracownik[prac]) {
+        if (e.RodzajZrodla != RodzajŹródłaWypłaty.Etat || e.Okres.To < miesiac.From || e.Okres.To > miesiac.To)
+            continue;
+        zasW++;
+        if (e.Wyplata != null && e.Wyplata.Zatwierdzona)
+            zasZatw++;
+    }
+    log.AppendLine(string.Format("Podstawa 2 - elementy zasadnicze za {0}/{1:00} na listach płac: {2} (zatwierdzone: {3})", koniec.Year, koniec.Month, zasW, zasZatw));
     try {
-        using (Soneta.Business.LogCatcher listener = new Soneta.Business.LogCatcher("Ekwiwalent")) {
+        // kategoria logu "Urlop" - pod nią NaliczanieEkwiwalent zapisuje swój log (tak jak kreator enova)
+        using (Soneta.Business.LogCatcher listener = new Soneta.Business.LogCatcher("Urlop")) {
             using (Element.Session.Logout(true)) {
                 new NaliczanieEkwiwalent(Element, Składnik).NaliczPodstawy();
             }
