@@ -1,12 +1,7 @@
 public string Get_Feature_Rezerwa_MPK(Context cx) {
-	// MPK = centrum kosztów z wydziału pracownika na dzień (koniec miesiąca z kontekstu albo data aktualności).
+	// MPK = centrum kosztów z wydziału pracownika na datę aktualności listy.
 	// Gdy wydział nie ma przypisanego centrum kosztów - bierze centrum z wydziału nadrzędnego.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	Date data = ActualDate.Today(cx);
 
 	PracHistoria ph = ((Pracownik)Row)[data];
 	if (ph == null)

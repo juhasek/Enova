@@ -16,7 +16,7 @@ narzuty pracodawcy liczy standardowy silnik płac, a rezerwa nie trafia na żadn
 | 3 | Podstawa 1 – zasadnicze + zmienne do ekwiwalentu, średnia z 3 miesięcy (luty → II, I, XII) | Zasadnicze nominalne z kartoteki za każdy miesiąc + elementy z flagą „wliczać do ekwiwalentu” wg okresu „za”; średnia z miesięcy zatrudnienia (max 3). |
 | 3 | Podstawa 2 – standard enova (podstawa ekwiwalentu) | Ten sam mechanizm co element „Ekwiwalent za czas urlopu” (`NaliczanieEkwiwalent`). |
 | 3 | Współczynnik do ekwiwalentu | Z konfiguracji (Nieobecności → średnia norma miesięczna) × wymiar etatu; gdy brak – dni robocze roku / 12 (jak standard). |
-| 4 | Widok: Kod, Imię, Nazwisko, MPK, zaległy, bieżący, wykorzystany, podstawa, kwota, narzuty | Lista **Pracownicy** + cechy z kategorii „Rezerwa urlopowa” (kolumny), miesiąc = data aktualności listy. |
+| 4 | Widok: Kod, Imię, Nazwisko, MPK, zaległy, bieżący, wykorzystany, podstawa, kwota, narzuty | Lista **Pracownicy** + cechy z kategorii „Rezerwa urlopowa” (kolumny), miesiąc = data aktualności listy (`ActualDate.Today`). |
 | 5 | Budżet w sierpniu – symulacja limitu na 01.01 roku następnego, dwie podstawy | Planowana lista „Budżet rezerwy urlopowej” (BUDREZURL): symulacja „Limity nieobecności / Nalicz” na rok następny w sesji, która NIE jest zapisywana; zaległy na 01.01 + limit należny na rok następny; podstawy jak w pkt 3. |
 
 ## 3. Elementy rozwiązania (w bazie Al)

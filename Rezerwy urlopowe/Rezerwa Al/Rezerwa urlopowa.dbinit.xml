@@ -640,14 +640,9 @@ bool SourceFilter(object sender, SourceFilterArgs args) {
     <Algorithm>GetArgs</Algorithm>
     <Code><![CDATA[
 public string Get_Feature_Rezerwa_MPK(Context cx) {
-	// MPK = centrum kosztów z wydziału pracownika na dzień (koniec miesiąca z kontekstu albo data aktualności).
+	// MPK = centrum kosztów z wydziału pracownika na datę aktualności listy.
 	// Gdy wydział nie ma przypisanego centrum kosztów - bierze centrum z wydziału nadrzędnego.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	Date data = ActualDate.Today(cx);
 
 	PracHistoria ph = ((Pracownik)Row)[data];
 	if (ph == null)
@@ -672,13 +667,8 @@ public string Get_Feature_Rezerwa_MPK(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_urlop_zaległy(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -708,13 +698,8 @@ public decimal Get_Feature_Rezerwa_urlop_zaległy(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_urlop_bieżący(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -744,13 +729,8 @@ public decimal Get_Feature_Rezerwa_urlop_bieżący(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_urlop_wykorzystany(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -780,13 +760,8 @@ public decimal Get_Feature_Rezerwa_urlop_wykorzystany(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_godziny(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -816,13 +791,8 @@ public decimal Get_Feature_Rezerwa_godziny(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_podstawa_1(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -852,13 +822,8 @@ public decimal Get_Feature_Rezerwa_podstawa_1(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_podstawa_2(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -888,13 +853,8 @@ public decimal Get_Feature_Rezerwa_podstawa_2(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_kwota(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -924,13 +884,8 @@ public decimal Get_Feature_Rezerwa_kwota(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Rezerwa_narzuty(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -960,13 +915,8 @@ public decimal Get_Feature_Rezerwa_narzuty(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Budżet_urlop_zaległy(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -996,13 +946,8 @@ public decimal Get_Feature_Budżet_urlop_zaległy(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Budżet_urlop_należny(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -1032,13 +977,8 @@ public decimal Get_Feature_Budżet_urlop_należny(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Budżet_godziny(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -1068,13 +1008,8 @@ public decimal Get_Feature_Budżet_godziny(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Budżet_podstawa_1(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -1104,13 +1039,8 @@ public decimal Get_Feature_Budżet_podstawa_1(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Budżet_podstawa_2(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -1140,13 +1070,8 @@ public decimal Get_Feature_Budżet_podstawa_2(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Budżet_kwota(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
@@ -1176,13 +1101,8 @@ public decimal Get_Feature_Budżet_kwota(Context cx) {
     <Code><![CDATA[
 public decimal Get_Feature_Budżet_narzuty(Context cx) {
 	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
-	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
-	Date data;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
-		data = ((FromTo)zKontekstu).To;
-	else
-		data = ActualDate.Today(cx);
+	// Miesiąc rezerwy = miesiąc daty aktualności listy.
+	Date data = ActualDate.Today(cx);
 
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
