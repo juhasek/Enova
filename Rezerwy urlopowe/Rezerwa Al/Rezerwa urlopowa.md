@@ -7,6 +7,9 @@ na stan urlopu na 01.01 roku następnego. Rozwiązanie korzysta z wbudowanego w 
 modułu **planowanych list płac** (moduł rezerw, licencja **Płace Platynowe**), dzięki czemu
 narzuty pracodawcy liczy standardowy silnik płac, a rezerwa nie trafia na żadną listę płac.
 
+Instrukcja dla klienta: `Instrukcja_Rezerwa_Urlopowa.docx` (styl jak pozostałe instrukcje; tabele scenariuszy
+z tych samych danych co `Rezerwa urlopowa - scenariusze testowe.xlsx`).
+
 ## 2. Założenia klienta → realizacja
 
 | # | Założenie | Realizacja |
