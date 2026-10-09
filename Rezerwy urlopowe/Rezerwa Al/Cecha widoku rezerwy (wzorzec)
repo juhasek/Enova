@@ -6,7 +6,7 @@ public __TYP__ Get___METODA__(Context cx) {
 	// Ostatnio naliczona pozycja elementu "__ELEMENT__" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "__ELEMENT__")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)

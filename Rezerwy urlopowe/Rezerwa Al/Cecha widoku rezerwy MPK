@@ -3,7 +3,7 @@ public string Get_Feature_Rezerwa_MPK(Context cx) {
 	// Gdy wydział nie ma przypisanego centrum kosztów - bierze centrum z wydziału nadrzędnego.
 	Date data = ActualDate.Today(cx);
 
-	PracHistoria ph = ((Pracownik)Row)[data];
+	PracHistoria ph = Row[data];
 	if (ph == null)
 		return "";
 	Wydzial w = ph.Etat.Wydzial;

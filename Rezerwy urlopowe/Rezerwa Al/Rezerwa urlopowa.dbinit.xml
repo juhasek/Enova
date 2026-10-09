@@ -830,7 +830,7 @@ public string Get_Feature_Rezerwa_MPK(Context cx) {
 	// Gdy wydział nie ma przypisanego centrum kosztów - bierze centrum z wydziału nadrzędnego.
 	Date data = ActualDate.Today(cx);
 
-	PracHistoria ph = ((Pracownik)Row)[data];
+	PracHistoria ph = Row[data];
 	if (ph == null)
 		return "";
 	Wydzial w = ph.Etat.Wydzial;
@@ -859,7 +859,7 @@ public decimal Get_Feature_Rezerwa_urlop_zaległy(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -890,7 +890,7 @@ public decimal Get_Feature_Rezerwa_urlop_bieżący(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -921,7 +921,7 @@ public decimal Get_Feature_Rezerwa_urlop_wykorzystany(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -952,7 +952,7 @@ public decimal Get_Feature_Rezerwa_godziny(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -983,7 +983,7 @@ public decimal Get_Feature_Rezerwa_podstawa_1(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1014,7 +1014,7 @@ public decimal Get_Feature_Rezerwa_podstawa_2(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1045,7 +1045,7 @@ public decimal Get_Feature_Rezerwa_kwota(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1076,7 +1076,7 @@ public decimal Get_Feature_Rezerwa_narzuty(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Rezerwa urlopowa" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Rezerwa urlopowa")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1107,7 +1107,7 @@ public decimal Get_Feature_Budżet_urlop_zaległy(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Budżet rezerwy urlopowej")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1138,7 +1138,7 @@ public decimal Get_Feature_Budżet_urlop_należny(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Budżet rezerwy urlopowej")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1169,7 +1169,7 @@ public decimal Get_Feature_Budżet_godziny(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Budżet rezerwy urlopowej")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1200,7 +1200,7 @@ public decimal Get_Feature_Budżet_podstawa_1(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Budżet rezerwy urlopowej")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1231,7 +1231,7 @@ public decimal Get_Feature_Budżet_podstawa_2(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Budżet rezerwy urlopowej")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1262,7 +1262,7 @@ public decimal Get_Feature_Budżet_kwota(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Budżet rezerwy urlopowej")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
@@ -1293,7 +1293,7 @@ public decimal Get_Feature_Budżet_narzuty(Context cx) {
 	// Ostatnio naliczona pozycja elementu "Budżet rezerwy urlopowej" pracownika na planowanej liście płac za ten miesiąc
 	PlaceModule place = PlaceModule.GetInstance(Session);
 	PlanowanyElementWypłaty e = null;
-	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[Row]) {
 		if (p.Definicja == null || p.Definicja.Nazwa != "Budżet rezerwy urlopowej")
 			continue;
 		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
