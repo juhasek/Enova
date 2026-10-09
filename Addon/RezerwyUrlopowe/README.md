@@ -18,3 +18,4 @@ Działa **obok** rozwiązania skryptowego `Rezerwy urlopowe/` (własne GUID-y, n
 | 5. Kalkulator | `KalkulatorRezerwyUrlopowej` + `SymulatorLimituUrlopu` — port 1:1 ze skryptu, parametry z konfiguracji, Log("Rezerwa urlopowa") |
 | 6. Algorytm elementu | `AlgorytmRezerwy : AlgorytmBase` (Klasa algorytmu `A1.Rezerwy.AlgorytmRezerwy`, limit pola 30 znaków), wyniki dla czynności przez `RejestrWynikowRezerwy` |
 | 7. Dane inicjujące | `Dane/RezerwyUrlopowe.dbinit.xml` (wersja A1Rezerwy 1): 2 elementy „(dodatek)”, planowane listy AREZURL / ABUDREZURL — własne GUID-y; struktura OK, import próbny do wykonania przy teście instalacji |
+| 8. Weryfikatory | `BudzetPozaSierpniemVerifier` (Warning), `UjemnaRezerwaVerifier` (Error), pozycje zamkniętej rezerwy tylko do odczytu, `KontrolaKonfiguracji` (lista błędów przed naliczeniem); unikalność — klucze w bazie |
