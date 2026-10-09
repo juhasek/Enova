@@ -182,17 +182,15 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
         rezerwaH = 0;
 
     // ---------------- 2. WSPÓŁCZYNNIK DO EKWIWALENTU ----------------
-    double alfa = 0;
-    if (place.Config.Nieobecności.EkwiwalentZaUrlop.ŚredniaWgKonfiguracji)
-        alfa = (double)place.Config.Nieobecności.ŚredniaNormaMiesięczna[koniec];
-    if (alfa <= 0) {
-        CzasDni cdRok = prac.Czasy.KalkPlanu.Norma(FromTo.Year(rok), Soneta.Kalend.Dzien.Pracy);
-        alfa = cdRok.Dni / 12.0;
-    }
-    if (alfa <= 0)
-        alfa = 20.75;
+    // Zawsze z konfiguracji (Płace → Nieobecności → Średnia norma miesięczna na dzień końca miesiąca rezerwy).
+    // Brak współczynnika (0) = rezerwa 0 - element nie powstaje.
+    double alfa = (double)place.Config.Nieobecności.ŚredniaNormaMiesięczna[koniec];
     double alfaW = alfa * wymiar;
     log.WriteLine($"[2] WSPÓŁCZYNNIK: {alfa:0.00} x wymiar {ph.Etat.Wymiar} = {alfaW:0.00}; {normaH:0.00} h w dniu urlopu");
+    if (alfa <= 0) {
+        log.WriteLine($"UWAGA: brak współczynnika do ekwiwalentu w konfiguracji na {koniec} - rezerwa = 0.");
+        return;
+    }
 
     // ---------------- 3. PODSTAWA 1 - średnia z 3 miesięcy (M, M-1, M-2) z naliczoną wypłatą ----------------
     log.WriteLine("[3] PODSTAWA 1 (średnia z miesięcy z wypłatą)");
