@@ -28,6 +28,9 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
   handlowych itp.).
 - **ElementyPlac/** — definicje elementów płacowych (składniki wynagrodzenia,
   reguły naliczania) enova365.
+- **Rezerwy urlopowe/** — rezerwy urlopowe i budżety rezerw (moduł planowanych
+  list płac enova), każde wdrożenie w osobnym podkatalogu: kod algorytmów
+  elementów, cechy widoku, XML importu (generowany skryptem), scenariusze testowe.
 - **Cechy/** — definicje cech (atrybutów) obiektów enova365.
 - **Widoki/** — definicje/modyfikacje widoków (list, formularzy) enova365.
 - **Taski/** — kod definicji zadań enova365 (Taski z algorytmem, tabela

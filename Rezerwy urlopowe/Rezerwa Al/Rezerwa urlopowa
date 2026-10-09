@@ -1,0 +1,248 @@
+public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, WypSkladnik Składnik) {
+    // ---------------------------------------------------------------------------------
+    // REZERWA URLOPOWA / BUDŻET REZERWY URLOPOWEJ
+    // Ten sam kod w dwóch definicjach elementu:
+    //   "Rezerwa urlopowa"          - stan na koniec miesiąca planu
+    //   "Budżet rezerwy urlopowej"  - stan urlopu na 01.01 roku następnego (symulacja limitu)
+    // Tryb rozpoznawany po nazwie definicji (nazwa zaczynająca się od "Budżet").
+    //
+    // Wynik zapisywany w składniku (kopiowany na planowaną listę płac):
+    //   Podstawa1 = podstawa 1 - średnia miesięczna z 3 miesięcy (zasadnicze + zmienne do ekwiwalentu)
+    //   Podstawa2 = podstawa 2 - podstawa miesięczna wg standardu enova (ekwiwalent za urlop)
+    //   Podstawa3 = urlop zaległy (dni)
+    //   Podstawa4 = urlop bieżący proporcjonalny (dni)  / budżet: limit należny na rok następny
+    //   Podstawa5 = urlop wykorzystany do końca miesiąca (dni) / budżet: 0
+    //   Czas      = godziny rezerwy (zaległy + bieżący - wykorzystany)
+    //   Ilosc     = stawka za 1 godzinę urlopu przyjęta do kwoty (pomocniczo dla _Wylicz)
+    // Narzuty pracodawcy liczy silnik płacowy (deklaracje ZUS jak dla ekwiwalentu).
+    // ---------------------------------------------------------------------------------
+
+    // Która podstawa decyduje o kwocie rezerwy:
+    //   1 = podstawa 1 (średnia z 3 miesięcy), 2 = podstawa 2 (standard enova), 3 = wyższa z obu
+    const int WARIANT_PODSTAWY = 1;
+    // true  = wynagrodzenie zasadnicze nominalne z kartoteki (stawka zaszeregowania) za każdy z 3 miesięcy,
+    // false = zasadnicze faktycznie naliczone na listach płac (pomniejszone o nieobecności)
+    const bool ZASADNICZE_NOMINALNE = true;
+
+    Składnik.Podstawa1 = DoubleCy.Zero;
+    Składnik.Podstawa2 = DoubleCy.Zero;
+    Składnik.Podstawa3 = DoubleCy.Zero;
+    Składnik.Podstawa4 = DoubleCy.Zero;
+    Składnik.Podstawa5 = DoubleCy.Zero;
+    Składnik.Czas = Time.Zero;
+    Składnik.Ilosc = 0;
+
+    // Rezerwa powstaje WYŁĄCZNIE na planowanej liście płac (moduł rezerw).
+    // Na zwykłej liście płac element daje 0 i nie jest generowany (Generuj zerowy = Nie).
+    if (!PlanowaneWynagrodzenie)
+        return;
+
+    bool budzet = Element.Definicja.Nazwa.StartsWith("Budżet");
+    System.Text.StringBuilder log = new System.Text.StringBuilder();
+
+    FromTo miesiac = new YearMonth(Element.Okres.To);
+    Date koniec = miesiac.To;
+    int rok = koniec.Year;
+    Pracownik prac = Element.Pracownik;
+    PracHistoria ph = prac[koniec];
+
+    // Rezerwa tylko dla pracowników zatrudnionych na ostatni dzień miesiąca
+    // (zwolnionym urlop rozlicza się ekwiwalentem na liście głównej).
+    if (ph == null || !ph.Etat.OkresZatrudnienia.Contains(koniec)) {
+        Element.ZapisObliczen += "Rezerwa urlopowa: pracownik niezatrudniony na " + koniec + " - pominięty.\r\n";
+        return;
+    }
+
+    PlaceModule place = PlaceModule.GetInstance(Element.Session);
+    double wymiar = (double)ph.Etat.Wymiar;
+    if (wymiar <= 0)
+        wymiar = 1;
+
+    // Godzin w dniu urlopu - tak samo jak w standardowym ekwiwalencie enova
+    double normaH = 8.0;
+    if (place.Config.Nieobecności.EkwiwalentZaUrlop.PrzliczenieDniNaGodzWgKalendarza && ph.Etat.Kalendarz != null)
+        normaH = ph.Etat.Kalendarz.NormaDobowa.TotalHours;
+    if (normaH <= 0)
+        normaH = 8.0;
+    double godzNaDzien = normaH * wymiar;
+
+    // ---------------- 1. URLOP (godziny) ----------------
+    double zaleglyH = 0, biezacyH = 0, wykorzystanyH = 0;
+    Guid[] limity = new Guid[] { Soneta.Kalend.DefinicjaLimitu.UrlopWypoczynkowy, Soneta.Kalend.DefinicjaLimitu.UrlopDodatkowy };
+
+    if (!budzet) {
+        KalendModule kalend = KalendModule.GetInstance(Element.Session);
+        Date poczatekRoku = new Date(rok, 1, 1);
+        Date koniecRoku = new Date(rok, 12, 31);
+        foreach (Guid g in limity) {
+            Soneta.Kalend.DefinicjaLimitu dl = kalend.DefinicjeLimitow[g];
+            if (dl == null)
+                continue;
+            Soneta.Kalend.LimitNieobecnosci pierwszy = null;
+            foreach (Soneta.Kalend.LimitNieobecnosci l in kalend.LimNieobecnosci.WgPracownik[prac, dl]) {
+                if (l.Okres.To < poczatekRoku || l.Okres.From > koniecRoku)
+                    continue;
+                if (pierwszy == null || l.Okres.From < pierwszy.Okres.From)
+                    pierwszy = l;
+                // należny proporcjonalnie: liczba miesięcy okresu limitu do końca miesiąca rezerwy / liczba miesięcy okresu limitu
+                Date od = l.Okres.From < poczatekRoku ? poczatekRoku : l.Okres.From;
+                Date doL = l.Okres.To > koniecRoku ? koniecRoku : l.Okres.To;
+                int mRazem = (doL.Year * 12 + doL.Month) - (od.Year * 12 + od.Month) + 1;
+                Date doM = doL > koniec ? koniec : doL;
+                int mDo = (doM.Year * 12 + doM.Month) - (od.Year * 12 + od.Month) + 1;
+                if (mRazem <= 0 || mDo <= 0)
+                    continue;
+                double nalH = (l.LimitGodz + l.ZmianaGodz - l.WykorzystanyPoprzGodz).TotalHours;
+                biezacyH += nalH * mDo / mRazem;
+                log.AppendLine(string.Format("Limit {0} {1}: należny {2:0.00} h x {3}/{4} mies.", dl.Nazwa, l.Okres, nalH, mDo, mRazem));
+            }
+            if (pierwszy != null) {
+                zaleglyH += pierwszy.PrzeniesienieGodz.TotalHours;
+                log.AppendLine(string.Format("Limit {0}: zaległy {1:0.00} h", dl.Nazwa, pierwszy.PrzeniesienieGodz.TotalHours));
+            }
+            // wykorzystany od 01.01 do końca miesiąca rezerwy (nieobecności pomniejszające ten limit)
+            foreach (OkresNieobecności n in prac.Czasy.Nieobecnosci(new FromTo(poczatekRoku, koniec), true)) {
+                if (n.Definicja != null && n.Definicja.Limit == dl)
+                    wykorzystanyH += n.Norma().Czas.TotalHours;
+            }
+        }
+    }
+    else {
+        // BUDŻET: symulacja limitu na 01.01 roku następnego w osobnej, NIEZAPISYWANEJ sesji
+        // (te same procedury co "Limity nieobecności / Nalicz"; po Dispose sesji nic nie trafia do bazy).
+        int rokB = rok + 1;
+        using (Session s = Element.Session.Login.CreateSession(false, false)) {
+            Pracownik ps = s.Get(prac);
+            KalendModule ks = KalendModule.GetInstance(s);
+            foreach (Guid g in limity) {
+                Soneta.Kalend.DefinicjaLimitu dl = ks.DefinicjeLimitow[g];
+                if (dl == null)
+                    continue;
+                try {
+                    Soneta.Kalend.NaliczanieLimitow.Params pars = new Soneta.Kalend.NaliczanieLimitow.Params(Context.Empty.Clone(s));
+                    pars.Definicja = dl;
+                    pars.Okres = FromTo.Year(rokB);
+                    new Soneta.Kalend.NaliczanieLimitowUrlopowych().DodajLimit(pars, ps, new Soneta.Business.Log("Symulacja limitu", false));
+                }
+                catch (Exception ex) {
+                    log.AppendLine("Symulacja limitu " + dl.Nazwa + " - błąd: " + ex.Message);
+                }
+                Soneta.Kalend.LimitNieobecnosci pierwszy = null;
+                Date od = new Date(rokB, 1, 1);
+                Date doB = new Date(rokB, 12, 31);
+                foreach (Soneta.Kalend.LimitNieobecnosci l in ks.LimNieobecnosci.WgPracownik[ps, dl]) {
+                    if (l.Okres.To < od || l.Okres.From > doB)
+                        continue;
+                    if (pierwszy == null || l.Okres.From < pierwszy.Okres.From)
+                        pierwszy = l;
+                    double nalH = (l.LimitGodz + l.ZmianaGodz - l.WykorzystanyPoprzGodz).TotalHours;
+                    biezacyH += nalH;
+                    log.AppendLine(string.Format("Symulacja {0} {1}: należny {2:0.00} h", dl.Nazwa, l.Okres, nalH));
+                }
+                if (pierwszy != null) {
+                    zaleglyH += pierwszy.PrzeniesienieGodz.TotalHours;
+                    log.AppendLine(string.Format("Symulacja {0} na {1}: zaległy {2:0.00} h", dl.Nazwa, od, pierwszy.PrzeniesienieGodz.TotalHours));
+                }
+            }
+            // sesja NIE jest zapisywana (brak s.Save())
+        }
+    }
+
+    double rezerwaH = zaleglyH + biezacyH - wykorzystanyH;
+    log.AppendLine(string.Format("Urlop: zaległy {0:0.00} h + bieżący {1:0.00} h - wykorzystany {2:0.00} h = {3:0.00} h", zaleglyH, biezacyH, wykorzystanyH, rezerwaH));
+    if (rezerwaH < 0) {
+        log.AppendLine("Ujemny stan urlopu - rezerwa = 0.");
+        rezerwaH = 0;
+    }
+
+    // ---------------- 2. WSPÓŁCZYNNIK DO EKWIWALENTU ----------------
+    double alfa = 0;
+    if (place.Config.Nieobecności.EkwiwalentZaUrlop.ŚredniaWgKonfiguracji)
+        alfa = (double)place.Config.Nieobecności.ŚredniaNormaMiesięczna[koniec];
+    if (alfa <= 0) {
+        CzasDni cdRok = prac.Czasy.KalkPlanu.Norma(FromTo.Year(rok), Soneta.Kalend.Dzien.Pracy);
+        alfa = cdRok.Dni / 12.0;
+    }
+    if (alfa <= 0)
+        alfa = 20.75;
+    double alfaW = alfa * wymiar;
+    log.AppendLine(string.Format("Współczynnik do ekwiwalentu {0:0.00} x wymiar {1:0.####} = {2:0.00}; godzin w dniu urlopu {3:0.00}", alfa, wymiar, alfaW, normaH));
+
+    // ---------------- 3. PODSTAWA 1 - średnia z 3 miesięcy (M, M-1, M-2) ----------------
+    double sumaP1 = 0;
+    int miesiecy = 0;
+    for (int i = 0; i < 3; i++) {
+        int idx = koniec.Year * 12 + (koniec.Month - 1) - i;
+        Date mOd = new Date(idx / 12, idx % 12 + 1, 1);
+        FromTo mFT = new YearMonth(mOd);
+        Date mDo = mFT.To;
+        PracHistoria phm = prac[mDo];
+        if (phm == null || !phm.Etat.OkresZatrudnienia.Contains(mDo))
+            continue;
+        double zasadnicze = 0, zmienne = 0;
+        if (ZASADNICZE_NOMINALNE)
+            zasadnicze = ZasadniczeNominalne(mDo).Value;
+        foreach (WypElement e in place.WypElementy.WgPracownik[prac]) {
+            if (e.Okres.To < mOd || e.Okres.To > mDo)
+                continue;
+            if (e.Definicja == null || e.Definicja == Element.Definicja)
+                continue;
+            if (e.RodzajZrodla == RodzajŹródłaWypłaty.Etat) {
+                if (!ZASADNICZE_NOMINALNE)
+                    zasadnicze += (double)e.Wartosc;
+            }
+            else if (e.Definicja.Nieobecnosci.Ekwiwalent.Typ != TypPodstawyUrlopu.NieWliczać)
+                zmienne += (double)e.Wartosc;
+        }
+        miesiecy++;
+        sumaP1 += zasadnicze + zmienne;
+        log.AppendLine(string.Format("Podstawa 1 - {0}/{1:00}: zasadnicze {2:0.00} + zmienne {3:0.00}", mOd.Year, mOd.Month,zasadnicze, zmienne));
+    }
+    double podstawa1 = miesiecy > 0 ? System.Math.Round(sumaP1 / miesiecy, 2) : 0;
+    double stawka1 = alfaW > 0 ? podstawa1 / alfaW / normaH : 0;
+    log.AppendLine(string.Format("Podstawa 1 (średnia z {0} mies.): {1:0.00}; za 1 dzień {2:0.00}; za 1 godz. {3:0.0000}", miesiecy, podstawa1, podstawa1 / alfaW, stawka1));
+
+    // ---------------- 4. PODSTAWA 2 - standard enova (ekwiwalent za urlop) ----------------
+    double p2dzien = 0, stawka2 = 0;
+    try {
+        using (Soneta.Business.LogCatcher listener = new Soneta.Business.LogCatcher("Ekwiwalent")) {
+            using (Element.Session.Logout(true)) {
+                new NaliczanieEkwiwalent(Element, Składnik).NaliczPodstawy();
+            }
+            if (!listener.IsEmpty)
+                Element.ZapisObliczen += listener.ToString();
+        }
+        p2dzien = Składnik.Podstawa1.Value;  // NaliczanieEkwiwalent: Podstawa1 = za 1 dzień
+        stawka2 = Składnik.Podstawa2.Value;  //                       Podstawa2 = za 1 godzinę
+    }
+    catch (Exception ex) {
+        log.AppendLine("Podstawa 2 - błąd naliczania wg standardu: " + ex.Message);
+    }
+    double podstawa2 = System.Math.Round(p2dzien * alfaW, 2);
+    log.AppendLine(string.Format("Podstawa 2 (standard enova): za 1 dzień {0:0.00}; za 1 godz. {1:0.0000}; miesięcznie {2:0.00}", p2dzien, stawka2, podstawa2));
+
+    // ---------------- 5. WYNIK ----------------
+    double stawka = stawka1;
+    if (WARIANT_PODSTAWY == 2)
+        stawka = stawka2;
+    else if (WARIANT_PODSTAWY == 3)
+        stawka = System.Math.Max(stawka1, stawka2);
+
+    int minuty = (int)System.Math.Round(rezerwaH * 60);
+    Składnik.Podstawa1 = new DoubleCy(podstawa1);
+    Składnik.Podstawa2 = new DoubleCy(podstawa2);
+    Składnik.Podstawa3 = new DoubleCy(System.Math.Round(zaleglyH / godzNaDzien, 2));
+    Składnik.Podstawa4 = new DoubleCy(System.Math.Round(biezacyH / godzNaDzien, 2));
+    Składnik.Podstawa5 = new DoubleCy(System.Math.Round(wykorzystanyH / godzNaDzien, 2));
+    Składnik.Czas = new Time(minuty / 60, minuty % 60);
+    Składnik.Ilosc = stawka;
+
+    log.AppendLine(string.Format("REZERWA ({0}): {1:0.00} h x {2:0.0000} = {3:0.00}", budzet ? "budżet" : "miesięczna", rezerwaH, stawka, rezerwaH * stawka));
+    Element.ZapisObliczen += log.ToString();
+}
+
+public Currency %NAZWA%_Wylicz(Soneta.Place.WypElementDodatekAutomatyczny Element, WypSkladnik Składnik) {
+    if (!PlanowaneWynagrodzenie)
+        return Currency.Zero;
+    return new Currency((decimal)System.Math.Round(Składnik.Czas.TotalHours * Składnik.Ilosc, 2));
+}

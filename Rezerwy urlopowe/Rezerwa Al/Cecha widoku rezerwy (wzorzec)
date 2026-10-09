@@ -1,0 +1,25 @@
+public __TYP__ Get___METODA__(Context cx) {
+	// Kolumna widoku rezerwy urlopowej na liście Pracownicy.
+	// Miesiąc: okres z kontekstu listy (jeśli jest), w przeciwnym razie miesiąc daty aktualności.
+	Date data;
+	object zKontekstu = cx[typeof(FromTo), false];
+	if (zKontekstu is FromTo && ((FromTo)zKontekstu).To != Date.MaxValue)
+		data = ((FromTo)zKontekstu).To;
+	else
+		data = ActualDate.Today(cx);
+
+	// Ostatnio naliczona pozycja elementu "__ELEMENT__" pracownika na planowanej liście płac za ten miesiąc
+	PlaceModule place = PlaceModule.GetInstance(Session);
+	PlanowanyElementWypłaty e = null;
+	foreach (PlanowanyElementWypłaty p in place.PlanElementyWyp.WgPracownik[(Pracownik)Row]) {
+		if (p.Definicja == null || p.Definicja.Nazwa != "__ELEMENT__")
+			continue;
+		if (p.Okres.To.Year != data.Year || p.Okres.To.Month != data.Month)
+			continue;
+		if (e == null || p.ID > e.ID)
+			e = p;
+	}
+	if (e == null)
+		return 0m;
+	return System.Math.Round(__WYRAZENIE__, 2);
+}
