@@ -29,6 +29,9 @@ cat <<EOF
     </OkresNaliczania>
     <Algorytm>
       <Priorytet>200</Priorytet>
+      <ZapisObliczen>
+        <Nazwa>Rezerwa urlopowa</Nazwa>
+      </ZapisObliczen>
       <Typ>EdytorAlgorytmu</Typ>
       <ElPodstawa1>Podstawa 1 (śr. 3 mies.)</ElPodstawa1>
       <ElPodstawa2>Podstawa 2 (standard)</ElPodstawa2>

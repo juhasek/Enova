@@ -32,8 +32,11 @@ narzuty pracodawcy liczy standardowy silnik płac, a rezerwa nie trafia na żadn
 Pola elementu na planowanej wypłacie: Podstawa 1, Podstawa 2 (miesięcznie), Podstawa 3/4/5 =
 urlop zaległy / bieżący / wykorzystany w dniach (budżet: zaległy na 01.01 / limit roku
 następnego / 0), Czas = godziny rezerwy, Wartość = kwota, Narzuty = narzuty pracodawcy.
-Pełne wyliczenie (limity, miesiące podstawy, współczynnik, log standardowego ekwiwalentu)
-jest w **Zapisie obliczeń** elementu.
+Pełne wyliczenie jest w **Zapisie obliczeń** elementu, w stałym układzie sekcji:
+[1] stan urlopu (godz./dni), [2] współczynnik, [3] podstawa 1 (miesiące), [4] podstawa 2,
+[5] wynik. Log pisany jest klasą `Log("Rezerwa urlopowa")` – silnik zbiera go sam, bo w definicji
+elementu (Algorytm → Zapis obliczeń) jest wpisana ta kategoria. Wpisanie „Rezerwa urlopowa,Urlop”
+dołącza pełny log standardowego ekwiwalentu (podstawa 2), bez zmiany kodu.
 
 Wzór: `kwota = godziny rezerwy × podstawa / (współczynnik × wymiar etatu) / godzin w dniu urlopu (8 h
 lub norma dobowa z kalendarza – wg konfiguracji ekwiwalentu)`.
