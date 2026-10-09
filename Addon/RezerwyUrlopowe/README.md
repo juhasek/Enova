@@ -19,3 +19,5 @@ Działa **obok** rozwiązania skryptowego `Rezerwy urlopowe/` (własne GUID-y, n
 | 6. Algorytm elementu | `AlgorytmRezerwy : AlgorytmBase` (Klasa algorytmu `A1.Rezerwy.AlgorytmRezerwy`, limit pola 30 znaków), wyniki dla czynności przez `RejestrWynikowRezerwy` |
 | 7. Dane inicjujące | `Dane/RezerwyUrlopowe.dbinit.xml` (wersja A1Rezerwy 1): 2 elementy „(dodatek)”, planowane listy AREZURL / ABUDREZURL — własne GUID-y; struktura OK, import próbny do wykonania przy teście instalacji |
 | 8. Weryfikatory | `BudzetPozaSierpniemVerifier` (Warning), `UjemnaRezerwaVerifier` (Error), pozycje zamkniętej rezerwy tylko do odczytu, `KontrolaKonfiguracji` (lista błędów przed naliczeniem); unikalność — klucze w bazie |
+| 9. Naliczenie | `NaliczRezerweWorker` (lista Pracownicy, zaznaczeni) i `NaliczRezerweWszystkimWorker` (lista Rezerwy urlopowe, zatrudnieni); logika `NaliczanieRezerwyUrlopowej`: kontrole → nagłówek → standardowe naliczenie planowanej listy → pozycje → sumy |
+| 10. Zamknięcie | `ZamknijRezerweWorker`, `OtworzRezerweWorker` (prawo specjalne — kwestia 11 otwarta); pozycja: `KwotaPoprzednia`, `Zmiana` |
