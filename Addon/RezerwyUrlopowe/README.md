@@ -14,3 +14,6 @@ Działa **obok** rozwiązania skryptowego `Rezerwy urlopowe/` (własne GUID-y, n
 | 1. Rusztowanie | projekt logiki `A1.RezerwyUrlopowe` (UI i Tests — w kolejnych krokach) |
 | 2. business.xml | `RezerwaUrlopowa` (RezerwyUrlopowe), `PozycjaRezerwyUrlopowej` (PozRezerwUrlop), subrow `ParametryNaliczenia`, enumy — build 0 błędów / 0 ostrzeżeń |
 | 3. rightstree | `RezerwyUrlopowe.rightstree.xml` — gałąź Kadry i płace/Rezerwy urlopowe |
+| 4. Konfiguracja | `UstawieniaRezerwUrlopowych` (CfgNodes A1/Rezerwy urlopowe), strona Opcji `Config.RezerwyUrlopowe.pageform.xml` (XSD OK) |
+| 5. Kalkulator | `KalkulatorRezerwyUrlopowej` + `SymulatorLimituUrlopu` — port 1:1 ze skryptu, parametry z konfiguracji, Log("Rezerwa urlopowa") |
+| 6. Algorytm elementu | `AlgorytmRezerwyUrlopowej : AlgorytmBase` (Klasa algorytmu), wyniki dla czynności przez `RejestrWynikowRezerwy` |
