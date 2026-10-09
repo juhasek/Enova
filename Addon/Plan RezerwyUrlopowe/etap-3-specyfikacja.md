@@ -254,15 +254,18 @@ Testy na prawdziwej bazie (`TestBase`) z danymi z 3.15; scenariusze RU-xx jako t
 
 ## 3.14. Dane konfiguracyjne inicjujące bazę (dbinit)
 
-| Zestaw | Obiekty | GUID (stałe, z rozwiązania skryptowego) | Kolejność | dbversion |
+| Zestaw | Obiekty | GUID (stałe, własne dodatku) | Kolejność | dbversion |
 |---|---|---|---|---|
-| Elementy | `DefinicjaElementu` „Rezerwa urlopowa”, „Budżet rezerwy urlopowej” (Klasa algorytmu, Tylko planowane, Do wypłaty = Nie, ZUS naliczać, PIT nie, Naliczanie = płatna z dołu, priorytet 200, zapis obliczeń „Rezerwa urlopowa”, etykiety Podstawa1–5/Czas) | 0d94d59b-…-55857735b070, d3e398ac-…-5d348839b194 | 1 | 1.0 |
-| Planowane listy | `DefinicjaPlanowanejListyPłac` REZURL, BUDREZURL (Element, numeracja, ewidencja RUEW 00000000-0007-0005-0004-000000000000) | dc76af63-…-3bb0651cc013, f7985482-…-3a4a06910e91 | 2 | 1.0 |
+| Elementy | `DefinicjaElementu` „Rezerwa urlopowa (dodatek)”, „Budżet rezerwy urlopowej (dodatek)” (Klasa algorytmu, Tylko planowane, Do wypłaty = Nie, ZUS naliczać, PIT nie, Naliczanie = płatna z dołu, priorytet 200, zapis obliczeń „Rezerwa urlopowa”, etykiety Podstawa1–5/Czas) | 8e6a7f2c-c06f-4917-9d81-7bf6b1c9aa66, 8edae287-6afb-4890-abc0-791b83bbb58c | 1 | 1.0 |
+| Planowane listy | `DefinicjaPlanowanejListyPłac` AREZURL „Rezerwa urlopowa (dodatek)”, ABUDREZURL „Budżet rez. urlop. (dodatek)” (Element, numeracja, ewidencja RUEW 00000000-0007-0005-0004-000000000000) | c9dc5833-031f-4ed4-a90e-e16276948922, b1fb2739-d4bf-41e0-9784-b4bac9075546 | 2 | 1.0 |
 | Konfiguracja | wartości domyślne — w kodzie węzła `CfgNodes` (bez dbinit) | — | — | — |
 
-Te same GUID-y co w rozwiązaniu skryptowym → instalacja u pilotażowego klienta **przełącza** istniejące elementy na
-klasę dodatku. Usunięcie artefaktów skryptowych (16 cech „Rezerwa…/Budżet…”, plik Dodatkowego kodu „RezerwaUrlopowa”)
-— osobny plik dbinit z `deleted="true"` lub procedura ręczna po pilotażu (TODO).
+**Współistnienie z rozwiązaniem skryptowym (decyzja użytkownika, kwestia 15):** dodatek **nie modyfikuje ani nie usuwa**
+istniejącego rozwiązania (elementy „Rezerwa urlopowa” / „Budżet rezerwy urlopowej”, planowane listy REZURL / BUDREZURL,
+16 cech widoku, plik Dodatkowego kodu „RezerwaUrlopowa”). Własne GUID-y, nazwy z dopiskiem „(dodatek)” i symbole
+AREZURL / ABUDREZURL. Obie wersje działają równolegle — każda planowana lista nalicza tylko swój element (scoping
+silnika po polu Element), więc wyniki się nie mieszają; równoległe naliczenie obu daje porównanie skrypt ↔ dodatek
+(test zgodności z 3.13). Nazwa kategorii logu wspólna („Rezerwa urlopowa”) — bez wpływu, bo zapis obliczeń jest per element.
 
 ## 3.15. Dane demonstracyjne
 

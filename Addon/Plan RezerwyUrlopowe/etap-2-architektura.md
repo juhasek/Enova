@@ -127,7 +127,7 @@ Brak integracji zewnętrznych w v1. Wyjście: eksport listy do Excela, wydruk, k
 ## 2.7. Migracja danych
 
 Brak. Historia zaczyna się od pierwszego naliczenia w dodatku; wcześniejsze miesiące można naliczyć wstecz
-czynnością (dane źródłowe są w enova). Rozwiązanie skryptowe wycofywane po pilotażu (procedura w Etapie 3).
+czynnością (dane źródłowe są w enova). Rozwiązanie skryptowe pozostaje w bazie bez zmian i działa równolegle (decyzja użytkownika — Etap 3, sekcja 3.14).
 
 ## 2.8. Wydajność i skalowalność
 
