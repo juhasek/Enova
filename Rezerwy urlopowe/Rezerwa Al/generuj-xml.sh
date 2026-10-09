@@ -25,6 +25,7 @@ cat <<EOF
     <RodzajNaliczania>TylkoPlanowane</RodzajNaliczania>
     <OkresNaliczania>
       <Typ>Każda</Typ>
+      <Naliczanie>PłatnaZDołu</Naliczanie>
     </OkresNaliczania>
     <Algorytm>
       <Priorytet>200</Priorytet>
