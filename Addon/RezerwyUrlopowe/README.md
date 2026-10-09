@@ -32,3 +32,8 @@ Działa **obok** rozwiązania skryptowego `Rezerwy urlopowe/` (własne GUID-y, n
 4. Restart serwera / aplikacji enova, która korzysta z bazy Al (rozszerzenia z bazy wczytują się przy starcie).
 Aktualizacja DLL: ponowny `extupdate` dla obu plików (+ `convert`, gdy zmienia się business.xml / dbinit — podbić `versionNumber`).
 Wycofanie: `dbmgr extremove Al A1.RezerwyUrlopowe.dll` (i `.UI.dll`) albo odtworzenie kopii bazy.
+
+## Stan na 2026-10-09 (koniec sesji)
+- Pierwszy test w enova: folder i czynność widoczne (dodatek wczytany). Błąd „poza trybem edycji” — poprawiony (transakcja w czynnościach).
+- Drugi test: po naliczeniu planowanej listy dla wszystkich pracowników **enova się zamknęła** bez komunikatu; w bazie brak danych dodatku.
+  Do diagnozy: wpis z Podglądu zdarzeń Windows („.NET Runtime”), miesiąc użyty w oknie czynności.
