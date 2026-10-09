@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
+          Priority="10">
+  <Page CaptionHtml="Ogólne" DataContext="{DataSource}">
+    <Group CaptionHtml="Rezerwa" LabelWidth="18">
+      <Row>
+        <Field CaptionHtml="Rodzaj" OuterWidth="34" EditValue="{Rodzaj}" IsReadOnly="true" />
+        <Field CaptionHtml="Rok" OuterWidth="22" EditValue="{Rok}" IsReadOnly="true" />
+        <Field CaptionHtml="Miesiąc" OuterWidth="22" EditValue="{Miesiac}" IsReadOnly="true" />
+      </Row>
+      <Field CaptionHtml="Stan" Width="15" EditValue="{StanRezerwy}" IsReadOnly="true" />
+      <Field CaptionHtml="Opis" Width="*" EditValue="{Opis}" />
+    </Group>
+    <Group CaptionHtml="Sumy" LabelWidth="18">
+      <Row>
+        <Field CaptionHtml="Pracowników" OuterWidth="34" EditValue="{LiczbaPozycji}" IsReadOnly="true" />
+        <Field CaptionHtml="Godziny" OuterWidth="34" EditValue="{GodzinyRazem}" Format="N2" IsReadOnly="true" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kwota rezerwy" OuterWidth="34" EditValue="{KwotaRazem}" IsReadOnly="true" />
+        <Field CaptionHtml="Narzuty" OuterWidth="34" EditValue="{NarzutyRazem}" IsReadOnly="true" />
+      </Row>
+    </Group>
+    <Group CaptionHtml="Naliczenie i zamknięcie" LabelWidth="18">
+      <Row>
+        <Field CaptionHtml="Naliczono" OuterWidth="34" EditValue="{DataNaliczenia}" IsReadOnly="true" />
+        <Field CaptionHtml="Naliczył" OuterWidth="34" EditValue="{NaliczylOperator}" IsReadOnly="true" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Zamknięto" OuterWidth="34" EditValue="{DataZamkniecia}" IsReadOnly="true" />
+        <Field CaptionHtml="Zamknął" OuterWidth="34" EditValue="{ZamknalOperator}" IsReadOnly="true" />
+      </Row>
+    </Group>
+  </Page>
+</DataForm>
