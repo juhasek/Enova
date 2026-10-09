@@ -207,40 +207,49 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
         PracHistoria phm = prac[mDo];
         if (phm == null || !phm.Etat.OkresZatrudnienia.Contains(mDo))
             continue;
+        // miesiąc niepełnego zatrudnienia: zasadnicze i zmienne w wartości nominalnej (za pełny miesiąc)
+        FromTo zatrM = phm.Etat.OkresZatrudnienia * mFT;
+        bool niepelny = zatrM != mFT;
+        double skala = 1;
+        if (niepelny) {
+            double normaMies = prac.Czasy.Norma(mFT).Czas.TotalHours;
+            double normaZatr = prac.Czasy.Norma(zatrM).Czas.TotalHours;
+            if (normaZatr > 0)
+                skala = normaMies / normaZatr;
+        }
         double zasadnicze = 0, zmienne = 0;
-        bool jestWyplata = false;
+        if (ZASADNICZE_NOMINALNE)
+            zasadnicze = ZasadniczeNominalne(mDo).Value;
         foreach (WypElement e in place.WypElementy.WgPracownik[prac]) {
             if (e.Okres.To < mOd || e.Okres.To > mDo)
                 continue;
             if (e.Definicja == null || e.Definicja == Element.Definicja)
                 continue;
             if (e.RodzajZrodla == RodzajŹródłaWypłaty.Etat) {
-                jestWyplata = true;
                 if (!ZASADNICZE_NOMINALNE)
-                    zasadnicze += (double)e.Wartosc;
+                    zasadnicze += (double)e.Wartosc * skala;
             }
-            else if (e.Definicja.Nieobecnosci.Ekwiwalent.Typ != TypPodstawyUrlopu.NieWliczać)
-                zmienne += (double)e.Wartosc;
+            else if (e.Definicja.Nieobecnosci.Ekwiwalent.Typ != TypPodstawyUrlopu.NieWliczać) {
+                double wartosc = (double)e.Wartosc;
+                if (niepelny) {
+                    // dodatek z kwotą w kartotece - kwota nominalna; pozostałe - przeliczenie do pełnego miesiąca wg normy
+                    WypElementDodatek ed = e as WypElementDodatek;
+                    if (ed != null && ed.DodHistoria != null && ed.DodHistoria.Podstawa.Value != 0)
+                        wartosc = (double)ed.DodHistoria.Podstawa.Value;
+                    else
+                        wartosc = wartosc * skala;
+                }
+                zmienne += wartosc;
+            }
         }
-        // do średniej wchodzą tylko miesiące z wypłatą (naliczone wynagrodzenie zasadnicze za ten miesiąc)
-        if (!jestWyplata) {
-            Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: brak wypłaty - miesiąc pominięty");
-            continue;
-        }
-        if (ZASADNICZE_NOMINALNE)
-            zasadnicze = ZasadniczeNominalne(mDo).Value;
+        if (niepelny)
+            Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: niepełne zatrudnienie {zatrM} - wartości nominalne (przelicznik normy {skala:0.0000})");
         miesiecy++;
         sumaP1 += zasadnicze + zmienne;
         Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: zasadnicze {zasadnicze:0.00} + zmienne {zmienne:0.00}");
     }
-    double podstawa1;
-    if (miesiecy > 0)
-        podstawa1 = System.Math.Round(sumaP1 / miesiecy, 2);
-    else {
-        // brak jakiejkolwiek wypłaty w 3 miesiącach (np. nowo zatrudniony) - zasadnicze nominalne z miesiąca rezerwy
-        podstawa1 = System.Math.Round(ZasadniczeNominalne(koniec).Value, 2);
-        Element.ZapisObliczen.Add("Podstawa 1 - brak wypłat w 3 miesiącach: przyjęto zasadnicze nominalne z miesiąca rezerwy");
-    }
+    // średnia z miesięcy zatrudnienia (1-3), z dokładnością do grosza
+    double podstawa1 = miesiecy > 0 ? System.Math.Round(sumaP1 / miesiecy, 2) : 0;
     double stawka1 = alfaW > 0 ? podstawa1 / alfaW / normaH : 0;
     Element.ZapisObliczen.Add($"Podstawa 1 (średnia z {miesiecy} mies.): {podstawa1:0.00}; za 1 dzień {podstawa1 / alfaW:0.00}; za 1 godz. {stawka1:0.0000}");
 
@@ -519,40 +528,49 @@ public void %NAZWA%_Param(Soneta.Place.WypElementDodatekAutomatyczny Element, Wy
         PracHistoria phm = prac[mDo];
         if (phm == null || !phm.Etat.OkresZatrudnienia.Contains(mDo))
             continue;
+        // miesiąc niepełnego zatrudnienia: zasadnicze i zmienne w wartości nominalnej (za pełny miesiąc)
+        FromTo zatrM = phm.Etat.OkresZatrudnienia * mFT;
+        bool niepelny = zatrM != mFT;
+        double skala = 1;
+        if (niepelny) {
+            double normaMies = prac.Czasy.Norma(mFT).Czas.TotalHours;
+            double normaZatr = prac.Czasy.Norma(zatrM).Czas.TotalHours;
+            if (normaZatr > 0)
+                skala = normaMies / normaZatr;
+        }
         double zasadnicze = 0, zmienne = 0;
-        bool jestWyplata = false;
+        if (ZASADNICZE_NOMINALNE)
+            zasadnicze = ZasadniczeNominalne(mDo).Value;
         foreach (WypElement e in place.WypElementy.WgPracownik[prac]) {
             if (e.Okres.To < mOd || e.Okres.To > mDo)
                 continue;
             if (e.Definicja == null || e.Definicja == Element.Definicja)
                 continue;
             if (e.RodzajZrodla == RodzajŹródłaWypłaty.Etat) {
-                jestWyplata = true;
                 if (!ZASADNICZE_NOMINALNE)
-                    zasadnicze += (double)e.Wartosc;
+                    zasadnicze += (double)e.Wartosc * skala;
             }
-            else if (e.Definicja.Nieobecnosci.Ekwiwalent.Typ != TypPodstawyUrlopu.NieWliczać)
-                zmienne += (double)e.Wartosc;
+            else if (e.Definicja.Nieobecnosci.Ekwiwalent.Typ != TypPodstawyUrlopu.NieWliczać) {
+                double wartosc = (double)e.Wartosc;
+                if (niepelny) {
+                    // dodatek z kwotą w kartotece - kwota nominalna; pozostałe - przeliczenie do pełnego miesiąca wg normy
+                    WypElementDodatek ed = e as WypElementDodatek;
+                    if (ed != null && ed.DodHistoria != null && ed.DodHistoria.Podstawa.Value != 0)
+                        wartosc = (double)ed.DodHistoria.Podstawa.Value;
+                    else
+                        wartosc = wartosc * skala;
+                }
+                zmienne += wartosc;
+            }
         }
-        // do średniej wchodzą tylko miesiące z wypłatą (naliczone wynagrodzenie zasadnicze za ten miesiąc)
-        if (!jestWyplata) {
-            Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: brak wypłaty - miesiąc pominięty");
-            continue;
-        }
-        if (ZASADNICZE_NOMINALNE)
-            zasadnicze = ZasadniczeNominalne(mDo).Value;
+        if (niepelny)
+            Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: niepełne zatrudnienie {zatrM} - wartości nominalne (przelicznik normy {skala:0.0000})");
         miesiecy++;
         sumaP1 += zasadnicze + zmienne;
         Element.ZapisObliczen.Add($"Podstawa 1 - {mOd.Year}/{mOd.Month:00}: zasadnicze {zasadnicze:0.00} + zmienne {zmienne:0.00}");
     }
-    double podstawa1;
-    if (miesiecy > 0)
-        podstawa1 = System.Math.Round(sumaP1 / miesiecy, 2);
-    else {
-        // brak jakiejkolwiek wypłaty w 3 miesiącach (np. nowo zatrudniony) - zasadnicze nominalne z miesiąca rezerwy
-        podstawa1 = System.Math.Round(ZasadniczeNominalne(koniec).Value, 2);
-        Element.ZapisObliczen.Add("Podstawa 1 - brak wypłat w 3 miesiącach: przyjęto zasadnicze nominalne z miesiąca rezerwy");
-    }
+    // średnia z miesięcy zatrudnienia (1-3), z dokładnością do grosza
+    double podstawa1 = miesiecy > 0 ? System.Math.Round(sumaP1 / miesiecy, 2) : 0;
     double stawka1 = alfaW > 0 ? podstawa1 / alfaW / normaH : 0;
     Element.ZapisObliczen.Add($"Podstawa 1 (średnia z {miesiecy} mies.): {podstawa1:0.00}; za 1 dzień {podstawa1 / alfaW:0.00}; za 1 godz. {stawka1:0.0000}");
 
