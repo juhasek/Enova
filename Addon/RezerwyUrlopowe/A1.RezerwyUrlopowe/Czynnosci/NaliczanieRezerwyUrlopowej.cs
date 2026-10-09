@@ -29,6 +29,15 @@ public class NaliczanieRezerwyUrlopowej {
     public List<string> Komunikaty { get; } = new List<string>();
 
     public RezerwaUrlopowa Nalicz(RodzajRezerwyUrlopowej rodzaj, YearMonth okres, IEnumerable<Pracownik> pracownicy, bool naliczPonownie) {
+        // zmiany danych w czynności wymagają transakcji edycyjnej; błąd (wyjątek) = wycofanie całości
+        using (ITransaction transakcja = session.Logout(true)) {
+            RezerwaUrlopowa rezerwa = NaliczWTransakcji(rodzaj, okres, pracownicy, naliczPonownie);
+            transakcja.Commit();
+            return rezerwa;
+        }
+    }
+
+    RezerwaUrlopowa NaliczWTransakcji(RodzajRezerwyUrlopowej rodzaj, YearMonth okres, IEnumerable<Pracownik> pracownicy, bool naliczPonownie) {
         FromTo miesiac = okres;
         Date koniecMiesiaca = miesiac.To;
         DefinicjaElementu element = ustawienia.Element(rodzaj);

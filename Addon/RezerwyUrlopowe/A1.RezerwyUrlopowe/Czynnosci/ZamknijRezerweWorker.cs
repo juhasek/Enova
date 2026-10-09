@@ -14,9 +14,12 @@ public class ZamknijRezerweWorker {
 
     [Action("Zamknij miesiąc", Target = ActionTarget.ToolbarWithText | ActionTarget.Menu, Mode = ActionMode.SingleSession, Priority = 20)]
     public void Zamknij() {
-        Rezerwa.StanRezerwy = StanRezerwyUrlopowej.Zamknieta;
-        Rezerwa.DataZamkniecia = DateTime.Now;
-        Rezerwa.ZamknalOperator = Rezerwa.Session.Login.Operator?.ToString() ?? "";
+        using (ITransaction transakcja = Rezerwa.Session.Logout(true)) {
+            Rezerwa.StanRezerwy = StanRezerwyUrlopowej.Zamknieta;
+            Rezerwa.DataZamkniecia = DateTime.Now;
+            Rezerwa.ZamknalOperator = Rezerwa.Session.Login.Operator?.ToString() ?? "";
+            transakcja.Commit();
+        }
     }
 
     public bool IsEnabledZamknij() => Rezerwa != null && !Rezerwa.Zamknieta;

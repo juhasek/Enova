@@ -17,9 +17,12 @@ public class OtworzRezerweWorker {
 
     [Action("Otwórz miesiąc", Target = ActionTarget.Menu, Mode = ActionMode.SingleSession, Priority = 30)]
     public void Otworz() {
-        Rezerwa.StanRezerwy = StanRezerwyUrlopowej.Naliczona;
-        Rezerwa.DataZamkniecia = DateTime.MinValue;
-        Rezerwa.ZamknalOperator = "";
+        using (ITransaction transakcja = Rezerwa.Session.Logout(true)) {
+            Rezerwa.StanRezerwy = StanRezerwyUrlopowej.Naliczona;
+            Rezerwa.DataZamkniecia = DateTime.MinValue;
+            Rezerwa.ZamknalOperator = "";
+            transakcja.Commit();
+        }
     }
 
     public bool IsEnabledOtworz() => Rezerwa != null && Rezerwa.Zamknieta;
