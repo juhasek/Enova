@@ -1,0 +1,126 @@
+// Dodatkowy kod do kompilacji (System -> Dodatkowy kod do kompilacji), klasa A1WeryfikatoryKalendarza.
+// Nowa wersja A1WeryfikujNormeWOkresieRozliczeniowym - dodawana OBOK starej metody (stara zostaje bez zmian).
+// Zmiany względem starej wersji:
+//   - okres rozliczeniowy przycięty do okresu zatrudnienia na etacie,
+//   - miesiące minione (przed bieżącym miesiącem) nie są rezerwą - ich dni liczą się wg planu jako stałe,
+//   - komunikat wskazuje dni do poprawy.
+// Definicja weryfikatora (rodzaj Plan pracy, poziom Błąd):
+//   return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1WeryfikujNormeWOkresieRozliczeniowymV2(new KalkulatorPlanu(pracownik), args.Miesiąc.LastDay);
+
+		public static string A1WeryfikujNormeWOkresieRozliczeniowymV2(KalkulatorPlanuBase kalkulator, Date data) // włączone na PlaniePracy
+		{
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+			{
+				return null;
+			}
+
+			// Okres rozliczeniowy przycięty do okresu zatrudnienia na etacie
+			Periods periods = pracownik.WyliczOkresRoliczeniowyNadgodzin(data).ToPeriods();
+			Periods pozaZatrudnieniem = Periods.Empty;
+			foreach (FromTo item in periods)
+			{
+				pozaZatrudnieniem += item.ToPeriods() - kalkulator.ZrodloPlanu.GetPlanOkresZatrudnienia(item);
+			}
+			periods -= pozaZatrudnieniem;
+			if (periods.Count == 0)
+			{
+				return null;
+			}
+
+			KalkulatorKodeksowyPracownika kalkulatorKodeksowyPracownika = new KalkulatorKodeksowyPracownika(pracownik);
+			CzasDni normaKodeksowa = CzasDni.Empty;
+			foreach (FromTo item in periods)
+			{
+				normaKodeksowa += kalkulatorKodeksowyPracownika.Norma(item);
+			}
+
+			var dniZJawnymWpisem = new System.Collections.Generic.HashSet<Date>();
+			foreach (FromTo item in periods)
+			{
+				foreach (DzienPlanu dzien in kalkulator.ZrodloPlanu.GetPlanDniPlanu(item))
+				{
+					dniZJawnymWpisem.Add(dzien.Data);
+				}
+			}
+
+			// Miesiące minione nie są już planowane - ich dni (z wpisem i bez) liczą się wg planu jako stałe.
+			Date dzisiaj = Date.Today;
+			Date horyzontEdycji = new Date(dzisiaj.Year, dzisiaj.Month, 1);
+
+			Time zero = new Time(0, 0);
+			Time sztywne = zero;
+			Time maksimumElastycznych = zero;
+			int liczbaDniElastycznych = 0;
+			// Dni z wpisem od bieżącego miesiąca: kandydaci do poprawy
+			var dniDoSkrocenia = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Date, Time>>();
+			var dniDoWydluzenia = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Date, Time>>();
+			foreach (FromTo item in periods)
+			{
+				for (Date dt = item.From; dt <= item.To; dt++)
+				{
+					Time planDnia = kalkulator.Norma(new FromTo(dt, dt).ToPeriods()).Czas;
+					if (dt < horyzontEdycji)
+					{
+						sztywne += planDnia;
+						continue;
+					}
+
+					// Dobowe maksimum wg systemu czasu pracy w danym dniu (może się zmienić w trakcie okresu)
+					Kalendarz kalendarzDnia = pracownik[dt] == null ? null : pracownik[dt].Etat.Kalendarz;
+					Time maxDzien = kalendarzDnia == null
+						? planDnia
+						: (kalendarzDnia.RownowaznyCzasPracy ? new Time(12, 0) : kalendarzDnia.Nadgodziny.WartoscDobowa);
+
+					if (dniZJawnymWpisem.Contains(dt))
+					{
+						sztywne += planDnia;
+						if (planDnia > zero)
+							dniDoSkrocenia.Add(new System.Collections.Generic.KeyValuePair<Date, Time>(dt, planDnia));
+						if (planDnia < maxDzien && !Date.FreeOrHoliday(dt))
+							dniDoWydluzenia.Add(new System.Collections.Generic.KeyValuePair<Date, Time>(dt, maxDzien - planDnia));
+						continue;
+					}
+
+					// Dzień bez wpisu jest elastyczny (0 .. dobowe maksimum) tylko gdy kalendarz przewiduje go jako roboczy
+					if (planDnia <= zero)
+					{
+						continue;
+					}
+					maksimumElastycznych += maxDzien;
+					liczbaDniElastycznych++;
+				}
+			}
+
+			Time minimalnyMozliwy = sztywne;
+			Time maksymalnyMozliwy = sztywne + maksimumElastycznych;
+
+			if (minimalnyMozliwy > normaKodeksowa.Czas)
+			{
+				// Najdłuższe dni z wpisem od bieżącego miesiąca - tam najłatwiej zdjąć nadmiar
+				dniDoSkrocenia.Sort((a, b) => a.Value > b.Value ? -1 : (a.Value < b.Value ? 1 : a.Key.CompareTo(b.Key)));
+				string dniDoPoprawy = "";
+				for (int i = 0; i < dniDoSkrocenia.Count && i < 10; i++)
+				{
+					dniDoPoprawy += (i > 0 ? ", " : "") + dniDoSkrocenia[i].Key.Day.ToString("00") + "." + dniDoSkrocenia[i].Key.Month.ToString("00") + " (" + dniDoSkrocenia[i].Value + ")";
+				}
+				if (dniDoSkrocenia.Count > 10)
+					dniDoPoprawy += " i " + (dniDoSkrocenia.Count - 10) + " kolejnych";
+				if (dniDoPoprawy == "")
+					dniDoPoprawy = "brak - nadmiar pochodzi z miesięcy minionych";
+				return "Przekroczono limit godzin ({0}) o ({2}) w okresie rozliczeniowym ({1}) - {3}. Skróć plan dni: {4}".TranslateFormat(normaKodeksowa.Czas, periods, minimalnyMozliwy - normaKodeksowa.Czas, pracownik, dniDoPoprawy);
+			}
+			if (maksymalnyMozliwy < normaKodeksowa.Czas)
+			{
+				string dniDoPoprawy = "";
+				for (int i = 0; i < dniDoWydluzenia.Count && i < 10; i++)
+				{
+					dniDoPoprawy += (i > 0 ? ", " : "") + dniDoWydluzenia[i].Key.Day.ToString("00") + "." + dniDoWydluzenia[i].Key.Month.ToString("00") + " (+" + dniDoWydluzenia[i].Value + ")";
+				}
+				if (dniDoWydluzenia.Count > 10)
+					dniDoPoprawy += " i " + (dniDoWydluzenia.Count - 10) + " kolejnych";
+				if (dniDoPoprawy == "")
+					dniDoPoprawy = "brak - trzeba zamienić dzień wolny na roboczy";
+				return "Nie da się już osiągnąć normy godzin ({0}) w okresie rozliczeniowym ({1}), brakuje ({2}) - {3}. Dni bez wpisu od bieżącego miesiąca: {4} (maks. {5}). Wydłuż plan dni: {6}".TranslateFormat(normaKodeksowa.Czas, periods, normaKodeksowa.Czas - maksymalnyMozliwy, pracownik, liczbaDniElastycznych, maksimumElastycznych, dniDoPoprawy);
+			}
+			return null;
+		}
