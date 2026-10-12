@@ -63,3 +63,18 @@ jest liczona dobrze, bo odejmuje 12h. Błąd dotyczy tylko dziennego dopełnieni
    plan dnia, i poprawić `args.Dni`. Wymaga to definicji ekwiwalentu z algorytmem w kodzie,
    a `PobierzMetode` musi tę metodę znaleźć. Niesprawdzone na żywo.
 3. Zgłoszenie do producenta: dni nieobecności godzinowej obejmującej cały plan dnia.
+
+Decyzja (2026-10-12): klient potwierdził 11 dni zamiast 10. Algorytmu nie przepisujemy,
+sprawa idzie do producenta.
+
+## Treść zgłoszenia do producenta
+
+> Ekwiwalent za urlop wypoczynkowy (enova 2512.5.6): nieobecność wpisana na godziny,
+> która obejmuje cały plan dnia (np. opieka art. 188, 12h przy planie 12h), jest liczona
+> przy dopełnieniu składników zmiennych jako dzień przepracowany. W przykładzie system
+> przyjmuje 11 dni pracy zamiast 10. Ta sama nieobecność wpisana jako całodniowa
+> zmniejsza liczbę dni prawidłowo. Przyczyna: OkresNieobecności.Norma() dla nieobecności
+> z wypełnionym czasem (Nieobecnosc.Norma) zwraca CzasDni z Dni = 0, więc NormaNie /
+> PracaRozliczana nie odejmują dnia w NaliczanieUrlop.WyliczCzasyDoDopełnienia
+> (zapis obliczeń: „Norma/praca (dni)”). Oczekiwane: nieobecność godzinowa pokrywająca
+> cały plan dnia powinna być liczona jako dzień nieobecności.
