@@ -21,11 +21,11 @@ public void Wynagrodzenie_Za_Nadgodziny_Param(Soneta.Place.WypElementDodatekAuto
         if (e.Definicja.Features.GetBool("WliczajDoNadgodzin") == true) {
             if (e.Definicja.Nazwa == "Dodatek funkcyjny") {
                 suma += e.WartośćNominalna;
-                Trace("Nazwa elementu {0} kwota {1}: ", e.Nazwa, e.WartośćNominalna);
+                Element.ZapisObliczen.Add($"Nazwa elementu {e.Nazwa} kwota {e.WartośćNominalna}");
             }
             else {
                 suma += e.Wartosc;
-                Trace("Nazwa elementu {0} kwota {1}: ", e.Nazwa, e.Wartosc);
+                Element.ZapisObliczen.Add($"Nazwa elementu {e.Nazwa} kwota {e.Wartosc}");
             }
         }
     }
@@ -69,26 +69,25 @@ public void Wynagrodzenie_Za_Nadgodziny_Param(Soneta.Place.WypElementDodatekAuto
         foreach (WypSkladnik składnikWcześniejszy in wcześniejszy.Skladniki) {
             if (składnikWcześniejszy.Okres.IsIntersected(Składnik.Okres)) {
                 jużWypłacone += składnikWcześniejszy.Czas;
-                Trace("Już wypłacone na wypłacie {0}: {1}", wcześniejszy.Wyplata, składnikWcześniejszy.Czas);
+                Element.ZapisObliczen.Add($"Już wypłacone na wypłacie {wcześniejszy.Wyplata}: {składnikWcześniejszy.Czas}");
             }
         }
     }
 
     Składnik.Czas = Time.Max(czasDoZaplaty - jużWypłacone, Time.Zero);
 
-    Trace("");
-    Trace("########################");
-    Trace($"Norma {norma}");
-    Trace($"Stawka 1h z minimalnego {a}");
-    Trace($"Stawka 1h ze stawki zaszeregowania {b}");
-    Trace($"Stawka 1h z dodatków {c}");
-    Trace($"Stawka 1h do nadgodzin {podstawa1}");
-    Trace($"Wymiar etatu {wymiarEtatuOkresu}, stawka miesięczna: {stawkaMiesieczna}");
-    Trace($"Praca ponad plan (odchyłki plus - minus) {pracaPonadPlan}");
-    Trace($"Nadgodziny wg silnika {nadgodziny}");
-    Trace($"Godziny ponadwymiarowe {ponadwymiarowe}");
-    Trace($"Już wypłacone za ten okres {jużWypłacone}");
-    Trace($"Czas do zapłaty {Składnik.Czas}");
+    Element.ZapisObliczen.Add("########################");
+    Element.ZapisObliczen.Add($"Norma {norma}");
+    Element.ZapisObliczen.Add($"Stawka 1h z minimalnego {a}");
+    Element.ZapisObliczen.Add($"Stawka 1h ze stawki zaszeregowania {b}");
+    Element.ZapisObliczen.Add($"Stawka 1h z dodatków {c}");
+    Element.ZapisObliczen.Add($"Stawka 1h do nadgodzin {podstawa1}");
+    Element.ZapisObliczen.Add($"Wymiar etatu {wymiarEtatuOkresu}, stawka miesięczna: {stawkaMiesieczna}");
+    Element.ZapisObliczen.Add($"Praca ponad plan (odchyłki plus - minus) {pracaPonadPlan}");
+    Element.ZapisObliczen.Add($"Nadgodziny wg silnika {nadgodziny}");
+    Element.ZapisObliczen.Add($"Godziny ponadwymiarowe {ponadwymiarowe}");
+    Element.ZapisObliczen.Add($"Już wypłacone za ten okres {jużWypłacone}");
+    Element.ZapisObliczen.Add($"Czas do zapłaty {Składnik.Czas}");
 }
 
 public Currency Wynagrodzenie_Za_Nadgodziny_Wylicz(Soneta.Place.WypElementDodatekAutomatyczny Element, WypSkladnik Składnik) {
