@@ -58,23 +58,23 @@ public void Wynagrodzenie_Za_Nadgodziny_Param(Soneta.Place.WypElementDodatekAuto
     Time czasDoZaplaty = nadgodziny + ponadwymiarowe;
 
     // godziny już wypłacone tym elementem za ten sam okres na innych wypłatach (bez storn i wystornowanych)
-    Time jużWypłacone = Time.Zero;
-    foreach (WypElement wcześniejszy in Element.Pracownik.Elementy[Składnik.Okres]) {
-        if (wcześniejszy == Element)
+    Time juzWyplacone = Time.Zero;
+    foreach (WypElement wczesniejszy in Element.Pracownik.Elementy[Składnik.Okres]) {
+        if (wczesniejszy == Element)
             continue;
-        if (wcześniejszy.Definicja != Element.Definicja)
+        if (wczesniejszy.Definicja != Element.Definicja)
             continue;
-        if (wcześniejszy.Wyplata == Element.Wyplata)
+        if (wczesniejszy.Wyplata == Element.Wyplata)
             continue;
-        foreach (WypSkladnik składnikWcześniejszy in wcześniejszy.Skladniki) {
-            if (składnikWcześniejszy.Okres.IsIntersected(Składnik.Okres)) {
-                jużWypłacone += składnikWcześniejszy.Czas;
-                Element.ZapisObliczen.Add($"Już wypłacone na wypłacie {wcześniejszy.Wyplata}: {składnikWcześniejszy.Czas}");
+        foreach (WypSkladnik skladnikWczesniejszy in wczesniejszy.Skladniki) {
+            if (skladnikWczesniejszy.Okres.IsIntersected(Składnik.Okres)) {
+                juzWyplacone += skladnikWczesniejszy.Czas;
+                Element.ZapisObliczen.Add($"Już wypłacone na wypłacie {wczesniejszy.Wyplata}: {skladnikWczesniejszy.Czas}");
             }
         }
     }
 
-    Składnik.Czas = Time.Max(czasDoZaplaty - jużWypłacone, Time.Zero);
+    Składnik.Czas = Time.Max(czasDoZaplaty - juzWyplacone, Time.Zero);
 
     Element.ZapisObliczen.Add("########################");
     Element.ZapisObliczen.Add($"Norma {norma}");
@@ -86,7 +86,7 @@ public void Wynagrodzenie_Za_Nadgodziny_Param(Soneta.Place.WypElementDodatekAuto
     Element.ZapisObliczen.Add($"Praca ponad plan (odchyłki plus - minus) {pracaPonadPlan}");
     Element.ZapisObliczen.Add($"Nadgodziny wg silnika {nadgodziny}");
     Element.ZapisObliczen.Add($"Godziny ponadwymiarowe {ponadwymiarowe}");
-    Element.ZapisObliczen.Add($"Już wypłacone za ten okres {jużWypłacone}");
+    Element.ZapisObliczen.Add($"Już wypłacone za ten okres {juzWyplacone}");
     Element.ZapisObliczen.Add($"Czas do zapłaty {Składnik.Czas}");
 }
 
