@@ -47,7 +47,7 @@ public void Wynagrodzenie_Za_Nadgodziny_Param(Soneta.Place.WypElementDodatekAuto
 
     Fraction wymiarEtatuOkresu = Element.PracHistoria.Etat.Wymiar;
     bool niepelnyEtat = wymiarEtatuOkresu < Fraction.One;
-    bool stawkaMiesieczna = Element.PracHistoria.Etat.RodzajStawki == RodzajStawkiZaszeregowania.Miesieczna;
+    bool stawkaMiesieczna = Element.PracHistoria.Etat.Zaszeregowanie.RodzajStawki == RodzajStawkiZaszeregowania.Miesieczna;
 
     Odchylka odchylka = Element.Pracownik.Czasy.KalkPracy.Odchylki(Składnik.Okres);
     Time pracaPonadPlan = Time.Max(odchylka.Plus - odchylka.Minus, Time.Zero);
