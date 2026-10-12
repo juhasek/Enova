@@ -45,4 +45,6 @@ public override string Weryfikuj(Soneta.Kadry.Pracownik pracownik, WeryfikujEven
 }
 ```
 
-Stan: kod kompiluje się na DLL 2512.5.6 (lokalna kompilacja całej klasy). Niesprawdzony na żywo.
+Stan: kod kompiluje się na DLL 2512.5.6 (lokalna kompilacja całej klasy). Wgrany do bazy Al 2026-10-12:
+metoda w CodeFiles ID 13, definicja `DefWeryfKalend` ID 2052 „A1_Norma w okresie rozl. v2” (Plan pracy,
+nie podpięta). Definicja 37 (v1) bez zmian. Podpinać zamiennie z 37, nie razem. Niesprawdzony na żywo.
