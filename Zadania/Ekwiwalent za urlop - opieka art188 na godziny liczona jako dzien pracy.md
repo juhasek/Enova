@@ -66,6 +66,7 @@ jest liczona dobrze, bo odejmuje 12h. Błąd dotyczy tylko dziennego dopełnieni
 
 Decyzja (2026-10-12): klient potwierdził 11 dni zamiast 10. Algorytmu nie przepisujemy,
 sprawa idzie do producenta.
+Potwierdzone: opieka wpisana na godziny. Zgłoszenie do producenta wysłane (2026-10-12), czekamy na poprawkę.
 
 ## Treść zgłoszenia do producenta
 
