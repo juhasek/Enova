@@ -25,12 +25,35 @@ Poza repo (lokalnie): `.claude/settings.local.json` — włączenie serwerów MC
   5. ręczne zalogowanie operatora do każdej bazy w ramce — dopiero wtedy `buscall` pobiera listę narzędzi,
   6. `/mcp` → reconnect: Al i Claude mają po 50 narzędzi.
 
+## 3. Porządki po bazie testowej ramki
+
+- Usunięta baza testowa ramki (SQL, rejestracja `dbmgr`, źródło w ustawieniach ramki, serwer MCP,
+  cache `buscall`) — na maszynie zostały tylko bazy **Al** i **Claude**.
+- Usunięta komenda symulacji podstawy zasiłkowej (plik komendy + uprawnienie); historia `Testy`
+  przepisana i wypchnięta (`--force-with-lease`).
+
+## 4. Naliczenie wypłat — baza Al, pracownicy 006, 007, 008
+
+Zakres: 12 miesięcy **10.2025–09.2026**, definicja **LPE**, płatna z dołu, data listy = ostatni dzień
+miesiąca, data wypłaty = 5. dzień następnego miesiąca (wzór: istniejąca lista LPE za 10.2026).
+
+Sposób (MCP `soneta_ui_al`): *Kadry i płace/Kadry/Pracownicy* → zaznaczenie 006/007/008 → czynność
+**Nalicz wypłaty** (`Soneta.Place.NaliczanieSeryjne+PracownicyConcurretWorker`) → parametry
+(`Okres`, `DataListy`, `DataWypłaty`, `DefinicjaListy=Symbol=LPE`, jednostka pusta) → `accept_form`
+→ formularz „Naliczanie wypłat” → `save_form` (zapis bez udziału operatora).
+
+Wynik: 24 listy płac — co miesiąc osobno **LPE/SR** (006, 007) i **LPE/ADM** (008), numery
+`LPE/SR/RRRR/MM/1` i `LPE/ADM/RRRR/MM/1`, 36 wypłat. Listy **niezatwierdzone**.
+Odchylenia kwot od typowego miesiąca: 11.2025 (wszyscy), 04.2026 (006), 08.2026 (wszyscy) —
+nie analizowane.
+
 ## Otwarte punkty
 
 - [x] Sprawdzić `/mcp` — bazy **Al** i **Claude** łączą się i mają narzędzia.
 - [ ] Potwierdzić GUID agenta AI w bazach Al i Claude — w `.mcp.json` użyto
       `00000000-00a1-0003-0001-000000000000`; agent jest definiowany osobno w każdej bazie.
-- [ ] Sprawdzić, czy dodatek rezerw urlopowych (DLL zbudowany pod 2512) ładuje się w bazie Al na 2610.
+- [x] Dodatek rezerw urlopowych ładuje się w bazie Al na 2610 (czynność „Nalicz rezerwę urlopową...” widoczna na liście pracowników).
+- [ ] Wyjaśnić odchylenia kwot wypłat w 11.2025, 04.2026 (006) i 08.2026; ewentualnie zatwierdzić listy.
 - [ ] Wyjaśnić typ naliczania definicji elementu *Rozwiązanie odprawa emerytalno-rentowa* —
       naliczanie wypłat na liście LPE (z dołu) przerywa błąd
       „Błędny typ naliczania wypłaty. Element: Rozwiązanie odprawa emerytalno-rentowa".
