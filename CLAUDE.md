@@ -80,3 +80,15 @@ tylko z bibliotek DevExpress z katalogu serwera), a nie dodatek do wgrania.
 
 Plik `.md` obok pliku bez rozszerzenia (o tej samej nazwie) to dokumentacja
 biznesowa danego artefaktu.
+
+## Obsługa programu enova365 (MCP)
+
+Do obsługi interfejsu programu używaj skilla `soneta-mcp-ui` (`.claude/skills/soneta-mcp-ui`).
+Serwery MCP (`.mcp.json`, `buscall.exe mcp`) — każdy połączony z jedną bazą:
+
+| Serwer MCP | Baza |
+|---|---|
+| `soneta_ui_al` | Al |
+| `soneta_ui_claude` | Claude |
+
+Gdy operator nie wskaże bazy, zapytaj, na której pracować — nie zakładaj domyślnej.
