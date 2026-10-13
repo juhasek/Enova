@@ -38,9 +38,11 @@ urlop zaległy / bieżący / wykorzystany w dniach (budżet: zaległy na 01.01 /
 następnego / 0), Czas = godziny rezerwy, Wartość = kwota, Narzuty = narzuty pracodawcy.
 Pełne wyliczenie jest w **Zapisie obliczeń** elementu, w stałym układzie sekcji:
 [1] stan urlopu (godz./dni), [2] współczynnik, [3] podstawa 1 (miesiące), [4] podstawa 2,
-[5] wynik. Log pisany jest klasą `Log("Rezerwa urlopowa")` – silnik zbiera go sam, bo w definicji
-elementu (Algorytm → Zapis obliczeń) jest wpisana ta kategoria. Wpisanie „Rezerwa urlopowa,Urlop”
-dołącza pełny log standardowego ekwiwalentu (podstawa 2), bez zmiany kodu.
+[5] wynik. Wszystkie wpisy idą przez `Element.ZapisObliczen.Add` (od 2026-10-13; wcześniej klasa `Log`).
+W sekcji [4] jest przepisany linia po linii szczegółowy log standardowego ekwiwalentu
+(`NaliczanieEkwiwalent`, kategoria „Urlop”, przechwytywany `LogCatcher`): elementy wliczane z miesięcy,
+dopełnienie norma/praca, średnia norma miesięczna, podstawa za miesiąc / dzień / godzinę. Pole definicji
+Algorytm → Zapis obliczeń nie ma już wpływu na log rezerwy.
 
 Wzór: `kwota = godziny rezerwy × podstawa / (współczynnik × wymiar etatu) / godzin w dniu urlopu (8 h
 lub norma dobowa z kalendarza – wg konfiguracji ekwiwalentu)`.
