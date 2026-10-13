@@ -264,6 +264,20 @@ z enumem `StNiepełnosprawności`, a nie tekstem. Brany wyższy stopień z danyc
 i z danych PFRON, okres `OkresExt` (jak enova przy limicie urlopu). Definicja 2039 pomija dzień
 kalendarza bez pracownika.
 
+**Nowy weryfikator (2026-10-13): definicja 2069 „A1_Brak zgody na pracę 8h”** (Dzień planu, priorytet 29),
+podpięta do kalendarzy 45 i 47 jako **Błąd**, więc planu nie da się zapisać. Metoda `A1BrakZgodyNaPrace8h(kp, data)`
+w tej samej klasie. Reguła: pracownik ze stopniem **umiarkowanym lub znacznym** (dane o niepełnosprawności
+albo PFRON, wyższy z nich, okres `OkresExt`), który w zapisie historii obowiązującym w dniu nie ma
+zaznaczonego na etacie pola „Zgoda na pracę 8h” (`Etat.PracownikNiepelnosprawnyZgodaNaPrace8h`),
+nie może mieć zaplanowanych więcej niż 7:00 w dniu. Stopień lekki i brak stopnia nie są sprawdzane,
+bo u osób bez niepełnosprawności to pole też jest puste. Definicja 2039 (Ostrzeżenie, także 8h dla stopnia
+lekkiego) zostaje bez zmian, zablokowana; przy jej odblokowaniu oba komunikaty pojawią się razem.
+Wywołanie w definicji:
+`var pracownik = dzien.Kalendarz.Pracownik; if (pracownik == null) return null;
+return K.A1BrakZgodyNaPrace8h(new KalkulatorPlanu(pracownik), dzien.Data);`.
+Podpięcia wstawione SQL-em — widoczne po restarcie serwera enova. Niesprawdzony na żywo; w bazie Al
+nikt nie ma stopnia niepełnosprawności, do testu trzeba go ustawić.
+
 ### 9. Wydajność
 
 Kontrole rodzaju Plan pracy uruchamiają się przy zapisie **każdego** dnia planu i liczą cały

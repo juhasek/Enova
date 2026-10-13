@@ -7,6 +7,7 @@
 //   A1NormaDobowa                  - definicja "A1_Norma dobowa" (Dzień planu), zastępuje A1Praca12h
 //   A1NormaDobowaNiepelnosprawnych - definicja "A1_Norma niepełnosprawnych (dzień)" (Dzień planu)
 //   A1NormaSredniotygodniowa48h    - definicja "A1_Norma średniotygodniowa 48h" (Plan pracy)
+//   A1BrakZgodyNaPrace8h           - definicja "A1_Brak zgody na pracę 8h" (Dzień planu, 2026-10-13)
 // Pozostałe kontrole wyłączone (zakomentowane na końcu pliku albo usunięte) - zastąpione
 // standardowymi weryfikatorami enova lub niepotrzebne; ich definicje są zablokowane.
 //
@@ -104,6 +105,39 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 			return null;
 		}
 
+
+		// Brak zgody na pracę 8h: osoba ze stopniem umiarkowanym/znacznym bez zaznaczonego na etacie pola
+		// „Zgoda na pracę 8h” nie może mieć zaplanowanych więcej niż 7h dziennie. Stopień i zgoda z zapisu
+		// historii obowiązującego w dniu; stopień z danych o niepełnosprawności albo PFRON (wyższy z nich).
+		public static string A1BrakZgodyNaPrace8h(KalkulatorPlanuBase kalkulator, Date data)
+		{
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+			{
+				return null;
+			}
+			Time plan = kalkulator[data].Czas;
+			if (plan <= new Time(7, 0))
+			{
+				return null;
+			}
+			PracHistoria historia = pracownik[data];
+			if (historia == null || historia.Etat.PracownikNiepelnosprawnyZgodaNaPrace8h)
+			{
+				return null;
+			}
+
+			StNiepełnosprawności stopien = StNiepełnosprawności.Brak;
+			if (historia.StopienNiepelnosp.OkresExt.Contains(data))
+				stopien = historia.StopienNiepelnosp.Stopien;
+			if (historia.PFRON.OkresExt.Contains(data) && historia.PFRON.Stopien > stopien)
+				stopien = historia.PFRON.Stopien;
+			if (stopien != StNiepełnosprawności.Umiarkowany && stopien != StNiepełnosprawności.Znaczny)
+			{
+				return null;
+			}
+
+			return "Dla dnia ({0}) zaplanowano czas ({1}), a pracownik bez zgody na pracę 8h (stopień niepełnosprawności {2}) może pracować maksymalnie 7:00 - {3}".TranslateFormat(data, plan, stopien, pracownik);
+		}
 
 		// ---------- Kontrole miesiąca / okresu rozliczeniowego (rodzaj Plan pracy) ----------
 
