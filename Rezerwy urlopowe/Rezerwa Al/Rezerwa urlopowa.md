@@ -56,8 +56,17 @@ Przełączniki na początku kodu algorytmu:
    ponowny import aktualizuje te same rekordy). Po imporcie zrestartować serwer enova / przelogować się.
 3. Uwaga: `dbmgr importxml` kończy się kodem 0 także przy błędzie w kodzie algorytmu – kod sprawdzono
    osobną kompilacją kontrolną na bibliotekach enova 2512.5.6 (algorytm + 16 cech: bez błędów).
-4. Widok: Kadry i płace → Pracownicy → Ustawienia kolumn: dodać Kod, Imię, Nazwisko oraz cechy z kategorii
-   „Rezerwa urlopowa”; zapisać jako widok „Rezerwa urlopowa” (i osobno „Budżet rezerwy”).
+4. Widoki (w bazie Al założone 2026-10-13): **Kadry i płace → Pracownicy → „Rezerwa urlopowa”** oraz
+   **„Budżet rezerwy urlopowej”** – dwa widoki globalne (dla wszystkich operatorów), z filtrami jak lista Pracownicy.
+   Kolumny: Kod, Nazwisko i imię, Wydział (z historii na datę aktualności), MPK (cecha „Rezerwa MPK” =
+   centrum kosztów wydziału lub najbliższego wydziału nadrzędnego), a dalej cechy rezerwy (urlop zaległy /
+   bieżący / wykorzystany, godziny, podstawa 1 i 2, kwota, narzuty) albo budżetu (urlop zaległy na 01.01,
+   należny, godziny, podstawa 1 i 2, kwota, narzuty). Dni, godziny, kwoty i narzuty mają sumę w stopce.
+   Definicje: `Widoki/*.viewform.xml`; zapis do bazy skryptem `Widoki/dodaj-widoki.ps1` (konfiguracja
+   `CfgNodes`/`CfgAttributes`: lista folderów `kadry i płace.kadry.pracownicy.xml` + węzeł `<guid>.viewform.xml`
+   pod `tableviews`, treść jako hex UTF-8 z BOM; numery węzłów 2096/2097 są z bazy Al – na innej bazie sprawdzić).
+   Kopia przed zmianą: `Al_przed_widoki_rezerwy_20261013.bak`. Widoki pojawiają się po restarcie serwera enova /
+   ponownym zalogowaniu. Wartości kolumn są puste, dopóki plan za miesiąc daty aktualności nie jest naliczony.
 
 ## 5. Obsługa (miesięcznie)
 
