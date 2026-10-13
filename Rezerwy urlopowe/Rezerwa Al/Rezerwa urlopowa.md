@@ -96,7 +96,17 @@ Symulacja limitu uwzględnia urlopy już wprowadzone na wrzesień–grudzień (j
 7. Urlop dodatkowy (niepełnosprawni) – wliczony razem z wypoczynkowym; czy to właściwe?
 8. Licencja Płace Platynowe – wymagana dla planowanych list płac (do sprawdzenia u klienta).
 
-## 7. Status (2026-10-09)
+## 7. Status
+
+**2026-10-13 – działa (potwierdzone przez użytkownika na bazie Al, enova 2610):**
+- widoki „Rezerwa urlopowa” i „Budżet rezerwy urlopowej” pod Kadry i płace → Pracownicy;
+- naliczenie planowanej listy REZURL za 10/2026 dla 56 pracowników (z opcją „Uwzględniaj niezatwierdzone
+  listy płac”, bo wypłaty w bazie testowej są niezatwierdzone – wypłaty pozostały nienaruszone);
+- zapis obliczeń z przepisanym logiem standardowego ekwiwalentu w sekcji [4] (podstawa 1 i 2 zgodne u próbki).
+
+Do decyzji: czy skracać log standardu (wiersze „w kwocie 0.00” z miesięcy elementów o znacznych wahaniach).
+
+### Historia (2026-10-09)
 
 - Zaimportowane do lokalnej bazy **Al** (elementy ID 268/269, DefPlanListPlac ID 1/2, cechy FeatureDefs 4–19),
   kopia bazy przed zmianą: `Al_przed_rezerwa_20261009.bak` (domyślny katalog backupów SQL Server).
