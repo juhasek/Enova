@@ -1,11 +1,11 @@
-# Agenda warsztatów analizy przedwdrożeniowej – Kadry, Płace, Czas pracy
+# Agenda warsztatów analizy przedwdrożeniowej – Kadry, Płace, Czas pracy (enova365) – korekta agendy wyjściowej
 
-> Plik generowany przez `Generator/` (treść w `Program.cs`). Wersja robocza do pracy na spotkaniu: `Agenda warsztatów analizy KP.xlsx`.
-> „s. N” = strona instrukcji producenta „Kadry Płace i HR”, (P) = licencja Platynowa, (Z) = Złota; rozdz./KAD-/CP-/PL- = [dokument analizy](../../Analiza/).
+> Plik generowany przez `Generator/` – nie edytować ręcznie. Wersja do pracy na spotkaniu: `Agenda warsztatów analizy KP.xlsx`.
+> Źródło: Twoja agenda | Umowa – brak w agendzie (pomarańczowe) | Dodane (metodyka, zielone). „s. N” = strona instrukcji „Kadry Płace i HR”, (P) = licencja Platynowa, (Z) = Złota. Odwołania rozdz./KAD-/CP-/PL- – dokument analizy w Analiza/.
 
-## Uwagi do agendy wyjściowej
+## Uwagi do agendy
 
-| Nr | Obszar | Co widzę | Propozycja |
+| Nr | Obszar | Co widzę w Twojej agendzie | Propozycja (uwzględniona w arkuszu Agenda) |
 |---|---|---|---|
 | 1 | Pokrycie umowy | Pięciu tematów z umowy nie ma w agendzie: zasady naliczania zasiłków chorobowych, BHP, e-deklaracje, zajęcia komornicze (jest tylko „pożyczki, zaliczki”), role i uprawnienia operatorów. UCP jest tylko od strony kadrowej. | Dołożone: zasiłki – dz. 2 (14:00), BHP – dz. 1 (13:35) i dz. 2 (warunki szkodliwe), e-deklaracje – dz. 3 (14:25), zajęcia komornicze – dz. 3 (13:40), role i uprawnienia – dz. 4 (13:45), rozliczenie UCP – dz. 3 (listy płac). Zestawienie w arkuszu „Pokrycie umowy”. |
 | 2 | Prezentacja standardu i matryca | Umowa przewiduje prezentację standardu + matrycę wymagań dla całego obszaru Kadry i Płace, a w agendzie jest to tylko w dniu 4 (Czas pracy). | Standard pokazujemy na początku każdego bloku (kolumna „Co pokazujemy w enova365”), a matrycę S/K/C/X wypełniamy na bieżąco. Dzień 4 kończy się przeglądem zbiorczym matrycy, a nie jej tworzeniem od zera. |
@@ -20,7 +20,7 @@
 
 ## Pokrycie zakresu z umowy
 
-| Pozycja z umowy | Agenda wyjściowa | Ta agenda |
+| Pozycja zakresu z umowy | Twoja agenda | Moja agenda |
 |---|---|---|
 | Prezentacja standardowej funkcjonalności enova365 + przygotowanie matrycy wymagań | tylko dz. 4 (Czas pracy) | każdy blok (kolumna „Co pokazujemy”); dz. 4 9:20 i 14:15 – przegląd matrycy |
 | Struktura organizacyjna | dz. 1 (na końcu bloku kadrowego) | dz. 1 10:50 (na początku) |
@@ -39,7 +39,7 @@
 
 *Ustalić strukturę firmy, formy zatrudnienia i zakres kartoteki. Czas pracy tylko zinwentaryzować (grupy, systemy, RCP) – merytorycznie dzień 2 i 4.*
 
-| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko |
+| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko / czerwona flaga |
 |---|---|---|---|---|---|---|
 | 10:30–10:50 | Otwarcie warsztatów | Dodane (metodyka) | Plan 4 dni, sposób pracy: najpierw standard, potem wymagania; klasyfikacja tematów S / K / C / X na bieżąco. | Cel wdrożenia i kryterium sukcesu (zapisać słowami klienta).<br>Data startu produkcyjnego, miesiąc pierwszej wypłaty z enova365.<br>Liczba podmiotów/baz, liczba pracowników etatowych, zleceniobiorców, B2B.<br>Kluczowi użytkownicy kadr, płac i czasu pracy; kto akceptuje ustalenia i protokół. | rozdz. 2, 18 | Bez kryterium sukcesu odbiór kończy się sporem o zakres. |
 | 10:50–11:30 | Struktura firmy i struktura organizacyjna (dwa punkty z agendy połączone) | Twoja agenda | Dane o firmie (s. 1103), jednostki organizacyjne/wydziały (s. 1512), segmentowy kod wydziału (s. 1310), struktury organizacyjne (s. 474, P), firmy wielooddziałowe (s. 1515, P), struktura pracownika i podzielniki kosztów (s. 101, 100), struktura podległości dla pulpitów (s. 1330). | Oddziały, wydziały, działy, MPK, projekty – ile poziomów?<br>Czy struktura dzieli koszty na konta (dekretacja)? Rozdzielnik procentowy na pracownika?<br>Podległość służbowa = wydział, czy osobna hierarchia? Ma sterować akceptacją wniosków?<br>Jak często zmiany, potrzeba historii „stan na dzień”? Zmiana wydziału w trakcie miesiąca.<br>Oddziały a PIT-4R/PFRON (wielooddziałowość). | rozdz. 3; KAD-02-032…036, KAD-01-026, PL-04-001, PP-01-008 | C: rozdzielnik % per pracownik, dwie hierarchie, raport struktury wstecz. Struktury org. i wielooddziałowość = licencja Platynowa. |
@@ -55,7 +55,7 @@
 
 *Reguły: regulamin, kodeks, odstępstwa, wpływ na wynagrodzenie. Bez „jak to klikamy” – to dzień 4.*
 
-| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko |
+| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko / czerwona flaga |
 |---|---|---|---|---|---|---|
 | 9:00–9:15 | Podsumowanie dnia 1, otwarte pytania | Dodane (metodyka) |  | Odpowiedzi na pytania otwarte z dnia 1. |  |  |
 | 9:15–10:00 | Kalendarze pracowników | Twoja agenda | Definicje stref, dni, serie dni, kalendarze wzorcowe (s. 1572–1585), kalendarz pracownika (s. 230), algorytmy normy (s. 1612), norma nietypowa np. 7 h (s. 1609), wersjonowanie kalendarzy (s. 1568, P). | Systemy czasu pracy per grupa (podstawowy, równoważny, ruchomy, zadaniowy, weekendowy).<br>Zmiany: ile, oznaczenia, godziny; praca przez północ – do której doby?<br>Norma przy części etatu i zmianie etatu w trakcie miesiąca.<br>Święto w sobotę – kiedy dzień wolny i kto go wyznacza? | rozdz. 5 pyt. 1, 5–8; CP-01-001…009 | C: własne reguły normy przy zmianie etatu w trakcie okresu. |
@@ -74,7 +74,7 @@
 
 *Przejść po przykładowej liście płac klienta składnik po składniku. Domknąć potrącenia, przelewy, paski i e-deklaracje.*
 
-| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko |
+| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko / czerwona flaga |
 |---|---|---|---|---|---|---|
 | 9:00–9:15 | Podsumowanie dnia 2, otwarte pytania | Dodane (metodyka) |  | Szczególnie: składniki do podstaw urlopu i chorobowego. |  |  |
 | 9:15–9:45 | Administrowanie płacami | Twoja agenda | Konfiguracja wynagrodzeń (s. 1815), wskaźniki płacowe (s. 1814), naliczanie podatków i składek (s. 1727), proces miesięczny. | Kto nalicza płace, ile osób, czy jest outsourcing?<br>Terminy: zamknięcie czasu pracy, przekazanie danych zmiennych, dzień wypłaty (w miesiącu czy do 10. następnego).<br>Akceptacja listy przed przelewem – kto, ile etapów?<br>Praca równoległa w starym systemie przez pierwsze miesiące? | rozdz. 10 pyt. 2–5 | Wypłata „z dołu” do 10. zmienia sposób rozliczania nadgodzin i nieobecności. |
@@ -93,7 +93,7 @@
 
 *Pokazać standard na cyklu miesiąca (osobno biuro i produkcja), ustalić role i uprawnienia, zamknąć matrycę wymagań S/K/C/X.*
 
-| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko |
+| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko / czerwona flaga |
 |---|---|---|---|---|---|---|
 | 9:00–9:20 | Podsumowanie dni 1–3, otwarte pytania czasu pracy | Dodane (metodyka) |  | Zamknięcie otwartych pytań z dnia 2 (reguły nadgodzin, przykłady wyliczeń). |  |  |
 | 9:20–10:20 | Prezentacja standardu: miesiąc czasu pracy w enova365 (z umowy) | Twoja agenda | Na bazie testowej: grafiki (s. 435), planowanie kalendarzy (s. 699–712, P), dokumenty aktualizacji kalendarza ze ścieżką akceptacji (s. 246, 704, P), weryfikatory kalendarza – odpoczynek 11 h/35 h, norma (s. 679, 1550, P), rozliczenie okresu, karta ewidencji. | Reakcja na każdy element: wystarcza / trzeba zmienić / nie dotyczy – notować w matrycy. | CP-01, CP-03 | Pokazanie standardu przed pytaniem o wymagania często zamyka temat bez customizacji. |

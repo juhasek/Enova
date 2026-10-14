@@ -2,301 +2,64 @@ using System.Drawing;
 using System.Text;
 using DevExpress.Spreadsheet;
 
-// Agenda 4 dni warsztatów analizy przedwdrożeniowej Kadry / Płace / Czas pracy.
-// Treść jest w tym pliku (źródło prawdy); generator zapisuje z niej .xlsx i .md.
-// Odwołania „rozdz. N" i identyfikatory KAD-/CP-/PL-… wskazują na
-// Analiza/Analiza przedwdrożeniowa - Kadry, Płace, Czas pracy.md, a „s. N" na stronę
-// instrukcji producenta „Kadry Płace i HR".
+// Generator agend warsztatów analizy przedwdrożeniowej Kadry / Płace / Czas pracy.
+// Treść każdego wariantu jest w osobnym pliku (AgendaKorekta.cs, AgendaAutorska.cs) –
+// to źródło prawdy; generator zapisuje z niej .xlsx (do pracy na spotkaniu) i .md.
+
+internal record Dzien(string Nr, string Data, string Godziny, string Tytul, string Cel);
+
+internal record Blok(string Dzien, string Godz, string Temat, string Zrodlo,
+    string Pokaz, string Pytania, string Odn, string Ryzyko);
+
+internal record Uwaga(string Nr, string Obszar, string Co, string Propozycja);
+
+internal record Material(string Termin, string Co, string PoCo);
+
+internal record Pokrycie(string Pozycja, string TwojaAgenda, string MojaAgenda);
+
+internal record Persona(string Nr, string Przypadek, string CoSprawdza, string Dni);
+
+internal record Agenda(
+    string Plik, string Tytul, string Legenda, string KolZrodlo, string KolRyzyko,
+    Dictionary<string, Color> Kolory, Dzien[] Dni, Blok[] Bloki,
+    string ArkuszUwag, string[] KolUwag, Uwaga[] Uwagi,
+    string[] KolPokrycia, Pokrycie[] Pokrycie,
+    Material[] Materialy, Persona[] Persony)
+{
+    public const string Przerwa = "Przerwa";
+
+    public static readonly Color Naglowek = Color.FromArgb(0x1F, 0x4E, 0x79);
+    public static readonly Color DzienTlo = Color.FromArgb(0xDD, 0xEB, 0xF7);
+    public static readonly Color PrzerwaTlo = Color.FromArgb(0xF2, 0xF2, 0xF2);
+    public static readonly Color UmowaTlo = Color.FromArgb(0xFC, 0xE4, 0xD6);
+    public static readonly Color DodaneTlo = Color.FromArgb(0xE2, 0xEF, 0xDA);
+    public static readonly Color DecyzjaTlo = Color.FromArgb(0xFF, 0xF2, 0xCC);
+}
+
 internal static class Program
 {
-    private record Dzien(string Nr, string Data, string Godziny, string Tytul, string Cel);
-
-    private record Blok(string Dzien, string Godz, string Temat, string Zrodlo,
-        string Pokaz, string Pytania, string Odn, string Ryzyko);
-
-    private record Uwaga(string Nr, string Obszar, string Co, string Propozycja);
-
-    private record Material(string Termin, string Co, string PoCo);
-
-    private record Pokrycie(string Pozycja, string TwojaAgenda, string MojaAgenda);
-
-    private const string TA = "Twoja agenda";
-    private const string UM = "Umowa – brak w agendzie";
-    private const string DO = "Dodane (metodyka)";
-    private const string PR = "Przerwa";
-
-    private static readonly Dzien[] Dni =
-    {
-        new("1", "20.10.2026 (wt)", "10:30–14:30 (4 h)", "Kadry cz. 1 – organizacja i zatrudnienie",
-            "Ustalić strukturę firmy, formy zatrudnienia i zakres kartoteki. Czas pracy tylko zinwentaryzować (grupy, systemy, RCP) – merytorycznie dzień 2 i 4."),
-        new("2", "21.10.2026 (śr)", "9:00–15:00 (6 h)", "Kadry cz. 2 & Płace cz. 1 – ZASADY czasu pracy i nieobecności",
-            "Reguły: regulamin, kodeks, odstępstwa, wpływ na wynagrodzenie. Bez „jak to klikamy” – to dzień 4."),
-        new("3", "23.10.2026 (pt)", "9:00–15:00 (6 h)", "Płace cz. 2 – wynagrodzenia, listy, potrącenia, deklaracje",
-            "Przejść po przykładowej liście płac klienta składnik po składniku. Domknąć potrącenia, przelewy, paski i e-deklaracje."),
-        new("4", "26.10.2026 (pn)", "9:00–15:00 (6 h)", "Czas pracy – PROCES w enova365 + role + matryca wymagań",
-            "Pokazać standard na cyklu miesiąca (osobno biuro i produkcja), ustalić role i uprawnienia, zamknąć matrycę wymagań S/K/C/X."),
-    };
-
-    private static readonly Blok[] Bloki =
-    {
-        // ---------------- DZIEŃ 1 ----------------
-        new("1", "10:30–10:50", "Otwarcie warsztatów", DO,
-            "Plan 4 dni, sposób pracy: najpierw standard, potem wymagania; klasyfikacja tematów S / K / C / X na bieżąco.",
-            "Cel wdrożenia i kryterium sukcesu (zapisać słowami klienta).\nData startu produkcyjnego, miesiąc pierwszej wypłaty z enova365.\nLiczba podmiotów/baz, liczba pracowników etatowych, zleceniobiorców, B2B.\nKluczowi użytkownicy kadr, płac i czasu pracy; kto akceptuje ustalenia i protokół.",
-            "rozdz. 2, 18", "Bez kryterium sukcesu odbiór kończy się sporem o zakres."),
-        new("1", "10:50–11:30", "Struktura firmy i struktura organizacyjna (dwa punkty z agendy połączone)", TA,
-            "Dane o firmie (s. 1103), jednostki organizacyjne/wydziały (s. 1512), segmentowy kod wydziału (s. 1310), struktury organizacyjne (s. 474, P), firmy wielooddziałowe (s. 1515, P), struktura pracownika i podzielniki kosztów (s. 101, 100), struktura podległości dla pulpitów (s. 1330).",
-            "Oddziały, wydziały, działy, MPK, projekty – ile poziomów?\nCzy struktura dzieli koszty na konta (dekretacja)? Rozdzielnik procentowy na pracownika?\nPodległość służbowa = wydział, czy osobna hierarchia? Ma sterować akceptacją wniosków?\nJak często zmiany, potrzeba historii „stan na dzień”? Zmiana wydziału w trakcie miesiąca.\nOddziały a PIT-4R/PFRON (wielooddziałowość).",
-            "rozdz. 3; KAD-02-032…036, KAD-01-026, PL-04-001, PP-01-008",
-            "C: rozdzielnik % per pracownik, dwie hierarchie, raport struktury wstecz. Struktury org. i wielooddziałowość = licencja Platynowa."),
-        new("1", "11:30–12:15", "Sposoby, ilość i rodzaje zatrudnienia; wieloetatowość", TA,
-            "Etat: stanowisko, wymiar, wynagrodzenie (s. 200), umowa o pracę i wydruk (s. 223), aktualizacja/aneks z datą (s. 1120), przyczyny zawarcia/rozwiązania (s. 1536, 1534), wieloetatowość (s. 80), pracownik tymczasowy/APT (s. 881, 1305, P).",
-            "Liczebność per forma: UoP (próbny, określony, nieokreślony, zastępstwo), zlecenie, dzieło, B2B, APT, staż, uczniowie.\nWieloetatowość: po co – różne stanowiska, MPK, stawki? (wpływa na RCP, listy płac, ZUS).\nZmiany etatu w trakcie miesiąca – jak często?\nCzy są pracownicy z agencji pracy tymczasowej?",
-            "rozdz. 4 pyt. 2–3; KAD-02-001…009, KAD-02-027", "Wieloetatowość to decyzja o modelu danych – po starcie trudno ją odkręcić."),
-        new("1", "12:15–12:30", "Przerwa", PR, "", "", "", ""),
-        new("1", "12:30–13:05", "Umowy cywilnoprawne, pozostałe formy, współpracownicy B2B", TA,
-            "UCP na kartotece (s. 290, 1046), formularz umowy (s. 1075), zgłoszenia ZUA/ZZA/ZWUA z umów (s. 1068), dodatki i potrącenia do umowy (s. 422), pracownicy zewnętrzni B2B (s. 1317, P), rozliczenia pracowników zewnętrznych/kontrahentów (s. 507–508, P).",
-            "Ile zleceń/dzieł miesięcznie, stawka godzinowa (ewidencja godzin do minimalnej stawki)?\nZbieg: zlecenie z własnym pracownikiem (ZUS jak z etatu).\nB2B – co ewidencjonujemy: tylko kartotekę, dostęp do pulpitu, czas pracy, szkolenia BHP? Faktury B2B idą przez księgowość, nie przez listę płac – potwierdzić.\nCzy UCP muszą być widoczne w pulpicie (rachunki, PIT)?",
-            "rozdz. 4 pyt. 2; KAD-03, KAD-02-028…030",
-            "B2B rozliczane fakturą = poza Płacami (X lub osobny temat księgowy). Rozliczenie płacowe UCP – dzień 3 (listy płac)."),
-        new("1", "13:05–13:35", "Historia zatrudnienia i wykształcenia; staż pracy", TA,
-            "Historia zatrudnienia i staż (s. 51), definicje podstaw stażu (s. 1491) – staż do urlopu, jubileuszu, dodatku stażowego; wykształcenie (s. 83), języki (s. 111), uprawnienia zawodowe (s. 107, P).",
-            "Czy staż do jubileuszu/dodatku stażowego liczy się inaczej niż do urlopu (tylko u nas / cały okres)?\nIle historii przenosimy z obecnego systemu i kto wprowadza świadectwa pracy?\nCzy wykształcenie ma wpływać na wymiar urlopu automatycznie?",
-            "rozdz. 4; KAD-01-011…016, MIG-01-002", "Własny sposób liczenia stażu (np. jubileusze) to zwykle C – zebrać regulamin."),
-        new("1", "13:35–14:05", "Niestandardowe informacje na kartotece + BHP i badania", TA + " / " + UM,
-            "Cechy (s. 1917), dodatkowa zakładka pracownika (s. 1469), badania lekarskie (s. 88), szkolenia BHP (s. 102), czynniki szkodliwe i uciążliwe (s. 94, P), wypadki przy pracy (s. 109), rodzina (s. 74), karty RCP (s. 97), e-teczka (s. 817, Z), historia zapisów (s. 372).",
-            "Lista pól spoza standardu (najlepiej eksport z obecnego systemu): nr karty RCP, szafka, odzież, rozmiary, ID z produkcji…\nTerminy badań, szkoleń BHP, uprawnień, zezwoleń cudzoziemców – kto pilnuje, czy potrzebne powiadomienia?\nCzy prowadzą e-teczki (akta A–E) w systemie?\nPola obowiązkowe – „nie zapisz pracownika bez X”?",
-            "rozdz. 4 pyt. 1, 6, 9; KAD-01-017…020, KAD-04, OG-01-001",
-            "C: automatyczne maile o terminach, weryfikator wymagalności pól, pełna kontrola zezwoleń cudzoziemców. BHP z umowy – tutaj i dzień 2 (warunki szkodliwe)."),
-        new("1", "14:05–14:20", "Plan pracy – tylko inwentaryzacja (merytorycznie dzień 2 i 4)", TA,
-            "Bez prezentacji – zbieramy dane wejściowe.",
-            "Jakie grupy pracowników i systemy czasu pracy (biuro / produkcja / zmianowi / równoważny)?\nKto tworzy grafik i gdzie (enova, Excel, inny system)?\nJaki system RCP, kto jest jego właścicielem technicznym?\nProśba o materiały na dzień 2: przykładowy grafik, eksport RCP z 1 miesiąca, karta ewidencji.",
-            "rozdz. 5 pyt. 1, 3; rozdz. 6 pyt. 1", "Grafik „u nas w Excelu” = zakres dodatkowy (import planu – C)."),
-        new("1", "14:20–14:30", "Podsumowanie dnia 1", DO,
-            "", "Przegląd ustaleń i klasyfikacji S/K/C/X, otwarte pytania z właścicielem i terminem, potwierdzenie materiałów na dzień 2.", "rozdz. 19", ""),
-
-        // ---------------- DZIEŃ 2 ----------------
-        new("2", "9:00–9:15", "Podsumowanie dnia 1, otwarte pytania", DO, "", "Odpowiedzi na pytania otwarte z dnia 1.", "", ""),
-        new("2", "9:15–10:00", "Kalendarze pracowników", TA,
-            "Definicje stref, dni, serie dni, kalendarze wzorcowe (s. 1572–1585), kalendarz pracownika (s. 230), algorytmy normy (s. 1612), norma nietypowa np. 7 h (s. 1609), wersjonowanie kalendarzy (s. 1568, P).",
-            "Systemy czasu pracy per grupa (podstawowy, równoważny, ruchomy, zadaniowy, weekendowy).\nZmiany: ile, oznaczenia, godziny; praca przez północ – do której doby?\nNorma przy części etatu i zmianie etatu w trakcie miesiąca.\nŚwięto w sobotę – kiedy dzień wolny i kto go wyznacza?",
-            "rozdz. 5 pyt. 1, 5–8; CP-01-001…009", "C: własne reguły normy przy zmianie etatu w trakcie okresu."),
-        new("2", "10:00–10:30", "Okres rozliczenia czasu pracy", TA,
-            "Okres rozliczeniowy w kalendarzu, norma okresu, bilans otwarcia czasu pracy (s. 238), rozliczenie czasu pracy i dokumenty rozliczenia (s. 457–459, P).",
-            "Długość okresów (1/3/4/12 mies.) – czy różne dla grup?\nNadgodziny wypłacane co miesiąc czy po zakończeniu okresu?\nZatrudnienie/zwolnienie w trakcie okresu – jak liczona norma i rozliczenie?\nOd kiedy startujemy: saldo otwarcia okresu z obecnego systemu.",
-            "rozdz. 5 pyt. 2, 7; CP-01-022, CP-03-006…008", "Start wdrożenia w środku okresu = bilans otwarcia czasu pracy do przygotowania."),
-        new("2", "10:30–11:15", "Ewidencja czasu pracy i nieobecności; obecna rejestracja godzin", TA,
-            "Czas wg planu vs rzeczywisty, strefy (praca zdalna, szkolenie, delegacja), karta ewidencji czasu pracy (s. 1298), statystyki (s. 443), zestawienia czasu pracy (s. 286).",
-            "Kto ewidencjonuje i kiedy (codziennie / raz w miesiącu)? Czy obowiązuje „zgodnie z planem, chyba że…”?\nObecny RCP: nazwa, format eksportu (plik, baza, API), ile odbić, przerwy, wyjścia prywatne/służbowe.\nTermin zamknięcia miesiąca, czy po nim wolno zmieniać (blokada wstecz)?\nCzy różni się to między biurem a produkcją?",
-            "rozdz. 6 pyt. 1–3, 10; CP-02-001, CP-03-009…013",
-            "Szczegóły procesu RCP (tolerancje, akceptacje) – dzień 4. Dziś tylko źródło danych i zasady."),
-        new("2", "11:15–11:30", "Przerwa", PR, "", "", "", ""),
-        new("2", "11:30–12:30", "Nadgodziny: rozliczanie, bilansowanie, ewidencja, 50% / 100%", TA,
-            "Silnik nadgodzin enova365: dobowe 50/100, przekroczenie normy średniotygodniowej (s. 1608), bilansowanie w okresie (s. 1601, P), magazyn nadgodzin (s. 805, P), oddawanie wolnego za nadgodziny (s. 974), dopłaty jako elementy (s. 1668).",
-            "Kto ewidencjonuje i kto akceptuje – przed czy po? Nieakceptowane nie są płatne?\nKiedy liczone są nadgodziny (miesiąc/koniec okresu) i kiedy 50%, a kiedy 100% – kodeks czy reguły korzystniejsze?\nOdbiór czasem wolnym: na wniosek 1:1, z polecenia 1:1,5, termin odbioru.\nPraca w dzień wolny z harmonogramu, w niedzielę/święto.\nLimity roczne, inne niż 150 h?\nProśba: pisemna reguła + 3 przykłady wyliczeń z obecnego systemu.",
-            "rozdz. 7 pyt. 1–5; CP-04-001…007, CP-04-010",
-            "C: własny podział nadgodzin, odcinanie nieakceptowanych, kontrola terminu odbioru. Bilansowanie i magazyn = Platynowa."),
-        new("2", "12:30–12:50", "Godziny nocne: ewidencja i dopłaty", TA,
-            "Pora nocna jako strefa w kalendarzu, dodatek za pracę w nocy (s. 1572 strefy, s. 1668 elementy), nadgodziny w porze nocnej (100%).",
-            "Pora nocna w regulaminie (np. 22–6 czy 21–5)?\nDodatek ustawowy (20% stawki godz. z minimalnego) czy wyższy/kwotowy?\nPracujący w nocy (≥ 3 h lub ≥ 1/4 czasu) – ilu, czy prace szczególnie niebezpieczne (limit 8 h)?",
-            "rozdz. 7 pyt. 6–7; CP-04-008", "Dodatek nocny liczony od innej podstawy niż standard = element z algorytmem (C)."),
-        new("2", "12:50–13:20", "Przerwa obiadowa", PR, "", "", "", ""),
-        new("2", "13:20–14:00", "Urlopy: rodzaje, wymiar, wynagrodzenie urlopowe i ekwiwalent", TA,
-            "Limity nieobecności (s. 247, konf. s. 1553), urlop wypoczynkowy – konfiguracja (s. 1805), urlopy inne (s. 1811), planowane nieobecności (s. 268, P), podstawy urlopu (s. 271), elementy zmienne w podstawie urlopu i ekwiwalentu (s. 994), bilans otwarcia urlopów (s. 241).",
-            "Rodzaje: wypoczynkowy, na żądanie, okolicznościowy, opieka art. 188 (dni/godziny), siła wyższa, szkoleniowy, dodatkowe (niepełnosprawność, układ).\nWymiar w dniach czy godzinach? Zaległe – kto pilnuje terminu 30.09?\nPlan urlopów – tak/nie?\nKtóre składniki zmienne wchodzą do podstawy urlopu (premie, nadgodziny, nocne)? – zaznaczyć, w dniu 3 potwierdzić przy każdym składniku.",
-            "rozdz. 8 pyt. 1–6; UN-01, UN-02-001…004", "C: limity i zasady urlopowe wg regulaminu klienta (UN-01-016)."),
-        new("2", "14:00–14:30", "Zasiłki chorobowe i wynagrodzenie chorobowe (z umowy)", UM,
-            "Import e-ZLA z PUE (s. 681, Z), podstawy zwolnień ZUS (s. 273), konfiguracja zasiłków (s. 1819–1824), zasiłki z innego płatnika (s. 349), korekty nieobecności i wypłaty (s. 1242, 1152), Z-3/Z-3a (s. 1398), Z-15 (s. 1375).",
-            "Czy firma jest płatnikiem zasiłków (> 20 ubezpieczonych)?\nWynagrodzenie chorobowe 80% / 100% – odstępstwa?\nKtóre składniki w podstawie, które pomniejszane za chorobę (premie miesięczne, kwartalne, roczne)?\nZwolnienie po wypłacie – korekta w następnej wypłacie czy lista korygująca?\nKto pobiera e-ZLA i jak często?",
-            "rozdz. 8 pyt. 7–9; UN-02-003…013, UN-03",
-            "Korekty wsteczne przejść na żywym przykładzie z obecnego systemu – klienci je pomijają, a to codzienność płac."),
-        new("2", "14:30–14:50", "Inne absencje, specyficzne dni wolne; praca w warunkach szkodliwych", TA,
-            "Definicje nieobecności (s. 1629), czynniki szkodliwe na kartotece (s. 94, P), okresy pracy w szczególnych warunkach (s. 187), składka na FEP (s. 1796).",
-            "Własne rodzaje nieobecności (krwiodawstwo, dzień wolny firmowy, Wigilia – zmiana kalendarza czy nieobecność?).\nStanowiska w warunkach szkodliwych: ilu pracowników, dodatki, skrócona norma, przerwy, badania.\nPraca w szczególnych warunkach / emerytury pomostowe – FEP, ewidencja okresów.",
-            "rozdz. 7 pyt. 6; rozdz. 8 pyt. 1; KAD-01-019, ZUS-01-017", "Dodatek za warunki szkodliwe z własnym algorytmem = C."),
-        new("2", "14:50–15:00", "Podsumowanie dnia 2", DO,
-            "", "Ustalenia S/K/C/X, otwarte pytania, lista składników płacowych do przyniesienia na dzień 3 (z przykładową listą płac).", "rozdz. 19", ""),
-
-        // ---------------- DZIEŃ 3 ----------------
-        new("3", "9:00–9:15", "Podsumowanie dnia 2, otwarte pytania", DO, "", "Szczególnie: składniki do podstaw urlopu i chorobowego.", "", ""),
-        new("3", "9:15–9:45", "Administrowanie płacami", TA,
-            "Konfiguracja wynagrodzeń (s. 1815), wskaźniki płacowe (s. 1814), naliczanie podatków i składek (s. 1727), proces miesięczny.",
-            "Kto nalicza płace, ile osób, czy jest outsourcing?\nTerminy: zamknięcie czasu pracy, przekazanie danych zmiennych, dzień wypłaty (w miesiącu czy do 10. następnego).\nAkceptacja listy przed przelewem – kto, ile etapów?\nPraca równoległa w starym systemie przez pierwsze miesiące?",
-            "rozdz. 10 pyt. 2–5", "Wypłata „z dołu” do 10. zmienia sposób rozliczania nadgodzin i nieobecności."),
-        new("3", "9:45–10:20", "System wynagradzania, stawki zaszeregowania", TA,
-            "Grupy zaszeregowania (s. 1508), przeszeregowania (s. 1530, P), dodatki etatowe (s. 205), zestawy dodatków (s. 1540), akordy (s. 203, 1476), wyrównanie do minimalnego.",
-            "Formy: miesięczne, godzinowe, akordowe, prowizyjne – ilu pracowników każdej?\nTabela stawek w regulaminie – ile grup, jak często zmiana?\nWyrównanie do minimalnego przy części etatu; podwyżki z datą wsteczną.",
-            "rozdz. 9 pyt. 1, 8–9; KAD-02-007…014", ""),
-        new("3", "10:20–11:00", "Rodzaje list płac, numeracja, kryteria, terminy; księgowanie płac", TA + " / " + DO,
-            "Definicje i konfiguracja list płac (s. 502, 1765), symbol i numeracja, listy z umów cywilnoprawnych (s. 1136), planowane listy płac (s. 896, P), opis analityczny wypłat (s. 1295), schematy księgowe.",
-            "Ile list w miesiącu i jakich: etatowa, UCP, premiowa, korygująca, zasiłkowa, ZFŚS, nagrody.\nKryterium przypisania: wydział, oddział, rodzaj umowy, termin wypłaty?\nNumeracja i nazwy list – wzorzec obecny.\nKsięgowanie: księgowość w enova365 czy w innym systemie? Podział na MPK/projekty (dotyczy rozdzielnika z dnia 1).",
-            "rozdz. 10 pyt. 1, 10; PL-01-001…008, PL-04",
-            "Księgowość poza enova365 = eksport do systemu FK (C). Księgowania nie ma w umowie – potwierdzić zakres."),
-        new("3", "11:00–11:15", "Przerwa", PR, "", "", "", ""),
-        new("3", "11:15–12:45", "Składniki płacowe – przejście po przykładowej liście płac; algorytmy, automatyka", TA,
-            "Definicje elementów wynagrodzenia (s. 1668), algorytm: kreator / edytor kodu (s. 1679, 1704), staż w algorytmie (s. 1702), dodatki i potrącenia (s. 422), kalkulator wynagrodzeń (s. 1291), świadczenia inne (s. 1803).",
-            "Dla KAŻDEGO składnika z listy: podstawa, okres, kto i jak podaje dane, pomniejszenie za nieobecności, ZUS/PIT, wpływ na podstawę urlopu / chorobowego / nadgodzin, wykazanie na pasku.\nPremie: uznaniowe czy regulaminowe (wzór)?\nNagrody jubileuszowe i odprawy – tabele, staż.\nBenefity (karta sportowa, pakiet medyczny, samochód) – kto dostarcza dane, format?\nCzy dziś liczy się automatycznie, czy ktoś wpisuje kwotę ręcznie?",
-            "rozdz. 9; PL-01-011…018",
-            "Każda premia ze wzorem z regulaminu = element z algorytmem (C). Wpis ręczny bywa tańszy (S/K) – pokazać klientowi różnicę kosztu."),
-        new("3", "12:45–13:15", "Przerwa obiadowa", PR, "", "", "", ""),
-        new("3", "13:15–13:40", "Ustawienia płacowe (ujemna zaliczka PIT przy korektach, wynagrodzenie od świadczeń chorobowych, inne)", TA,
-            "Konfiguracja podatków (s. 1772), zaokrąglenia (s. 1818), korekty wypłat – zalecany i automatyczny mechanizm (s. 1216, 1232), storno (s. 1175), koszty autorskie (s. 328), korekty osób do 26 r.ż. (s. 1187).",
-            "Ujemna zaliczka PIT przy korektach – tak/nie.\nNaliczanie wynagrodzenia od wypłaconych świadczeń z ubezpieczenia chorobowego – tak/nie.\nPIT-2, ulgi (do 26 r.ż., 4+, na powrót), 50% koszty autorskie – kogo dotyczą?\nKorekty: w bieżącej wypłacie, lista korygująca czy storno?\nPrzekroczenie 30-krotności – kto pilnuje (wiele etatów, inny płatnik)?",
-            "rozdz. 10 pyt. 6; PL-01-025…031, PL-02", ""),
-        new("3", "13:40–14:05", "Pożyczki, zaliczki, zajęcia komornicze, potrącenia (zajęcia z umowy)", TA + " / " + UM,
-            "Zaliczki (s. 346), pożyczki KZP/ZFM i harmonogram spłat (s. 1009, 323, 940), zajęcia wynagrodzenia (s. 334, 924, P), konfiguracja zajęć (s. 1816), potrącenia dobrowolne (s. 1668).",
-            "Zajęcia komornicze: ile, alimentacyjne/niealimentacyjne, zbieg kilku tytułów, kwota wolna przy części etatu, korespondencja z komornikiem.\nPożyczki: z ZFŚS czy z kasy zapomogowej, oprocentowanie, zawieszenie, rozliczenie przy zwolnieniu.\nPotrącenia dobrowolne: związki, ubezpieczenia grupowe, benefity.\nPPK i ZFŚS – czy w zakresie tej analizy? (nie ma ich w umowie).",
-            "rozdz. 11; PL-03, KAD-05, KAD-06, PPK-01",
-            "C: kolejność i limity potrąceń wg zasad klienta, progi ZFŚS. PPK/ZFŚS spoza umowy – zapisać jako X albo wycenić osobno."),
-        new("3", "14:05–14:25", "Formaty przelewów; udostępnianie pasków wynagrodzeń", TA,
-            "Eksport przelewów do banku (moduł Ewidencji Środków Pieniężnych – potwierdzić licencję), wydruk paska, paski w Pulpicie Pracownika (s. 1971).",
-            "Bank i format pliku, przelewy zbiorcze/indywidualne, wypłata na dwa konta.\nPaski: Pulpit Pracownika, e-mail z hasłem, papier? Layout standardowy czy własny?\nCzy pracownicy produkcyjni mają dostęp do komputera/telefonu?",
-            "rozdz. 10 pyt. 8–9; PL-01-035, PP-01-013",
-            "C: własny format pliku bankowego, własny layout paska, paski mailem z hasłem."),
-        new("3", "14:25–14:50", "E-deklaracje i sprawozdawczość (z umowy)", UM,
-            "Pliki KEDU do Płatnika (s. 567), DRA/RCA/RSA (s. 569), ZUA/ZZA/ZWUA (s. 142–157), PIT-4R/8AR/11 (s. 589–603), eDeklaracje – wysyłka i UPO (s. 1924, 1937), PIT-11 w pulpicie (s. 870, Z), PFRON Wn-D/INF-2 (s. 643, 652), IMIR, ZUS RPA/OSW.",
-            "ZUS: enova → Płatnik (KEDU) czy e-Płatnik?\nPIT-11 elektronicznie do pracowników (pulpit)?\nPFRON – czy rozliczają, stopnie niepełnosprawności na kartotekach?\nGUS (Z-03, Z-05, Z-06, Z-12), raporty dla PIP, centrali?",
-            "rozdz. 12; ZUS-01, PIT-01, PFR-01, INT-01-001…007",
-            "Raport do centrali w obcym formacie, luka płacowa – C. Start w trakcie roku = bilanse otwarcia PIT/RIA/ERP-7."),
-        new("3", "14:50–15:00", "Podsumowanie dnia 3", DO,
-            "", "Ustalenia S/K/C/X, lista elementów płacowych do wyceny (każdy osobno), otwarte pytania.", "rozdz. 19", ""),
-
-        // ---------------- DZIEŃ 4 ----------------
-        new("4", "9:00–9:20", "Podsumowanie dni 1–3, otwarte pytania czasu pracy", DO, "", "Zamknięcie otwartych pytań z dnia 2 (reguły nadgodzin, przykłady wyliczeń).", "", ""),
-        new("4", "9:20–10:20", "Prezentacja standardu: miesiąc czasu pracy w enova365 (z umowy)", TA,
-            "Na bazie testowej: grafiki (s. 435), planowanie kalendarzy (s. 699–712, P), dokumenty aktualizacji kalendarza ze ścieżką akceptacji (s. 246, 704, P), weryfikatory kalendarza – odpoczynek 11 h/35 h, norma (s. 679, 1550, P), rozliczenie okresu, karta ewidencji.",
-            "Reakcja na każdy element: wystarcza / trzeba zmienić / nie dotyczy – notować w matrycy.",
-            "CP-01, CP-03", "Pokazanie standardu przed pytaniem o wymagania często zamyka temat bez customizacji."),
-        new("4", "10:20–11:15", "Pracownicy biurowi – plan, ewidencja, nadgodziny, absencje", TA,
-            "Kalendarz wzorcowy, ewidencja „wg planu + wyjątki”, praca zdalna (s. 665, ryczałt s. 1792), wnioski o nieobecność i o czas pracy w pulpicie (s. 2028, 2036), odbiór nadgodzin.",
-            "Ruchomy czas pracy? Elastyczne godziny rozpoczęcia?\nPraca zdalna/hybrydowa – ewidencja dni, ryczałt.\nNadgodziny w biurze – wniosek przed czy rozliczenie po?\nKto zatwierdza wnioski i kto zastępuje przełożonego?",
-            "rozdz. 5 pyt. 10; rozdz. 13; CP-02-015…019, PP-01-018…022", ""),
-        new("4", "11:15–11:30", "Przerwa", PR, "", "", "", ""),
-        new("4", "11:30–12:45", "Pracownicy produkcyjni – grafiki zmianowe, RCP, nadgodziny, absencje", TA,
-            "Definicje grafików (s. 1624), dane z RCP i oryginalne odbicia (s. 431, 444, P), algorytmy i reguły RCP (s. 1648–1649), weryfikacja dni RCP (s. 1345, P), procesy akceptacji Pracownik–Kierownik i Operator HR (s. 1351–1374, P), magazyn nadgodzin w pulpicie (s. 2036, P).",
-            "Na ile tygodni do przodu powstaje grafik i kto go zatwierdza? Zmiany po zatwierdzeniu?\nRCP: wczesne wejście / późne wyjście, tolerancje, zaokrąglenia, brak odbicia, korekty i ich ślad.\nAkceptacja nadgodzin przez kierownika – gdzie (pulpit)?\nPraca przez północ, zmiany 12 h, warunki szkodliwe w grafiku.\nBlokada edycji dni wstecz po zamknięciu miesiąca.",
-            "rozdz. 5 pyt. 3–6; rozdz. 6; CP-01-010…011, CP-02, CP-04-010",
-            "RCP na licencji Złotej = C od pierwszego dnia. Import odbić zależny od czytnika (C). Import grafiku z Excela (C)."),
-        new("4", "12:45–13:15", "Przerwa obiadowa", PR, "", "", "", ""),
-        new("4", "13:15–13:45", "Absencje w procesie: wnioski, akceptacje, zastępstwa, pulpit kierownika", TA,
-            "Obieg wniosku o nieobecność (s. 2028), zastępstwa (s. 2053), przełożony wg struktury podległości (s. 1389), Pulpit Kierownika – czas pracy i nieobecności (s. 2002), powiadomienia (s. 1950).",
-            "Ile poziomów akceptacji, co przy nieobecnym przełożonym?\nUrlop na żądanie – osobna ścieżka?\nKontrola kolizji urlopu z grafikiem / minimalną obsadą?\nPowiadomienia mailowe o wnioskach do akceptacji?",
-            "rozdz. 8 pyt. 5–6, 10; rozdz. 13; PP-01",
-            "C: e-wnioski własne, akceptacja wg macierzy innej niż podległość, kontrola obsady minimalnej."),
-        new("4", "13:45–14:15", "Role i uprawnienia operatorów systemu (z umowy)", UM,
-            "Prawa dostępu do danych kadrowych (s. 1794), prawa na kartotece pracownika (s. 70), ustawienia operatora (s. 1845), ochrona danych osobowych (s. 367, P), uprawnienia do danych osobowych (s. 561, P), historia zapisów (s. 372).",
-            "Role: kadry, płace, czas pracy, kierownik, BHP, księgowość, administrator.\nKto widzi wynagrodzenia – całej firmy, swojego działu?\nOgraniczenie dostępu wg oddziału/wydziału (prawa do danych, nie tylko do funkcji)?\nKto może zmieniać definicje (elementy, kalendarze) na produkcji?\nBaza testowa – czy dane mają być anonimizowane?",
-            "rozdz. 17; OG-01-003…010", "C: prawa do danych w układzie macierzowym, audyt poza standardowym logiem, anonimizacja bazy testowej."),
-        new("4", "14:15–14:45", "Matryca wymagań – przegląd zbiorczy (z umowy)", TA,
-            "Arkusz „Zakres procesów” z kwestionariusza analizy – przegląd klasyfikacji S/K/C/X, rejestr customizacji, rejestr otwartych pytań.",
-            "Potwierdzenie pozycji C z opisem i priorytetem (start / etap 2).\nPozycje X wypisane wprost – co jest poza zakresem.\nWłaściciel i termin dla każdego otwartego pytania.",
-            "rozdz. 1, 19", "Lista „poza zakresem” spisana teraz nie wróci przy odbiorze jako „przecież mówiliśmy”."),
-        new("4", "14:45–15:00", "Następne kroki: migracja danych, harmonogram, protokół", DO,
-            "",
-            "Migracja: z jakiego systemu, format eksportu, data odcięcia, limity urlopowe, podstawy chorobowego (12 mies.), saldo czasu pracy, bilanse PIT – kto przygotowuje.\nTermin protokołu z warsztatów i kto go akceptuje.\nKolejne kroki i daty.",
-            "rozdz. 14, 18; MIG-01", "Migracja – najczęstsza przyczyna opóźnień. Nie ma jej w umowie jako punktu analizy – potwierdzić, kto ją robi."),
-    };
-
-    private static readonly Uwaga[] Uwagi =
-    {
-        new("1", "Pokrycie umowy",
-            "Pięciu tematów z umowy nie ma w agendzie: zasady naliczania zasiłków chorobowych, BHP, e-deklaracje, zajęcia komornicze (jest tylko „pożyczki, zaliczki”), role i uprawnienia operatorów. UCP jest tylko od strony kadrowej.",
-            "Dołożone: zasiłki – dz. 2 (14:00), BHP – dz. 1 (13:35) i dz. 2 (warunki szkodliwe), e-deklaracje – dz. 3 (14:25), zajęcia komornicze – dz. 3 (13:40), role i uprawnienia – dz. 4 (13:45), rozliczenie UCP – dz. 3 (listy płac). Zestawienie w arkuszu „Pokrycie umowy”."),
-        new("2", "Prezentacja standardu i matryca",
-            "Umowa przewiduje prezentację standardu + matrycę wymagań dla całego obszaru Kadry i Płace, a w agendzie jest to tylko w dniu 4 (Czas pracy).",
-            "Standard pokazujemy na początku każdego bloku (kolumna „Co pokazujemy w enova365”), a matrycę S/K/C/X wypełniamy na bieżąco. Dzień 4 kończy się przeglądem zbiorczym matrycy, a nie jej tworzeniem od zera."),
-        new("3", "Dublowanie czasu pracy",
-            "Czas pracy pojawia się trzy razy: dz. 1 „Plan pracy pracowników”, dz. 2 (kalendarze, okres, ewidencja, nadgodziny, nocne, urlopy), dz. 4 (plan, ewidencja, nadgodziny, absencje). Dzień 4 w obecnym brzmieniu powtarza dzień 2.",
-            "Rozdział ról: dz. 1 – tylko inwentaryzacja grup i źródeł danych (15 min); dz. 2 – ZASADY (regulamin, kodeks, wpływ na płace); dz. 4 – PROCES w systemie osobno dla biura i produkcji (kto, kiedy, gdzie, RCP, pulpity, akceptacje)."),
-        new("4", "Struktura na początek",
-            "„Struktura organizacyjna” i „Struktura firmy” to dwa punkty na końcu bloku kadrowego dnia 1.",
-            "Połączone w jeden blok i przeniesione na początek dnia 1 – od struktury zależą listy płac (kryteria), uprawnienia, akceptacje w pulpitach i dekretacja kosztów. Lepiej ją znać, zanim zaczniemy o nich rozmawiać."),
-        new("5", "Otwarcie i zamknięcie",
-            "Brak otwarcia projektu i podsumowań dziennych.",
-            "Dz. 1: 20 min otwarcia (kryterium sukcesu, data startu, kluczowi użytkownicy, zasady protokołu). Każdy dzień: 10–15 min podsumowania (ustalenia, otwarte pytania z właścicielem, materiały na kolejny dzień)."),
-        new("6", "Licencja",
-            "Sporo tematów z agendy w enova365 wymaga licencji Platynowej: struktury organizacyjne, wielooddziałowość, B2B/APT, przeszeregowania, czynniki szkodliwe, RCP, weryfikatory kalendarza, bilansowanie i magazyn nadgodzin, wersjonowanie kalendarzy, zajęcia wynagrodzenia (wg oznaczeń w instrukcji). e-ZLA z PUE i e-teczki – minimum Złota.",
-            "Przed 20.10 potwierdzić, jaki wariant kupił klient (porównanie Złota/Platynowa jest w Zadania/). Jeżeli Złota – na warsztacie wprost mówić, że dany temat to customizacja albo zmiana licencji."),
-        new("7", "Spójność dni 2 i 3",
-            "Podstawy urlopu, chorobowego i nadgodzin zależą od składników płacowych, a te są dopiero w dniu 3.",
-            "W dniu 2 zbieramy zasady i wstępną listę składników „do podstaw”, w dniu 3 przy każdym składniku potwierdzamy wpływ na podstawy (kolumna w przejściu po liście płac)."),
-        new("8", "Tematy spoza umowy",
-            "Księgowanie płac, PPK, ZFŚS i migracja danych nie są wymienione w umowie, a zwykle wpływają na wycenę i harmonogram.",
-            "W agendzie są jako pytania „czy w zakresie?” (dz. 3 i dz. 4). Jeśli poza – wpisać jako X w matrycy, żeby nie wróciły przy odbiorze."),
-        new("9", "Przerwy",
-            "Dni 6-godzinne bez zaplanowanych przerw.",
-            "Zaplanowane 15 min przerwy przed południem i 30 min obiadowej; w dniu 1 jedna przerwa 15 min."),
-        new("10", "Podział biuro / produkcja",
-            "Podział na pracowników biurowych i produkcyjnych jest dopiero w dniu 4.",
-            "Zadawać pytania o czas pracy w dniu 2 osobno dla obu grup – reguły nadgodzin i nocnych zwykle różnią się właśnie między nimi."),
-    };
-
-    private static readonly Material[] Materialy =
-    {
-        new("przed dniem 1 (do 16.10)", "Schemat organizacyjny: oddziały, wydziały, działy, MPK, projekty", "struktura w enova365, kryteria list płac, uprawnienia"),
-        new("przed dniem 1 (do 16.10)", "Zestawienie zatrudnienia: liczba osób wg formy (UoP, zlecenie, dzieło, B2B, APT), wymiaru i wydziału – bez danych osobowych", "skala i formy zatrudnienia"),
-        new("przed dniem 1 (do 16.10)", "Wzory umów i aneksów, wzory dokumentów kadrowych w layoucie klienta", "wydruki kadrowe – standard czy własne"),
-        new("przed dniem 1 (do 16.10)", "Lista pól z kartoteki obecnego systemu spoza standardu (np. eksport kolumn)", "cechy i zakładki dodatkowe"),
-        new("przed dniem 1 (do 16.10)", "Sposób ewidencji badań lekarskich i szkoleń BHP (arkusz, system)", "BHP z umowy"),
-        new("przed dniem 2 (do 20.10)", "Regulamin pracy, regulamin/układ czasu pracy, obwieszczenia o okresach rozliczeniowych", "kalendarze, okresy, pora nocna"),
-        new("przed dniem 2 (do 20.10)", "Przykładowe grafiki: biuro i produkcja, 1 pełny miesiąc", "plan pracy, import grafiku (czy C)"),
-        new("przed dniem 2 (do 20.10)", "Eksport z systemu RCP z 1 miesiąca + nazwa systemu i kontakt do osoby technicznej", "źródło danych RCP, integracja"),
-        new("przed dniem 2 (do 20.10)", "Karta ewidencji czasu pracy i sposób rozliczania nadgodzin – pisemna reguła + 3 przykłady wyliczeń", "wycena reguł nadgodzin"),
-        new("przed dniem 2 (do 20.10)", "Lista rodzajów nieobecności, zasady urlopowe, lista stanowisk w warunkach szkodliwych", "definicje nieobecności, dodatki"),
-        new("przed dniem 3 (do 21.10)", "Regulamin wynagradzania, tabela stawek zaszeregowania, regulaminy premiowe", "elementy wynagrodzenia i algorytmy"),
-        new("przed dniem 3 (do 21.10)", "Przykładowa pełna lista płac i paski kilku typowych pracowników (zanonimizowane)", "przejście składnik po składniku"),
-        new("przed dniem 3 (do 21.10)", "Wykaz list płac w miesiącu z terminami wypłat; wzór pliku przelewów z banku", "definicje list, eksport przelewów"),
-        new("przed dniem 3 (do 21.10)", "Liczba i rodzaje zajęć komorniczych, regulamin pożyczek/ZFŚS (jeżeli w zakresie)", "potrącenia i zajęcia"),
-        new("przed dniem 4 (do 23.10)", "Lista przyszłych użytkowników systemu z rolą i zakresem danych, które mają widzieć", "role i uprawnienia"),
-        new("przed dniem 4 (do 23.10)", "Obecny obieg wniosków (urlopy, nadgodziny, praca zdalna) – kto akceptuje, kto zastępuje", "pulpity, ścieżki akceptacji"),
-        new("nasza strona, przed 20.10", "Wariant licencji klienta (Złota / Platynowa / dodatki) i baza testowa do prezentacji standardu", "co pokazujemy jako standard"),
-        new("nasza strona, przed 20.10", "Wydruk kwestionariusza analizy (arkusze „Zakres procesów” i „Kwestionariusz”) do notowania na bieżąco", "matryca wymagań"),
-    };
-
-    private static readonly Pokrycie[] PokrycieUmowy =
-    {
-        new("Prezentacja standardowej funkcjonalności enova365 + przygotowanie matrycy wymagań", "tylko dz. 4 (Czas pracy)", "każdy blok (kolumna „Co pokazujemy”); dz. 4 9:20 i 14:15 – przegląd matrycy"),
-        new("Struktura organizacyjna", "dz. 1 (na końcu bloku kadrowego)", "dz. 1 10:50 (na początku)"),
-        new("Obszar kadrowy", "dz. 1", "dz. 1 11:30–14:05"),
-        new("Systemy płacowe", "dz. 3", "dz. 3 9:45"),
-        new("Charakterystyka składników płacowych", "dz. 3", "dz. 3 11:15 (90 min)"),
-        new("Zasady naliczeń zasiłków chorobowych", "BRAK", "dz. 2 14:00"),
-        new("Obsługa UCP", "dz. 1 (tylko kadrowo)", "dz. 1 12:30 + dz. 3 10:20 (listy UCP)"),
-        new("Obsługa UoP", "dz. 1", "dz. 1 11:30"),
-        new("BHP", "BRAK", "dz. 1 13:35 + dz. 2 14:30 (warunki szkodliwe)"),
-        new("E-deklaracje", "BRAK", "dz. 3 14:25"),
-        new("Obsługa zajęć komorniczych", "BRAK (są tylko pożyczki, zaliczki)", "dz. 3 13:40"),
-        new("Określenie ról i uprawnień dla operatorów systemu", "BRAK", "dz. 4 13:45"),
-    };
-
     private static int Main(string[] args)
     {
         var dir = args.Length > 0 ? args[0] : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
-        var xlsx = Path.Combine(dir, "Agenda warsztatów analizy KP.xlsx");
-        var md = Path.Combine(dir, "Agenda warsztatów analizy KP.md");
-
-        using (var wb = new Workbook())
+        foreach (var a in new[] { AgendaKorekta.Utworz(), AgendaAutorska.Utworz() })
         {
-            ArkuszAgenda(wb.Worksheets[0]);
-            ArkuszUwagi(wb.Worksheets.Add());
-            ArkuszPokrycie(wb.Worksheets.Add());
-            ArkuszMaterialy(wb.Worksheets.Add());
-            wb.Worksheets.ActiveWorksheet = wb.Worksheets[0];
-            wb.SaveDocument(xlsx, DocumentFormat.Xlsx);
+            var xlsx = Path.Combine(dir, a.Plik + ".xlsx");
+            var md = Path.Combine(dir, a.Plik + ".md");
+            using (var wb = new Workbook())
+            {
+                ArkuszAgenda(wb.Worksheets[0], a);
+                ArkuszUwagi(wb.Worksheets.Add(), a);
+                if (a.Persony != null) ArkuszPersony(wb.Worksheets.Add(), a);
+                ArkuszPokrycie(wb.Worksheets.Add(), a);
+                ArkuszMaterialy(wb.Worksheets.Add(), a);
+                wb.Worksheets.ActiveWorksheet = wb.Worksheets[0];
+                wb.SaveDocument(xlsx, DocumentFormat.Xlsx);
+            }
+            File.WriteAllText(md, Markdown(a), new UTF8Encoding(false));
+            Console.WriteLine($"{a.Plik}: bloki {a.Bloki.Length}, {a.ArkuszUwag.ToLower()} {a.Uwagi.Length}, materiały {a.Materialy.Length}, pokrycie umowy {a.Pokrycie.Length}, pracownicy wzorcowi {a.Persony?.Length ?? 0}");
         }
-        File.WriteAllText(md, Markdown(), new UTF8Encoding(false));
-
-        Console.WriteLine($"Bloki: {Bloki.Length}, uwagi: {Uwagi.Length}, materiały: {Materialy.Length}, pokrycie umowy: {PokrycieUmowy.Length}");
-        Console.WriteLine(xlsx);
-        Console.WriteLine(md);
         return 0;
     }
-
-    private static readonly Color Naglowek = Color.FromArgb(0x1F, 0x4E, 0x79);
-    private static readonly Color DzienTlo = Color.FromArgb(0xDD, 0xEB, 0xF7);
-    private static readonly Color PrzerwaTlo = Color.FromArgb(0xF2, 0xF2, 0xF2);
-    private static readonly Color UmowaTlo = Color.FromArgb(0xFC, 0xE4, 0xD6);
-    private static readonly Color DodaneTlo = Color.FromArgb(0xE2, 0xEF, 0xDA);
 
     private static void Glowka(Worksheet ws, string[] kolumny, int[] szerokosci, int wiersz = 0)
     {
@@ -306,7 +69,7 @@ internal static class Program
             cell.Value = kolumny[c];
             cell.Font.Bold = true;
             cell.Font.Color = Color.White;
-            cell.Fill.BackgroundColor = Naglowek;
+            cell.Fill.BackgroundColor = Agenda.Naglowek;
             cell.Alignment.WrapText = true;
             cell.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
             ws.Columns[c].WidthInCharacters = szerokosci[c];
@@ -326,35 +89,33 @@ internal static class Program
         }
     }
 
-    private static void ArkuszAgenda(Worksheet ws)
+    private static void ArkuszAgenda(Worksheet ws, Agenda a)
     {
         ws.Name = "Agenda";
-        ws.Cells[0, 0].Value = "Agenda warsztatów analizy przedwdrożeniowej – Kadry, Płace, Czas pracy (enova365)";
+        ws.Cells[0, 0].Value = a.Tytul;
         ws.Cells[0, 0].Font.Bold = true;
         ws.Cells[0, 0].Font.Size = 14;
-        ws.Cells[1, 0].Value = "Źródło: Twoja agenda | Umowa – brak w agendzie (pomarańczowe) | Dodane (metodyka, zielone). „s. N” = strona instrukcji „Kadry Płace i HR”, (P) = licencja Platynowa, (Z) = Złota. Odwołania rozdz./KAD-/CP-/PL- – dokument analizy w Analiza/.";
+        ws.Cells[1, 0].Value = a.Legenda;
         ws.Cells[1, 0].Alignment.WrapText = true;
         ws.MergeCells(ws.Range.FromLTRB(0, 1, 8, 1));
-        ws.Rows[1].Height = 45 * 3;
+        ws.Rows[1].Height = 135;
 
-        string[] kol = { "Dzień", "Godziny", "Temat", "Źródło", "Co pokazujemy w enova365 (standard)", "Kluczowe pytania do klienta", "Odniesienie", "Ryzyko / czerwona flaga", "Notatki z warsztatu (S/K/C/X)" };
+        string[] kol = { "Dzień", "Godziny", "Temat", a.KolZrodlo, "Co pokazujemy w enova365 (standard)", "Kluczowe pytania do klienta", "Odniesienie", a.KolRyzyko, "Notatki z warsztatu (S/K/C/X)" };
         Glowka(ws, kol, new[] { 7, 12, 34, 16, 55, 70, 24, 40, 40 }, 3);
 
         int r = 4;
-        foreach (var d in Dni)
+        foreach (var d in a.Dni)
         {
-            Wiersz(ws, r, $"{d.Nr}", d.Data, $"{d.Tytul}", "", d.Godziny, d.Cel, "", "", "");
+            Wiersz(ws, r, d.Nr, d.Data, d.Tytul, "", d.Godziny, d.Cel, "", "", "");
             var rz = ws.Range.FromLTRB(0, r, 8, r);
-            rz.Fill.BackgroundColor = DzienTlo;
+            rz.Fill.BackgroundColor = Agenda.DzienTlo;
             rz.Font.Bold = true;
             r++;
-            foreach (var b in Bloki.Where(x => x.Dzien == d.Nr))
+            foreach (var b in a.Bloki.Where(x => x.Dzien == d.Nr))
             {
                 Wiersz(ws, r, b.Dzien, b.Godz, b.Temat, b.Zrodlo, b.Pokaz, b.Pytania, b.Odn, b.Ryzyko, "");
-                var zr = ws.Cells[r, 3];
-                if (b.Zrodlo == PR) ws.Range.FromLTRB(0, r, 8, r).Fill.BackgroundColor = PrzerwaTlo;
-                else if (b.Zrodlo.Contains(UM)) zr.Fill.BackgroundColor = UmowaTlo;
-                else if (b.Zrodlo == DO) zr.Fill.BackgroundColor = DodaneTlo;
+                if (b.Zrodlo == Agenda.Przerwa) ws.Range.FromLTRB(0, r, 8, r).Fill.BackgroundColor = Agenda.PrzerwaTlo;
+                else if (a.Kolory.TryGetValue(b.Zrodlo, out var kolor)) ws.Cells[r, 3].Fill.BackgroundColor = kolor;
                 r++;
             }
         }
@@ -365,68 +126,87 @@ internal static class Program
         ws.ActiveView.Orientation = PageOrientation.Landscape;
     }
 
-    private static void ArkuszUwagi(Worksheet ws)
+    private static void ArkuszUwagi(Worksheet ws, Agenda a)
     {
-        ws.Name = "Uwagi do agendy";
-        Glowka(ws, new[] { "Nr", "Obszar", "Co widzę w Twojej agendzie", "Propozycja (uwzględniona w arkuszu Agenda)" }, new[] { 5, 24, 70, 80 });
-        for (int i = 0; i < Uwagi.Length; i++)
-            Wiersz(ws, i + 1, Uwagi[i].Nr, Uwagi[i].Obszar, Uwagi[i].Co, Uwagi[i].Propozycja);
-        ws.Rows.AutoFit(1, Uwagi.Length);
+        ws.Name = a.ArkuszUwag;
+        Glowka(ws, a.KolUwag, new[] { 5, 28, 70, 80 });
+        for (int i = 0; i < a.Uwagi.Length; i++)
+            Wiersz(ws, i + 1, a.Uwagi[i].Nr, a.Uwagi[i].Obszar, a.Uwagi[i].Co, a.Uwagi[i].Propozycja);
+        ws.Rows.AutoFit(1, a.Uwagi.Length);
     }
 
-    private static void ArkuszPokrycie(Worksheet ws)
+    private static void ArkuszPersony(Worksheet ws, Agenda a)
+    {
+        ws.Name = "Pracownicy wzorcowi";
+        Glowka(ws, new[] { "Nr", "Przypadek (do wskazania przez klienta, dane zanonimizowane)", "Co sprawdza w enova365", "Wraca w dniach", "Wskazany pracownik / kod", "Wynik w bazie testowej" },
+            new[] { 5, 50, 70, 14, 26, 30 });
+        for (int i = 0; i < a.Persony.Length; i++)
+            Wiersz(ws, i + 1, a.Persony[i].Nr, a.Persony[i].Przypadek, a.Persony[i].CoSprawdza, a.Persony[i].Dni, "", "");
+        ws.Rows.AutoFit(1, a.Persony.Length);
+    }
+
+    private static void ArkuszPokrycie(Worksheet ws, Agenda a)
     {
         ws.Name = "Pokrycie umowy";
-        Glowka(ws, new[] { "Pozycja zakresu z umowy", "Twoja agenda", "Moja agenda" }, new[] { 60, 36, 60 });
-        for (int i = 0; i < PokrycieUmowy.Length; i++)
+        Glowka(ws, a.KolPokrycia, new[] { 60, 36, 60 });
+        for (int i = 0; i < a.Pokrycie.Length; i++)
         {
-            var p = PokrycieUmowy[i];
+            var p = a.Pokrycie[i];
             Wiersz(ws, i + 1, p.Pozycja, p.TwojaAgenda, p.MojaAgenda);
-            if (p.TwojaAgenda.StartsWith("BRAK")) ws.Cells[i + 1, 1].Fill.BackgroundColor = UmowaTlo;
+            if (p.TwojaAgenda.StartsWith("BRAK")) ws.Cells[i + 1, 1].Fill.BackgroundColor = Agenda.UmowaTlo;
         }
-        ws.Rows.AutoFit(1, PokrycieUmowy.Length);
+        ws.Rows.AutoFit(1, a.Pokrycie.Length);
     }
 
-    private static void ArkuszMaterialy(Worksheet ws)
+    private static void ArkuszMaterialy(Worksheet ws, Agenda a)
     {
         ws.Name = "Materiały przed spotkaniem";
         Glowka(ws, new[] { "Termin", "Materiał", "Do czego", "Otrzymano (tak/nie)" }, new[] { 24, 80, 40, 14 });
-        for (int i = 0; i < Materialy.Length; i++)
-            Wiersz(ws, i + 1, Materialy[i].Termin, Materialy[i].Co, Materialy[i].PoCo, "");
-        ws.Rows.AutoFit(1, Materialy.Length);
+        for (int i = 0; i < a.Materialy.Length; i++)
+            Wiersz(ws, i + 1, a.Materialy[i].Termin, a.Materialy[i].Co, a.Materialy[i].PoCo, "");
+        ws.Rows.AutoFit(1, a.Materialy.Length);
     }
 
     private static string Md(string s) => s.Replace("|", "\\|").Replace("\n", "<br>");
 
-    private static string Markdown()
+    private static string Markdown(Agenda a)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("# Agenda warsztatów analizy przedwdrożeniowej – Kadry, Płace, Czas pracy");
+        sb.AppendLine($"# {a.Tytul}");
         sb.AppendLine();
-        sb.AppendLine("> Plik generowany przez `Generator/` (treść w `Program.cs`). Wersja robocza do pracy na spotkaniu: `Agenda warsztatów analizy KP.xlsx`.");
-        sb.AppendLine("> „s. N” = strona instrukcji producenta „Kadry Płace i HR”, (P) = licencja Platynowa, (Z) = Złota; rozdz./KAD-/CP-/PL- = [dokument analizy](../../Analiza/).");
+        sb.AppendLine($"> Plik generowany przez `Generator/` – nie edytować ręcznie. Wersja do pracy na spotkaniu: `{a.Plik}.xlsx`.");
+        sb.AppendLine($"> {a.Legenda}");
         sb.AppendLine();
-        sb.AppendLine("## Uwagi do agendy wyjściowej");
+        sb.AppendLine($"## {a.ArkuszUwag}");
         sb.AppendLine();
-        sb.AppendLine("| Nr | Obszar | Co widzę | Propozycja |");
+        sb.AppendLine($"| {string.Join(" | ", a.KolUwag)} |");
         sb.AppendLine("|---|---|---|---|");
-        foreach (var u in Uwagi) sb.AppendLine($"| {u.Nr} | {Md(u.Obszar)} | {Md(u.Co)} | {Md(u.Propozycja)} |");
+        foreach (var u in a.Uwagi) sb.AppendLine($"| {u.Nr} | {Md(u.Obszar)} | {Md(u.Co)} | {Md(u.Propozycja)} |");
         sb.AppendLine();
+        if (a.Persony != null)
+        {
+            sb.AppendLine("## Pracownicy wzorcowi");
+            sb.AppendLine();
+            sb.AppendLine("| Nr | Przypadek | Co sprawdza w enova365 | Dni |");
+            sb.AppendLine("|---|---|---|---|");
+            foreach (var p in a.Persony) sb.AppendLine($"| {p.Nr} | {Md(p.Przypadek)} | {Md(p.CoSprawdza)} | {Md(p.Dni)} |");
+            sb.AppendLine();
+        }
         sb.AppendLine("## Pokrycie zakresu z umowy");
         sb.AppendLine();
-        sb.AppendLine("| Pozycja z umowy | Agenda wyjściowa | Ta agenda |");
+        sb.AppendLine($"| {string.Join(" | ", a.KolPokrycia)} |");
         sb.AppendLine("|---|---|---|");
-        foreach (var p in PokrycieUmowy) sb.AppendLine($"| {Md(p.Pozycja)} | {Md(p.TwojaAgenda)} | {Md(p.MojaAgenda)} |");
+        foreach (var p in a.Pokrycie) sb.AppendLine($"| {Md(p.Pozycja)} | {Md(p.TwojaAgenda)} | {Md(p.MojaAgenda)} |");
         sb.AppendLine();
-        foreach (var d in Dni)
+        foreach (var d in a.Dni)
         {
             sb.AppendLine($"## Dzień {d.Nr} – {d.Data}, {d.Godziny}: {d.Tytul}");
             sb.AppendLine();
             sb.AppendLine($"*{d.Cel}*");
             sb.AppendLine();
-            sb.AppendLine("| Godziny | Temat | Źródło | Co pokazujemy | Kluczowe pytania | Odniesienie | Ryzyko |");
+            sb.AppendLine($"| Godziny | Temat | {a.KolZrodlo} | Co pokazujemy | Kluczowe pytania | Odniesienie | {a.KolRyzyko} |");
             sb.AppendLine("|---|---|---|---|---|---|---|");
-            foreach (var b in Bloki.Where(x => x.Dzien == d.Nr))
+            foreach (var b in a.Bloki.Where(x => x.Dzien == d.Nr))
                 sb.AppendLine($"| {b.Godz} | {Md(b.Temat)} | {Md(b.Zrodlo)} | {Md(b.Pokaz)} | {Md(b.Pytania)} | {Md(b.Odn)} | {Md(b.Ryzyko)} |");
             sb.AppendLine();
         }
@@ -434,7 +214,7 @@ internal static class Program
         sb.AppendLine();
         sb.AppendLine("| Termin | Materiał | Do czego |");
         sb.AppendLine("|---|---|---|");
-        foreach (var m in Materialy) sb.AppendLine($"| {Md(m.Termin)} | {Md(m.Co)} | {Md(m.PoCo)} |");
+        foreach (var m in a.Materialy) sb.AppendLine($"| {Md(m.Termin)} | {Md(m.Co)} | {Md(m.PoCo)} |");
         return sb.ToString();
     }
 }
