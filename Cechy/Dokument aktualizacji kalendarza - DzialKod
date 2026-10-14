@@ -1,0 +1,8 @@
+public string Feature_DzialKod {
+    get {
+        List<string> kody = new List<string>();
+        foreach (Wydzial wydzial in A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.WydzialyDokumentu(Row))
+            kody.Add(wydzial.Kod);
+        return string.Join(", ", kody);
+    }
+}

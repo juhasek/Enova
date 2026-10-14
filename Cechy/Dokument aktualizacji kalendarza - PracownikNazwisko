@@ -1,0 +1,8 @@
+public string Feature_PracownikNazwisko {
+    get {
+        List<string> nazwiska = new List<string>();
+        foreach (Pracownik pracownik in A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.PracownicyDokumentu(Row))
+            nazwiska.Add(pracownik.NazwiskoImię);
+        return string.Join(", ", nazwiska);
+    }
+}
