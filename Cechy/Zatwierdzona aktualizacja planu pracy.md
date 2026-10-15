@@ -25,7 +25,7 @@ Odpowiednik dla drugiego rodzaju dokumentu: [Zatwierdzona aktualizacja czasu pra
 | Pole | Wartość |
 |---|---|
 | Tabela | Pracownicy |
-| Nazwa | `PlanPracy` (od nazwy zależy nazwa metody `Get_Feature_PlanPracy` w kodzie) |
+| Nazwa | `PlanPracyZatwierdzony` (od nazwy zależy nazwa metody `Get_Feature_PlanPracyZatwierdzony` w kodzie) |
 | Typ | Tak/Nie (bool) |
 | Algorytm | Wartość wyliczana algorytmem z parametrami |
 
@@ -38,5 +38,7 @@ Kod skompilowany na bibliotekach enova 2512.5.6 – **niesprawdzony na żywych d
 testowej brak dokumentów aktualizacji kalendarza). 2026-10-15: odczyt okresu przerobiony na `cx.Get<T>(out ...)` (bez zmiennych `object`) i rozszerzony
 o parametry listy (`OkresContext`) – wcześniej na liście Kadry → Pracownicy cecha nie widziała
 okresu z filtra i liczyła miesiąc daty aktualności. Ten sam odczyt sprawdzony na żywo w cesze
-[Okres z filtra listy](Okres%20z%20filtra%20listy.md) (baza Al). Nowej wersji tej cechy nie wgrano
-do żadnej bazy.
+[Okres z filtra listy](Okres%20z%20filtra%20listy.md) (baza Al). Baza Claude (2026-10-15): nowa wersja założona jako `PlanPracyZatwierdzony` (kategoria „Aktualizacja
+kalendarza”) **obok** starej roboczej cechy `PlanPracy`, której nie ruszano. Kompiluje się i liczy
+na liście Kadry → Pracownicy z filtrem okresu (wszędzie „Nie” – w bazie brak dokumentów
+aktualizacji kalendarza).
