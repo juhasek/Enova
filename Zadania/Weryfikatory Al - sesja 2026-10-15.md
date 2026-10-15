@@ -23,7 +23,7 @@ pliki v2 usunięte.
 Nowa logika względem pierwszej wersji: okres przycięty do zatrudnienia na etacie, miesiące minione nie są
 rezerwą, komunikat wskazuje dni do poprawy („Skróć plan dni…” / „Wydłuż plan dni…”).
 
-## 2. Restart serwera i test na żywo — PRZERWANE
+## 2. Restart serwera i test na żywo — przerwane (wznowione w pkt 3)
 
 - Zabite oba procesy `server.dll` (orchestrator postawił nowy o 09:50).
 - SonetaFrame nie odpowiada na MCP `soneta_ui_al` (4× timeout 120 s) — prawdopodobnie po restarcie
@@ -39,3 +39,18 @@ Plan testu po powrocie:
 4. **Nadmiar** (opcjonalnie): pełny plan dni roboczych + soboty po 8h → „Przekroczono limit… Skróć plan dni…”.
 
 Każdy zapis przez MCP wymaga potwierdzenia „TAK” w oknie SonetaFrame.
+
+## 3. Test na żywo — wznowiony, kroki 1–3 OK
+
+MCP `soneta_ui_al` znów odpowiada. Zakładka pracownika **Kalendarz/Norma czasu pracy**
+(`PracownikPlanPracy2Page`) przez MCP rzuca „Object reference not set…”, więc plan zmieniał operator
+w GUI.
+
+- **Krok 1:** TEST-T7 (Pracownicy ID 56, kalendarz indywidualny 1058) bez dni w `DniKalendarza`.
+- **Krok 2 (niedobór):** 02.11.2026 = 0:00 → zapis zablokowany komunikatem definicji 37:
+  „Nie da się już osiągnąć normy godzin (160:00) w okresie rozliczeniowym ((1...30.11.2026)),
+  brakuje (8:00)… Dni bez wpisu od bieżącego miesiąca: 19 (maks. 152:00). Wydłuż plan dni: 02.11 (+8:00)”.
+  Liczby zgodne (20 dni roboczych w 11.2026 → 160:00). Dodatkowo, zgodnie z założeniem, odezwał się
+  weryfikator liczby dni wolnych: „!Zaplanowano zbyt dużo dni wolnych (11) wobec wymaganej liczby (10)…”.
+- **Krok 3 (brak błędu):** cofnięcie zmiany → zapis bez komunikatu; w bazie znów zero wpisów planu.
+- **Krok 4 (nadmiar):** jeszcze niewykonany (opcjonalny).
