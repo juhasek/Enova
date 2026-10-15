@@ -91,8 +91,9 @@ dni wolne wg kalendarza (soboty, święta) — nie zmieniane, do decyzji.
 - Na 12 nowych przez MCP (Ustawienia → Kadry i płace → Kalendarze → Kalendarze, podformularz kalendarza):
   zakładka Weryfikatory – tylko 2069 „A1_Brak zgody na pracę 8h” jako Błąd, zakładka Algorytm wyczyszczona
   (enova wstawia pusty szablon, 1180 znaków). Sprawdzone w bazie.
-- Kalendarz 47 po imporcie: 13 podpięć klienta, bez 2069, stary algorytm (aktywne tylko metody pomocnicze,
-  wszystkie Sprawdź… zakomentowane) – do decyzji, czy przywrócić stan sprzed importu.
+- Kalendarz 47 (nadpisany importem) ustawiony jak nowe: tylko 2069 jako Błąd, pusty algorytm (decyzja operatora).
+  Wcześniej po imporcie: 13 podpięć klienta, bez 2069, stary algorytm (aktywne tylko metody pomocnicze,
+  wszystkie Sprawdź… zakomentowane).
 - Import przez MCP `import_business_xml` i edycja kalendarza otwartego przez `open_form` → „Brak prawa do
   zapisu danych” (sesja operacyjna, kalendarze tylko do odczytu); działa tylko przez formularz konfiguracji.
   Zapis konfiguracji wymaga kliknięcia TAK w SonetaFrame.
