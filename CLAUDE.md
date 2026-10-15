@@ -74,9 +74,10 @@ to skompilowane projekty .NET ani DLL-e, i nie mają samodzielnego pliku
 się osobny folder **Addon/** zawierający właściwy projekt `.csproj` — to
 byłby sygnał, że mowa o skompilowanym dodatku enova365, a nie o wklejanym
 skrypcie. Wyjątkiem jest **Integracja/*/Generator/** (konsolówka budująca kolekcję
-Postman i arkusz scenariuszy) oraz **Analiza/Generator/** — to zwykłe narzędzie
-konsolowe budujące arkusz z dokumentu `.md`, uruchamiane poza enovą (korzysta
-tylko z bibliotek DevExpress z katalogu serwera), a nie dodatek do wgrania.
+Postman i arkusz scenariuszy), **Analiza/Generator/** oraz
+**Zadania/Generator słownika rozwiązania umowy/** — to zwykłe narzędzia
+konsolowe budujące arkusz (z dokumentu `.md` albo z DLL serwera i bazy), uruchamiane
+poza enovą (korzystają tylko z bibliotek DevExpress z katalogu serwera), a nie dodatki do wgrania.
 
 Plik `.md` obok pliku bez rozszerzenia (o tej samej nazwie) to dokumentacja
 biznesowa danego artefaktu.

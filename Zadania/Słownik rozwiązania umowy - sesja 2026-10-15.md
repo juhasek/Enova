@@ -29,9 +29,18 @@ Potrzebny Excel z kodami rozwiązania umowy i podstawami prawnymi, które uzupe�
 
 ## Jak odświeżyć po aktualizacji enovy
 
-1. `ilspycmd -t Soneta.Kadry.<typ> Soneta.KadryPlace.dll -r <katalog serwera> -o <katalog>`
-   dla trzech typów powyżej. Dekompilować do plików, bo na konsoli psują się polskie znaki.
-2. Wyeksportować `PrzyczRozwUmow` do TSV w UTF-8 (PowerShell + System.Data.SqlClient; sqlcmd psuje
-   znaki).
-3. Konsolówka DevExpress.Spreadsheet (wzorzec `Analiza/Generator`) parsuje `[Caption]` z plików i
-   składa arkusz. Generator był jednorazowy, w scratchpadzie sesji, nie w repo.
+Generator jest w `Zadania/Generator słownika rozwiązania umowy/`. Jedno polecenie:
+
+```powershell
+& ".\Zadania\Generator słownika rozwiązania umowy\Odswiez.ps1" -Wersja 2610 -Baza Al
+```
+
+Skrypt kolejno:
+
+1. dekompiluje `KodZwolnienia` i `KodPodstawyPrawnejZwolnienia` z `Soneta.KadryPlace.dll` danej
+   wersji (ilspycmd do plików, bo na konsoli psują się polskie znaki),
+2. eksportuje `PrzyczRozwUmow` z bazy do TSV w UTF-8 (System.Data.SqlClient, bo sqlcmd psuje znaki),
+3. buduje konsolówkę DevExpress.Spreadsheet (biblioteki v24.1 z katalogu 2512.5.6), która parsuje
+   `[Caption]` i nadpisuje Excel w `Zadania/`.
+
+Sprawdzone 2026-10-15 na 2610 / Al: 34 kody, 65 podstaw, 28 przyczyn.
