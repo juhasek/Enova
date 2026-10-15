@@ -91,7 +91,9 @@ dni wolne wg kalendarza (soboty, święta) — nie zmieniane, do decyzji.
 - Na 12 nowych przez MCP (Ustawienia → Kadry i płace → Kalendarze → Kalendarze, podformularz kalendarza):
   zakładka Weryfikatory – tylko 2069 „A1_Brak zgody na pracę 8h” jako Błąd, zakładka Algorytm wyczyszczona
   (enova wstawia pusty szablon, 1180 znaków). Sprawdzone w bazie.
-- Kalendarz 47 (nadpisany importem) ustawiony jak nowe: tylko 2069 jako Błąd, pusty algorytm (decyzja operatora).
+- Ostatecznie (decyzja operatora): kal. 47 i 12 nowych (1070–1081) mają podpięcia jak kal. 47 przed importem —
+  Ostrzeżenie: 1, 3 (Odpoczynek dobowy dzień planu / dzień pracy), 17 (Odpoczynek tygodniowy, plan);
+  Błąd: 35, 37, 1036, 2044, 2048, 2049, 2051, 2069; algorytm pusty (szablon). Sprawdzone w bazie (11 podpięć każdy).
   Wcześniej po imporcie: 13 podpięć klienta, bez 2069, stary algorytm (aktywne tylko metody pomocnicze,
   wszystkie Sprawdź… zakomentowane).
 - Import przez MCP `import_business_xml` i edycja kalendarza otwartego przez `open_form` → „Brak prawa do
