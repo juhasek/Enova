@@ -99,3 +99,23 @@ dni wolne wg kalendarza (soboty, święta) — nie zmieniane, do decyzji.
 - Import przez MCP `import_business_xml` i edycja kalendarza otwartego przez `open_form` → „Brak prawa do
   zapisu danych” (sesja operacyjna, kalendarze tylko do odczytu); działa tylko przez formularz konfiguracji.
   Zapis konfiguracji wymaga kliknięcia TAK w SonetaFrame.
+
+## 6. Weryfikator ilości dni wolnych (1036) — zmiana reguły nadmiaru, NIEWGRANA do bazy
+
+Wymaganie klienta: weryfikator przede wszystkim pilnuje, żeby dni wolnych nie było ZA MAŁO. Więcej dni wolnych
+niż ustawowo jest dopuszczalne, jeśli godziny w okresie nie przekraczają normy (np. system równoważny, praca po 12h).
+
+- Repo: `Weryfikatory czasu pracy/Weryfikator ilości dni okresu rozliczeniowego` — metoda przemianowana na
+  `A1WeryfikujIloscDniWolnychWOkresieRozliczeniowym` (jak w bazie, CodeFiles 13; logika w bazie = repo sprzed zmiany).
+  Dodane `godzinyPlanu` (suma `kalkulator.Norma(okres)` w okresie) i `godzinyPrzekroczone = godzinyPlanu > normaKodeksowa.Czas`.
+  Oba komunikaty „Zaplanowano zbyt dużo dni wolnych…” (tryb ścisły i tolerancyjny) tylko gdy `godzinyPrzekroczone`;
+  w treści dopisane „przy przekroczonej normie godzin (zaplanowano X, norma Y)”. „Za mało dni wolnych” bez zmian.
+  Reguła na wszystkich kalendarzach.
+- **Baza Al NIE zaktualizowana.** Lokalna kompilacja niemożliwa (4 GB RAM, ~400 MB wolne → Roslyn „Out of memory”;
+  biblioteki 2610 wymagają SDK .NET 10, którego brak — kompilować na DLL 2512.5.6 + Reference Soneta.Kasa i Soneta.CRM).
+  Do zrobienia po restarcie: skompilować (projekt testowy jak w scratchpadzie: Kod.cs = pełny CodeFiles 13 z nową metodą)
+  i wgrać — albo wkleić w GUI: Ustawienia → Systemowe → Dodatkowy kod do kompilacji → A1WeryfikatoryKalendarza → Edytor.
+  Pełny tekst do wklejenia = CodeFiles 13 z bazy z podmienioną metodą (od `public static string A1WeryfikujIloscDni…`
+  do komentarza `// Norma dobowa: limit`) na wersję z repo.
+- Potem: test (system równoważny 12h, więcej dni wolnych przy normie → brak błędu; za mało dni wolnych → błąd;
+  nadmiar dni wolnych + godziny ponad normę → błąd) i aktualizacja `.md` weryfikatora oraz arkusza „Ilość dni wolnych”.
