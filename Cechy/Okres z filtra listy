@@ -3,15 +3,13 @@ public string Get_Feature_OkresFiltra(Context cx) {
 	// w obiekcie parametrów widoku dziedziczącym po OkresContext - kontekst znajduje go po
 	// typie bazowym. Inne widoki mogą wkładać do kontekstu sam okres (FromTo).
 	// Gdy widok nie ma filtra okresu, cecha zwraca pusty tekst.
+	OkresContext parametryListy;
+	FromTo okresZKontekstu;
 	FromTo okres = FromTo.Empty;
-	object parametry = cx[typeof(OkresContext), false];
-	if (parametry is OkresContext)
-		okres = ((OkresContext)parametry).Okres;
-	else {
-		object zKontekstu = cx[typeof(FromTo), false];
-		if (zKontekstu is FromTo)
-			okres = (FromTo)zKontekstu;
-	}
+	if (cx.Get<OkresContext>(out parametryListy) && parametryListy != null)
+		okres = parametryListy.Okres;
+	else if (cx.Get<FromTo>(out okresZKontekstu))
+		okres = okresZKontekstu;
 
 	if (okres == FromTo.Empty)
 		return "";
