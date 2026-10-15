@@ -3,21 +3,27 @@
 ## 1. Do czego służy cecha
 
 Cecha wyliczana typu **Tekst** na tabeli **Pracownicy**. Zwraca okres wybrany w filtrze
-„Okres” listy pracowników, na której jest wyświetlana (np. `2026-10-01...2026-10-31`).
+„Okres” listy pracowników, na której jest wyświetlana (np. `1...31.10.2026`).
 Przydaje się jako kolumna kontrolna widoku albo w wydrukach/eksportach, żeby było widać,
 za jaki okres liczone są pozostałe kolumny.
 
 ## 2. Jak liczy
 
-1. Odczytuje z kontekstu listy obiekt okresu (`FromTo`) – lista wkłada go tam, gdy widok ma
-   filtr okresu.
-2. Zwraca okres w formacie enova `rrrr-MM-dd...rrrr-MM-dd`.
-3. Gdy w kontekście nie ma okresu (widok bez filtra okresu, np. lista z polem „Aktualność”
-   – to jedna data, nie okres) albo okres jest pusty – zwraca pusty tekst.
+1. Szuka w kontekście obiektu parametrów listy dziedziczącego po `OkresContext` i bierze jego
+   pole `Okres`. Tak działają listy kadrowe: np. Kadry → Pracownicy wkłada do kontekstu
+   `KadryPracownicyViewInfo.PrParams` (→ `StdParams` → `OkresContext`), a sam okres trzyma
+   w polu tego obiektu – **nie** jako osobny `FromTo` w kontekście. Kontekst enova znajduje
+   obiekt także po typie bazowym (`Context.FindInterface` → `IsAssignableFrom`).
+2. Gdy takiego obiektu nie ma – szuka w kontekście samego okresu (`FromTo`), który wkładają
+   niektóre inne widoki.
+3. Zwraca okres w formacie enova, skróconym jak w filtrze, np. `1...31.10.2026`,
+   `1.07.2026...30.09.2026`.
+4. Gdy okresu nie ma (widok bez filtra okresu) albo jest pusty – zwraca pusty tekst.
 
-Ten sam sposób odczytu okresu stosują cechy
-[Zatwierdzona aktualizacja planu pracy](Zatwierdzona%20aktualizacja%20planu%20pracy.md)
-i [Zatwierdzona aktualizacja czasu pracy](Zatwierdzona%20aktualizacja%20czasu%20pracy.md).
+Uwaga: cechy [Zatwierdzona aktualizacja planu pracy](Zatwierdzona%20aktualizacja%20planu%20pracy.md)
+i [Zatwierdzona aktualizacja czasu pracy](Zatwierdzona%20aktualizacja%20czasu%20pracy.md) szukają
+tylko `FromTo` w kontekście, więc na liście Kadry → Pracownicy nie widzą okresu z filtra
+i liczą miesiąc daty aktualności.
 
 ## 3. Konfiguracja w enova365
 
@@ -33,6 +39,8 @@ nazwę, trzeba zmienić też nazwę metody w kodzie.
 
 ## 4. Status
 
-Kod przygotowany 2026-10-15, **niezałożony w żadnej bazie i niesprawdzony na żywo**.
-Do sprawdzenia: dodać cechę jako kolumnę na liście pracowników z filtrem okresu, zmienić
-okres w filtrze i odświeżyć listę – kolumna powinna pokazać nowy okres.
+- Baza Al (2026-10-15): cecha założona przez GUI (Ustawienia → Kadry i płace → Cechy →
+  Pracownicy), kompiluje się.
+- **Sprawdzona na liście Kadry i płace → Kadry → Pracownicy**: przy domyślnym filtrze okresu
+  cecha zwraca `1...31.10.2026`, po zmianie filtra na 1.07–30.09.2026 zwraca
+  `1.07.2026...30.09.2026` (ta sama wartość dla każdego pracownika na liście).
