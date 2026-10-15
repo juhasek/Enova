@@ -1,10 +1,14 @@
 public bool Get_Feature_PlanPracy(Context cx) {
-	// Okres sprawdzania: okres z kontekstu (np. filtr okresu na liście),
-	// a gdy go brak - miesiąc daty aktualności.
+	// Okres sprawdzania: okres z filtra listy (listy kadrowe trzymają go w parametrach
+	// widoku dziedziczących po OkresContext, inne widoki mogą wkładać do kontekstu sam
+	// FromTo), a gdy go brak - miesiąc daty aktualności.
+	OkresContext parametryListy;
+	FromTo okresZKontekstu;
 	FromTo okres;
-	object zKontekstu = cx[typeof(FromTo), false];
-	if (zKontekstu is FromTo)
-		okres = (FromTo)zKontekstu;
+	if (cx.Get<OkresContext>(out parametryListy) && parametryListy != null)
+		okres = parametryListy.Okres;
+	else if (cx.Get<FromTo>(out okresZKontekstu))
+		okres = okresZKontekstu;
 	else {
 		Date dzis = ActualDate.Today(cx);
 		okres = new FromTo(dzis.FirstDayMonth(), dzis.LastDayMonth());

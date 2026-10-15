@@ -20,10 +20,9 @@ za jaki okres liczone są pozostałe kolumny.
    `1.07.2026...30.09.2026`.
 4. Gdy okresu nie ma (widok bez filtra okresu) albo jest pusty – zwraca pusty tekst.
 
-Uwaga: cechy [Zatwierdzona aktualizacja planu pracy](Zatwierdzona%20aktualizacja%20planu%20pracy.md)
-i [Zatwierdzona aktualizacja czasu pracy](Zatwierdzona%20aktualizacja%20czasu%20pracy.md) szukają
-tylko `FromTo` w kontekście, więc na liście Kadry → Pracownicy nie widzą okresu z filtra
-i liczą miesiąc daty aktualności.
+Ten sam odczyt okresu (od 2026-10-15) mają cechy
+[Zatwierdzona aktualizacja planu pracy](Zatwierdzona%20aktualizacja%20planu%20pracy.md)
+i [Zatwierdzona aktualizacja czasu pracy](Zatwierdzona%20aktualizacja%20czasu%20pracy.md).
 
 ## 3. Konfiguracja w enova365
 
