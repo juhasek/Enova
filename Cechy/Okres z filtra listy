@@ -1,0 +1,12 @@
+public string Get_Feature_OkresFiltra(Context cx) {
+	// Okres wybrany w filtrze listy (pole "Okres" widoku) - lista przekazuje go w kontekście
+	// jako FromTo. Gdy widok nie ma filtra okresu, cecha zwraca pusty tekst.
+	object zKontekstu = cx[typeof(FromTo), false];
+	if (!(zKontekstu is FromTo))
+		return "";
+
+	FromTo okres = (FromTo)zKontekstu;
+	if (okres == FromTo.Empty)
+		return "";
+	return okres.ToString();
+}
