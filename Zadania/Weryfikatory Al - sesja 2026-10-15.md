@@ -80,3 +80,19 @@ dni wolne wg kalendarza (soboty, święta) — nie zmieniane, do decyzji.
   13.11 bez błędu. Przyczyna i proponowana poprawka w `KontrolePlanuZAlgorytmuKalendarza.md` (sekcja 8).
 - Uwaga: norma okresu (37) nie uwzględnia skróconej normy osób niepełnosprawnych — konflikt z 2069.
 - Dane testowe zostają w bazie Al (do ponownych testów). Zapisane dni 8:00: NP4, NP5, NP6 (02.11).
+
+## 5. Import kalendarzy klienta (eksport z 2512) do Al (2610)
+
+- Błąd importu „SwiateczneMiesiecznie … False is not a valid value for NadgodzinyŚwiąteczneMiesięcznie”:
+  w 2610 pole „Nadgodziny za pracę w niedziele i święta rozliczane miesięcznie” jest enumem
+  (Nie / Tak / TylkoPowyżejNormyDobowej), w 2512 było bool. Poprawka pliku: False → Nie, True → Tak
+  (jedyne pole bool → enum; reszta zgodna z kolumnami 2610).
+- Operator zaimportował 13 kalendarzy (12 nowych, ID 1070–1081, + nadpisany 47 „Podstawowy system_1_8:16”).
+- Na 12 nowych przez MCP (Ustawienia → Kadry i płace → Kalendarze → Kalendarze, podformularz kalendarza):
+  zakładka Weryfikatory – tylko 2069 „A1_Brak zgody na pracę 8h” jako Błąd, zakładka Algorytm wyczyszczona
+  (enova wstawia pusty szablon, 1180 znaków). Sprawdzone w bazie.
+- Kalendarz 47 po imporcie: 13 podpięć klienta, bez 2069, stary algorytm (aktywne tylko metody pomocnicze,
+  wszystkie Sprawdź… zakomentowane) – do decyzji, czy przywrócić stan sprzed importu.
+- Import przez MCP `import_business_xml` i edycja kalendarza otwartego przez `open_form` → „Brak prawa do
+  zapisu danych” (sesja operacyjna, kalendarze tylko do odczytu); działa tylko przez formularz konfiguracji.
+  Zapis konfiguracji wymaga kliknięcia TAK w SonetaFrame.
