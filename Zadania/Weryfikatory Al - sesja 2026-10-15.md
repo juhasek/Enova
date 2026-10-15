@@ -100,7 +100,7 @@ dni wolne wg kalendarza (soboty, święta) — nie zmieniane, do decyzji.
   zapisu danych” (sesja operacyjna, kalendarze tylko do odczytu); działa tylko przez formularz konfiguracji.
   Zapis konfiguracji wymaga kliknięcia TAK w SonetaFrame.
 
-## 6. Weryfikator ilości dni wolnych (1036) — zmiana reguły nadmiaru, NIEWGRANA do bazy
+## 6. Weryfikator ilości dni wolnych (1036) — zmiana reguły nadmiaru, wgrana do bazy Al
 
 Wymaganie klienta: weryfikator przede wszystkim pilnuje, żeby dni wolnych nie było ZA MAŁO. Więcej dni wolnych
 niż ustawowo jest dopuszczalne, jeśli godziny w okresie nie przekraczają normy (np. system równoważny, praca po 12h).
@@ -119,3 +119,11 @@ niż ustawowo jest dopuszczalne, jeśli godziny w okresie nie przekraczają norm
   do komentarza `// Norma dobowa: limit`) na wersję z repo.
 - Potem: test (system równoważny 12h, więcej dni wolnych przy normie → brak błędu; za mało dni wolnych → błąd;
   nadmiar dni wolnych + godziny ponad normę → błąd) i aktualizacja `.md` weryfikatora oraz arkusza „Ilość dni wolnych”.
+- **Wgrane do bazy Al (2026-10-15, ok. 14:50):** CodeFiles 13 (`A1WeryfikatoryKalendarza`), kolumna `Text` — podmieniona
+  tylko ta metoda (od `public static string A1WeryfikujIloscDni…` do `// Norma dobowa: limit`) na wersję z repo
+  (wcięcie 2 tabulatory, CRLF), zapis przez ADO.NET (SqlParameter NText), odczyt zwrotny identyczny; potem
+  `RuntimeProjects` ID 29 (WeryfikatoryKalendarza) podbity (`Description=Description`), żeby wymusić kompilację.
+  Po starcie orchestratora serwer Al skompilował projekt `A1RuntimeKadryPlaceWeryfikatoryKalendarza` bez błędów
+  (log server-20261015.log, 14:53:37). Akapit wyżej o braku aktualizacji jest już nieaktualny.
+- Test na żywo jeszcze niewykonany: MCP `select_database Al` → „automatyczne logowanie nieudane — serwer zgłosił
+  błąd uruchamiania” (web nie doczekał się serwera, ~160 MB wolnego RAM).
