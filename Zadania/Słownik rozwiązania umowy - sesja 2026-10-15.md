@@ -44,3 +44,12 @@ Skrypt kolejno:
    `[Caption]` i nadpisuje Excel w `Zadania/`.
 
 Sprawdzone 2026-10-15 na 2610 / Al: 34 kody, 65 podstaw, 28 przyczyn.
+
+## Commity
+
+- a3931a7: pierwszy Excel (generator jeszcze poza repo).
+- 96debec: generator w repo (`Program.cs`, `GenSlownik.csproj`, `Odswiez.ps1`), Excel odświeżony
+  skryptem (w arkuszu Info numer wersji enovy), wyjątek dopisany w `CLAUDE.md`.
+
+`Odswiez.ps1` musi być zapisany w UTF-8 **z BOM** — PowerShell 5.1 czyta plik bez BOM jako ANSI
+i psuje polskie znaki w domyślnej ścieżce wyjściowej.
