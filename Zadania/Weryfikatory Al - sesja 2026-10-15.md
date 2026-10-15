@@ -40,7 +40,7 @@ Plan testu po powrocie:
 
 Każdy zapis przez MCP wymaga potwierdzenia „TAK” w oknie SonetaFrame.
 
-## 3. Test na żywo — wznowiony, kroki 1–3 OK
+## 3. Test na żywo — wznowiony, kroki 1–4 OK
 
 MCP `soneta_ui_al` znów odpowiada. Zakładka pracownika **Kalendarz/Norma czasu pracy**
 (`PracownikPlanPracy2Page`) przez MCP rzuca „Object reference not set…”, więc plan zmieniał operator
@@ -53,4 +53,14 @@ w GUI.
   Liczby zgodne (20 dni roboczych w 11.2026 → 160:00). Dodatkowo, zgodnie z założeniem, odezwał się
   weryfikator liczby dni wolnych: „!Zaplanowano zbyt dużo dni wolnych (11) wobec wymaganej liczby (10)…”.
 - **Krok 3 (brak błędu):** cofnięcie zmiany → zapis bez komunikatu; w bazie znów zero wpisów planu.
-- **Krok 4 (nadmiar):** jeszcze niewykonany (opcjonalny).
+- **Krok 4 (nadmiar):** 20 dni roboczych 11.2026 po 8:00 (strefa „Praca w normie”) wgrane `dbmgr importxml`
+  wg rekordów (bez weryfikatorów); operator dopisał w GUI sobotę 07.11 = 8:00 → zapis zablokowany:
+  „Przekroczono limit godzin (160:00) o (8:00)… Skróć plan dni: 02.11 (8:00), 03.11 (8:00), … 13.11 (8:00)
+  i 11 kolejnych” + weryfikator dni wolnych „!Za mało dni wolnych (9) wobec wymaganej liczby (10)…”.
+  Sprzątanie: import z pustą kolekcją `<Dni>` i `fromto` listopada → TEST-T7 znów bez wpisów planu.
+- Import przez MCP `import_business_xml` (logika biznesowa) kończy się „Object reference not set…”
+  i nic nie zapisuje — tak samo jak zakładka kalendarza przez MCP.
+
+Uwaga do ewentualnej poprawki: przy równych godzinach „Skróć plan dni” sortuje po dacie, więc
+sobota 07.11 (faktyczna przyczyna nadmiaru) jest dopiero na 6. miejscu. Można by stawiać na początku
+dni wolne wg kalendarza (soboty, święta) — nie zmieniane, do decyzji.
