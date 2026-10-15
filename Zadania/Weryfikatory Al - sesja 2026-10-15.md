@@ -64,3 +64,19 @@ w GUI.
 Uwaga do ewentualnej poprawki: przy równych godzinach „Skróć plan dni” sortuje po dacie, więc
 sobota 07.11 (faktyczna przyczyna nadmiaru) jest dopiero na 6. miejscu. Można by stawiać na początku
 dni wolne wg kalendarza (soboty, święta) — nie zmieniane, do decyzji.
+
+## 4. Weryfikator 2069 „A1_Brak zgody na pracę 8h” — test na żywo, 9/10 OK
+
+- Pracownicy testowi **NP1–NP9** (Pracownicy ID 59–67) wgrani `dbmgr importxml` z
+  `ImportyXML/Weryfikator brak zgody 8h - pracownicy i plan.xml` (kal. 47, NP9 kal. 45; zgoda 8h tylko NP4;
+  dni planu 11.2026 z 6:00). Pole `StopienNiepelnosp` nie da się zaimportować wg rekordów („Ambiguous match”),
+  więc orzeczenia PFRON/ZUS dodane przez MCP na zakładce Kadry/Orzeczenia o niepełnosprawności.
+- Wyzwalanie weryfikatorów przez MCP: lista **Podgląd tabel/Kalend/DzienKalendarzaBase** → `open_form` dnia →
+  `edit_grid_rows` na `Strefy` (czas strefy) → komunikaty wracają już w `fieldUpdate.verifiers`.
+  (Zakładka Kalendarz pracownika i `import_business_xml` przez MCP dają NRE.) Pierwsze `open_form` po
+  `cancel_form` często przekracza 120 s — ponowienie działa.
+- Wyniki w arkuszu **„Brak zgody 8h”** w `Weryfikatory czasu pracy/Scenariusze testowe weryfikatorow czasu pracy.xlsx`.
+- **Negatywny scenariusz 8:** zmiana stopnia w trakcie zapisu historii (umiarkowany do 15.11, lekki od 16.11) —
+  13.11 bez błędu. Przyczyna i proponowana poprawka w `KontrolePlanuZAlgorytmuKalendarza.md` (sekcja 8).
+- Uwaga: norma okresu (37) nie uwzględnia skróconej normy osób niepełnosprawnych — konflikt z 2069.
+- Dane testowe zostają w bazie Al (do ponownych testów). Zapisane dni 8:00: NP4, NP5, NP6 (02.11).

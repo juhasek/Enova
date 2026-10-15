@@ -275,8 +275,26 @@ lekkiego) zostaje bez zmian, zablokowana; przy jej odblokowaniu oba komunikaty p
 Wywołanie w definicji:
 `var pracownik = dzien.Kalendarz.Pracownik; if (pracownik == null) return null;
 return K.A1BrakZgodyNaPrace8h(new KalkulatorPlanu(pracownik), dzien.Data);`.
-Podpięcia wstawione SQL-em — widoczne po restarcie serwera enova. Niesprawdzony na żywo; w bazie Al
-nikt nie ma stopnia niepełnosprawności, do testu trzeba go ustawić.
+Podpięcia wstawione SQL-em — widoczne po restarcie serwera enova.
+
+**Test na żywo (2026-10-15, baza Al): 9 z 10 scenariuszy pozytywnie** — arkusz „Brak zgody 8h”
+w `Scenariusze testowe weryfikatorow czasu pracy.xlsx`, pracownicy testowi NP1–NP9
+(`ImportyXML/Weryfikator brak zgody 8h - pracownicy i plan.xml`, orzeczenia dodane w programie).
+Działa: umiarkowany/znaczny bez zgody > 7:00 → Błąd, granica 7:00, zgoda 8h, stopień lekki, brak
+orzeczenia, orzeczenie ZUS (odpowiadający stopień), kalendarz równoważny.
+
+**Błąd (scenariusz 8):** w enova 2610 `PracHistoria.StopienNiepelnosp` i `PracHistoria.PFRON` są
+przestarzałymi nakładkami (do usunięcia w 2710) na tabele `OrzeczeniaPFRON` / `OrzeczeniaZUS`
+i zwracają **jedno** orzeczenie obowiązujące w okresie zapisu historii — to z najpóźniejszą datą
+„Obowiązuje od”. Gdy stopień zmienia się w trakcie zapisu historii (np. umiarkowany do 15.11, lekki
+od 16.11), dla dni sprzed zmiany weryfikator widzi orzeczenie późniejsze, którego okres nie obejmuje
+dnia → stopień „Brak” → brak błędu. Dotyczy też definicji 2039. Poprawka: szukać orzeczenia, którego
+okres (`OkresExt`) obejmuje dany dzień, w `pracownik.OrzeczeniaPFRON` i `pracownik.OrzeczeniaZUS`
+(nie poprawione — do decyzji).
+
+**Uwaga z testu:** weryfikator normy okresu rozliczeniowego (definicja 37) liczy normę ogólną także
+dla osób ze stopniem umiarkowanym/znacznym bez zgody (norma 7h/dobę, 35h/tydzień) — dla nich oba
+weryfikatory się wykluczają (niedobór normy okresu każe wydłużyć dzień do 8:00, 2069 blokuje > 7:00).
 
 ### 9. Wydajność
 
