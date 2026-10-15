@@ -125,5 +125,9 @@ niż ustawowo jest dopuszczalne, jeśli godziny w okresie nie przekraczają norm
   `RuntimeProjects` ID 29 (WeryfikatoryKalendarza) podbity (`Description=Description`), żeby wymusić kompilację.
   Po starcie orchestratora serwer Al skompilował projekt `A1RuntimeKadryPlaceWeryfikatoryKalendarza` bez błędów
   (log server-20261015.log, 14:53:37). Akapit wyżej o braku aktualizacji jest już nieaktualny.
-- Test na żywo jeszcze niewykonany: MCP `select_database Al` → „automatyczne logowanie nieudane — serwer zgłosił
-  błąd uruchamiania” (web nie doczekał się serwera, ~160 MB wolnego RAM).
+- Test na żywo OK (po ręcznym zalogowaniu operatora do Al w SonetaFrame): pracownicy DW1–DW3 (ID 68–70, kal. 1075
+  „Równoważny system_1_8:16”, kalendarze pracownika 1082–1084) z `ImportyXML/Weryfikator ilosci dni wolnych - pracownicy i plan.xml`.
+  DW1 16 dni wolnych / 160:00 → brak błędu (zapisane); DW2 16 / 168:00 → „zbyt dużo dni wolnych … przy przekroczonej
+  normie godzin (zaplanowano 168:00, norma 160:00)” (wycofane); DW3 9 / 160:00 → „Za mało dni wolnych (9)…” (wycofane).
+  Arkusz „Ilość dni wolnych”: scenariusze 7–9, scenariusz 3 przepisany pod nową regułę (do powtórki).
+  Dni wolne z importu XML dostają `PracaOdGodziny`=0 zamiast pustego — poprawione SQL-em na -2000000000.

@@ -16,6 +16,17 @@ Wymagana liczba dni wolnych liczona jest jako:
 
 Weryfikator jest zarejestrowany na zapisie **całego kalendarza**, a nie pojedynczego dnia.
 
+### Za mało i za dużo dni wolnych (od 15.10.2026)
+
+Weryfikator pilnuje przede wszystkim, żeby dni wolnych **nie było za mało** — to zawsze jest błąd.
+**Więcej** dni wolnych niż wymagane jest dopuszczalne, dopóki godziny planu w okresie nie przekraczają
+normy godzinowej (np. system równoważny z pracą po 12h ma naturalnie więcej dni wolnych).
+Komunikat „zbyt dużo dni wolnych” pojawia się więc tylko wtedy, gdy jednocześnie **godziny planu
+w okresie > norma kodeksowa** (suma `kalkulator.Norma` dni okresu vs `KalkulatorKodeksowyPracownika.Norma`).
+Niedobór godzin przy nadmiarze dni wolnych zgłasza
+[Weryfikator normy okresu rozliczeniowego](Weryfikator%20normy%20okresu%20rozliczeniowego.md).
+Reguła dotyczy wszystkich kalendarzy i obu trybów (ścisłego i tolerancyjnego).
+
 ### Skąd bierze się liczba dni wolnych „w planie”
 
 - **dni z jawnym wpisem w planie** (użytkownik faktycznie coś tam ustawił) — liczone wprost:
@@ -70,7 +81,8 @@ dni robocze (z otwartych miesięcy) pozwalają jeszcze dopiąć bilans, weryfika
 Błąd zgłaszany jest dopiero, gdy domknięcie wymaganej liczby dni wolnych jest już **matematycznie
 niemożliwe**:
 
-- **nadmiar** — same dni już jawnie oznaczone jako wolne przekraczają wymóg całego okresu,
+- **nadmiar** — same dni już jawnie oznaczone jako wolne przekraczają wymóg całego okresu
+  **i** godziny planu w okresie przekraczają normę,
 - **niedobór** — nawet zamiana **wszystkich** elastycznych dni roboczych (z otwartych miesięcy) na
   wolne nie wystarczy do osiągnięcia wymaganej liczby.
 
@@ -103,13 +115,13 @@ zdarzenia.
 
 ### Tryb ścisły
 
-> Zaplanowano zbyt dużo dni wolnych (X) wobec wymaganej liczby (Y) w okresie rozliczeniowym (okres) - (pracownik). Trzeba dodać dni pracy: (X−Y).
+> Zaplanowano zbyt dużo dni wolnych (X) wobec wymaganej liczby (Y) przy przekroczonej normie godzin (zaplanowano (godziny), norma (norma)) w okresie rozliczeniowym (okres) - (pracownik). Trzeba dodać dni pracy: (X−Y).
 
 > Za mało dni wolnych (X) wobec wymaganej liczby (Y) w okresie rozliczeniowym (okres) - (pracownik). Trzeba jeszcze zamienić na wolne dni robocze: (Y−X) (dostępnych dni roboczych bez jawnego wpisu: (liczba)).
 
 ### Tryb tolerancyjny
 
-> Zaplanowano zbyt dużo dni wolnych (X) wobec wymaganej liczby (Y) w okresie rozliczeniowym (okres) - (pracownik). Nadmiaru nie da się już cofnąć bez zmiany dni jawnie oznaczonych jako wolne.
+> Zaplanowano zbyt dużo dni wolnych (X) wobec wymaganej liczby (Y) przy przekroczonej normie godzin (zaplanowano (godziny), norma (norma)) w okresie rozliczeniowym (okres) - (pracownik). Nadmiaru nie da się już cofnąć bez zmiany dni jawnie oznaczonych jako wolne.
 
 > Nie da się już osiągnąć wymaganej liczby dni wolnych (Y) w okresie rozliczeniowym (okres), brakuje (Y−max) dni - (pracownik). Pozostało dni roboczych możliwych do zamiany na wolne: (liczba).
 
@@ -126,14 +138,18 @@ arkusz **Ilość dni wolnych**. Poniższa tabela jest kopią poglądową.
 |---|---|---|---|
 | 5.1 | Okres miesięczny, sobota + niedziela zamienione na dni pracujące, nic więcej | Błąd „za mało dni wolnych", brakuje 2 — mimo że w miesiącu są jeszcze dni robocze do oddania. | Nie |
 | 5.2 | Okres miesięczny, plan wprost z kalendarza (weekendy wolne, dni robocze pracujące) | Brak błędu — liczba dni wolnych = wymagana. | Nie |
-| 5.3 | Okres miesięczny, jeden dzień roboczy jawnie oznaczony jako wolny, nic więcej | Błąd „zbyt dużo dni wolnych" o 1 — trzeba dodać dzień pracy. | Nie |
+| 5.3 | Okres miesięczny, jeden dzień roboczy jawnie oznaczony jako wolny, nic więcej (godziny spadają poniżej normy) | Brak błędu tego weryfikatora (od 15.10.2026); niedobór godzin zgłasza weryfikator normy okresu. | Nie |
 | 5.4 | Okres 3-miesięczny, jesteśmy w miesiącu 1, miesiąc 1 z dodatkowym dniem pracy (sobota), miesiące 2–3 nietknięte | Brak błędu (tryb tolerancyjny) — w miesiącach 2–3 wciąż da się zaplanować brakujący dzień wolny. | Nie |
 | 5.5 | Okres lipiec–wrzesień, jesteśmy we wrześniu, w lipcu wszystkie soboty zamienione na pracę, sierpień bez zmian, lipiec/sierpień zamknięte, we wrześniu brak dni wolnych oddających te z lipca | Błąd „za mało dni wolnych" (tryb ścisły — wrzesień to ostatni otwarty miesiąc) o liczbę sobót zabranych w lipcu. | Nie |
 | 5.6 | Okres 3-miesięczny, miesiące 1–2 mocno przeplanowane pracą, jesteśmy w miesiącu 3 (ostatnim), nawet cały wolny nie nadrobi deficytu | Błąd — tryb ścisły; brak dni wolnych do domknięcia normy. | Nie |
-| 5.7 | Okres 3-miesięczny, jesteśmy w miesiącu 1, jawnie oznaczono jako wolne więcej dni niż wymóg całego okresu | Błąd „nadmiaru nie da się cofnąć" (tryb tolerancyjny). | Nie |
+| 5.7 | Okres 3-miesięczny, jesteśmy w miesiącu 1, jawnie oznaczono jako wolne więcej dni niż wymóg całego okresu, godziny ponad normę | Błąd „nadmiaru nie da się cofnąć" (tryb tolerancyjny). | Nie |
+| 5.8 | System równoważny (kal. 1075), 16 dni wolnych, 160:00 = norma (DW1) | Brak błędu. | Tak (15.10.2026, Al) |
+| 5.9 | System równoważny, 16 dni wolnych, 168:00 > norma (DW2) | Błąd „zbyt dużo dni wolnych … przy przekroczonej normie godzin”. | Tak (15.10.2026, Al) |
+| 5.10 | 9 dni wolnych przy 160:00 = norma (DW3) | Błąd „za mało dni wolnych”. | Tak (15.10.2026, Al) |
 
-**Uwaga:** żaden scenariusz nie został jeszcze zweryfikowany na żywym środowisku Enova — środowisko
-robocze repo nie ma dostępu do DLL/live-testu. Kolumnę należy uzupełnić po testach w GUI.
+Scenariusze 5.8–5.10: pracownicy DW1–DW3 z
+`ImportyXML/Weryfikator ilosci dni wolnych - pracownicy i plan.xml`, test przez MCP (edycja jednego dnia
+na liście Podgląd tabel/Kalend/DzienKalendarzaBase). Scenariusze 5.1–5.7 czekają na test w GUI.
 
 ## 6. Znane ograniczenia / do weryfikacji
 
