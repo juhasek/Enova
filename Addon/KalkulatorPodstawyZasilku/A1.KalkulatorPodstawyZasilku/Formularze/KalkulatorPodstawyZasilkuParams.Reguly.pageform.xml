@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reguły specjalne (przejęcie podstawy, minimalna, umowa, zmiana etatu) oraz logi silnika enova. -->
+<DataForm Priority="40"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd">
+  <Page Name="Reguly" CaptionHtml="Reguły i log" DataContext="{DataSource}">
+    <Group CaptionHtml="Reguły specjalne">
+      <Grid Width="*" Height="6" EditValue="{Wynik.Reguly}" IsToolbarVisible="false">
+        <Field CaptionHtml="Reguła" Width="45" EditValue="{Regula}" />
+        <Field CaptionHtml="Opis" Width="100" EditValue="{Opis}" />
+      </Grid>
+    </Group>
+    <Group CaptionHtml="Podsumowanie silnika enova">
+      <Field CaptionHtml="" Width="*" Height="8" EditValue="{Wynik.Podsumowanie}" IsReadOnly="true" />
+    </Group>
+    <Group CaptionHtml="Log naliczania podstawy">
+      <Field CaptionHtml="" Width="*" Height="*" EditValue="{Wynik.Log}" IsReadOnly="true" />
+    </Group>
+  </Page>
+</DataForm>

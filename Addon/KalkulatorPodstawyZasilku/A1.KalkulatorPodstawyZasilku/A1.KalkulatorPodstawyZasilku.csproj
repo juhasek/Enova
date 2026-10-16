@@ -1,0 +1,17 @@
+<Project Sdk="Soneta.Sdk">
+  <!-- Dodatek enova365 "Kalkulator podstawy zasiłku": czynność na pracowniku (i liście pracowników),
+       wylicza podstawę natywnym silnikiem enova (Soneta.Place.PodstawaZasiłku) w sesji, której nie zapisuje.
+       Plan: Addon/Plan KalkulatorPodstawyZasilku. Bez własnych tabel (brak business.xml). -->
+  <PropertyGroup>
+    <TargetFramework>$(SonetaTargetFramework)</TargetFramework>
+    <RootNamespace>A1.KalkulatorPodstawy</RootNamespace>
+    <AssemblyName>A1.KalkulatorPodstawyZasilku</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Zakładki okna kalkulatora. Enova bierze 3 ostatnie człony nazwy zasobu:
+         <NazwaKlasy>.<NazwaStrony>.pageform (typ szukany po samej nazwie klasy). -->
+    <EmbeddedResource Include="Formularze\*.pageform.xml">
+      <LogicalName>A1.KalkulatorPodstawy.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zakładka główna: parametry, przycisk Przelicz, podstawa, stawki dzienne, naliczone elementy, porównanie z bazą. -->
+<DataForm Priority="10"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd">
+  <Page Name="Kalkulator" CaptionHtml="Kalkulator" DataContext="{DataSource}">
+
+    <Group CaptionHtml="Parametry" LabelWidth="30">
+      <Row>
+        <Stack OuterWidth="60">
+          <Field CaptionHtml="Pracownik" OuterWidth="60" EditValue="{Pracownik}" Important="true" />
+          <Field CaptionHtml="Data powstania niezdolności" OuterWidth="48" EditValue="{DataOd}" Important="true" />
+          <Field CaptionHtml="Nieobecność do" OuterWidth="48" EditValue="{DataDo}" />
+          <Field CaptionHtml="Definicja nieobecności" OuterWidth="60" EditValue="{DefinicjaNieobecnosci}" />
+          <Field CaptionHtml="Rodzaj świadczenia" OuterWidth="60" EditValue="{RodzajSwiadczenia}" />
+        </Stack>
+        <Gap Width="4" />
+        <Stack OuterWidth="70">
+          <Field CaptionHtml="Kod zwolnienia" OuterWidth="70" EditValue="{KodZwolnienia}" />
+          <Field CaptionHtml="Leczenie szpitalne" OuterWidth="40" EditValue="{LeczenieSzpitalne}" />
+          <Field CaptionHtml="Wymuś ponowne ustalenie podstawy" OuterWidth="40" EditValue="{WymusPonowneUstalenie}" />
+        </Stack>
+      </Row>
+      <Row>
+        <Command CaptionHtml="Przelicz" Width="14" MethodName="Przelicz" CommandStyle="Important" />
+      </Row>
+    </Group>
+
+    <Group CaptionHtml="Błąd wyliczenia" Visibility="{Wynik.JestBlad}">
+      <Field CaptionHtml="" Width="*" Height="3" EditValue="{Wynik.Blad}" IsReadOnly="true" Class="WarningLabel" />
+    </Group>
+
+    <Group CaptionHtml="Podstawa wymiaru" LabelWidth="30" IsReadOnly="true">
+      <Row>
+        <Stack OuterWidth="60">
+          <Field CaptionHtml="Podstawa wymiaru" OuterWidth="50" EditValue="{Wynik.PodstawaNaElemencie}" Class="BoldFont" />
+          <Field CaptionHtml="Podstawa z rozbicia silnika" OuterWidth="50" EditValue="{Wynik.Podstawa}" />
+          <Field CaptionHtml="Stawka dzienna (100%)" OuterWidth="50" EditValue="{Wynik.StawkaDzienna100}" />
+          <Field CaptionHtml="Okres podstawy" OuterWidth="60" EditValue="{Wynik.OkresPodstawy}" />
+        </Stack>
+        <Gap Width="4" />
+        <Stack OuterWidth="80">
+          <Field CaptionHtml="Tryb" OuterWidth="80" EditValue="{Wynik.Tryb}" />
+          <Field CaptionHtml="Definicja nieobecności" OuterWidth="80" EditValue="{Wynik.DefinicjaNieobecnosci}" />
+          <Field CaptionHtml="Okres nieobecności" OuterWidth="60" EditValue="{Wynik.OkresNieobecnosci}" />
+        </Stack>
+      </Row>
+    </Group>
+
+    <Group CaptionHtml="Porównanie z podstawą zapisaną w bazie" LabelWidth="30" IsReadOnly="true"
+           Visibility="{Wynik.JestPodstawaWBazie}">
+      <Row>
+        <Field CaptionHtml="Zapisana w bazie" OuterWidth="50" EditValue="{Wynik.PodstawaZapisanaWBazie}" />
+        <Field CaptionHtml="Różnica" OuterWidth="40" EditValue="{Wynik.RoznicaDoBazy}">
+          <Appearance Condition="{?RoznicaDoBazy != 0}" ForeColor="Red" FontBold="true" />
+        </Field>
+      </Row>
+    </Group>
+
+    <Group CaptionHtml="Naliczone elementy (symulacja naliczenia enova)">
+      <Grid Width="*" Height="5" EditValue="{Wynik.NaliczoneElementy}" IsToolbarVisible="false">
+        <Field CaptionHtml="Element" Width="30" EditValue="{Definicja}" />
+        <Field CaptionHtml="Okres" Width="22" EditValue="{Okres}" />
+        <Field CaptionHtml="Dni" Width="6" EditValue="{Dni}" />
+        <Field CaptionHtml="Podstawa" Width="12" EditValue="{Podstawa}" />
+        <Field CaptionHtml="Procent" Width="9" EditValue="{Procent}" />
+        <Field CaptionHtml="Kwota dzienna" Width="12" EditValue="{KwotaDzienna}" />
+        <Field CaptionHtml="Wartość" Width="12" EditValue="{Wartosc}" Footer="Sum" />
+        <Field CaptionHtml="Algorytm" Width="25" EditValue="{Algorytm}" />
+      </Grid>
+    </Group>
+
+    <Group CaptionHtml="Kwoty dzienne wg stawek z konfiguracji">
+      <Grid Width="*" Height="6" EditValue="{Wynik.Stawki}" IsToolbarVisible="false">
+        <Field CaptionHtml="Świadczenie" Width="40" EditValue="{Opis}" />
+        <Field CaptionHtml="Procent" Width="10" EditValue="{Procent}" />
+        <Field CaptionHtml="Kwota dzienna" Width="14" EditValue="{KwotaDzienna}" />
+      </Grid>
+    </Group>
+
+  </Page>
+</DataForm>
