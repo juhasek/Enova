@@ -13,4 +13,5 @@
 - [Weryfikator normy okresu rozliczeniowego – dokumentacja biznesowa](Weryfikatory czasu pracy/Weryfikator normy okresu rozliczeniowego.md)
 ## Zadania
 
+- [Kalkulator podstawy wymiaru zasiłku – etap 1: rozpoznanie i architektura](Zadania/Kalkulator podstawy zasiłku - rozpoznanie i architektura.md)
 - [ALDI – import danych z RCP z podziałem na strefy nadgodzin (277381 / 277382)](Zadania/ALDI Import RCP - podział nadgodzin.md)
