@@ -4,6 +4,7 @@ using System.Linq;
 using Soneta.Business;
 using Soneta.Kadry;
 using Soneta.Kalend;
+using Soneta.Langs;
 using Soneta.Types;
 
 namespace A1.KalkulatorPodstawy

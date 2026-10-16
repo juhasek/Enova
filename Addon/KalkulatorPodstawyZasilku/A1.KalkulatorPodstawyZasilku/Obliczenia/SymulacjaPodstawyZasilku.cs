@@ -182,7 +182,7 @@ namespace A1.KalkulatorPodstawy
             if (parametry.LeczenieSzpitalne)
                 nieobecnosc.Zwolnienie.LeczenieSzpitalne = true;
             if (parametry.WymusPonowneUstalenie)
-                nieobecnosc.Zwolnienie.PonownieUstalPodstawe = true;
+                nieobecnosc.Zwolnienie.SetPonownieUstalPodstawe(true); // jak natywna czynność „Ustal ponownie podstawę naliczania”
             return nieobecnosc;
         }
 
@@ -219,20 +219,24 @@ namespace A1.KalkulatorPodstawy
         private static decimal PodstawaSkladnika(WypElement element)
         {
             WypSkladnikGłówny skladnik = element.SkładnikGłówny;
-            return skladnik == null ? 0m : skladnik.Podstawa1.Value;
+            return skladnik == null ? 0m : Kwota(skladnik.Podstawa1);
         }
+
+        /// <summary>Podstawa1 składnika to DoubleCy (wartość double) - kwota w groszach jak na wypłacie.</summary>
+        private static decimal Kwota(DoubleCy wartosc) => Math.Round((decimal)wartosc.Value, 2, MidpointRounding.AwayFromZero);
 
         private static NaliczonyElement OpisElementu(WypElementNieobecność element)
         {
             WypSkladnikGłówny skladnik = element.SkładnikGłówny;
+            decimal podstawa = Kwota(skladnik.Podstawa1);
             return new NaliczonyElement
             {
                 Definicja = element.Definicja.Nazwa,
                 Okres = element.Okres,
                 Dni = skladnik.Dni,
-                Podstawa = skladnik.Podstawa1.Value,
+                Podstawa = podstawa,
                 Procent = skladnik.Procent,
-                KwotaDzienna = KwotaDzienna(element.Module, skladnik.Okres, skladnik.Podstawa1.Value, skladnik.Wspolczynnik),
+                KwotaDzienna = KwotaDzienna(element.Module, skladnik.Okres, podstawa, (decimal)skladnik.Wspolczynnik),
                 Wartosc = element.Wartosc,
                 Algorytm = element.Definicja.Algorytm.Typ == TypAlgorytmuElementu.JakChorobowe
                     ? "Jak chorobowe (standard)"
@@ -240,13 +244,17 @@ namespace A1.KalkulatorPodstawy
             };
         }
 
-        /// <summary>Ten sam wzór co natywne pole "Podstawa /dzień" składnika (WypSkladnik.ZaDzień).</summary>
-        private static decimal KwotaDzienna(PlaceModule place, FromTo okresSkladnika, decimal podstawa, Percent wspolczynnik)
+        /// <summary>
+        /// Ten sam wzór co natywne pole "Podstawa /dzień" składnika (WypSkladnik.ZaDzień): od miesiąca
+        /// z konfiguracji "Zmiana wyliczenia stawki dziennej" najpierw zaokrąglenie podstawa/30, potem procent.
+        /// Współczynnik = procent świadczenia × ilość (wymiar przy zbiegu).
+        /// </summary>
+        private static decimal KwotaDzienna(PlaceModule place, FromTo okresSkladnika, decimal podstawa, decimal wspolczynnik)
         {
             YearMonth zmianaOd = place.Config.Chorobowy.ZmianaWyliczeniaStawkiDziennejOd;
             if (zmianaOd != YearMonth.Empty && okresSkladnika.ToYearMonth() >= zmianaOd)
-                return Math.Round(Math.Round(podstawa / 30m, 2, MidpointRounding.AwayFromZero) * (decimal)wspolczynnik, 2, MidpointRounding.AwayFromZero);
-            return Math.Round(podstawa * (decimal)wspolczynnik / 30m, 2, MidpointRounding.AwayFromZero);
+                return Math.Round(Math.Round(podstawa / 30m, 2, MidpointRounding.AwayFromZero) * wspolczynnik, 2, MidpointRounding.AwayFromZero);
+            return Math.Round(podstawa * wspolczynnik / 30m, 2, MidpointRounding.AwayFromZero);
         }
 
         private static void ChorobowyConfig(PlaceModule place, out bool wgDni, out YearMonth wgDniOd)
@@ -386,7 +394,7 @@ namespace A1.KalkulatorPodstawy
         {
             decimal podstawa = wynik.PodstawaNaElemencie;
             FromTo okres = element.SkładnikGłówny.Okres;
-            wynik.StawkaDzienna100 = KwotaDzienna(place, okres, podstawa, Percent.Hundred);
+            wynik.StawkaDzienna100 = KwotaDzienna(place, okres, podstawa, 1m);
 
             var chorobowy = place.Config.Chorobowy;
             void Dodaj(string opis, Percent procent)
@@ -395,7 +403,7 @@ namespace A1.KalkulatorPodstawy
                 {
                     Opis = opis,
                     Procent = procent,
-                    KwotaDzienna = KwotaDzienna(place, okres, podstawa, procent)
+                    KwotaDzienna = KwotaDzienna(place, okres, podstawa, (decimal)procent)
                 });
             }
             Dodaj("Wynagrodzenie chorobowe (art. 92 KP)", chorobowy.ProcentPłaciFirma);

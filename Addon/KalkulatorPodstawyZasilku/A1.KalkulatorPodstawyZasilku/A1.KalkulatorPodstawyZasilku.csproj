@@ -1,12 +1,29 @@
-<Project Sdk="Soneta.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Dodatek enova365 "Kalkulator podstawy zasiłku": czynność na pracowniku (i liście pracowników),
        wylicza podstawę natywnym silnikiem enova (Soneta.Place.PodstawaZasiłku) w sesji, której nie zapisuje.
-       Plan: Addon/Plan KalkulatorPodstawyZasilku. Bez własnych tabel (brak business.xml). -->
+       Plan: Addon/Plan KalkulatorPodstawyZasilku. Bez własnych tabel (brak business.xml).
+
+       Referencje wprost do DLL-i serwera 2610 (SonetaDir), a nie do paczek Soneta.Sdk z NuGet:
+       na tej maszynie restore paczek 2610 (z zależnościami ~1 GB) nie mieści się na dysku, a DLL-e serwera
+       to dokładnie te biblioteki, z którymi dodatek działa (2610.0.0-beta.241094, .NET 10).
+       Private=false - nic z enova nie jest kopiowane do bin. -->
   <PropertyGroup>
-    <TargetFramework>$(SonetaTargetFramework)</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>A1.KalkulatorPodstawy</RootNamespace>
     <AssemblyName>A1.KalkulatorPodstawyZasilku</AssemblyName>
+    <SonetaDir Condition="'$(SonetaDir)' == ''">C:\enovaServer\2610\Soneta.Products.Server.Standard</SonetaDir>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(SonetaDir)\Soneta.*.dll" Exclude="$(SonetaDir)\Soneta.*.UI*.dll;$(SonetaDir)\Soneta.*Reports*.dll;$(SonetaDir)\Soneta.*Printer*.dll;$(SonetaDir)\Soneta.Net.*.dll">
+      <Private>false</Private>
+    </Reference>
+    <!-- Session/Login implementują ISupportRequiredService z tej biblioteki. -->
+    <Reference Include="$(SonetaDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
   <ItemGroup>
     <!-- Zakładki okna kalkulatora. Enova bierze 3 ostatnie człony nazwy zasobu:
          <NazwaKlasy>.<NazwaStrony>.pageform (typ szukany po samej nazwie klasy). -->
