@@ -1,0 +1,5 @@
+public override GuidedRow[] GetGuidedRows() {
+    if (WejscieWyjscieO.Pracownik == null)
+        return new GuidedRow[0];
+    return new GuidedRow[] { WejscieWyjscieO.Pracownik };
+}
