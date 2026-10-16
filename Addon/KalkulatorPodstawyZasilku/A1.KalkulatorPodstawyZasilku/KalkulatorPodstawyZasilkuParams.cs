@@ -5,6 +5,7 @@ using Soneta.Business;
 using Soneta.Kadry;
 using Soneta.Kalend;
 using Soneta.Langs;
+using Soneta.Tools;
 using Soneta.Types;
 
 namespace A1.KalkulatorPodstawy
@@ -66,7 +67,7 @@ namespace A1.KalkulatorPodstawy
             set
             {
                 if (value < dataOd)
-                    throw new ArgumentException("Data końca nieobecności nie może być wcześniejsza niż data jej początku.");
+                    throw new ArgumentException("Data końca nieobecności nie może być wcześniejsza niż data jej początku.".Translate());
                 dataDo = value;
                 WyczyscWynik();
                 OnChanged();
@@ -89,7 +90,7 @@ namespace A1.KalkulatorPodstawy
         /// <summary>Tylko nieobecności „ZUS” (choroba, opieka, macierzyński, rehabilitacja) bez blokady.</summary>
         public DefinicjaNieobecnosci[] GetListDefinicjaNieobecnosci()
         {
-            return KalendModule.GetInstance(Session).DefNieobecnosci.Cast<DefinicjaNieobecnosci>()
+            return Session.GetKalend().DefNieobecnosci.Cast<DefinicjaNieobecnosci>()
                 .Where(d => d.Typ == TypNieobecnosci.NieobecnośćZUS && !d.Blokada)
                 .OrderBy(d => d.Nazwa)
                 .ToArray();
@@ -142,7 +143,7 @@ namespace A1.KalkulatorPodstawy
         public void Przelicz()
         {
             if (pracownik == null)
-                throw new InvalidOperationException("Wybierz pracownika.");
+                throw new InvalidOperationException("Wybierz pracownika.".Translate());
             Wynik = SymulacjaPodstawyZasilku.Policz(Session.Login, Parametry(pracownik));
             OnChanged();
         }

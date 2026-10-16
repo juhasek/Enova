@@ -6,7 +6,9 @@ using Soneta.Business;
 using Soneta.Business.App;
 using Soneta.Kadry;
 using Soneta.Kalend;
+using Soneta.Langs;
 using Soneta.Place;
+using Soneta.Tools;
 using Soneta.Types;
 
 namespace A1.KalkulatorPodstawy
@@ -41,9 +43,9 @@ namespace A1.KalkulatorPodstawy
             {
                 using (var log = new PrzechwytywanieLogu())
                 {
-                    using (Session sesja = login.CreateSession(false, false, "Kalkulator podstawy zasiłku"))
+                    using (Session sesja = login.CreateSession(readOnly: false, config: false, name: "Kalkulator podstawy zasiłku"))
                     {
-                        using (ITransaction transakcja = sesja.Logout(true))
+                        using (ITransaction transakcja = sesja.Logout(editMode: true))
                         {
                             PoliczWSesji(sesja, parametry, wynik);
                             // Celowo bez transakcja.Commit() i bez sesja.Save() - wszystko wycofane.
@@ -54,6 +56,8 @@ namespace A1.KalkulatorPodstawy
             }
             catch (Exception wyjatek)
             {
+                // Granica UI kalkulatora: każdy błąd naliczania enova (brak prawa, weryfikator, konfiguracja)
+                // pokazujemy operatorowi w polu "Błąd wyliczenia" zamiast zamykać okno. Nic nie jest zapisywane.
                 wynik.Blad = OpisBledu(wyjatek);
             }
             return wynik;
@@ -62,12 +66,12 @@ namespace A1.KalkulatorPodstawy
         private static void PoliczWSesji(Session sesja, ParametrySymulacji parametry, WynikPodstawyZasilku wynik)
         {
             KadryModule kadry = sesja.GetKadry();
-            KalendModule kalend = KalendModule.GetInstance(sesja);
+            KalendModule kalend = sesja.GetKalend();
             PlaceModule place = sesja.GetPlace();
 
             Pracownik pracownik = kadry.Pracownicy[parametry.Pracownik];
             if (pracownik == null)
-                throw new InvalidOperationException("Nie znaleziono pracownika.");
+                throw new InvalidOperationException("Nie znaleziono pracownika.".Translate());
             wynik.Pracownik = pracownik.ToString();
             wynik.KodPracownika = pracownik.Kod;
 
@@ -106,9 +110,9 @@ namespace A1.KalkulatorPodstawy
             wynik.OkresNieobecnosci = nieobecnosc.Okres;
 
             if (elementy.Count == 0)
-                throw new InvalidOperationException(
+                throw new InvalidOperationException((
                     "Naliczanie enova nie utworzyło elementu za tę nieobecność (np. brak prawa do świadczenia, " +
-                    "okres wyczekiwania lub definicja nieobecności bez elementu płacowego). Szczegóły w logu.");
+                    "okres wyczekiwania lub definicja nieobecności bez elementu płacowego). Szczegóły w logu.").Translate());
 
             foreach (WypElementNieobecność element in elementy)
                 wynik.NaliczoneElementy.Add(OpisElementu(element));
@@ -171,7 +175,7 @@ namespace A1.KalkulatorPodstawy
         {
             DefinicjaNieobecnosci definicja = kalend.DefNieobecnosci[parametry.DefinicjaNieobecnosci];
             if (definicja == null)
-                throw new InvalidOperationException("Wybierz definicję nieobecności.");
+                throw new InvalidOperationException("Wybierz definicję nieobecności.".Translate());
 
             var nieobecnosc = new NieobecnośćPracownika(pracownik);
             kalend.Nieobecnosci.AddRow(nieobecnosc);
@@ -205,7 +209,7 @@ namespace A1.KalkulatorPodstawy
 
             BłądNaliczaniaWynagrodzenia blad = naliczanie.Nienaliczeni.FirstOrDefault();
             if (blad != null)
-                throw new InvalidOperationException("Naliczanie enova zgłosiło błąd: " + blad);
+                throw new InvalidOperationException("Naliczanie enova zgłosiło błąd: {0}".TranslateFormat(blad));
 
             var lista = new List<WypElementNieobecność>();
             foreach (WypElement element in naliczanie.NaliczaneElementy)
@@ -223,7 +227,7 @@ namespace A1.KalkulatorPodstawy
         }
 
         /// <summary>Podstawa1 składnika to DoubleCy (wartość double) - kwota w groszach jak na wypłacie.</summary>
-        private static decimal Kwota(DoubleCy wartosc) => Math.Round((decimal)wartosc.Value, 2, MidpointRounding.AwayFromZero);
+        private static decimal Kwota(DoubleCy wartosc) => System.Math.Round((decimal)wartosc.Value, 2, MidpointRounding.AwayFromZero);
 
         private static NaliczonyElement OpisElementu(WypElementNieobecność element)
         {
@@ -253,8 +257,8 @@ namespace A1.KalkulatorPodstawy
         {
             YearMonth zmianaOd = place.Config.Chorobowy.ZmianaWyliczeniaStawkiDziennejOd;
             if (zmianaOd != YearMonth.Empty && okresSkladnika.ToYearMonth() >= zmianaOd)
-                return Math.Round(Math.Round(podstawa / 30m, 2, MidpointRounding.AwayFromZero) * wspolczynnik, 2, MidpointRounding.AwayFromZero);
-            return Math.Round(podstawa * wspolczynnik / 30m, 2, MidpointRounding.AwayFromZero);
+                return System.Math.Round(System.Math.Round(podstawa / 30m, 2, MidpointRounding.AwayFromZero) * wspolczynnik, 2, MidpointRounding.AwayFromZero);
+            return System.Math.Round(podstawa * wspolczynnik / 30m, 2, MidpointRounding.AwayFromZero);
         }
 
         private static void ChorobowyConfig(PlaceModule place, out bool wgDni, out YearMonth wgDniOd)

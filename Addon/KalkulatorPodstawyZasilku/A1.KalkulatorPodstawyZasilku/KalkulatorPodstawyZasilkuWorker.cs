@@ -26,7 +26,9 @@ namespace A1.KalkulatorPodstawy
             if (login == null)
                 return null;
 
-            Session sesja = login.CreateSession(true, false, "Kalkulator podstawy zasiłku - okno");
+            // Sesja okna żyje tyle co formularz (jak w KalkulatorWynagrodzenWorker enova) - celowo bez using;
+            // tylko do odczytu, obliczenia idą w osobnej sesji symulacji zamykanej w using.
+            Session sesja = login.CreateSession(readOnly: true, config: false, name: "Kalkulator podstawy zasiłku - okno");
             Pracownik[] wybrani = WybraniPracownicy().Select(p => sesja.Get(p)).ToArray();
             return new KalkulatorPodstawyZasilkuParams(Context.Empty.Clone(sesja), wybrani);
         }
