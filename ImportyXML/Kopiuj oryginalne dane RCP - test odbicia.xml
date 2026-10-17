@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Test Taska "Kopiuj oryginalne dane RCP" (Taski/KopiujOryginalneDaneRCP), baza Al.
+  Dwa odbicia w Oryginalnych danych RCP (WejsciaWyjsciaO) pracownika testowego S1.
+  Import przez logike biznesowa (business="true"), w sesji z operatorem - wyzwalacz
+  na WejsciaWyjsciaO powinien od razu dopisac kopie do Danych RCP (WejsciaWyjsciaI)
+  z powiazaniem WeWyO. Tabela nie jest guidowana - ponowny import dopisuje kolejne wiersze.
+-->
+<session xmlns="http://www.soneta.pl/schema/business" business="true">
+  <WejscieWyjscieO prac="a1d10000-0000-0000-0000-000000000001">
+    <Data>2026-10-16</Data>
+    <Godzina>7:58</Godzina>
+    <Typ>Wejscie</Typ>
+  </WejscieWyjscieO>
+  <WejscieWyjscieO prac="a1d10000-0000-0000-0000-000000000001">
+    <Data>2026-10-16</Data>
+    <Godzina>16:04</Godzina>
+    <Typ>Wyjscie</Typ>
+  </WejscieWyjscieO>
+</session>
