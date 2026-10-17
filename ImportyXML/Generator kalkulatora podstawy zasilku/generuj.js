@@ -35,6 +35,8 @@ const pracownicy = [
   { nr: 10, nazwisko: 'Minimalny',  imie: 'Halina',    plec: 'K', ur: '1992-12-01', od: '2024-01-01', stawka: 3500 },
   { nr: 11, nazwisko: 'Limitowy',   imie: 'Igor',      plec: 'M', ur: '1975-10-10', od: '2024-01-01', stawka: 30000 },
   { nr: 12, nazwisko: 'Starszy',    imie: 'Jadwiga',   plec: 'K', ur: '1970-05-10', od: '2024-01-01', stawka: 6000 },
+  // ZP-13: drugi przypadek braku pełnego miesiąca (test poprawki naliczania całego miesiąca w symulacji).
+  { nr: 13, nazwisko: 'Świeży',     imie: 'Kamil',     plec: 'M', ur: '1998-03-14', od: '2026-10-20', stawka: 5800, osobnePorownanie: true },
 ];
 
 const nn = n => String(n).padStart(2, '0');
@@ -317,6 +319,44 @@ zapisz('test 05 nieobecnosci.xml',
           <KodChoroby>J06</KodChoroby>
         </Zwolnienie>
       </Nieobecnosc>`).join('') + `
+    </Nieobecnosci>
+  </Pracownik>`).join('\n'));
+
+// 06 zwolnienia "porównawcze" - ta sama niezdolność, którą liczy kalkulator; po imporcie nalicza się listę 11/2026
+// standardowo i porównuje zapisaną podstawę z wynikiem kalkulatora (etap 3).
+const porownawcze = p => p.nr === 3 ? ['2026-11-16', '2026-11-16'] : p.nr === 12 ? ['2026-11-02', '2026-11-27'] : ['2026-11-02', '2026-11-02'];
+zapisz('test 06 zwolnienia porownawcze 11-2026.xml',
+  naglowek('Zwolnienia w 11/2026 do porównania kalkulatora z faktycznym naliczeniem enova (etap 3).\n  ZP-03 od 16.11 (po okresie wyczekiwania), ZP-12 2-27.11 (50+: 14 dni wynagr. chorobowego, potem zasiłek), pozostali 2.11.\n  Import wg rekordów, stałe GUID-y - idempotentne.')
+  + pracownicy.filter(p => !p.osobnePorownanie).map(p => `
+  <Pracownik where="Kod=${kod(p)}">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-0000000000${hex(p.nr)}">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>${ZWOLNIENIE_CHOROBOWE}</Definicja>
+        <Okres>${porownawcze(p)[0]}...${porownawcze(p)[1]}</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>`).join('\n'));
+
+// 07 zwolnienie porównawcze ZP-13 (po symulacji kalkulatorem, przed naliczeniem listy 11/2026 dla ZP-13).
+zapisz('test 07 zwolnienie porownawcze ZP-13.xml',
+  naglowek('Zwolnienie ZP-13 od 23.11.2026 (zatrudniony od 20.10.2026 - brak pełnego miesiąca). Importować PO uruchomieniu\n  kalkulatora w trybie symulacji, potem naliczyć listę 11/2026 dla ZP-13 i porównać. Idempotentne.')
+  + pracownicy.filter(p => p.osobnePorownanie).map(p => `
+  <Pracownik where="Kod=${kod(p)}">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-0000000000${hex(p.nr)}">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>${ZWOLNIENIE_CHOROBOWE}</Definicja>
+        <Okres>2026-11-23...2026-11-23</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
     </Nieobecnosci>
   </Pracownik>`).join('\n'));
 

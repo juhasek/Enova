@@ -191,8 +191,11 @@ namespace A1.KalkulatorPodstawy
         }
 
         /// <summary>
-        /// Standardowe naliczanie wypłat enova tylko za tę nieobecność, za miesiąc jej początku.
-        /// Ustawienia jak w KalkulatorWynagrodzenParams.Przelicz (data wypłaty = koniec miesiąca).
+        /// Standardowe naliczanie wypłat enova za cały miesiąc początku nieobecności (wszystkie źródła, jak
+        /// „Nalicz wypłaty” na liście płac). Celowo BEZ zawężenia do samej nieobecności (DodajŹródło): przy braku
+        /// pełnego miesiąca (art. 37) silnik liczy podstawę z danych kadrowych miesiąca niezdolności i potrzebuje
+        /// naliczonego w tym samym przebiegu wynagrodzenia zasadniczego — test ZP-03 z zawężeniem dawał 4147,10
+        /// zamiast 5608,85 z faktycznej listy. Ustawienia dat jak w KalkulatorWynagrodzenParams.Przelicz.
         /// </summary>
         private static List<WypElementNieobecność> NaliczWPamieci(Pracownik pracownik, Nieobecnosc nieobecnosc)
         {
@@ -202,7 +205,6 @@ namespace A1.KalkulatorPodstawy
             naliczanie.DataListy = miesiac.To;
             naliczanie.Okres = miesiac;
             naliczanie.MiesiącZUS = miesiac.ToYearMonth();
-            naliczanie.DodajŹródło(nieobecnosc);
             naliczanie.UstawTypWypłaty(TypWyplaty.Wszystkie);
             naliczanie.KontynacjaNaliczenia = true;
             naliczanie.Nalicz();

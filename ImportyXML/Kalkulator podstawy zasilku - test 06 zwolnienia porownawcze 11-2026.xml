@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Zwolnienia w 11/2026 do porównania kalkulatora z faktycznym naliczeniem enova (etap 3).
+  ZP-03 od 16.11 (po okresie wyczekiwania), ZP-12 2-27.11 (50+: 14 dni wynagr. chorobowego, potem zasiłek), pozostali 2.11.
+  Import wg rekordów, stałe GUID-y - idempotentne.
+  Wygenerowane: ImportyXML/Generator kalkulatora podstawy zasilku/generuj.js (nie edytować ręcznie).
+-->
+<session xmlns="http://www.soneta.pl/schema/business" fromto="(wszystko)">
+  <Pracownik where="Kod=ZP-01">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000001">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-02">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000002">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-03">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000003">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-16...2026-11-16</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-04">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000004">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-05">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000005">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-06">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000006">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-07">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000007">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-08">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000008">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-09">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-000000000009">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-10">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-00000000000a">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-11">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-00000000000b">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-02</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+
+  <Pracownik where="Kod=ZP-12">
+    <Nieobecnosci addnew="true">
+      <Nieobecnosc class="Soneta.Kalend.NieobecnośćPracownika,Soneta.KadryPlace" guid="d5000000-0000-0006-0011-00000000000c">
+        <TypZrodla>Pracownik</TypZrodla>
+        <Definicja>00000000-0006-0005-0003-000000000000</Definicja>
+        <Okres>2026-11-02...2026-11-27</Okres>
+        <Zwolnienie>
+          <Przyczyna>ZwolnienieLekarskie</Przyczyna>
+          <KodChoroby>J06</KodChoroby>
+        </Zwolnienie>
+      </Nieobecnosc>
+    </Nieobecnosci>
+  </Pracownik>
+</session>
