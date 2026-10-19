@@ -393,7 +393,18 @@ Wgrane SQL-em w jednej transakcji (CodeFiles 13, DefWeryfKalend 3070–3071, po 
 RuntimeProjects 29). Kompilacja całej klasy na 2610 (.NET 10) bez błędów. Dane testowe: kalendarz
 testowy 1086 „TEST Podstawowy_3_8:15_N” (kopia 1072, okres 3 mies. od 1.03.2024) dla NP3,
 NP4 przeniesiony na 1076, a dni planu w `ImportyXML/Weryfikator norma tygodniowa niepelnosprawnych - plan.xml`.
-Test na żywo: po restarcie serwera.
+
+**Test na żywo (2026-10-19, baza Al, po restarcie serwera): wszystkie scenariusze pozytywne** (arkusz
+„Norma tygodniowa 35-40h” w `Scenariusze testowe weryfikatorow czasu pracy.xlsx`): podstawowy 35h OK /
+tydzień 36h Błąd, tydzień 29.09–05.10 na przełomie miesięcy w okresie 3-mies., tydzień czw–śr (nie pon–nd),
+równoważny tydzień 42h OK / okres 449 > 448 Błąd (11.11 odjęte), lekki 41 > 40 Błąd, zgoda 8h 177 > 176 Błąd
++ ostrzeżenie 3071, brak orzeczenia bez komunikatu, zmiana orzeczenia 16.11 (tydzień 15–21.11 40h OK, 1–7.11 36h Błąd).
+Decyzja użytkownika 2026-10-19: przy kalendarzu podstawowym **Błąd**.
+
+Uwagi z testu: kalendarze klienta „_N” nie generują planu z definicji kalendarza (dni bez wpisu = 0h),
+więc dane testowe mają jawny plan każdego dnia. Kalendarz 1086 skopiowany SQL-em z niepustym polem `Algorytm`
+dawał NRE w `Kalendarz.GetTools()` przy zapisie dnia planu; pole wyczyszczone (algorytm zawierał same `return null`).
+Opis dla klienta: dwie nowe sekcje w `Instrukcja_Weryfikatory.docx`.
 
 ### 9. Wydajność
 
