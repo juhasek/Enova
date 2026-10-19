@@ -8,6 +8,9 @@
 //   A1NormaDobowaNiepelnosprawnych - definicja "A1_Norma niepełnosprawnych (dzień)" (Dzień planu)
 //   A1NormaSredniotygodniowa48h    - definicja "A1_Norma średniotygodniowa 48h" (Plan pracy)
 //   A1BrakZgodyNaPrace8h           - definicja "A1_Brak zgody na pracę 8h" (Dzień planu, 2026-10-13)
+//   A1BrakZgodyNaNadgodziny        - definicja 2070 "A1_Brak zgody na nadgodziny" (Dzień pracy, Ostrzeżenie, 2026-10-19)
+//   A1BrakZgodyNaPraceWNocyPlan    - definicja 2071 "A1_Brak zgody na pracę w nocy (plan)" (Dzień planu, Błąd, 2026-10-19)
+//   A1BrakZgodyNaPraceWNocyCzasPracy - definicja 2072 "A1_Brak zgody na pracę w nocy (czas)" (Dzień pracy, Ostrzeżenie, 2026-10-19)
 // Pozostałe kontrole wyłączone (zakomentowane na końcu pliku albo usunięte) - zastąpione
 // standardowymi weryfikatorami enova lub niepotrzebne; ich definicje są zablokowane.
 //
@@ -169,6 +172,147 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 				return "Zaplanowany czas pracy ({0}) przekracza przeciętnie 48h tygodniowo ({1}) o ({2}) w okresie rozliczeniowym ({3}) - {4}".TranslateFormat(plan, limit, plan - limit, periods, pracownik);
 			}
 			return null;
+		}
+
+		// ---------- Zgody osoby z niepełnosprawnością: nadgodziny i pora nocna ----------
+		// Dotyczy każdego stopnia niepełnosprawności (orzeczenie PFRON/ZUS obowiązujące w dniu,
+		// Pracownik.StopienNiepelnosprawnosciNaDzien) - pola zgód na etacie enova udostępnia przy każdym stopniu.
+
+		// Plan pracy w porze nocnej bez zgody na pracę w porze nocnej (Dzień planu, Błąd).
+		// Pora nocna z kalendarza etatu (KalkulatorPracyBase.NocOkres), czas pracy = strefy wliczane do czasu pracy.
+		public static string A1BrakZgodyNaPraceWNocyPlan(KalkulatorPlanuBase kalkulator, Date data)
+		{
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+			{
+				return null;
+			}
+			PracHistoria historia = pracownik[data];
+			if (historia == null || historia.Etat.PracownikNiepelnosprawnyZgodaNaPraceWPorzeNocnej)
+			{
+				return null;
+			}
+			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(data).Stopien;
+			if (stopien == StNiepełnosprawności.Brak)
+			{
+				return null;
+			}
+
+			FromTimes praca = FromTimes.Empty;
+			Time jawnieNocne = Time.Zero;
+			foreach (Dzien.Strefa strefa in (System.Collections.Generic.IEnumerable<IStrefaExt>)kalkulator[data])
+			{
+				if (strefa.Definicja == null || strefa.Czas == Time.Empty || strefa.Czas == Time.Zero)
+					continue;
+				if (strefa.Definicja.Guid == DefinicjaStrefy.Nocne)
+					jawnieNocne += strefa.Czas;
+				else if (strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza)
+					praca = praca.Add((FromTime)strefa);
+			}
+			Time wNocy = A1CzasWPorzeNocnej(pracownik, historia, praca, jawnieNocne);
+			if (wNocy > Time.Zero)
+			{
+				return "Dla dnia ({0}) zaplanowano pracę w porze nocnej ({1}), a pracownik z niepełnosprawnością (stopień {2}) nie ma na etacie zgody na pracę w porze nocnej - {3}".TranslateFormat(data, wNocy, stopien, pracownik);
+			}
+			return null;
+		}
+
+		// Czas pracy w porze nocnej bez zgody na pracę w porze nocnej (Dzień pracy, Ostrzeżenie).
+		public static string A1BrakZgodyNaPraceWNocyCzasPracy(DzienPracy dzien)
+		{
+			Pracownik pracownik = dzien.Pracownik;
+			if (pracownik == null)
+			{
+				return null;
+			}
+			PracHistoria historia = pracownik[dzien.Data];
+			if (historia == null || historia.Etat.PracownikNiepelnosprawnyZgodaNaPraceWPorzeNocnej)
+			{
+				return null;
+			}
+			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(dzien.Data).Stopien;
+			if (stopien == StNiepełnosprawności.Brak)
+			{
+				return null;
+			}
+
+			FromTimes praca = FromTimes.Empty;
+			Time jawnieNocne = Time.Zero;
+			foreach (StrefaPracy strefa in dzien.Strefy)
+			{
+				if (strefa.Definicja == null || strefa.Czas == Time.Empty || strefa.Czas == Time.Zero)
+					continue;
+				if (strefa.Definicja.Guid == DefinicjaStrefy.Nocne)
+					jawnieNocne += strefa.Czas;
+				else if (strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza)
+					praca = praca.Add(new FromTime(strefa.OdGodziny, strefa.Czas));
+			}
+			Time wNocy = A1CzasWPorzeNocnej(pracownik, historia, praca, jawnieNocne);
+			if (wNocy > Time.Zero)
+			{
+				return "Dla dnia ({0}) wpisano pracę w porze nocnej ({1}), a pracownik z niepełnosprawnością (stopień {2}) nie ma na etacie zgody na pracę w porze nocnej - {3}".TranslateFormat(dzien.Data, wNocy, stopien, pracownik);
+			}
+			return null;
+		}
+
+		// Praca w nadgodzinach bez zgody na pracę w godzinach nadliczbowych (Dzień pracy, Ostrzeżenie).
+		// Nadgodziny = czas pracy dnia (strefy wliczane do czasu pracy) ponad większą z wartości: plan dnia,
+		// norma dobowa z etatu (Etat.NormaDobowa); w dniu wolnym wg planu - każda praca.
+		public static string A1BrakZgodyNaNadgodziny(DzienPracy dzien)
+		{
+			Pracownik pracownik = dzien.Pracownik;
+			if (pracownik == null)
+			{
+				return null;
+			}
+			PracHistoria historia = pracownik[dzien.Data];
+			if (historia == null || historia.Etat.PracownikNiepelnosprawnyZgodaNaPraceNadgodziny)
+			{
+				return null;
+			}
+			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(dzien.Data).Stopien;
+			if (stopien == StNiepełnosprawności.Brak)
+			{
+				return null;
+			}
+
+			Time praca = Time.Zero;
+			foreach (StrefaPracy strefa in dzien.Strefy)
+			{
+				if (strefa.Definicja != null && strefa.Definicja.Wchodzi && strefa.Definicja.Typ == TypStrefy.Zwieksza
+					&& strefa.Czas != Time.Empty)
+					praca += strefa.Czas;
+			}
+			if (praca <= Time.Zero)
+			{
+				return null;
+			}
+
+			Time plan = new KalkulatorPlanu(pracownik)[dzien.Data].Czas;
+			if (plan == Time.Empty)
+				plan = Time.Zero;
+			Time limit = Time.Zero;
+			if (plan > Time.Zero)
+			{
+				limit = historia.Etat.NormaDobowa;
+				if (limit == Time.Empty || plan > limit)
+					limit = plan;
+			}
+			if (praca > limit)
+			{
+				return "Dla dnia ({0}) wpisano pracę w godzinach nadliczbowych ({1}; czas pracy {2}, limit dnia {3}), a pracownik z niepełnosprawnością (stopień {4}) nie ma na etacie zgody na pracę w nadgodzinach - {5}".TranslateFormat(dzien.Data, praca - limit, praca, limit, stopien, pracownik);
+			}
+			return null;
+		}
+
+		// Czas w porze nocnej: przecięcie stref pracy z porą nocną kalendarza etatu + jawna strefa "Praca w godzinach nocnych".
+		private static Time A1CzasWPorzeNocnej(Pracownik pracownik, PracHistoria historia, FromTimes praca, Time jawnieNocne)
+		{
+			FromTimes noc = new KalkulatorPracownika(pracownik).KalkPracy.NocOkres(historia);
+			if (noc == FromTimes.Empty || praca == FromTimes.Empty)
+			{
+				return jawnieNocne;
+			}
+			return praca.Intersection(noc).Time + jawnieNocne;
 		}
 	}	
 }

@@ -315,6 +315,30 @@ Do wyjaśnienia z klientem: kalendarz 1080 „Zadaniowy system_1_8:15_N” ma no
 nadgodzin 7:00. Na kalendarzach równoważnych 8:15 podpowiedź 37 może proponować wydłużenie dnia
 do 12h (blokowane przez 2069) — tylko treść podpowiedzi, niezmieniane.
 
+### 8a. Zgody osoby z niepełnosprawnością: nadgodziny i pora nocna (2026-10-19)
+
+Trzy nowe weryfikatory, podpięte do tych samych 14 kalendarzy co 2069 (45, 47, 1070–1081).
+Dotyczą **każdego** stopnia niepełnosprawności (orzeczenie PFRON/ZUS obowiązujące w dniu,
+`pracownik.StopienNiepelnosprawnosciNaDzien`) — enova udostępnia pola zgód na etacie przy każdym
+stopniu (`Etat.IsReadOnlyPracownikNiepelnosprawnyZgoda...` = brak orzeczenia o stopniu).
+Zgody czytane z zapisu historii obowiązującego w dniu (`pracownik[data].Etat`).
+
+| Def. | Nazwa | Rodzaj | Poziom | Metoda | Reguła |
+|---|---|---|---|---|---|
+| 2070 | A1_Brak zgody na nadgodziny | Dzień pracy | Ostrzeżenie | `A1BrakZgodyNaNadgodziny(dzien)` | brak `PracownikNiepelnosprawnyZgodaNaPraceNadgodziny`; czas pracy dnia (strefy `Wchodzi` i `Zwieksza`) > większa z wartości: plan dnia, `Etat.NormaDobowa`; w dniu wolnym wg planu — każda praca |
+| 2071 | A1_Brak zgody na pracę w nocy (plan) | Dzień planu | **Błąd** | `A1BrakZgodyNaPraceWNocyPlan(kp, data)` | brak `PracownikNiepelnosprawnyZgodaNaPraceWPorzeNocnej`; strefy planu dnia przecinają porę nocną |
+| 2072 | A1_Brak zgody na pracę w nocy (czas) | Dzień pracy | Ostrzeżenie | `A1BrakZgodyNaPraceWNocyCzasPracy(dzien)` | jw. dla stref czasu pracy |
+
+Pora nocna: metoda enova `KalkulatorPracyBase.NocOkres(PracHistoria)` (Od/Do z `Kalendarz.Nocne`
+etatu albo z konfiguracji, z obsługą przejścia przez północ), przecięta ze strefami wliczanymi do
+czasu pracy; doliczana jawna strefa „Praca w godzinach nocnych” (`DefinicjaStrefy.Nocne`). Nie
+korzysta z `KalkulatorPracy.Nocne`, bo ten przy `Nocne.Rozliczaj = false` widzi tylko jawną strefę.
+Wspólny helper `A1CzasWPorzeNocnej` (prywatny).
+
+Wgrane SQL-em w jednej transakcji (CodeFiles 13, DefWeryfKalend 2070–2072, 42 podpięcia WeryfKalend,
+stamp RuntimeProjects 29). Kompilacja całej klasy na 2610 (.NET 10) bez błędów. Podpięcia widoczne
+po restarcie serwera enova. Test na żywo: do zrobienia.
+
 ### 9. Wydajność
 
 Kontrole rodzaju Plan pracy uruchamiają się przy zapisie **każdego** dnia planu i liczą cały
