@@ -305,6 +305,16 @@ Scenariusz 8 w arkuszu „Brak zgody 8h” zmieniony na pozytywny (10/10).
 dla osób ze stopniem umiarkowanym/znacznym bez zgody (norma 7h/dobę, 35h/tydzień) — dla nich oba
 weryfikatory się wykluczają (niedobór normy okresu każe wydłużyć dzień do 8:00, 2069 blokuje > 7:00).
 
+**Decyzja (2026-10-19): bez zmian w kodzie.** Definicja 37 liczy normę metodą enova
+`KalkulatorKodeksowyPracownika.Norma` = norma dobowa kalendarza z etatu × dni robocze × wymiar, a maksimum
+dnia z „Nadgodziny – wartość dobowa” kalendarza. Klient ma kalendarze „8:15” z normą 7:00 i limitem
+nadgodzin 7:00 / 35:00 (ID 1070, 1072, 1074, 1077). Na takim kalendarzu norma okresu wynosi 7h × dni
+i konflikt z 2069 nie występuje. Zasada: osoba ze stopniem umiarkowanym/znacznym bez zgody na pracę 8h
+ma kalendarz 8:15. Konflikt w teście wynikał z danych testowych (NP1–NP9 na kalendarzu 47, norma 8h).
+Do wyjaśnienia z klientem: kalendarz 1080 „Zadaniowy system_1_8:15_N” ma normę dobową 8:00 przy limicie
+nadgodzin 7:00. Na kalendarzach równoważnych 8:15 podpowiedź 37 może proponować wydłużenie dnia
+do 12h (blokowane przez 2069) — tylko treść podpowiedzi, niezmieniane.
+
 ### 9. Wydajność
 
 Kontrole rodzaju Plan pracy uruchamiają się przy zapisie **każdego** dnia planu i liczą cały
