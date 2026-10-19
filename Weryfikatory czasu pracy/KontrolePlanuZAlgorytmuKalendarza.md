@@ -297,7 +297,9 @@ okres (`OkresExt`) obejmuje dany dzień, w `pracownik.OrzeczeniaPFRON` i `pracow
 i ZUS obowiązujące w danym dniu (`OkresExtObow`, a przy kilku kandydatach to, którego własny
 okres obejmuje dzień) i zwraca wyższy stopień. Zgoda na 8h nadal z `pracownik[data].Etat`.
 Kompilacja całej klasy na bibliotekach 2610 (.NET 10) bez błędów, kod wgrany do `CodeFiles` 13,
-stamp `RuntimeProjects` 29 podbity. Do potwierdzenia: restart serwera enova i powtórka scenariusza 8.
+stamp `RuntimeProjects` 29 podbity. **Potwierdzone na żywo (2026-10-19, po restarcie serwera):**
+NP8 13.11 = 8:00 → błąd 2069 ze stopniem „Umiarkowany”; 16.11 = 8:00 (lekki) → bez błędu 2069.
+Scenariusz 8 w arkuszu „Brak zgody 8h” zmieniony na pozytywny (10/10).
 
 **Uwaga z testu:** weryfikator normy okresu rozliczeniowego (definicja 37) liczy normę ogólną także
 dla osób ze stopniem umiarkowanym/znacznym bez zgody (norma 7h/dobę, 35h/tydzień) — dla nich oba
