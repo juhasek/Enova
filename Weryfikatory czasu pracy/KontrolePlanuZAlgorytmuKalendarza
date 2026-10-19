@@ -11,6 +11,8 @@
 //   A1BrakZgodyNaNadgodziny        - definicja 2070 "A1_Brak zgody na nadgodziny" (Dzień pracy, Ostrzeżenie, 2026-10-19)
 //   A1BrakZgodyNaPraceWNocyPlan    - definicja 2071 "A1_Brak zgody na pracę w nocy (plan)" (Dzień planu, Błąd, 2026-10-19)
 //   A1BrakZgodyNaPraceWNocyCzasPracy - definicja 2072 "A1_Brak zgody na pracę w nocy (czas)" (Dzień pracy, Ostrzeżenie, 2026-10-19)
+//   A1NormaTygodniowaNiepelnosprawnych - definicja 3070 "A1_Norma tygodniowa niepełnosprawnych" (Plan pracy, Błąd, 2026-10-19)
+//   A1DobaNiepelnosprawnegoWRownowaznym - definicja 3071 "A1_Doba niepełnosprawnych (równoważny)" (Dzień planu, Ostrzeżenie, 2026-10-19)
 // Pozostałe kontrole wyłączone (zakomentowane na końcu pliku albo usunięte) - zastąpione
 // standardowymi weryfikatorami enova lub niepotrzebne; ich definicje są zablokowane.
 //
@@ -172,6 +174,173 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 				return "Zaplanowany czas pracy ({0}) przekracza przeciętnie 48h tygodniowo ({1}) o ({2}) w okresie rozliczeniowym ({3}) - {4}".TranslateFormat(plan, limit, plan - limit, periods, pracownik);
 			}
 			return null;
+		}
+
+		// ---------- Norma tygodniowa 35h / 40h osoby z niepełnosprawnością (rodzaj Plan pracy) ----------
+		// Norma: stopień umiarkowany/znaczny bez zgody na pracę 8h (pole na etacie) - 7h/dobę, 35h/tydzień;
+		// stopień lekki oraz umiarkowany/znaczny ze zgodą 8h - 8h/dobę, 40h/tydzień (5 x norma dobowa).
+		// Stopień z orzeczeń PFRON/ZUS obowiązujących w danym dniu (Pracownik.StopienNiepelnosprawnosciNaDzien),
+		// zgoda z zapisu historii obowiązującego w dniu - norma ustalana osobno dla KAŻDEGO dnia.
+		// Tygodnie: 7 kolejnych dni od pierwszego dnia okresu rozliczeniowego (art. 128 § 3 pkt 1 KP) - jak w standardowym
+		// weryfikatorze odpoczynku tygodniowego enova; nie resetują się na granicy miesięcy, ostatni tydzień może być niepełny.
+		// Godziny planowane z KalkulatorPlanu (strefy planu dnia, łącznie ze zmianami w bieżącej sesji); kalkulator planu
+		// nie odejmuje nieobecności - jak standardowa „Norma w okresie rozliczeniowym”.
+		// Kalendarz podstawowy (Kalendarz.RownowaznyCzasPracy = false, także zadaniowy): każdy tydzień sztywno <= W
+		// (tydzień niepełny też W) oraz łącznie w okresie <= wymiar. Kalendarz równoważny: tylko łącznie w okresie <= wymiar.
+		// Wymiar = metoda enova KalkulatorKodeksowy.Norma (art. 130 KP: 40h x pełne tygodnie + 8h x dni pon-pt
+		// niepełnego tygodnia - 8h x święta poza niedzielą) liczona dla każdego tygodnia okresu i przeskalowana d/8.
+		// Zmiana orzeczenia w trakcie okresu: tydzień, w którym normy dni się różnią, ma normę dobową średnią z jego dni
+		// pon-pt (np. pon-wt po 7h, śr-pt po 8h -> W = 2 x 7h + 3 x 8h = 38h; zmiana w weekend nie obniża limitu
+		// tygodnia); dzień bez orzeczenia liczony normą ogólną 8h/40h.
+		// Tydzień bez żadnego dnia z orzeczeniem nie jest sprawdzany; okres bez takiego dnia - weryfikator nic nie robi.
+		// Wymiar etatu nie zmniejsza limitu (35h/40h to limit bezwzględny osoby z niepełnosprawnością).
+		// Sprawdzane okresy rozliczeniowe obejmujące zapisywany miesiąc, a tygodnie - tylko przecinające ten miesiąc.
+		public static string A1NormaTygodniowaNiepelnosprawnych(KalkulatorPlanuBase kalkulator, YearMonth miesiac)
+		{
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+			{
+				return null;
+			}
+			FromTo zakres = miesiac.ToFromTo();
+			Date data = zakres.From;
+			while (data <= zakres.To)
+			{
+				FromTo okres = pracownik.WyliczOkresRoliczeniowyNadgodzin(data);
+				if (okres == FromTo.Empty)
+				{
+					data++;
+					continue;
+				}
+				string wynik = A1NormaTygodniowaNiepelnosprawnychWOkresie(kalkulator, pracownik, okres, zakres);
+				if (wynik != null)
+				{
+					return wynik;
+				}
+				data = okres.To + 1;
+			}
+			return null;
+		}
+
+		private static string A1NormaTygodniowaNiepelnosprawnychWOkresie(KalkulatorPlanuBase kalkulator, Pracownik pracownik, FromTo okres, FromTo zakres)
+		{
+			Periods zatrudnienie = kalkulator.ZrodloPlanu.GetPlanOkresZatrudnienia(okres);
+			if (zatrudnienie == Periods.Empty)
+			{
+				return null;
+			}
+			kalkulator.LoadOkres(okres);
+
+			Time plan = Time.Zero;
+			Time wymiar = Time.Zero;
+			bool sprawdzac = false;
+			for (Date poczatek = okres.From; poczatek <= okres.To; poczatek += 7)
+			{
+				FromTo tydzien = new FromTo(poczatek, Date.Min(poczatek + 6, okres.To));
+				Time normaDobowaSuma = Time.Zero;
+				int dni = 0;
+				Time normaDobowaSumaRoboczych = Time.Zero;
+				int dniRoboczych = 0;
+				bool zOrzeczeniem = false;
+				bool rownowazny = false;
+				Time planTygodnia = Time.Zero;
+				Time wymiarKodeksowy = Time.Zero;
+				foreach (FromTo czesc in tydzien.ToPeriods() - (okres.ToPeriods() - zatrudnienie))
+				{
+					planTygodnia += kalkulator.Norma(czesc).Czas;
+					wymiarKodeksowy += KalkulatorKodeksowy.Norma(czesc).Czas;
+					foreach (Date dzien in czesc)
+					{
+						Time normaDnia = A1NormaDobowaNiepelnosprawnego(pracownik, dzien);
+						if (normaDnia == Time.Empty)
+						{
+							normaDnia = new Time(8, 0);
+						}
+						else
+						{
+							zOrzeczeniem = true;
+						}
+						normaDobowaSuma += normaDnia;
+						dni++;
+						if (dzien.DayOfWeek != DayOfWeek.Saturday && dzien.DayOfWeek != DayOfWeek.Sunday)
+						{
+							normaDobowaSumaRoboczych += normaDnia;
+							dniRoboczych++;
+						}
+						PracHistoria historia = pracownik[dzien];
+						if (historia != null && historia.Etat.Kalendarz != null && historia.Etat.Kalendarz.RownowaznyCzasPracy)
+						{
+							rownowazny = true;
+						}
+					}
+				}
+				if (dni == 0)
+				{
+					continue;
+				}
+
+				// Norma dobowa tygodnia (średnia z dni pon-pt, a gdy tydzień ich nie ma - ze wszystkich dni)
+				// i tygodniowa W = 5 x norma dobowa.
+				Time normaDobowa = dniRoboczych > 0 ? normaDobowaSumaRoboczych * (1.0 / dniRoboczych) : normaDobowaSuma * (1.0 / dni);
+				Time normaTygodniowa = normaDobowa * 5.0;
+				plan += planTygodnia;
+				wymiar += wymiarKodeksowy * (normaDobowa.TotalMinutes / 480.0);
+				if (!zOrzeczeniem)
+				{
+					continue;
+				}
+				sprawdzac = true;
+
+				if (!rownowazny && tydzien.IsIntersected(zakres) && planTygodnia > normaTygodniowa)
+				{
+					return "Przekroczono tygodniową normę ({0}) osoby z niepełnosprawnością w tygodniu ({1}) okresu rozliczeniowego - zaplanowano ({2}) - {3}".TranslateFormat(normaTygodniowa, tydzien, planTygodnia, pracownik);
+				}
+			}
+
+			if (sprawdzac && plan > wymiar)
+			{
+				return "Zaplanowany czas pracy ({0}) przekracza wymiar ({1}) osoby z niepełnosprawnością o ({2}) w okresie rozliczeniowym ({3}) - {4}".TranslateFormat(plan, wymiar, plan - wymiar, okres, pracownik);
+			}
+			return null;
+		}
+
+		// Doba dłuższa niż norma dobowa osoby z niepełnosprawnością w równoważnym czasie pracy (rodzaj Dzień planu,
+		// Ostrzeżenie - przedłużanie doby osobie z niepełnosprawnością prawnie wątpliwe, do decyzji). Norma dobowa jak wyżej.
+		public static string A1DobaNiepelnosprawnegoWRownowaznym(KalkulatorPlanuBase kalkulator, Date data)
+		{
+			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
+			{
+				return null;
+			}
+			PracHistoria historia = pracownik[data];
+			if (historia == null || historia.Etat.Kalendarz == null || !historia.Etat.Kalendarz.RownowaznyCzasPracy)
+			{
+				return null;
+			}
+			Time plan = kalkulator[data].Czas;
+			Time norma = A1NormaDobowaNiepelnosprawnego(pracownik, data);
+			if (norma == Time.Empty || plan <= norma)
+			{
+				return null;
+			}
+			return "Dla dnia ({0}) zaplanowano czas ({1}) dłuższy niż norma dobowa ({2}) osoby z niepełnosprawnością w równoważnym systemie czasu pracy - {3}".TranslateFormat(data, plan, norma, pracownik);
+		}
+
+		// Norma dobowa osoby z niepełnosprawnością w dniu: 7h (umiarkowany/znaczny bez zgody na pracę 8h), 8h (pozostałe
+		// stopnie); Time.Empty - brak orzeczenia o stopniu niepełnosprawności w tym dniu.
+		private static Time A1NormaDobowaNiepelnosprawnego(Pracownik pracownik, Date data)
+		{
+			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(data).Stopien;
+			if (stopien == StNiepełnosprawności.Brak)
+			{
+				return Time.Empty;
+			}
+			PracHistoria historia = pracownik[data];
+			if ((stopien == StNiepełnosprawności.Umiarkowany || stopien == StNiepełnosprawności.Znaczny)
+				&& (historia == null || !historia.Etat.PracownikNiepelnosprawnyZgodaNaPrace8h))
+			{
+				return new Time(7, 0);
+			}
+			return new Time(8, 0);
 		}
 
 		// ---------- Zgody osoby z niepełnosprawnością: nadgodziny i pora nocna ----------

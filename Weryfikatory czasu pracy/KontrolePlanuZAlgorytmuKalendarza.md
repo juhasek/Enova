@@ -339,6 +339,62 @@ Wgrane SQL-em w jednej transakcji (CodeFiles 13, DefWeryfKalend 2070–2072, 42 
 stamp RuntimeProjects 29). Kompilacja całej klasy na 2610 (.NET 10) bez błędów. Podpięcia widoczne
 po restarcie serwera enova. Test na żywo: do zrobienia.
 
+### 8b. Norma tygodniowa 35h / 40h osoby z niepełnosprawnością (2026-10-19)
+
+Dwie nowe definicje podpięte do tych samych 14 kalendarzy co 2069 (45, 47, 1070–1081) oraz do
+kalendarza testowego 1086. Poziom (Błąd / Ostrzeżenie) to ustawienie podpięcia na zakładce
+„Weryfikatory kalendarza”, więc zmienia się go bez zmian w kodzie.
+
+| Def. | Nazwa | Rodzaj | Poziom | Metoda |
+|---|---|---|---|---|
+| 3070 | A1_Norma tygodniowa niepełnosprawnych | Plan pracy | **Błąd** | `A1NormaTygodniowaNiepelnosprawnych(kp, args.Miesiąc)` |
+| 3071 | A1_Doba niepełnosprawnych (równoważny) | Dzień planu | Ostrzeżenie | `A1DobaNiepelnosprawnegoWRownowaznym(kp, data)` |
+
+**Norma osoby (d = dobowa, W = 5 × d):** umiarkowany/znaczny bez zgody na pracę 8h (pole na etacie)
+→ 7h/35h; lekki oraz umiarkowany/znaczny ze zgodą 8h → 8h/40h. Stopień z orzeczeń PFRON/ZUS
+obowiązujących w danym dniu (`pracownik.StopienNiepelnosprawnosciNaDzien`), zgoda z zapisu historii
+obowiązującego w dniu. Brak orzeczenia → nic nie sprawdza.
+
+**Tygodnie:** 7 kolejnych dni od pierwszego dnia okresu rozliczeniowego (`pracownik.WyliczOkresRoliczeniowyNadgodzin`,
+art. 128 § 3 pkt 1 KP). Tak samo liczy standardowy weryfikator odpoczynku tygodniowego enova. Tygodnie
+nie zaczynają się od nowa na granicy miesięcy, a ostatni tydzień okresu może być niepełny.
+
+**Godziny planowane:** `KalkulatorPlanu(pracownik).Norma(...)`, czyli strefy planu dnia z bazy razem
+ze zmianami z bieżącej sesji. Kalkulator planu nie odejmuje nieobecności (rozlicza je kalkulator pracy),
+tak samo jak standardowa „Norma w okresie rozliczeniowym”.
+
+**Kalendarz podstawowy** (`Kalendarz.RownowaznyCzasPracy = false`, także zadaniowy): każdy tydzień ≤ W,
+liczone sztywno, a niepełny tydzień na końcu okresu też ≤ W. Dodatkowo cały okres ≤ wymiar.
+**Kalendarz równoważny:** tylko cały okres ≤ wymiar (norma średnia).
+
+**Wymiar** to metoda enova `KalkulatorKodeksowy.Norma` (art. 130 KP: 40h × pełne tygodnie + 8h × dni
+pon–pt niepełnego tygodnia − 8h × święta poza niedzielą), policzona dla każdego tygodnia okresu
+i przeskalowana przez d/8. Przykład: X 2026 to 4 × 35 + 2 × 7 = 154h (W = 35) albo 176h (W = 40).
+IX–XI 2026 to 13 × 35 − 7 (11.11) = 448h. Dni poza zatrudnieniem są pomijane (jak w 37). Wymiar etatu
+nie zmniejsza limitu.
+
+**Zmiana orzeczenia w trakcie okresu:** norma liczona dla każdego dnia. Tydzień, w którym normy dni się
+różnią, dostaje normę dobową równą średniej z dni pon–pt, np. pon–wt po 7h i śr–pt po 8h daje W = 38h.
+Zmiana w weekend nie obniża limitu tygodnia. Dzień bez orzeczenia liczony jest normą ogólną 8h/40h,
+a tydzień bez żadnego dnia z orzeczeniem nie jest sprawdzany.
+
+**Zakres:** sprawdzane są okresy rozliczeniowe obejmujące zapisywany miesiąc (`args.Miesiąc`), a tygodnie
+tylko te, które ten miesiąc przecinają. Komunikat jest jeden, dla pierwszego przekroczenia: najpierw tydzień,
+potem wymiar okresu.
+
+**3071 (Ostrzeżenie):** na kalendarzu równoważnym dzień planu dłuższy niż d. Przy umiarkowanym/znacznym
+bez zgody i dniu powyżej 7h odzywa się też 2069 (Błąd).
+
+**Ograniczenia:** weryfikatory kalendarza enova uruchamiają się przy zapisie planu, a nie przy zmianie
+kalendarza na etacie ani przy zmianie orzeczenia. Po takiej zmianie kontrola zadziała dopiero przy
+najbliższej edycji planu w danym miesiącu.
+
+Wgrane SQL-em w jednej transakcji (CodeFiles 13, DefWeryfKalend 3070–3071, po 14 podpięć, stamp
+RuntimeProjects 29). Kompilacja całej klasy na 2610 (.NET 10) bez błędów. Dane testowe: kalendarz
+testowy 1086 „TEST Podstawowy_3_8:15_N” (kopia 1072, okres 3 mies. od 1.03.2024) dla NP3,
+NP4 przeniesiony na 1076, a dni planu w `ImportyXML/Weryfikator norma tygodniowa niepelnosprawnych - plan.xml`.
+Test na żywo: po restarcie serwera.
+
 ### 9. Wydajność
 
 Kontrole rodzaju Plan pracy uruchamiają się przy zapisie **każdego** dnia planu i liczą cały
