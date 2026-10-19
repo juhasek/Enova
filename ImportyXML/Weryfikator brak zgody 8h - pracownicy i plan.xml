@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   Pracownicy testowi NP1-NP9 do bazy Al: weryfikator 2069 "A1_Brak zgody na prace 8h"
-  (Dzien planu, Blad, kalendarze 45 i 47). Scenariusze: "Weryfikatory czasu pracy/
+  (Dzien planu, Blad). Kalendarze klienta _N (od 19.10.2026): bez zgody Podstawowy system_1_8:15_N,
+  NP4-NP6 Podstawowy system_1_8:16_N, NP9 Rownowazny system_3_8:15_N. Scenariusze: "Weryfikatory czasu pracy/
   Scenariusze testowe weryfikatorow czasu pracy.xlsx", arkusz "Brak zgody 8h".
 
   Dni planu w 11.2026 wgrane z czasem 6:00 (ponizej progu 7:00) - wartosc docelowa scenariusza
@@ -57,7 +58,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>f6879507-b2ca-4058-8002-ca82e4fef463</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -205,7 +206,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>f6879507-b2ca-4058-8002-ca82e4fef463</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -365,7 +366,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>f6879507-b2ca-4058-8002-ca82e4fef463</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -513,7 +514,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>a2e44c85-a889-4e29-94e8-0fd17c096ec4</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>True</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -661,7 +662,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>a2e44c85-a889-4e29-94e8-0fd17c096ec4</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -809,7 +810,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>a2e44c85-a889-4e29-94e8-0fd17c096ec4</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -957,7 +958,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>f6879507-b2ca-4058-8002-ca82e4fef463</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -1105,7 +1106,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>e3871eb3-6d0e-4edd-8d1a-fedc1889d4a9</Kalendarz>
+          <Kalendarz>f6879507-b2ca-4058-8002-ca82e4fef463</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
@@ -1265,7 +1266,7 @@
           <RodzajZatrudnienia>NieDotyczy</RodzajZatrudnienia>
           <Stanowisko>Specjalista</Stanowisko>
           <Funkcja>Specjalista</Funkcja>
-          <Kalendarz>d378af9d-1ff5-45d6-9b31-e51b9891c45c</Kalendarz>
+          <Kalendarz>ab5bcf50-cb67-426c-b781-a46aa1d9a7fc</Kalendarz>
           <PracownikNiepelnosprawnyZgodaNaPrace8h>False</PracownikNiepelnosprawnyZgodaNaPrace8h>
           <InterpretacjaKalendarza>WgPlanu</InterpretacjaKalendarza>
           <InterpretacjaKalendarzaPozaOkrZatr>Domyślnie</InterpretacjaKalendarzaPozaOkrZatr>
