@@ -292,6 +292,13 @@ dnia → stopień „Brak” → brak błędu. Dotyczy też definicji 2039. Popr
 okres (`OkresExt`) obejmuje dany dzień, w `pracownik.OrzeczeniaPFRON` i `pracownik.OrzeczeniaZUS`
 (nie poprawione — do decyzji).
 
+**Poprawione (2026-10-19):** w obu metodach (2039 i 2069) stopień liczony metodą enova
+`pracownik.StopienNiepelnosprawnosciNaDzien(data).Stopien`. Metoda wybiera orzeczenie PFRON
+i ZUS obowiązujące w danym dniu (`OkresExtObow`, a przy kilku kandydatach to, którego własny
+okres obejmuje dzień) i zwraca wyższy stopień. Zgoda na 8h nadal z `pracownik[data].Etat`.
+Kompilacja całej klasy na bibliotekach 2610 (.NET 10) bez błędów, kod wgrany do `CodeFiles` 13,
+stamp `RuntimeProjects` 29 podbity. Do potwierdzenia: restart serwera enova i powtórka scenariusza 8.
+
 **Uwaga z testu:** weryfikator normy okresu rozliczeniowego (definicja 37) liczy normę ogólną także
 dla osób ze stopniem umiarkowanym/znacznym bez zgody (norma 7h/dobę, 35h/tydzień) — dla nich oba
 weryfikatory się wykluczają (niedobór normy okresu każe wydłużyć dzień do 8:00, 2069 blokuje > 7:00).
