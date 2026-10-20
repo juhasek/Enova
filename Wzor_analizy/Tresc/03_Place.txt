@@ -133,7 +133,7 @@ Zasady PKZP: [DO UZUPEŁNIENIA: wpisowe, wysokość składki miesięcznej, oproc
 @opcjonalna
 
 ### Rezerwa urlopowa
-W ramach wdrożenia systemu enova365 włączony zostanie mechanizm naliczania planowanych list płac. Są to listy techniczne, które nie są brane pod uwagę podczas przygotowywania deklaracji ZUS, PIT czy PPK. Planowane listy płac wykorzystane zostaną do przygotowania rezerwy urlopowej. System umożliwia wygenerowanie raportu z kwotami rezerw zawiązanych i rozwiązanych. W celu naliczenia rezerw zostaną przygotowane automatyczne elementy wynagrodzenia przypisane tylko do list technicznych.
+W ramach wdrożenia systemu enova365 włączony zostanie mechanizm naliczania planowanych list płac (funkcjonalność dostępna w wersji platynowej; włączenie: Narzędzia/Opcje/Kadry i płace/Płace/Planowane listy płac, parametr Obsługa planowanych list płac = Tak). Elementy rezerwy mają ustawiony Rodzaj naliczania „Tylko planowane”, a listę nalicza się czynnością „Nalicz planowane listy płac…” z listy pracowników. Są to listy techniczne, które nie są brane pod uwagę podczas przygotowywania deklaracji ZUS, PIT czy PPK. Planowane listy płac wykorzystane zostaną do przygotowania rezerwy urlopowej. System umożliwia wygenerowanie raportu z kwotami rezerw zawiązanych i rozwiązanych. W celu naliczenia rezerw zostaną przygotowane automatyczne elementy wynagrodzenia przypisane tylko do list technicznych.
 Sposób wyliczenia rezerwy ustalony z Klientem: [DO UZUPEŁNIENIA: wybrany wariant – np. rezerwa proporcjonalna (1/12 rocznego wymiaru za każdy miesiąc), rezerwa faktyczna (urlop zaległy + bieżący proporcjonalny – wykorzystany) × stawka ekwiwalentu, współczynnik podwyższający; cykl naliczania].
 Od wartości rezerwy naliczane będą narzuty pracodawcy (ZUS oraz PPK dla uczestników PPK). Przy ustalaniu rezerwy sprawdzany będzie okres zatrudnienia pracownika, wymiar etatu oraz zmiana wymiaru urlopu w trakcie okresu zatrudnienia. [DO UZUPEŁNIENIA: rozwiązanie rezerwy, przypisanie MPK lub kodów kosztowych]
 
@@ -172,14 +172,19 @@ Generowanie przelewów do pracowników, zleceniobiorców, ZUS, US, instytucji PP
 @tabela Przelewy bankowe
 
 ## Import zwolnień lekarskich z PUE
-System enova365 w swoim standardzie umożliwia zaimportowanie informacji o zwolnieniach lekarskich z PUE ZUS. Import może być wykonany ręcznie przez operatora – po wygenerowaniu pliku csv z PUE i zaczytaniu go czynnością Import nieobecności z PUE – lub automatycznie według ustawionego harmonogramu.
-W przypadku automatycznego importu należy wskazać, co system ma zrobić w przypadku istniejącej w danym okresie nieobecności:
-- nie nadpisywać istniejących nieobecności;
-- nadpisywać tylko te, które nie są rozliczone na liście płac;
-- nadpisywać i korygować wszystkie nieobecności.
-Należy również zdecydować, jaka nieobecność ma być zaimportowana do kartoteki w przypadku zwolnienia z tytułu opieki.
+System enova365 w standardzie umożliwia import zwolnień lekarskich (e-ZLA) z PUE ZUS. Konfiguracja znajduje się w Narzędzia/Opcje/Kadry i płace/Kalendarze/Import z PUE (w konfiguracji wielooddziałowej – w ustawieniach oddziałów): login, hasło oraz hasło do plików ZIP zgodne z harmonogramem raportów cyklicznych ustawionym w PUE ZUS.
+E-zwolnienia pobiera się przyciskiem na liście Kadry/Czas pracy/Import nieobecności z PUE (lista dostępna od wersji złotej programu), bez konieczności logowania do portalu PUE ZUS. Lista prezentuje pobrane rekordy wraz ze stanem i wynikiem weryfikacji (poprawny, błędny, niezgodny, anulowany, zdublowany); nieobecności skorygowane przez import oznaczane są w polu „Edytowano nb”, a szczegóły zmian widoczne są w Zapisie działań.
+Import może być wykonywany automatycznie – parametr „Importuj automatycznie przy użyciu HZ” wymaga skonfigurowania dodatku Harmonogram Zadań i aktywowania zadania AutoImportNieobecnosciPUE z ustalonym harmonogramem (np. codziennie w nocy).
+Parametr „Edycja istniejących w systemie nieobecności, które pokrywają się z okresem importowanych nieobecności” określa, co zrobić w przypadku konfliktu z nieobecnością już wprowadzoną:
+- Nie edytuj – nieobecność z PUE nie zostanie wprowadzona w przypadku konfliktu;
+- Tylko nierozliczone – korekty zostaną wprowadzone tylko dla nierozliczonych nieobecności;
+- Koryguj rozliczone i nierozliczone – korekty zostaną wprowadzone dla wszystkich nieobecności.
+Parametr „Importuj opiekę ZUS na nieobecność” określa nieobecność generowaną dla zwolnienia z tytułu opieki:
+- Zwolnienie opieka (ZUS) – wartość domyślna, zasiłek opiekuńczy naliczany bez względu na dostarczenie druku ZUS Z-15;
+- Zwolnienie opieka (ZUS bez zasiłku 1/30) – pomniejszenie wynagrodzenia o 1/30 do czasu dostarczenia druku Z-15;
+- Zwolnienie opieka (ZUS bez zasiłku prop.) – pomniejszenie wynagrodzenia proporcjonalne.
 @rys pue_opieka.png | Wybór nieobecności dla zwolnienia z tytułu opieki
-Decyzja Klienta: [DO UZUPEŁNIENIA: ręcznie / automatycznie (godzina uruchomienia), wariant nadpisywania, nieobecność dla zwolnienia z tytułu opieki].
+Decyzja Klienta: [DO UZUPEŁNIENIA: import ręczny / automatyczny (harmonogram), wariant edycji istniejących nieobecności, nieobecność dla zwolnienia z tytułu opieki, uzupełnianie kodu A].
 
 ## Szacunkowe listy płac
 @opcjonalna

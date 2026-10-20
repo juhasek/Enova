@@ -111,7 +111,8 @@ Klient musi posiadać następującą liczbę licencji. Wykaz licencji zostanie z
 | enova365 Pulpit Kierownika | [DO UZUPEŁNIENIA: liczba] |
 | enova365 Czas Pracy | [DO UZUPEŁNIENIA: liczba] |
 | enova365 Workflow (wersja okienkowa, w pulpitach, konfigurator) | [DO UZUPEŁNIENIA: liczba] |
-| enova365 Harmonogram Zadań | [DO UZUPEŁNIENIA: liczba] |
+| enova365 Harmonogram Zadań (wymagany m.in. do automatycznego importu zwolnień z PUE) | [DO UZUPEŁNIENIA: liczba] |
+| Pracownicy Eksportowi – dodatek do rozliczania pracowników oddelegowanych za granicę (opcjonalnie) | [DO UZUPEŁNIENIA: liczba lub „nie dotyczy”] |
 | enova365 Logowanie serwisowe | 1 |
 | [DO UZUPEŁNIENIA: inne moduły] | [DO UZUPEŁNIENIA: liczba] |
 @tabela Licencje enova365
@@ -119,7 +120,7 @@ Klient musi posiadać następującą liczbę licencji. Wykaz licencji zostanie z
 | Rozwiązanie Alt One | Liczba |
 | [DO UZUPEŁNIENIA: np. Weryfikatory czasu pracy, Dashboard, podwójna autentyfikacja, Wniosek pracowniczy, Planowanie urlopów] | [DO UZUPEŁNIENIA: liczba] |
 @tabela Licencje rozwiązań Alt One
-**UWAGA:** W wariancie złotym licencji Kadry Płace niedostępne są m.in. RCP, rozliczanie czasu pracy, weryfikatory kalendarza, planowanie kalendarzy, magazyn nadgodzin, ZFŚS i ochrona danych osobowych. Wariant licencji należy potwierdzić względem wymagań opisanych w załącznikach.
+**UWAGA:** Zgodnie z instrukcją producenta wyłącznie w wariancie platynowym licencji Kadry Płace dostępne są m.in.: dane z RCP i oryginalne dane z RCP, rozliczenie czasu pracy, dokumenty aktualizacji i wersjonowanie kalendarzy, weryfikatory kalendarza, magazyn nadgodzin, planowane nieobecności (plany urlopów), planowane listy płac (rezerwy), ZFŚS, pracownicy zewnętrzni (B2B, APT) oraz listy ewidencji (np. badania lekarskie, nagrody i kary). Od wariantu złotego dostępne są m.in. elektroniczna dokumentacja pracownicza, lista importu nieobecności z PUE, struktura organizacyjna, definiowanie dni pracy i ochrona danych osobowych. Wariant licencji należy potwierdzić względem wymagań opisanych w załącznikach.
 
 ## Struktura organizacyjna
 W programie utworzone zostaną dwie struktury:
@@ -166,7 +167,7 @@ Istnieje możliwość generowania deklaracji PIT dla wybranej grupy pracowników
 @rys pit_edeklaracja.png | Generowanie e-Deklaracji
 Na podstawie wysłanych deklaracji za pośrednictwem programu zwracane jest UPO, które widnieje też na deklaracji PIT-11.
 @rys pit_wydruk.png | Wydruk PIT-11
-Deklarację można przekazać pracownikowi osobiście lub za pośrednictwem Pulpitu Pracownika. W Pulpicie Pracownika możliwe jest udostępnienie pracownikowi deklaracji podatkowej PIT oraz informacji ZUS IMIR w zakładce Elektroniczna dokumentacja pracownika – Pozostała dokumentacja za potwierdzeniem odbioru. Deklaracje PIT oraz informacje IMIR mogą zostać również przekazane pracownikom za pośrednictwem wiadomości e-mail.
+Deklarację można przekazać pracownikowi osobiście lub za pośrednictwem Pulpitu Pracownika. W Pulpicie Pracownika możliwe jest udostępnienie pracownikowi deklaracji podatkowej PIT oraz informacji ZUS IMIR w zakładce Elektroniczna dokumentacja pracownicza/Pozostała dokumentacja za potwierdzeniem odbioru. Deklaracje PIT oraz informacje IMIR mogą zostać również przekazane pracownikom za pośrednictwem wiadomości e-mail.
 Udostępnione dokumenty będą podpisane kwalifikowanym podpisem elektronicznym i dostępne w Pulpicie Pracownika. Pracownik przed wyświetleniem deklaracji lub informacji będzie musiał elektronicznie poświadczyć jej odbiór (polecenie: Potwierdź i wyświetl). Dokument ten zostanie automatycznie wpięty do elektronicznej teczki pracowniczej.
 Operatorzy HR w enova365 widzą zestawienie wysłanych deklaracji. Przy deklaracjach odebranych przez pulpit uzupełnia się data potwierdzenia odbioru, przy nieodebranych nie ma żadnej daty – w łatwy sposób można wyfiltrować osoby, które nie potwierdziły otrzymania PIT-11.
 Sposób przekazywania PIT-11 i IMIR ustalony z Klientem: [DO UZUPEŁNIENIA: pulpit pracownika za potwierdzeniem odbioru / e-mail / osobiście].

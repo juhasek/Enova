@@ -120,7 +120,7 @@ Pytania bez odpowiedzi po spotkaniu trafiają do tabeli „Pytania otwarte” w 
 | Czy stosowany będzie słownik definicji stanowisk? Jakie dane przypisać do stanowiska (kod zawodu, grupa zaszeregowania, kalendarz, pola dodatkowe)? |  | Z1 1.11 | Otwarte |
 | Jakie rodzaje umów cywilnoprawnych występują? Czy potrzebne są dodatkowe pola lub dedykowane wydruki umów i rachunków? |  | Z1 1.12 | Otwarte |
 | Czy ewidencjonowane są osoby współpracujące na podstawie B2B? Jaki zakres danych, czy z dostępem do pulpitów? |  | Z1 1.13 | Otwarte |
-| Czy występują pracownicy oddelegowani za granicę lub cudzoziemcy z zezwoleniami na pracę? Kraje, liczba osób, waluta? |  | Z1 1.14 | Otwarte |
+| Czy występują pracownicy oddelegowani za granicę (dodatek licencjonowany Pracownicy Eksportowi) lub cudzoziemcy z zezwoleniami na pracę? Kraje, liczba osób, waluta? |  | Z1 1.14 | Otwarte |
 | Czy ewidencjonowane są umowy o zakazie konkurencji (status, rodzaj)? |  | Z1 1.15 | Otwarte |
 | Czy ewidencjonowane są upoważnienia do przetwarzania danych osobowych? Jakie rodzaje? |  | Z1 1.16 | Otwarte |
 | Jakie formy pracy zdalnej występują i jakie są limity (regulaminowa, okazjonalna, na wniosek)? |  | Z1 1.17 | Otwarte |
@@ -227,7 +227,7 @@ Pytania bez odpowiedzi po spotkaniu trafiają do tabeli „Pytania otwarte” w 
 | Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
 | Jaki bank i jaki sposób przekazania przelewów (plik, web service)? Ile rachunków źródłowych? |  | Z3 1.14 | Otwarte |
 | Czy przelewy do ZUS, US, PPK i PFRON wychodzą z modułu płacowego? Jakie przelewy potrąceniowe? |  | Z3 1.14 | Otwarte |
-| Import zwolnień z PUE: ręcznie czy automatycznie? Jaki wariant nadpisywania? Jaka nieobecność dla zwolnienia z tytułu opieki? |  | Z3 1.15 | Otwarte |
+| Import zwolnień z PUE: ręcznie czy automatycznie (wymaga Harmonogramu Zadań)? Jaki wariant edycji istniejących nieobecności (Nie edytuj / Tylko nierozliczone / Koryguj rozliczone i nierozliczone)? Jaka nieobecność dla zwolnienia z tytułu opieki? |  | Z3 1.15 | Otwarte |
 | Czy potrzebne są szacunkowe listy płac na potrzeby zarachowań przy zamknięciu roku? |  | Z3 1.16 | Otwarte |
 
 # Załącznik 5 – Pulpity (Z5)
