@@ -95,6 +95,9 @@ harmonogramu przekompilowuje się sama ok. minuty po zmianie stampu).
   i 13 (host = definicja — nie wywołuje akcji). Wspólny kod: CodeFiles **1016**
   „A1KopiowanieRCP” (RuntimeProjects 2 Business) — „Sprawdź kod”: 0 błędów; po przeniesieniu
   metody sprawdzone ponownie przy zapisie i harmonogramem.
+- 2026-10-20 po testach: harmonogram 14 **zablokowany** przez użytkownika (brak planowanych
+  wywołań) do czasu kolejnych testów; zadanie przy zapisie (415) działa. Przed testem
+  harmonogramu: odblokować, otworzyć zadanie globalne → Automatyczne akcje → „Aktywuj wszystkie” → zapis.
 - Test live 20.10.2026: **W1–W4 i H1–H4 pozytywne** (arkusz scenariuszy). Dwie poprawki
   w trakcie: klucz `WgPracownik[pracownik, data]` (W3) oraz godzina edytowana 0:00 przy
   pustej dacie edytowanej = brak edycji (H1 — import wg rekordów zostawia w bazie
