@@ -138,7 +138,7 @@ Zarządzanie strukturą formalno-prawną:
 - utworzenie nowej komórki organizacyjnej – odbywa się poprzez założenie w systemie nowej jednostki organizacyjnej z uzupełnieniem podstawowych informacji, takich jak: kod wydziału (wartość unikalna), nazwa wydziału (wartość unikalna), wydział nadrzędny w strukturze, nadanie praw dla wybranych operatorów;
 - zmiana nazwy komórki organizacyjnej – możliwa jest w dowolnym momencie pracy z systemem przy zastosowaniu się do zasad:
   - nowa nazwa nie może być identyczna z nazwą innej, istniejącej już jednostki organizacyjnej,
-  - liczba znaków nazwy nie może przekroczyć 80,
+  - liczba znaków nazwy nie może przekroczyć 100 (kod wydziału – 20 znaków),
   - zmiana nazwy jednostki organizacyjnej spowoduje jej zmianę we wszystkich historycznych zapisach, w których dana jednostka była używana.
 **UWAGA:** Z uwagi na zdarzające się przypadki problemów z wygenerowaniem raportów przy wprowadzeniu znaku „&”, zalecamy, aby, jeśli to możliwe, zamienić ten znak na wyrażenie „and”.
 Na etapie analizy ustalono, że w definicjach jednostek organizacyjnych powstaną dodatkowe pola: [DO UZUPEŁNIENIA: pola dodatkowe jednostek, np. przełożony, miejscowość, MPK, data uchwały – lub „nie dotyczy”].

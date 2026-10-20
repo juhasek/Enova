@@ -69,7 +69,7 @@ Ustalenia dotyczące PPK:
 ## Elementy płacowe
 Producent systemu enova365 zapewnia podstawowe, przewidziane przepisami prawa elementy wynagrodzenia, takie jak wynagrodzenie zasadnicze, wynagrodzenie i dopłaty do nadgodzin oraz godzin nocnych, ekwiwalent i wynagrodzenie za urlop, wynagrodzenie chorobowe i zasiłki. Administrator systemu po stronie Klienta będzie miał możliwość dodania i skonfigurowania dodatkowych składników płacowych, w tym poprzez skopiowanie algorytmów już utworzonych składników.
 Wszystkie dodatkowe elementy, które mają być rozliczone wraz z wynagrodzeniem zasadniczym, należy przypisać w kartotece pracownika (Etat/Dodatki). enova365 przewiduje możliwość przypisywania elementów płacowych ręcznie dla pojedynczych pracowników, jak również jednoczesnego zaimportowania dodatków i potrąceń dla wielu pracowników – poprzez skopiowanie danych z pliku Excel wraz z nagłówkami kolumn i wklejenie ich na widok Dodatki i potrącenia.
-W programie nie ma potrzeby konfigurowania elementów służących do korygowania nieobecności, wynagrodzenia lub dodatków i potrąceń. Poprzez wybranie odpowiednich parametrów naliczania wypłat system sprawdzi, które elementy uległy zmianie względem pierwotnego naliczenia lub nie zostały rozliczone, i dokona stosownych korekt. Do sprawdzenia nierozliczonych elementów za wcześniejsze okresy służy raport Lista nierozliczonych elementów wywoływany z listy pracowników.
+W programie nie ma potrzeby konfigurowania elementów służących do korygowania nieobecności, wynagrodzenia lub dodatków i potrąceń. Poprzez wybranie odpowiednich parametrów naliczania wypłat system sprawdzi, które elementy uległy zmianie względem pierwotnego naliczenia lub nie zostały rozliczone, i dokona stosownych korekt. Do sprawdzenia nierozliczonych elementów za wcześniejsze okresy służy raport Lista nierozliczonych elementów wywoływany z listy pracowników (Wydruki/Wynagrodzenia i zasiłki).
 W ramach wdrożenia zostaną skonfigurowane elementy płacowe przekazane przez Klienta na etapie analizy w pliku „[DO UZUPEŁNIENIA: nazwa pliku ze składnikami płacowymi].xlsx”. Elementy wynagrodzenia, których „ręczna” konfiguracja nie będzie możliwa, zostaną przygotowane przez programistów.
 Zasady ogólne ustalone z Klientem:
 @kolumny 36,64
@@ -97,8 +97,8 @@ Deklaracje rozliczeniowe ZUS przygotowywane są w enova365 i eksportowane do pro
 ### Obsługa ujemnych podstaw ZUS
 Sytuację, gdy na naliczonej liście płac pojawi się u pracownika ujemna podstawa składek, można rozwiązać na jeden z poniższych sposobów:
 - naliczenie listy korygującej do poprzedniego miesiąca z edycją miesiąca ZUS (miesiąc przypisania do deklaracji DRA), a następnie naliczenie listy płac do bieżącego miesiąca;
-- wypłata zaliczki na wynagrodzenie, która skoryguje ujemną podstawę tak, aby w podstawie wykazana była kwota 0 – w momencie powrotu pracownika do pracy nastąpi automatyczne potrącenie zaliczki;
-- zapisanie naliczonej wypłaty z ujemną podstawą składek i ręczna korekta deklaracji w programie Płatnik.
+- wypłata zaliczki na wynagrodzenie, która skoryguje ujemną podstawę tak, aby w podstawie wykazana była kwota 0 – w momencie powrotu pracownika do pracy nastąpi automatyczne potrącenie zaliczki (parametr „W przypadku naliczenia ujemnej podstawy składek ZUS (…) wypłać zaliczkę w kwocie ujemnej podstawy składek” w Narzędzia/Opcje/Kadry i płace/Płace/Składki ZUS);
+- zapisanie naliczonej wypłaty z ujemną podstawą składek i ręczna korekta deklaracji w programie Płatnik – wymaga wyłączenia domyślnie zaznaczonego parametru „Nie dopuszczaj do zapisania wypłat z ujemnymi podstawami naliczania składek ZUS lub zaliczki podatku” (Narzędzia/Opcje/Kadry i płace/Płace/Ogólne).
 Na etapie analizy Klient wybrał wariant: [DO UZUPEŁNIENIA: wybrany wariant].
 
 ## PFRON

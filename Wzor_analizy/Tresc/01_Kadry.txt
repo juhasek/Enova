@@ -108,7 +108,7 @@ Zakres danych przekazywanych integracją:
 
 ## Wieloetatowość i zapis zmian danych
 Na etapie wdrożenia [DO UZUPEŁNIENIA: zostanie / nie zostanie] uruchomiona obsługa wieloetatowości, umożliwiająca zatrudnienie pracownika w tej samej firmie na więcej niż jednym etacie. Rozwiązanie pozwala powiązać kartoteki danego pracownika i tworzyć wspólną deklarację PIT czy ZUS.
-Na etapie wdrożenia uruchomiona zostanie funkcjonalność rozszerzonego zapisu zmian danych w systemie. Odnotowywane będą informacje o logowaniu do systemu i realizowanych zmianach danych ze wskazaniem operatora dokonującego zmiany, daty i godziny zmiany oraz zakresu zmodyfikowanych danych.
+Na etapie wdrożenia uruchomiona zostanie funkcjonalność rozszerzonego zapisu zmian danych w systemie. Odnotowywane będą informacje o logowaniu do systemu (w tym nieudanych próbach logowania) i realizowanych zmianach danych ze wskazaniem operatora dokonującego zmiany, daty i godziny zmiany oraz zakresu zmodyfikowanych danych. Zakres zapisu ustawia się w Narzędzia/Opcje/Systemowe/Zmiany ustawienia – dla importu i eksportu danych oraz osobno dla każdej tabeli (log listy, formularza, zapisów i raportów); zapisane zmiany są dostępne na liście Systemowe/Zmiany rekordów oraz w historii zmian zapisu danego rekordu.
 
 ## Numeracja pracowników w enova365
 System enova365 daje możliwość przechowywania wielu przebiegów zatrudnienia pracownika w jednej kartotece w ramach danej spółki. Oznacza to, że ten sam pracownik pracujący na umowie o pracę w różnych przedziałach czasu oraz posiadający dodatkowo umowy cywilnoprawne może mieć jeden numer w systemie. Kod pracownika musi być wartością unikalną.

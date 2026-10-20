@@ -44,3 +44,15 @@ Zakładki kartoteki i Wieloetatowość (s.2, 80); Elektroniczna dokumentacja pra
 - Punkt 1 (nadgodziny średniotygodniowe) – **bez zmian** z decyzji użytkownika: we wdrożeniach przyjmujemy zawsze dopłatę 100% (w kalendarzu ustawienie Rozliczanie = „Zawsze 100%”).
 - Punkty 2–12 – wprowadzone w plikach `Tresc/*.txt` (dokument główny, Z1, Z3, Z5, kwestionariusz) i wygenerowane ponownie; kontrola generatora bez błędów.
 - Pozycje z rozdziału 2 pozostają jako praktyka wdrożeniowa – do potwierdzenia w programie przy najbliższej okazji.
+
+## 5. Weryfikacja pozycji z rozdziału 2 w plikach programu 2610 (2026-10-20)
+
+Sprawdzone bez logowania do bazy – w DLL-ach i raportach serwera `C:\enovaServer\2610\Soneta.Products.Server.Standard`
+(metadane tabel, formularze konfiguracji, rejestracja wydruków).
+
+| Miejsce | Wynik | Źródło | Zmiana we wzorze |
+|---|---|---|---|
+| AN 3.3.1 – długość nazwy wydziału | **Niezgodne:** Nazwa wydziału maks. **100** znaków (Kod 20) | `Soneta.KadryPlace.dll`, `WydzialRow.Nazwa` – MaxLength(100), `Kod` – MaxLength(20) | „nie może przekroczyć 100 (kod wydziału – 20 znaków)”; uwaga o znaku „&” zostaje jako praktyka |
+| Z3 1.4 – raport „Lista nierozliczonych elementów” | Potwierdzone – wydruk na liście pracowników, grupa „Wynagrodzenia i zasiłki” (wersje aspx i repx) | `Aspx/place/Lista nierozliczonych elementów.aspx`, `Soneta.KadryPlace.Reports.dll` | dopisana ścieżka Wydruki/Wynagrodzenia i zasiłki |
+| Z3 1.6.1 – ujemna podstawa ZUS | Potwierdzone – wariant zaliczki: parametr w Kadry i płace/Płace/Składki ZUS (domyślnie wyłączony); zapis wypłaty z ujemną podstawą blokuje parametr w Kadry i płace/Płace/Ogólne (domyślnie włączony) | `Soneta.KadryPlace.UI.dll` (CfgSkładkiZUSPage, CfgOgolnePage), domyślne wartości w `Soneta.KadryPlace.dll` | dopisane parametry przy wariantach 2 i 3 |
+| Z1 1.5 – rozszerzony zapis zmian | Potwierdzone – Systemowe/Zmiany ustawienia (import, eksport, per tabela: log listy, formularza, zapisów, raportów), lista Systemowe/Zmiany rekordów; typy wpisów m.in. Login, Logout, LoginFailed, Created, Modified, Deleted | `Soneta.Business.UI.dll` (ChangeInfosConfigPage, ChangeInfosPage), enum `Soneta.Business.ChangeInfoType` | dopisane miejsce konfiguracji i przeglądania |
