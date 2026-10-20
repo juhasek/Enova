@@ -1,0 +1,115 @@
+//** begin enable condition **
+// Task "Kopiuj oryginalne dane RCP harmonogram" - definicja zadania na tabeli CfgNodes, typ definicji
+// "Brak", bez wyzwalaczy (wzor: standardowe zadanie "Import RCP").
+//
+// Uruchamiany tylko przez harmonogram (zakladka Harmonogram definicji zadania, akcja
+// "Kopiuj oryginalne dane RCP"). Dogania zapisy Oryginalnych danych RCP z ostatnich
+// DniWsteczHarmonogramu dni, ktorych nie skopiowalo zadanie "Kopiuj oryginalne dane RCP"
+// (wyzwalacz przy zapisie) - np. wpisanych przez integracje bez operatora, z bledem kopiowania
+// albo sprzed uruchomienia zadan. Juz skopiowanych zapisow nie dubluje.
+public override bool IsEnable() {
+    return false;
+}
+//** end enable condition **
+
+//** begin active condition **
+public override bool IsActive() {
+    return false;
+}
+//** end active condition **
+
+//** begin realised condition **
+public override bool IsRealised() {
+    return false;
+}
+//** end realised condition **
+
+//** begin action **
+public override void Action() {
+}
+//** end action **
+
+//** begin other methods **
+// Ile dni wstecz (od dzisiaj) akcja harmonogramu przeglada Oryginalne dane RCP.
+private const int DniWsteczHarmonogramu = 31;
+
+[AutoAction("Kopiuj oryginalne dane RCP")]
+public void KopiujOryginalneDaneRCP() {
+    int skopiowane = 0;
+    try {
+        using (Session sesja = Session.Login.CreateSession()) {
+            Soneta.Kalend.KalendModule kalend = Soneta.Kalend.KalendModule.GetInstance(sesja);
+            RowCondition warunek = new FieldCondition.GreaterEqual("Data", Date.Today.AddDays(-DniWsteczHarmonogramu));
+            using (ITransaction transakcja = sesja.Logout(true)) {
+                foreach (Soneta.Kalend.WejscieWyjscieO oryginal in ((SubTable)kalend.WejsciaWyjsciaO.WgPracownik)[warunek]) {
+                    try {
+                        if (KopiujZapisRCP(kalend, oryginal))
+                            skopiowane++;
+                    }
+                    catch (Exception ex) {
+                        LogHarmonogramu(oryginal.Pracownik + " " + oryginal.Data + " " + oryginal.Godzina + " - blad kopiowania: " + ex.Message, ConsoleColor.Red);
+                    }
+                }
+                transakcja.Commit();
+            }
+            if (skopiowane > 0)
+                sesja.Save();
+        }
+        LogHarmonogramu("Kopiuj oryginalne dane RCP - skopiowano zapisow: " + skopiowane, ConsoleColor.Yellow);
+    }
+    catch (Exception ex) {
+        LogHarmonogramu(ex.Message, ConsoleColor.Red);
+        LogHarmonogramu(ex.StackTrace, ConsoleColor.Red);
+        if (ex.InnerException != null)
+            LogHarmonogramu(ex.InnerException.Message, ConsoleColor.Red);
+    }
+}
+
+// Kopiuje jeden oryginalny zapis do Danych RCP; false, gdy kopia juz istnieje.
+// Kopia istnieje, gdy w Danych RCP jest zapis powiazany z oryginalem (WeWyO) albo - dla danych
+// z importu standardowego, ktory zapisuje do obu tabel bez powiazania - zapis bez powiazania
+// z ta sama data, godzina i typem.
+// Ta sama metoda jest w zadaniu "Kopiuj oryginalne dane RCP" - zmiany wprowadzac w obu.
+private static bool KopiujZapisRCP(Soneta.Kalend.KalendModule kalend, Soneta.Kalend.WejscieWyjscieO oryginal) {
+    if (oryginal.Pracownik == null)
+        return false;
+    foreach (Soneta.Kalend.WejscieWyjscieI powiazany in kalend.WejsciaWyjsciaI.WgWeWyO[oryginal])
+        return false;
+
+    Date data = oryginal.DataEdytowana != Date.Empty ? oryginal.DataEdytowana : oryginal.Data;
+    // Godzina edytowana 0:00 przy pustej dacie edytowanej = brak edycji (tak zostaje po zapisie
+    // z pominieciem logiki enova, np. import wg rekordow albo zapis integracji prosto do bazy).
+    bool bezEdycjiGodziny = oryginal.GodzinaEdytowana == Time.Empty || (oryginal.GodzinaEdytowana == new Time(0, 0) && oryginal.DataEdytowana == Date.Empty);
+    Time godzina = bezEdycjiGodziny ? oryginal.Godzina : oryginal.GodzinaEdytowana;
+    // Klucz (pracownik, data) - obejmuje tez zapisy dodane w tej samej sesji (np. import z czytnika).
+    foreach (Soneta.Kalend.WejscieWyjscieI istniejacy in kalend.WejsciaWyjsciaI.WgPracownik[oryginal.Pracownik, data]) {
+        if (istniejacy.WeWyO == null && istniejacy.Godzina == godzina && istniejacy.Typ == oryginal.Typ)
+            return false;
+    }
+
+    Soneta.Kalend.WejscieWyjscieI kopia = new Soneta.Kalend.WejscieWyjscieI(oryginal.Pracownik);
+    kalend.WejsciaWyjsciaI.AddRow(kopia);
+    kopia.Data = data;
+    kopia.Godzina = godzina;
+    kopia.WeWyO = oryginal;
+    kopia.Typ = oryginal.Typ;
+    kopia.Operacja = oryginal.Operacja;
+    kopia.Zaimportowany = false;
+    kopia.Stan = Soneta.Kalend.TypWeryfikacjiWeWy.Nieoznaczony;
+    kopia.CzytnikRCP = oryginal.CzytnikRCP;
+    kopia.Uwagi = oryginal.Uwagi;
+    return true;
+}
+
+private static void LogHarmonogramu(string komunikat, ConsoleColor? kolor = null) {
+    var par = Factories.MakeSchedulerLoggerServiceParams();
+    if (par == null)
+        return;
+    par.LogToConsole = true;
+    par.SystemLogCategory = "Scheduler";
+    par.Message = komunikat;
+    par.ConsoleColor = kolor;
+    Factories.MakeSchedulerLoggerService().Log(par);
+    System.Console.ResetColor();
+}
+//** end other methods **

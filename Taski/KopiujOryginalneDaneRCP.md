@@ -1,4 +1,4 @@
-# Task „Kopiuj oryginalne dane RCP”
+# Task „Kopiuj oryginalne dane RCP” (kopiowanie przy zapisie)
 
 ## Problem
 
@@ -10,15 +10,21 @@ których pracuje algorytm RCP, trzeba je było przenosić ręcznie czynnością
 Standardowy import enova z pliku czytnika (`AutoImportRCP`) zapisuje od razu
 do obu tabel — integracja klienta zapisuje tylko do oryginalnych.
 
-## Co robi
+## Rozwiązanie — dwa zadania
 
-Każdy zapis z Oryginalnych danych RCP kopiuje do Danych RCP **dokładnie raz**,
-tak samo jak worker enova `WejsciaWyjsciaOWorker.Kopiuj` (zdekompilowany, 2610):
+| Zadanie | Tabela | Uruchomienie | Plik kodu |
+|---|---|---|---|
+| Kopiuj oryginalne dane RCP | Pracownicy | wyzwalacz na `WejsciaWyjsciaO` — przy zapisie oryginału | `KopiujOryginalneDaneRCP` |
+| Kopiuj oryginalne dane RCP harmonogram | CfgNodes | harmonogram co 15 min, ostatnie 31 dni | `KopiujOryginalneDaneRCPHarmonogram` (opis: `KopiujOryginalneDaneRCPHarmonogram.md`) |
+
+Oba zadania kopiują tą samą metodą `KopiujZapisRCP` (kod zduplikowany w obu
+definicjach — zmiany wprowadzać w obu), tak jak worker enova
+`WejsciaWyjsciaOWorker.Kopiuj` (zdekompilowany, 2610):
 
 | Dane RCP | Skąd |
 |---|---|
 | Data | Data edytowana oryginału, a gdy pusta — Data |
-| Godzina | Godzina edytowana oryginału, a gdy pusta — Godzina |
+| Godzina | Godzina edytowana oryginału, a gdy pusta (albo 0:00 przy pustej dacie edytowanej) — Godzina |
 | Typ, Operacja, Czytnik RCP, Uwagi | z oryginału |
 | Powiązanie z oryginałem (`WeWyO`) | oryginał |
 | Zaimportowany | nie |
@@ -26,39 +32,31 @@ tak samo jak worker enova `WejsciaWyjsciaOWorker.Kopiuj` (zdekompilowany, 2610):
 
 Zapis **nie jest kopiowany**, gdy w Danych RCP już jest:
 
-- zapis powiązany z tym oryginałem (wcześniej skopiowany workerem albo tym taskiem), albo
-- zapis bez powiązania z tą samą datą, godziną i typem (np. ze standardowego
-  importu z czytnika, który pisze do obu tabel bez powiązania).
+- zapis powiązany z tym oryginałem (`WgWeWyO[oryginal]`), albo
+- zapis bez powiązania z tym samym pracownikiem, datą, godziną i typem (np. ze
+  standardowego importu z czytnika). Szukany kluczem `WgPracownik[pracownik, data]`
+  — obejmuje też zapisy dodane w tej samej sesji. Pierwsza wersja używała
+  `FieldCondition` na podtabeli, który zapisów niezapisanych jeszcze w bazie nie widział
+  i dublował odbicie z importu wykonanego w tej samej sesji (scenariusz W3).
 
-Dzięki temu można bezpiecznie mieszać task z ręcznym kopiowaniem i nie powstają duplikaty.
-Późniejsza zmiana oryginału ani usunięcie kopii z Danych RCP **nie są
-synchronizowane** — każdy oryginał jest kopiowany raz.
+Każdy oryginał jest kopiowany raz — późniejsza zmiana oryginału ani usunięcie
+kopii nie są synchronizowane.
 
-## Dwie drogi uruchomienia
+## Zadanie przy zapisie (to)
 
-1. **Przy zapisie** (wyzwalacz na `WejsciaWyjsciaO`) — kopia powstaje w tej
-   samej transakcji co oryginał. enova uruchamia wyzwalacze **tylko w sesji
-   z operatorem** (`Saver.doEventsAndTasks`: `!IsInternal && Login.Operator != null`).
-   Błąd kopiowania jest przechwytywany, żeby nie blokować zapisu oryginału.
-2. **Harmonogram** — akcja automatyczna **„Kopiuj oryginalne dane RCP”**
-   (`[AutoAction]`, tak jak istniejące zadanie „Import RCP”). Przegląda
-   oryginalne zapisy z ostatnich **31 dni** (stała `DniWsteczHarmonogramu`)
-   i dogania wszystko, czego nie skopiował wyzwalacz — np. gdy integracja
-   zapisuje bez operatora albo prosto do bazy. Skopiowana liczba zapisów
-   i błędy trafiają do logu harmonogramu (kategoria „Scheduler”).
+Wyzwalacz na `WejsciaWyjsciaO` (plik `KopiujOryginalneDaneRCP - wyzwalacz WejsciaWyjsciaO`,
+przeznaczenie Uniwersalny) zwraca pracownika zapisu; `IsEnable()` kopiuje zmienione
+oryginały tego pracownika (`WejsciaWyjsciaO.Rows.Changed`) i zwraca `false` — enova
+nie tworzy rekordów zadań (Tasks). Błąd kopiowania jest przechwytywany, żeby nie
+blokować zapisu oryginału.
 
-Nie wiadomo, jak dokładnie zapisuje integracja klienta, dlatego są obie drogi:
-wyzwalacz daje natychmiastową kopię, a harmonogram gwarantuje, że niczego nie zabraknie.
-
-## Pliki
-
-- `KopiujOryginalneDaneRCP` — sekcje kodu definicji zadania (IsEnable, IsActive,
-  IsRealised, Action, pozostałe metody) w formacie znaczników `//** begin ... **`.
-- `KopiujOryginalneDaneRCP - wyzwalacz WejsciaWyjsciaO` — kod wyzwalacza.
+enova uruchamia wyzwalacze **tylko w sesji z operatorem** (`Saver.doEventsAndTasks`:
+`!IsInternal && Login.Operator != null`) — import według rekordów (`dbmgr importxml`)
+czy zapis prosto do bazy ich nie uruchamia (scenariusz W4); takie zapisy dogania harmonogram.
 
 ## Konfiguracja w enova
 
-Nowa definicja zadania:
+Definicja zadania (Ustawienia/Systemowe/Definicje zadań):
 
 | Pole | Wartość |
 |---|---|
@@ -68,63 +66,33 @@ Nowa definicja zadania:
 | Typ definicji | **Brak** |
 | Blokada | nie |
 
-Sekcje kodu wkleić z pliku `KopiujOryginalneDaneRCP` (każdą w odpowiednie
-miejsce edytora; metody `KopiujOryginalneDaneRCP`, `KopiujZapisRCP`,
-`LogHarmonogramu` i stała — w „pozostałe metody”).
+Sekcje kodu z pliku `KopiujOryginalneDaneRCP` (format znaczników `//** begin ... **`).
+Wyzwalacz: tabela `WejsciaWyjsciaO`, kod z pliku wyzwalacza.
 
-Wyzwalacz (przeznaczenie „Uniwersalny”):
+Po zmianie kodu SQL-em: `update RuntimeProjects set Description=Description where ID=2`
+(stamp), a potem na definicji zadania czynność **„Wymuś rekompilację”** — serwer
+(`server.dll`) trzyma skompilowany kod w pamięci i sam go nie przeładowuje (usługa
+harmonogramu przekompilowuje się sama ok. minuty po zmianie stampu).
 
-| Tabela | Kod |
-|---|---|
-| WejsciaWyjsciaO | `KopiujOryginalneDaneRCP - wyzwalacz WejsciaWyjsciaO` |
+## Dokumentacja i testy
 
-Harmonogram: nowa definicja harmonogramu wskazująca tę definicję zadania i akcję
-„Kopiuj oryginalne dane RCP”, częstotliwość np. co 15 minut (albo zaraz po
-harmonogramie integracji).
-
-Typ „Brak” + `IsEnable() == false` → enova nie tworzy rekordów zadań (Tasks)
-przy zapisach (zob. `PracaWNormieZPlanu.md`).
+- `Instrukcja_Kopiowanie_RCP.docx` — opis obu zadań, konfiguracja, komunikaty, scenariusze
+  (format jak `Weryfikatory czasu pracy/Instrukcja_Import_RCP.docx`).
+- `Scenariusze testowe kopiowania danych RCP.xlsx` — arkusze „Kopiowanie przy zapisie”
+  (W1–W4) i „Kopiowanie harmonogramem” (H1–H4) z wynikami testu.
+- Dane testowe: `ImportyXML/Task kopiuj oryginalne dane RCP - test wyzwalacza.xml`
+  (logika biznesowa, sesja operatora — MCP `import_business_xml`; konstruktor wiersza
+  wymaga pracownika w atrybucie `prac`) i `... - test harmonogramu.xml`
+  (`dbmgr importxml`, bez operatora; typ razem z `DefinicjaZdarzenia`).
 
 ## Status
 
-- 2026-10-16: kod napisany na podstawie zdekompilowanego workera i importu RCP
-  z enova 2610; **kompiluje się** lokalnie na bibliotekach 2512.5.6 razem
-  ze skompilowanym projektem Business bazy (klasa bazowa `TaskCalculatorPracownicy`).
-- 2026-10-20, baza **Al**: definicja zadania TaskDefs **415** + wyzwalacz TaskTriggers **238**
-  (WejsciaWyjsciaO) założone i skompilowane przez serwer 2610 (akcja `[AutoAction]` widoczna
-  w definicji harmonogramu). Harmonogram ScheduleDefs **12** „Kopiuj oryginalne dane RCP”:
-  co 15 minut od 20.10.2026, akcja „Kopiuj oryginalne dane RCP”.
-- Uruchomienie usługi harmonogramu zadań na serwerze 2610 (`appsettings.json`, sekcja
-  `Orchestrator:Process:Composition:Scheduler`) wymagało trzech rzeczy:
-  1. `"Enabled": true` (domyślnie `false`),
-  2. `"Overrides": { "DbName": "Al" }` — bez bazy scheduler pada co ~10 s z błędem
-     „Database cannot be determined” (to odpowiednik `scheduler -d Al`),
-  3. odblokowanego operatora **„Harmonogram Zadań”** w bazie (Ustawienia/Systemowe/Uprawnienia/
-     Operatorzy, status „Wszystkie”) — scheduler loguje się na tego operatora, a zablokowany daje
-     „Nieznaleziony kontekst autoryzacji dla operatora”. Po nieudanym logowaniu scheduler nie
-     ponawia próby — trzeba zrestartować proces.
-- Formularz „Oryginalne dane z RCP” jest w UI niedostępny („Brak praw do formularza danych”),
-  więc wyzwalacza nie da się sprawdzić ręcznym dodaniem zapisu — test wymaga zapisu z integracji.
-- **Harmonogram w obecnej postaci nie działa:** zaplanowane wywołania (`ScheduleItems`) enova
-  przypina zawsze do zadania (`Tasks`). Powstają przy tworzeniu zadania danej definicji albo
-  czynnością „Uruchom harmonogramy”, dostępną tylko dla definicji globalnych (tabela `?`)
-  — `TaskDefinitionRunScheduleWorker` w Soneta.Core. Definicja 415 (Pracownicy, `IsEnable() == false`)
-  zadań nie tworzy, więc harmonogram 12 nigdy nie dostał wywołania (`ScheduleItems` puste).
-- Oryginał ID 3 (16.10, sprzed założenia taska) nie ma kopii w Danych RCP — wyzwalacz
-  kopiuje tylko nowe zapisy.
-
-## Decyzja 2026-10-20
-
-Dane do Oryginalnych danych RCP przychodzą integracją, więc **na razie zostaje jeden task**
-— definicja 415 z wyzwalaczem (kopiowanie przy zapisie). Harmonogram 12 jest nieaktywny
-(brak zaplanowanych wywołań); metoda `[AutoAction]` w kodzie 415 jest nieużywana.
-
-Docelowo (gdy okaże się potrzebny harmonogram, np. integracja zapisuje bez operatora):
-**dwa zadania** —
-1. obecna definicja 415 na Pracownikach (wyzwalacz przy zapisie),
-2. osobna definicja zadania do harmonogramu **na tabeli `CfgNodes`** (wzór: TaskDefs 61
-   „Import RCP”) z akcją `[AutoAction]` kopiującą zaległe oryginały z ostatnich 31 dni;
-   harmonogram przypięty do niej, a akcja harmonogramu usunięta z 415.
-
-Do zrobienia: test wyzwalacza pierwszym zapisem z integracji (czy kopia powstaje od razu,
-z powiązaniem WeWyO).
+- 2026-10-20, baza **Al**: TaskDefs **415** + TaskTriggers **238** (przy zapisie),
+  TaskDefs **416** (harmonogram) + zadanie globalne Tasks **2** + ScheduleDefs **14**
+  (host = zadanie; docelowo co 15 min, na czas testów użytkownik ustawił co minutę),
+  planowane wywołanie aktywne. Usunięte próby: harmonogram 12 (z listy, bez hosta)
+  i 13 (host = definicja — nie wywołuje akcji).
+- Test live 20.10.2026: **W1–W4 i H1–H4 pozytywne** (arkusz scenariuszy). Dwie poprawki
+  w trakcie: klucz `WgPracownik[pracownik, data]` (W3) oraz godzina edytowana 0:00 przy
+  pustej dacie edytowanej = brak edycji (H1 — import wg rekordów zostawia w bazie
+  `GodzinaEdytowana = 0`, a nie `Time.Empty`; pierwsze kopie miały godzinę 0:00).

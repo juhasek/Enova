@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Test zadania "Kopiuj oryginalne dane RCP harmonogram" (TaskDefs 416, akcja harmonogramu) w bazie Al.
+  Scenariusze H1-H4: "Taski/Scenariusze testowe kopiowania danych RCP.xlsx".
+
+  Import WEDŁUG REKORDÓW bez operatora: dbmgr importxml Al [plik] - wyzwalacz zadania 415 się NIE
+  uruchamia (tak jak przy integracji zapisującej z pominięciem operatora), więc kopie do Danych RCP
+  może zrobić tylko harmonogram. Typ ustawiony razem z definicją zdarzenia RCP (DefZdarzenRCP:
+  ...0001 Wejście, ...0002 Wyjście), bo w trybie rekordów enova jej nie uzupełnia.
+  Pracownik testowy S3 (guid A1D1...0003).
+
+  Wejścia/wyjścia nie są guidowane: ponowny import dopisuje kolejne zapisy; przed powtórzeniem
+  testu usunąć oryginalne dane i dane RCP S3 z 20.10.2026 i 01.09.2026.
+-->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <!-- H1: S3 20.10 wejście 8:00, wyjście 16:00 -->
+  <WejscieWyjscieO>
+    <Pracownik>a1d10000-0000-0000-0000-000000000003</Pracownik>
+    <Data>2026-10-20</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <DefinicjaZdarzenia>00000000-0006-0009-0001-000000000000</DefinicjaZdarzenia>
+  </WejscieWyjscieO>
+  <WejscieWyjscieO>
+    <Pracownik>a1d10000-0000-0000-0000-000000000003</Pracownik>
+    <Data>2026-10-20</Data>
+    <Godzina>16:00</Godzina>
+    <Typ>Wyjscie</Typ>
+    <DefinicjaZdarzenia>00000000-0006-0009-0002-000000000000</DefinicjaZdarzenia>
+  </WejscieWyjscieO>
+  <!-- H4: S3 01.09 - starsze niż 31 dni, harmonogram go pomija -->
+  <WejscieWyjscieO>
+    <Pracownik>a1d10000-0000-0000-0000-000000000003</Pracownik>
+    <Data>2026-09-01</Data>
+    <Godzina>8:00</Godzina>
+    <Typ>Wejscie</Typ>
+    <DefinicjaZdarzenia>00000000-0006-0009-0001-000000000000</DefinicjaZdarzenia>
+  </WejscieWyjscieO>
+</session>
