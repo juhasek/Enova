@@ -87,7 +87,26 @@ bo dla paska zbiorczego pojedyncza data byłaby myląca.
 
 Uwaga: `Data.Month` to sam numer miesiąca, bez roku — luty 2025 i luty 2026
 wpadłyby na jeden pasek. Jeśli kiedyś zacznie przeszkadzać, dołożyć
-`&& rep.Data.Year == w.Data.Year`.
+`&& rep.Data.Year == w.Data.Year` — w wersji klienta z 20.10.2026 już dołożone.
+
+## Stałe 4 strony na pracownika (2026-10-20)
+
+Bazą jest najnowsza wersja snippetu od klienta (eksport `SystemFiles` z 20.10.2026 —
+m.in. wynagrodzenie za nadgodziny, PKZP, grupowanie miesiąc + rok).
+
+Pasek ma zmienną liczbę stron (lista dodatków/potrąceń), a do druku potrzebne są
+zawsze 4 strony na pracownika. Rozwiązanie bez zmian w `.repx`:
+
+- `panel1` (strona do koperty, `GroupHeader3`) drukuje się raz na pracownika, na jego
+  pierwszej stronie — `panel1_PrintOnPage` zapisuje indeks tej strony,
+- `GroupFooter1` ma `PageBreak=AfterBand`, więc każdy pasek zaczyna nową stronę,
+- po zbudowaniu dokumentu (`Report.PrintingSystem.AfterBuildPages`) `DopelnijStrony`
+  idzie od końca i wstawia puste strony (osobny pusty `XtraReport` o tym samym
+  formacie papieru), aż każdy pasek ma wielokrotność `StronNaPracownika = 4` stron
+  (pasek 5-stronicowy → 8),
+- puste strony nie mają stopki; numeracja w stopce liczy tylko strony z treścią.
+
+Do potwierdzenia na żywym programie: podgląd wydruku **i** eksport do PDF/druk.
 
 ## Jak wgrać
 
