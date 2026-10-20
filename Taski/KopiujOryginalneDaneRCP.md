@@ -90,4 +90,13 @@ przy zapisach (zob. `PracaWNormieZPlanu.md`).
 - 2026-10-16: kod napisany na podstawie zdekompilowanego workera i importu RCP
   z enova 2610; **kompiluje się** lokalnie na bibliotekach 2512.5.6 razem
   ze skompilowanym projektem Business bazy (klasa bazowa `TaskCalculatorPracownicy`).
-- Nie założony w żadnej bazie, nie testowany na żywo.
+- 2026-10-20, baza **Al**: definicja zadania TaskDefs **415** + wyzwalacz TaskTriggers **238**
+  (WejsciaWyjsciaO) założone i skompilowane przez serwer 2610 (akcja `[AutoAction]` widoczna
+  w definicji harmonogramu). Harmonogram ScheduleDefs **12** „Kopiuj oryginalne dane RCP”:
+  co 15 minut od 20.10.2026, akcja „Kopiuj oryginalne dane RCP”.
+- Usługa harmonogramu zadań na serwerze 2610 jest **wyłączona** (`appsettings.json`:
+  `Scheduler.Enabled = false` w sekcji komponentów orkiestratora) — bez jej włączenia
+  harmonogram się nie uruchamia.
+- Formularz „Oryginalne dane z RCP” jest w UI niedostępny („Brak praw do formularza danych”),
+  więc wyzwalacza nie da się sprawdzić ręcznym dodaniem zapisu — test wymaga zapisu z integracji.
+- Nie przetestowany na żywo.
