@@ -106,7 +106,7 @@ zawsze 4 strony na pracownika. Rozwiązanie bez zmian w `.repx`:
   (pasek 5-stronicowy → 8),
 - puste strony nie mają stopki; numeracja w stopce liczy tylko strony z treścią.
 
-Do potwierdzenia na żywym programie: podgląd wydruku **i** eksport do PDF/druk.
+**Potwierdzone na żywym programie (2026-10-20):** każdy pracownik drukuje się na 4 stronach.
 
 ## Jak wgrać
 
