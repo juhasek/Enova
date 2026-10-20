@@ -7,3 +7,6 @@ Pobrane/*
 Klienci/
 # Kopie robocze dokumentow zrodlowych przy budowie wzoru analizy.
 Wzor_analizy/_robocze/
+# Artefakty kompilacji generatora wzorów analizy.
+Wzor_analizy/Generator/bin/
+Wzor_analizy/Generator/obj/

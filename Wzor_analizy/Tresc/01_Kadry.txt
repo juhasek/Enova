@@ -1,0 +1,317 @@
+@tytul ZAŁĄCZNIK NR 1 DO ANALIZY PRZEDWDROŻENIOWEJ
+@obszar Obszar: Kadry
+@plik Wzor_ZAL_01_Kadry_KPCP.docx
+@opis Wzór załącznika nr 1 – Kadry – analizy przedwdrożeniowej enova365
+
+# Kadry
+
+## Charakterystyka kadr
+System enova365 umożliwia ewidencję wszelkich danych kadrowych pracowników oraz zleceniobiorców uwarunkowanych przepisami w tym zakresie. Są to między innymi:
+- dane personalne pracownika i zleceniobiorcy (imiona, nazwisko, PESEL, data urodzenia, obywatelstwo, narodowość);
+- adresy pracownika (zameldowania, zamieszkania, korespondencyjny, adresy do pracy zdalnej);
+- historia zatrudnienia – poprzednie miejsca pracy i zajmowane stanowiska z datami od–do, wyliczeniem okresu poprzedniego zatrudnienia i możliwością oznaczenia okresu do stażu ogółem i do stażu w firmie, z uwzględnieniem wykorzystania w roku zatrudnienia urlopu wypoczynkowego (w tym na żądanie), opieki z art. 188 KP, wynagrodzenia chorobowego, zasiłku opiekuńczego, zwolnienia z powodu siły wyższej i urlopu opiekuńczego, a także informacji o wykorzystaniu urlopu rodzicielskiego, ojcowskiego, wychowawczego i bezpłatnego oraz podstawie prawnej rozwiązania umowy; możliwość wpisania okresów zaliczanych do stażu pracy na podstawie przepisów szczególnych;
+- wykształcenie (szkoła, kierunek, tytuł, daty rozpoczęcia i zakończenia, wyliczenie lat do urlopu wypoczynkowego);
+- członkowie rodziny (w przypadku korzystania z uprawnień związanych z posiadaniem członków rodziny) wraz ze zgłoszeniem do ubezpieczenia zdrowotnego;
+- dane do ubezpieczenia: oddział NFZ, niepełnosprawność, status emeryta lub rencisty, kod tytułu ubezpieczenia, daty zgłoszenia i wyrejestrowania;
+- warunki zatrudnienia – rodzaj umowy, okres zatrudnienia, stanowisko, wymiar etatu, dodatkowe elementy płacowe wraz z historią zmian w trakcie zatrudnienia (aneksy z datą obowiązywania zmian), umowy cywilnoprawne;
+- [DO UZUPEŁNIENIA: dodatkowe dane ewidencjonowane przez Klienta – lub usuń].
+W części kadrowej systemu przechowywana jest pełna informacja o danych personalnych zatrudnionych pracowników oraz zleceniobiorców, o zatrudnieniu, czasie pracy i nieobecnościach. Odnotowane zmiany w gromadzonych danych automatycznie tworzą historię zatrudnienia pracownika. [DO UZUPEŁNIENIA: inne grupy osób ewidencjonowanych w kartotekach, np. praktykanci, przełożeni zewnętrzni, emeryci i renciści do świadczeń socjalnych, osoby pobierające renty wyrównawcze – lub usuń]
+Ze względu na aktualny charakter zatrudnienia informacja o zatrudnionych osobach wyświetlana jest na listach:
+@rys kadry_lista_folderow.png | Dostępne listy modułu Kadry
+Bez względu na to, czy pracownik jest zatrudniony na podstawie umowy o pracę, czy umowy cywilnoprawnej, dane są przechowywane w jednej kartotece w ramach danej spółki – kartoteka jest wspólna dla wszystkich rodzajów współpracy. [DO UZUPEŁNIENIA: w przypadku konfiguracji wielooddziałowej – zasada zakładania kartotek przy zatrudnieniu tej samej osoby w kilku spółkach]
+
+## Kartoteka pracownika – zakładki
+Poniżej przedstawione zostały zakładki kartoteki niezbędne do uzupełnienia przy zatrudnianiu i zakończeniu zatrudnienia pracownika lub współpracownika. W ramach danej zakładki opisano dodatkowe pola, które zostaną przygotowane dedykowanie na etapie wdrożenia.
+
+### Kadry/Ogólne
+W zakładce Ogólne uzupełnia się podstawowe dane identyfikacyjne pracownika.
+@rys kadry_ogolne.png | Dane ogólne pracownika
+
+### Kadry/Adresy
+Zakładka umożliwia wprowadzenie danych adresowych i kontaktowych pracownika.
+@rys kadry_adresy.png | Dane adresowe
+
+### Kadry/Dane podatkowe
+Zakładka pozwala na uzupełnienie danych dotyczących urzędu skarbowego, identyfikatora podatkowego, kosztów uzyskania przychodu, ulg podatkowych, zwolnień z podatku i progu podatkowego.
+@rys kadry_dane_podatkowe.png | Dane podatkowe
+
+### Kadry/Dane ubezpieczeniowe
+Zakładka pozwala na wprowadzenie danych dotyczących prawa pracownika do emerytury lub renty, stopnia niepełnosprawności (wraz z datami orzeczenia), kodu pracy w szczególnych warunkach lub szczególnym charakterze oraz oddziału NFZ.
+@rys kadry_dane_ubezpieczeniowe.png | Dane ubezpieczeniowe
+[DO UZUPEŁNIENIA: dodatkowe pola dotyczące niepełnosprawności, np. data dostarczenia orzeczenia, zgody na pracę w nadgodzinach i w porze nocnej – lub usuń]
+
+### Kadry/Historia zatrudnienia
+Zakładka pozwala na uzupełnienie danych pracownika dotyczących jego poprzedniego zatrudnienia oraz oznaczenie okresów wliczanych do stażu pracy.
+@rys kadry_historia_zatrudnienia.png | Historia zatrudnienia
+[DO UZUPEŁNIENIA: zasady wliczania stażu u poprzedników prawnych lub w innych spółkach grupy – lub usuń]
+
+### Kadry/Rachunki bankowe
+Zakładka pozwala na zaewidencjonowanie numeru rachunku bankowego pracownika lub zleceniobiorcy oraz podziału wypłaty na kilka rachunków.
+@rys kadry_rachunki_bankowe.png | Rachunki bankowe
+[DO UZUPEŁNIENIA: źródło rachunków (enova365 / integracja) i liczba rachunków na pracownika]
+
+### Kadry/Rodzina
+Zakładka pozwala na uzupełnienie danych członków rodziny pracownika wraz ze wskazaniem stopnia pokrewieństwa czy uprawnień do ubezpieczenia zdrowotnego.
+@rys kadry_rodzina.png | Członkowie rodziny pracownika
+
+### Kadry/Wykształcenie
+Zakładka pozwala na wprowadzenie danych dotyczących wykształcenia pracownika oraz ukończonych szkół wliczanych do stażu.
+@rys kadry_wyksztalcenie.png | Wykształcenie pracownika
+
+### Kadry – pozostałe/Nagrody i kary
+@opcjonalna
+W zakładce możliwe jest uzupełnianie ewidencji kar i nagród pracownika. Lista zaewidencjonowanych nagród i kar wszystkich pracowników dostępna jest w folderze Ewidencje/Nagrody i kary.
+@rys BRAK | Ewidencja nagród i kar pracownika
+Na etapie analizy Klient przedstawił listę definicji kar i nagród, które zostaną skonfigurowane w systemie enova365:
+- [DO UZUPEŁNIENIA: definicje kar i nagród].
+
+### Etat/Ogólne
+W tej zakładce uzupełnia się dane dotyczące zatrudnienia pracownika: okres zatrudnienia, jednostkę organizacyjną, datę zawarcia umowy i rozpoczęcia pracy, rodzaj zatrudnienia, definicję stanowiska, kod wykonywanego zawodu, kalendarz, na podstawie którego rozliczany będzie czas pracy, a także wymiar etatu i stawkę zaszeregowania.
+@rys etat_ogolne.png | Dane dotyczące zatrudnienia pracownika
+Zakładka zostanie rozbudowana o dedykowane pola wykorzystywane przez Klienta:
+@kolumny 26,16,30,28
+| Pole | Typ | Wartości lub źródło | Uwagi (edycja, historyczność) |
+| [DO UZUPEŁNIENIA: nazwa pola] | [DO UZUPEŁNIENIA: słownik / tekst / data / liczba / referencja do listy pracowników] | [DO UZUPEŁNIENIA: wartości słownika lub sposób wyliczenia] | [DO UZUPEŁNIENIA: kto edytuje, czy pole historyczne] |
+@tabela Dodatkowe pola na zakładce Etat/Ogólne
+Klient na etapie wdrożenia przedstawi listę wartości słowników dla powyższych pól.
+
+### Etat/Rozwiązanie umowy
+Zakładka pozwala na wprowadzenie danych dotyczących rozwiązania umowy o pracę.
+@rys etat_rozwiazanie_umowy.png | Rozwiązanie umowy
+System enova365 umożliwia wygenerowanie świadectwa pracy zgodnie z obowiązującymi przepisami, automatycznie uzupełnia dane niezbędne do jego prawidłowego wystawienia i generuje informację dotyczącą okresu przechowywania akt osobowych. Możliwe jest również wygenerowanie świadectwa pracy w szczególnych warunkach lub w szczególnym charakterze, jeśli takie okresy zostały zaewidencjonowane.
+[DO UZUPEŁNIENIA: dedykowane pola dotyczące rozwiązania umowy, np. rodzaj i przyczyna odejścia (słownik), strona inicjująca, data wręczenia wypowiedzenia – lub usuń]
+
+### Etat/Umowa o pracę
+Zakładka pozwala na uzupełnienie dodatkowych informacji, w tym miejsca wykonywania pracy czy pełnej nazwy stanowiska. W zakładce przechowywane są również informacje o historii umów o pracę zawieranych z pracownikiem.
+@rys etat_umowa_o_prace.png | Dodatkowe informacje dotyczące umowy o pracę
+
+### PPK/Ogólne
+Zakładka pozwala na zaewidencjonowanie informacji o zgłoszeniu pracownika do PPK, rezygnacji z wpłat i ich wznowieniu oraz o wysokości składek.
+@rys ppk_ogolne.png | PPK
+
+### Deklaracje/Zgłoszeniowe ZUS
+Zakładka pozwala na przygotowanie deklaracji pracownika oraz osoby zatrudnionej na umowę cywilnoprawną w zakresie zgłoszenia, wyrejestrowania i zmiany danych w ZUS, a także zgłoszenia i wyrejestrowania członka rodziny do ubezpieczenia zdrowotnego oraz zgłoszenia umowy o dzieło. Zakładka umożliwia eksport pliku w odpowiednim formacie do programu Płatnik.
+@rys deklaracje_zgloszeniowe_zus.png | Deklaracje zgłoszeniowe ZUS
+
+## Pola dodatkowe (cechy)
+Poniżej zestawienie dodatkowych pól (cech), które zostaną założone w systemie enova365 według stanu na dzień przygotowania dokumentu. Dodatkowe pola mogą zostać wyciągnięte jako kolumny na widokach list i wykorzystane w raportach.
+@kolumny 16,22,14,22,12,14
+| Obiekt | Nazwa pola | Typ | Wartości lub sposób wyliczenia | Historyczne | Mechanizm |
+| [DO UZUPEŁNIENIA: pracownik / etat / umowa / lista płac / badanie] | [DO UZUPEŁNIENIA: nazwa] | [DO UZUPEŁNIENIA: typ] | [DO UZUPEŁNIENIA: opis] | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA: nr mechanizmu lub „–”] |
+@tabela Pola dodatkowe (cechy)
+
+## Dane przekazywane z systemów zewnętrznych
+@opcjonalna Dotyczy wdrożeń z integracją kadrową (system wiodący inny niż enova365).
+W trakcie analizy ustalono, że część danych kadrowych będzie wprowadzana w systemie [DO UZUPEŁNIENIA: nazwa systemu wiodącego] i przesyłana do systemu enova365 poprzez mechanizm integracji (mechanizm [DO UZUPEŁNIENIA: nr]). Dane przekazywane integracją będą nieedytowalne dla operatorów programu, z wyjątkiem [DO UZUPEŁNIENIA: rola z uprawnieniem do edycji danych integrowanych].
+Zakres danych przekazywanych integracją:
+- [DO UZUPEŁNIENIA: lista danych, np. dane osobowe, adresy, rachunek bankowy, umowy i aneksy, jednostka organizacyjna, rozwiązanie umowy].
+
+## Wieloetatowość i zapis zmian danych
+Na etapie wdrożenia [DO UZUPEŁNIENIA: zostanie / nie zostanie] uruchomiona obsługa wieloetatowości, umożliwiająca zatrudnienie pracownika w tej samej firmie na więcej niż jednym etacie. Rozwiązanie pozwala powiązać kartoteki danego pracownika i tworzyć wspólną deklarację PIT czy ZUS.
+Na etapie wdrożenia uruchomiona zostanie funkcjonalność rozszerzonego zapisu zmian danych w systemie. Odnotowywane będą informacje o logowaniu do systemu i realizowanych zmianach danych ze wskazaniem operatora dokonującego zmiany, daty i godziny zmiany oraz zakresu zmodyfikowanych danych.
+
+## Numeracja pracowników w enova365
+System enova365 daje możliwość przechowywania wielu przebiegów zatrudnienia pracownika w jednej kartotece w ramach danej spółki. Oznacza to, że ten sam pracownik pracujący na umowie o pracę w różnych przedziałach czasu oraz posiadający dodatkowo umowy cywilnoprawne może mieć jeden numer w systemie. Kod pracownika musi być wartością unikalną.
+W bazie Klienta przewidziany jest następujący format kodu pracownika: [DO UZUPEŁNIENIA: format kodu, np. 0000 – kolejny wolny numer, prefiks spółki].
+Kody kartotek migrowanych z dotychczasowego systemu [DO UZUPEŁNIENIA: zostaną zachowane / zostaną przenumerowane]. Nowe kody będą nadawane [DO UZUPEŁNIENIA: automatycznie jako pierwszy wolny numer / ręcznie przez operatora / przez integrację].
+
+## Szkolenia BHP
+Przed przystąpieniem do migracji danych dotyczących szkoleń BHP zostaną skonfigurowane odpowiednie definicje szkoleń. Na etapie analizy Klient przedstawił listę szkoleń BHP z okresem ich ważności:
+@kolumny 50,25,25
+| Definicja szkolenia BHP | Ważność | Uwagi |
+| [DO UZUPEŁNIENIA: np. szkolenie wstępne, okresowe, stanowiskowe, pierwsza pomoc] | [DO UZUPEŁNIENIA: okres ważności] | [DO UZUPEŁNIENIA: grupa pracowników] |
+@tabela Definicje szkoleń BHP
+Do szkolenia BHP możliwe jest podpięcie załącznika (skanu zaświadczenia) poprzez standardową funkcjonalność programu enova365. W ramach wdrożenia [DO UZUPEŁNIENIA: zostaną / nie zostaną] przygotowane dodatkowe pola wskazujące nazwę definicji ostatniego szkolenia BHP i termin jego ważności, które będzie można wyciągnąć jako kolumny w widoku listy pracowników.
+[DO UZUPEŁNIENIA: kto ewidencjonuje szkolenia BHP i czy dane historyczne będą migrowane]
+
+## Badania lekarskie
+Przed przystąpieniem do migracji danych dotyczących badań lekarskich zostaną skonfigurowane odpowiednie definicje badań: [DO UZUPEŁNIENIA: np. wstępne, okresowe, kontrolne, psychologiczne – z terminami ważności].
+@rys badanie_lekarskie.png | Formatka badania lekarskiego
+Do badania lekarskiego możliwe jest podpięcie załącznika poprzez standardową funkcjonalność programu enova365. Dane dotyczące wprowadzonych badań dostępne są z poziomu widoku Ewidencje/Badania lekarskie. System umożliwia również wygenerowanie skierowania na badania lekarskie oraz raportu o kończących się badaniach lekarskich.
+Do definicji badań lekarskich zostaną przygotowane dodatkowe pola umożliwiające zaznaczenie czynników zagrożenia występujących u danego pracownika:
+- [DO UZUPEŁNIENIA: czynniki zagrożenia, np. praca przy monitorze, praca na wysokości, kierowanie pojazdem – lub usuń].
+W ramach wdrożenia [DO UZUPEŁNIENIA: zostaną / nie zostaną] przygotowane dodatkowe pola wskazujące nazwę definicji ostatniego badania lekarskiego i termin jego ważności dla danego pracownika.
+
+## Uprawnienia zawodowe
+@opcjonalna
+Na etapie spotkań analitycznych ustalono, że w systemie enova365 będą ewidencjonowane uprawnienia zawodowe pracowników z określeniem rodzaju uprawnienia i terminu ważności. Typy uprawnień zostaną zaewidencjonowane jako kategorie uprawnień, a rodzaje uprawnień przypisane do danego typu – jako definicje. Do uprawnienia możliwe będzie podpięcie skanu dokumentu.
+Lista kategorii i definicji uprawnień znajduje się w pliku „[DO UZUPEŁNIENIA: nazwa pliku z uprawnieniami].xlsx” załączonym do dokumentu analizy. Dane będzie można wyraportować i zapisać w pliku Excel.
+
+## Powiadomienia
+Program enova365 umożliwia skonfigurowanie powiadomień (okno przypominacza), które pojawiają się przed datą upływu ważności zgodnie z określonymi terminami. Powiadomienie wyświetla się operatorom, dla których aktywowano funkcję powiadomień, po każdorazowym uruchomieniu programu aż do odrzucenia przypomnienia lub zarejestrowania przedłużenia.
+@kolumny 6,34,24,20,16
+| Lp. | Definicja powiadomienia | Termin powiadomienia | Odbiorcy | Uruchomić |
+| 1 | Termin wykonania badania lekarskiego | [DO UZUPEŁNIENIA: np. 30 dni przed] | [DO UZUPEŁNIENIA: operatorzy] | [DO UZUPEŁNIENIA: tak / nie] |
+| 2 | Przypomnienie o końcu umowy o pracę | [DO UZUPEŁNIENIA: termin] | [DO UZUPEŁNIENIA: odbiorcy] | [DO UZUPEŁNIENIA: tak / nie] |
+| 3 | Termin szkolenia BHP | [DO UZUPEŁNIENIA: termin] | [DO UZUPEŁNIENIA: odbiorcy] | [DO UZUPEŁNIENIA: tak / nie] |
+| 4 | Termin ważności uprawnienia | [DO UZUPEŁNIENIA: termin] | [DO UZUPEŁNIENIA: odbiorcy] | [DO UZUPEŁNIENIA: tak / nie] |
+| 5 | Powiadomienie o autozapisie do PPK | [DO UZUPEŁNIENIA: termin] | [DO UZUPEŁNIENIA: odbiorcy] | [DO UZUPEŁNIENIA: tak / nie] |
+| 6 | Skierowanie na badania kontrolne (zwolnienie lekarskie powyżej 30 dni) | 5 dni przed końcem nieobecności | [DO UZUPEŁNIENIA: odbiorcy] | [DO UZUPEŁNIENIA: tak / nie] |
+@tabela Lista powiadomień
+[DO UZUPEŁNIENIA: powiadomienia mailowe do pracowników i przełożonych – treść, terminy, odbiorcy (mechanizm N) – lub usuń]
+
+## Definicje stanowisk
+Definicje stanowisk są funkcjonalnością porządkującą słownik stanowisk. Dzięki temu rozwiązaniu można przypisać wiele danych do konkretnego stanowiska, co umożliwia automatyzację uzupełniania danych pracownika przy wyborze w kartotece tylko jednego pola z definicją stanowiska.
+@rys definicja_stanowiska_ogolne.png | Definicja stanowiska – dane ogólne
+@rys definicja_stanowiska_dodatkowe.png | Definicja stanowiska – dane dodatkowe
+Na etapie wdrożenia Klient prześle aktualny wykaz definicji stanowisk wraz z przypisanymi do nich kodami zawodów. Lista kodów zawodów według klasyfikacji GUS zostanie zaimportowana do systemu mechanizmem udostępnionym przez producenta programu.
+Do definicji stanowisk [DO UZUPEŁNIENIA: zostaną / nie zostaną] przypisane grupy zaszeregowania oraz kalendarze (system czasu pracy i okres rozliczeniowy).
+Na etapie analizy ustalono, że do definicji stanowisk zostaną przygotowane dodatkowe pola: [DO UZUPEŁNIENIA: lista pól, np. nazwa w języku angielskim, rodzaj pracownika, poziom struktury – lub „nie dotyczy”].
+
+## Umowy cywilnoprawne
+Na etapie analizy ustalono, że Klient stosuje standardowe typy umów cywilnoprawnych dostępne w programie enova365: [DO UZUPEŁNIENIA: np. umowa zlecenia, umowa zlecenia z własnym pracownikiem, umowa o dzieło, kontrakt menedżerski, umowa o praktyki absolwenckie].
+W programie enova365 umowy te można rozliczać jako umowy jednorazowe (kwota do wypłaty) lub umowy o charakterze długookresowym (stawka za okres oraz stawka za godzinę). Kartoteka pracownika zawsze będzie jedna, jeżeli będzie to osoba zatrudniona na umowę o pracę i równocześnie współpracująca na podstawie umowy cywilnoprawnej. Na każdym etapie pracy systemu istnieje możliwość skonfigurowania dodatkowych definicji umów bądź zablokowania już nieużywanych.
+@rys BRAK | Formularz umowy cywilnoprawnej
+[DO UZUPEŁNIENIA: dodatkowe pola na formularzu umowy, dedykowane wydruki umów i rachunków, dane przekazywane integracją – lub usuń]
+
+## Ewidencja współpracowników B2B
+@opcjonalna
+Na etapie analizy ustalono, że Klient [DO UZUPEŁNIENIA: będzie / nie będzie] ewidencjonował w systemie enova365 osoby współpracujące na podstawie umów B2B. Ewidencja zostanie wprowadzona w oparciu o standardowe rozwiązanie modułu enova365 „Obsługa B2B i APT” – bez rozliczania wynagrodzenia z kontraktów B2B.
+Zakres ewidencjonowanych danych:
+- dane osoby: kod w bazie enova365, nazwisko, imię, spółka lub jednostka organizacyjna, [DO UZUPEŁNIENIA: inne dane];
+- dane umowy B2B: okres od–do, spółka lub jednostka organizacyjna, stawka, [DO UZUPEŁNIENIA: MPK lub projekt], uwagi do umowy.
+Do jednej osoby możliwe jest ewidencjonowanie wielu umów B2B. Dane zostaną zaimportowane w oparciu o formatki migracyjne przygotowane przez Alt One. [DO UZUPEŁNIENIA: dostęp osób B2B do pulpitów, limity płatnych nieobecności B2B – opis w załączniku nr 5]
+
+## Pracownicy oddelegowani do pracy za granicę
+@opcjonalna
+Na etapie analizy ustalono, że Klient [DO UZUPEŁNIENIA: będzie / nie będzie] ewidencjonował dane osób oddelegowanych do pracy za granicę. W systemie zostanie włączona standardowa funkcjonalność obsługi pracowników oddelegowanych, pozwalająca na prawidłowe pomniejszanie podstawy składek ZUS za czas oddelegowania oraz prawidłową kwalifikację dochodu opodatkowanego za granicą w deklaracji PIT-11.
+Charakterystyka oddelegowań: [DO UZUPEŁNIENIA: liczba osób, kraje oddelegowania, waluta wynagrodzenia, dane przekazywane przez pracodawców zagranicznych, składniki wynagrodzenia, obecny sposób rozliczania].
+
+## Umowa o zakazie konkurencji
+@opcjonalna
+W trakcie spotkań analitycznych ustalono, że powstaną dedykowane pola umożliwiające zaewidencjonowanie umowy o zakazie konkurencji. Pola będą dostępne w kartotece pracownika w zakładce Dodatkowe (cechy) i będą elementami historycznymi – dane będą wprowadzane ze wskazaniem daty, od kiedy zmiana obowiązuje:
+- [DO UZUPEŁNIENIA: pola i wartości słowników, np. status umowy, rodzaj, uwagi].
+Opisywane pola będą mogły zostać przeniesione na widok listy pracowników, wyraportowane i zapisane w pliku Excel.
+
+## Ochrona danych osobowych – upoważnienia
+@opcjonalna
+Na etapie analizy ustalono, że w systemie enova365 będą ewidencjonowane upoważnienia do przetwarzania danych osobowych. Dane będą ewidencjonowane w kartotece pracownika w zakładce Ochrona danych osobowych/Uprawnienia, a lista wszystkich zaewidencjonowanych upoważnień dostępna będzie w widoku Uprawnienia. Jeden pracownik może posiadać kilka aktualnych upoważnień, a do upoważnienia możliwe jest dołączenie skanu dokumentu.
+@rys rodo_lista_upowaznien.png | Widok listy upoważnień
+Rodzaje upoważnień i dodatkowe pola: [DO UZUPEŁNIENIA: lista rodzajów upoważnień oraz pól dodatkowych – lub usuń].
+
+## Praca zdalna
+@opcjonalna
+W trakcie spotkań analitycznych ustalono, że pracownicy będą wykonywać pracę zdalną w formach: [DO UZUPEŁNIENIA: regulaminowa / okazjonalna / na wniosek pracownika uprzywilejowanego]. W systemie enova365 zostaną utworzone odpowiednie limity pracy zdalnej:
+@kolumny 30,30,40
+| Rodzaj pracy zdalnej | Limit | Zasady (proporcja do etatu, przeniesienie, kto zmienia limit) |
+| Praca zdalna okazjonalna | 24 dni w roku kalendarzowym | Limit ustawowy, niewykorzystany nie przechodzi na kolejny rok. |
+| [DO UZUPEŁNIENIA: praca zdalna regulaminowa] | [DO UZUPEŁNIENIA: limit] | [DO UZUPEŁNIENIA: zasady] |
+@tabela Limity pracy zdalnej
+[DO UZUPEŁNIENIA: ryczałt za pracę zdalną – zasady naliczania opisane w załączniku nr 3; wnioski o pracę zdalną – w załączniku nr 5]
+
+## Nieobecności oraz limity nieobecności
+Nieobecności, które będą ewidencjonowane w programie enova365, są zgodne z definicjami ustalonymi przez producenta programu:
+@kolumny 60,40
+| Nazwa | Typ |
+| Badania lekarskie | Usprawiedliwiona płatna |
+| Delegacja służbowa | Usprawiedliwiona płatna |
+| Inna nieobecność (kod 350) | Usprawiedliwiona bezpłatna |
+| Nieobec.nieusprawiedliwiona | Nieusprawiedliwiona |
+| Nieobec.usprawiedliwiona niepł | Usprawiedliwiona bezpłatna |
+| Nieobec.usprawiedliwiona płatn | Usprawiedliwiona płatna |
+| Oddanie krwi lub osocza | Usprawiedliwiona płatna |
+| Służba wojskowa | Usprawiedliwiona bezpłatna |
+| Storno | Storno |
+| Turnus rehabilitacyjny | Usprawiedliwiona płatna |
+| Urlop bezpłatny (art 174 kp) | Usprawiedliwiona bezpłatna |
+| Urlop bezpłatny (art 174.1 kp) | Usprawiedliwiona bezpłatna |
+| Urlop bezpłatny (kod 350) | Usprawiedliwiona bezpłatna |
+| Urlop bezpłatny(ćw.wojs.art.124.1 POORP) | Usprawiedliwiona bezpłatna |
+| Urlop macierzyński | Nieobecność ZUS |
+| Urlop macierzyński /zlec. | Nieobecność ZUS |
+| Urlop macierzyński dla ojca | Nieobecność ZUS |
+| Urlop macierzyński dodatkowy (hist.) | Nieobecność ZUS |
+| Urlop na posz.pracy (Art.37kp) | Usprawiedliwiona płatna |
+| Urlop ojcowski (art 182.3 kp) | Nieobecność ZUS |
+| Urlop okolicznościowy | Usprawiedliwiona płatna |
+| Urlop opiekuńczy (art 188 kp, dni) | Usprawiedliwiona płatna |
+| Urlop opiekuńczy (art 188 kp, godz.) | Usprawiedliwiona płatna |
+| Urlop opiekuńczy niepł. (art 173.1 kp) | Usprawiedliwiona bezpłatna |
+| Urlop radcowski | Usprawiedliwiona płatna |
+| Urlop rehab. wypadek (stary) | Nieobecność ZUS |
+| Urlop rehabilitacyjny | Nieobecność ZUS |
+| Urlop rehabilitacyjny (stary) | Nieobecność ZUS |
+| Urlop rodzicielski | Nieobecność ZUS |
+| Urlop rodzicielski /zlec. | Nieobecność ZUS |
+| Urlop szkoleniowy | Usprawiedliwiona płatna |
+| Urlop wych. 1,2 dz. (kod 121) | Urlop wychowawczy |
+| Urlop wych. 1,2 dz. (kod 122) | Urlop wychowawczy |
+| Urlop wych. 3... dz. (kod 121) | Urlop wychowawczy |
+| Urlop wych. 3... dz. (kod 122) | Urlop wychowawczy |
+| Urlop wych. samotn. (kod 121) | Urlop wychowawczy |
+| Urlop wych. samotn. (kod 122) | Urlop wychowawczy |
+| Urlop wych.bez zas.(kod 121) | Urlop wychowawczy |
+| Urlop wych.bez zas.(kod 122) | Urlop wychowawczy |
+| Urlop wychowawczy (kod 121) | Urlop wychowawczy |
+| Urlop wychowawczy (kod 122) | Urlop wychowawczy |
+| Urlop wychowawczy (macierz.dod., hist.) | Nieobecność ZUS |
+| Urlop wychowawczy (płaci ZUS) | Urlop wychowawczy |
+| Urlop wychowawczy (ur.macierzyński) | Nieobecność ZUS |
+| Urlop wychowawczy (ur.rodzicielski) | Nieobecność ZUS |
+| Urlop wypoczynkowy | Usprawiedliwiona płatna |
+| Urlop wypoczynkowy dodatkowy | Usprawiedliwiona płatna |
+| Urlop wypoczynkowy prac.tymcz. | Usprawiedliwiona płatna |
+| Zwolnienie chorobowe | Nieobecność ZUS |
+| Zwolnienie od pracy - siła wyższa (dni) | Usprawiedliwiona płatna |
+| Zwolnienie od pracy - siła wyższa(godz.) | Usprawiedliwiona płatna |
+| Zwolnienie opieka (ZUS) | Nieobecność ZUS |
+| Zwolnienie opieka(ZUS bez zasiłku 1/30) | Nieobecność ZUS |
+| Zwolnienie opieka(ZUS bez zasiłku prop.) | Usprawiedliwiona bezpłatna |
+| Zwolnienie z obowiązku świadczenia pracy | Usprawiedliwiona płatna |
+@tabela Podstawowe definicje nieobecności
+Powyższa tabela zawiera wszystkie dostępne dla operatora kadrowego definicje nieobecności. Operator może dodać definicje kolejnych nieobecności w konfiguracji programu. Przy wpisywaniu danego rodzaju nieobecności możliwe jest uzupełnienie wszystkich niezbędnych danych zgodnie z obowiązującymi przepisami (np. procent płatności urlopu rodzicielskiego, kod świadczenia przerwy, tytuł ubezpieczenia). Przy urlopie rodzicielskim, wychowawczym i ojcowskim system wymaga wskazania dziecka, na które udzielany jest urlop.
+enova365 w standardowej wersji, stosownie do przepisów prawa pracy, umożliwia obsługę limitów nieobecności dla:
+- urlopu wypoczynkowego, w tym urlopu na żądanie;
+- urlopu wypoczynkowego dodatkowego;
+- opieki nad dzieckiem z art. 188 KP, zarówno w dniach, jak i w godzinach;
+- urlopu opiekuńczego;
+- zwolnienia od pracy z powodu siły wyższej (w dniach i godzinach);
+- wynagrodzenia chorobowego (33 dni oraz 14 dni dla pracownika po 50. roku życia) z uwzględnieniem danych z poprzedniego świadectwa pracy;
+- zasiłku chorobowego – kontrola 182/270 dni okresu zasiłkowego;
+- urlopu ojcowskiego – maksymalna liczba dni na dziecko z możliwością wykorzystania w częściach.
+Limit urlopu wypoczynkowego wylicza się z uwzględnieniem historii zatrudnienia oraz wykształcenia ewidencjonowanych w kartotece pracownika. Naliczanie limitów odbywa się raz w roku za pomocą operacji seryjnych – jednocześnie dla wielu pracowników. Jeśli w momencie naliczania pracownik ma wprowadzone wszelkie niezbędne dane, program pilnuje przejścia z limitu 20 na 26 dni, w tym w trakcie roku. Program obsługuje również limit urlopu w pierwszym roku pracy, proporcjonalność wymiaru do etatu oraz limit 4 dni urlopu na żądanie. W przypadku doniesienia świadectwa pracy operator musi przeliczyć limit (usunąć limit i naliczyć go ponownie).
+W celu naliczenia limitu opieki z art. 188 KP muszą zostać wprowadzone dane o dacie oświadczenia oraz o tym, czy pracownik wykorzystuje opiekę w dniach, czy w godzinach. [DO UZUPEŁNIENIA: sposób zasilenia limitu art. 188 KP na start – np. import masowy w dniach lub godzinach]
+Na etapie analizy ustalono, że Klient [DO UZUPEŁNIENIA: stosuje / nie stosuje] dedykowane definicje nieobecności i limity:
+@kolumny 24,18,18,26,14
+| Nieobecność dedykowana | Typ | Limit | Zasady (okres, części, warunki) | Wniosek w pulpicie |
+| [DO UZUPEŁNIENIA: nazwa] | [DO UZUPEŁNIENIA: usprawiedliwiona płatna / niepłatna] | [DO UZUPEŁNIENIA: limit] | [DO UZUPEŁNIENIA: zasady] | [DO UZUPEŁNIENIA: tak / nie] |
+@tabela Dedykowane definicje nieobecności i limity
+[DO UZUPEŁNIENIA: dodatkowe pola na nieobecnościach, np. dostarczenie dokumentu, pole z liczbą dni pozostałych do końca okresu zasiłkowego (mechanizm N) – lub usuń]
+
+## Elektroniczna dokumentacja pracownicza
+Na etapie analizy ustalono, że Klient [DO UZUPEŁNIENIA: będzie / nie będzie] prowadził na dzień uruchomienia systemu elektroniczną dokumentację pracowniczą (e-akta). Funkcjonalność zostanie uruchomiona [DO UZUPEŁNIENIA: w pełnym zakresie / wyłącznie na potrzeby udostępniania pracownikom deklaracji PIT-11 i informacji IMIR w pulpitach pracowniczych za potwierdzeniem odbioru].
+Elektroniczna dokumentacja umożliwia również udostępnianie pracownikom wybranych dokumentów (np. regulaminów) z wymaganiem potwierdzenia zapoznania się z ich treścią.
+
+## Integracja z programem Płatnik
+Integracja z programem Płatnik polega na wyeksportowaniu z enova365 pliku KEDU w formacie xml, a następnie – po uruchomieniu programu Płatnik – ręcznym zaimportowaniu zapisanego pliku.
+
+## Szczególne warunki pracy
+@opcjonalna
+W systemie enova365 będą ewidencjonowane okresy pracy w szczególnych warunkach lub w szczególnym charakterze (data od, data do, rodzaj pracy ze słownika). Umożliwi to raportowanie, wydruk świadectwa pracy w warunkach szczególnych oraz generowanie raportów ZSWA.
+Słownik prac w szczególnych warunkach: [DO UZUPEŁNIENIA: pozycje słownika z odniesieniem do załącznika rozporządzenia].
+
+## Szkolenia
+@opcjonalna
+W zakładce Ukończone szkolenia możliwe jest dodanie lub edycja szkolenia wraz ze wskazaniem okresu szkolenia i oceny. Do szkolenia możliwe będzie dołączenie skanu dokumentu.
+[DO UZUPEŁNIENIA: dodatkowe pola (np. data ważności szkolenia) oraz wymagane filtry na liście szkoleń – lub usuń]
+
+## Wypowiedzenia zmieniające
+@opcjonalna
+W systemie enova365 zostanie przygotowana ewidencja wypowiedzeń zmieniających obejmująca: [DO UZUPEŁNIENIA: rodzaj (słownik), datę wręczenia, okres, status (słownik), rodzaj zmiany z wartością poprzednią i nową]. Wprowadzone dane będzie można raportować.
+
+# Pytania otwarte – Kadry
+@kolumny 5,45,12,14,10,14
+| Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / Alt One] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+@tabela Pytania otwarte – Kadry
+
+# Kryteria odbioru
+Kryterium odbioru poprawności konfiguracji modułu kadrowego na etapie wdrożenia będzie przeprowadzenie testów przez Klienta z pozytywnym wynikiem.
+Testy zostaną przeprowadzone na podstawie przygotowanych scenariuszy testowych zawartych w pliku „Scenariusze testowe – Kadry.xlsx” dołączonym do dokumentu niniejszej analizy i uzgodnionych z Klientem.
+
+# Wykaz tabel i rysunków
+@spis-tab
+@spis-rys
+
+# Kontakt
+@kontakt

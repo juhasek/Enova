@@ -53,6 +53,15 @@ Każdy folder odpowiada jednemu typowi artefaktu enova365:
   z systemami zewnętrznymi (WebAPI, synchronizacje), np. kolekcje Postman i scenariusze
   testowe. Każda integracja w osobnym podkatalogu; wszystko dotyczące danej integracji
   trafia tam (nie do `Zadania/`). Uzupełnionych środowisk Postman (hasła) nie commitować.
+- **Wzor_analizy/** — wzór dokumentu analizy przedwdrożeniowej KPCP (Kadry, Płace,
+  Czas pracy): dokument główny i załączniki 1, 2, 3, 5 (`Wzor_*.docx`), kwestionariusz
+  spotkań, `STYLE_GUIDE.md`, `raport_analizy_dokumentow.md`. Pliki `.docx` są
+  **generowane** z `Wzor_analizy/Tresc/*.txt` generatorem `Wzor_analizy/Generator/` –
+  zmiany wzoru wprowadza się w plikach treści, nie w `.docx`. `Wzor_analizy/_robocze/`
+  (kopie dokumentów źródłowych, lista zakazanych słów) jest poza gitem.
+- **Klienci/** — analizy konkretnych klientów utworzone ze wzoru (`Klienci/<Nazwa>/`),
+  notatki ze spotkań w `Klienci/<Nazwa>/Notatki/`. Cały katalog jest **poza gitem**
+  (`.gitignore`) – zawiera nazwy i dane klientów; nie commitować (np. przez `git add -f`).
 - **Pobrane/** — pliki wejściowe przekazywane przez użytkownika do analizy
   (eksporty z enova365, wydruki, zrzuty ekranu, DLL-e klientów, logi).
   Katalog roboczy, a nie artefakt enova365 — wynik analizy trafia do
@@ -74,13 +83,78 @@ to skompilowane projekty .NET ani DLL-e, i nie mają samodzielnego pliku
 się osobny folder **Addon/** zawierający właściwy projekt `.csproj` — to
 byłby sygnał, że mowa o skompilowanym dodatku enova365, a nie o wklejanym
 skrypcie. Wyjątkiem jest **Integracja/*/Generator/** (konsolówka budująca kolekcję
-Postman i arkusz scenariuszy), **Analiza/Generator/** oraz
+Postman i arkusz scenariuszy), **Analiza/Generator/**, **Wzor_analizy/Generator/** oraz
 **Zadania/Generator słownika rozwiązania umowy/** — to zwykłe narzędzia
 konsolowe budujące arkusz (z dokumentu `.md` albo z DLL serwera i bazy), uruchamiane
 poza enovą (korzystają tylko z bibliotek DevExpress z katalogu serwera), a nie dodatki do wgrania.
 
 Plik `.md` obok pliku bez rozszerzenia (o tej samej nazwie) to dokumentacja
 biznesowa danego artefaktu.
+
+## Analiza przedwdrożeniowa – „uzupełnij analizę”
+
+Gdy użytkownik po spotkaniu z klientem przekazuje notatki i pisze „uzupełnij analizę”
+(lub podobnie), postępuj według poniższych zasad.
+
+**Położenie materiałów** (`C:\enovaServer\Projekty\Enova\Wzor_analizy`):
+- wzory: `Wzor_Analiza_przedwdrozeniowa_KPCP.docx` (dokument główny),
+  `Wzor_ZAL_01_Kadry_KPCP.docx`, `Wzor_ZAL_02_Czas_pracy_KPCP.docx`,
+  `Wzor_ZAL_03_Place_KPCP.docx`, `Wzor_ZAL_05_Pulpity_KPCP.docx`;
+- reguły formatowania i języka: `STYLE_GUIDE.md` – **obowiązkowo przeczytać przed edycją**;
+- kwestionariusz: `Kwestionariusz_spotkan_KPCP.docx` (kolumna „Sekcja w analizie” wskazuje
+  docelową sekcję: AN – dokument główny, Z1/Z2/Z3/Z5 – załączniki).
+
+**Nowy klient:**
+1. Utwórz `Klienci\<Nazwa>\` (nazwa bez spacji i polskich znaków) z podkatalogami `Notatki\`
+   i `Archiwum\`. Gdy nazwa nie jest jasna – zapytaj.
+2. Skopiuj wzory jako `Klienci\<Nazwa>\Analiza_<Nazwa>_v0.1.docx` oraz
+   `Analiza_<Nazwa>_ZAL_01_Kadry_v0.1.docx`, `..._ZAL_02_Czas_pracy_...`, `..._ZAL_03_Place_...`,
+   `..._ZAL_05_Pulpity_...`, a kwestionariusz jako `Notatki\Kwestionariusz_<Nazwa>.docx`.
+3. Uzupełnij od razu nazwę klienta (strona tytułowa, klauzula, akceptacja), metrykę
+   (data, wersja 0.1, autor, status „Roboczy”) i pierwszy wiersz historii zmian.
+
+**Uzupełnianie po spotkaniu:**
+1. Notatki zapisz w `Klienci\<Nazwa>\Notatki\` (np. `RRRR-MM-DD_<temat>.md`), bez modyfikowania
+   ich treści merytorycznej.
+2. Każdą informację z notatek przypisz do sekcji: najpierw przez kwestionariusz (kolumna
+   „Sekcja w analizie”), a gdy pytania tam nie ma – przez spis treści właściwego dokumentu.
+   Zastąp odpowiadające pole `[DO UZUPEŁNIENIA: …]` treścią zapisaną formułami z
+   `STYLE_GUIDE.md` (rozdz. 8: „Na etapie analizy ustalono, że…”, „(mechanizm N)” itd.).
+   W kwestionariuszu wpisz odpowiedź i status „Wyjaśnione”.
+3. Sekcję opcjonalną usuń w całości (z nagłówkiem), jeśli notatki jednoznacznie wskazują,
+   że nie dotyczy klienta; w przeciwnym razie usuń tylko znacznik `[SEKCJA OPCJONALNA – …]`
+   po jej uzupełnieniu.
+4. **Niczego nie zgaduj.** Informacji brakujących, niejednoznacznych lub sprzecznych nie
+   wpisuj do treści – zostaw pole `[DO UZUPEŁNIENIA]` i dodaj wiersz do tabeli „Pytania
+   otwarte” (dokument główny, rozdz. Pytania otwarte i ryzyka, lub „Pytania otwarte – <obszar>”
+   w załączniku) z numerem sekcji i statusem „Otwarte”.
+5. Formatuj wyłącznie istniejącymi stylami wzoru (Normalny, Nagłówek 1–3, Lista punktowana,
+   Tekst tabeli, Legenda, Proposal Table, Pole do uzupełnienia) – bez ręcznych zmian czcionki,
+   koloru, odstępów i numeracji. Tabele dodawaj w układach z `STYLE_GUIDE.md` (rozdz. 7).
+6. Edycja `.docx` klienta: OpenXML (System.IO.Compression + XLinq) lub DevExpress RichEdit
+   z katalogu serwera (`C:\enovaServer\2610\Soneta.Products.Server.Standard`, .NET 10 –
+   `~/.dotnet10`); narzędzia pomocnicze w scratchpadzie, nie w katalogu klienta. Python,
+   Word i LibreOffice nie są dostępne na tym komputerze.
+
+**Wersjonowanie przy każdej zmianie:**
+- poprzednią wersję przenieś do `Klienci\<Nazwa>\Archiwum\` (nie nadpisuj), nową zapisz
+  z podniesionym numerem: robocze `0.2, 0.3…`, przekazana do akceptacji `1.0`, poprawki
+  po uwagach Klienta `1.1, 1.2…`;
+- dodaj wiersz w „Historii zmian dokumentu” (wersja, data, autor, co uzupełniono lub usunięto),
+  zaktualizuj metrykę (wersja, ostatnia modyfikacja, status) i oznacz pola do aktualizacji
+  (spis treści, wykazy tabel i rysunków odświeżą się przy otwarciu w Wordzie);
+- przy zmianie wersji załącznika zaktualizuj „Wykaz załączników” w dokumencie głównym.
+
+**Zakazy:**
+- oryginałów w `Pobrane\` nie wolno modyfikować, przenosić ani usuwać – pracuj na kopiach;
+- `Klienci\` nie trafia do gita; do wzorów (`Wzor_analizy\`) nie przenoś danych klienta
+  (nazw, nazwisk, NIP, adresów, kwot);
+- w czacie nie używaj nazw klientów (patrz pamięć projektu).
+
+**Na koniec każdej sesji uzupełniania** podaj listę pól, które nadal pozostają do uzupełnienia:
+dla każdego dokumentu klienta liczbę pól `[DO UZUPEŁNIENIA` i ich listę z numerem sekcji
+(treść pola), pozostałe znaczniki sekcji opcjonalnych oraz nowe pozycje dopisane do „Pytań
+otwartych”.
 
 ## Obsługa programu enova365 (MCP)
 
