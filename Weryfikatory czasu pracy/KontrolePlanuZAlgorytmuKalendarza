@@ -68,9 +68,29 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 			return null;
 		}
 
+		// Stopień niepełnosprawności w dniu - wspólny dla weryfikatorów osób z niepełnosprawnością.
+		// Z zapisu historii obowiązującego w dniu: dane o niepełnosprawności albo dane PFRON (wyższy z nich),
+		// okres jak w enova (OkresExt). Tak przechowuje stopień enova 2512 (wersja klienta 2512.10.12) - metody
+		// Pracownik.StopienNiepelnosprawnosciNaDzien z 2610 tam nie ma. W 2610 pola historii są nakładką na orzeczenia
+		// i zwracają jedno orzeczenie dla zapisu (zmiana stopnia w trakcie zapisu historii - tylko baza testowa 2610).
+		private static StNiepełnosprawności A1StopienNiepelnosprawnosciNaDzien(Pracownik pracownik, Date data)
+		{
+			PracHistoria historia = pracownik[data];
+			if (historia == null)
+			{
+				return StNiepełnosprawności.Brak;
+			}
+
+			StNiepełnosprawności stopien = StNiepełnosprawności.Brak;
+			if (historia.StopienNiepelnosp.OkresExt.Contains(data))
+				stopien = historia.StopienNiepelnosp.Stopien;
+			if (historia.PFRON.OkresExt.Contains(data) && historia.PFRON.Stopien > stopien)
+				stopien = historia.PFRON.Stopien;
+			return stopien;
+		}
+
 		// Norma dobowa osoby z niepełnosprawnością: umiarkowany/znaczny - 7h (8h przy zgodzie na pracę 8h na etacie),
-		// lekki - 8h. Zgoda z zapisu historii obowiązującego w dniu; stopień z orzeczeń PFRON/ZUS obowiązujących
-		// w dniu (Pracownik.StopienNiepelnosprawnosciNaDzien - wyższy z nich, okres jak w enova).
+		// lekki - 8h. Zgoda i stopień z zapisu historii obowiązującego w dniu (A1StopienNiepelnosprawnosciNaDzien).
 		public static string A1NormaDobowaNiepelnosprawnych(KalkulatorPlanuBase kalkulator, Date data)
 		{
 			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
@@ -88,7 +108,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 				return null;
 			}
 
-			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(data).Stopien;
+			StNiepełnosprawności stopien = A1StopienNiepelnosprawnosciNaDzien(pracownik, data);
 			if (stopien == StNiepełnosprawności.Brak)
 			{
 				return null;
@@ -109,7 +129,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 
 		// Brak zgody na pracę 8h: osoba ze stopniem umiarkowanym/znacznym bez zaznaczonego na etacie pola
 		// „Zgoda na pracę 8h” nie może mieć zaplanowanych więcej niż 7h dziennie. Stopień i zgoda z zapisu
-		// historii obowiązującego w dniu; stopień z orzeczeń PFRON/ZUS obowiązujących w dniu (StopienNiepelnosprawnosciNaDzien).
+		// historii obowiązującego w dniu (A1StopienNiepelnosprawnosciNaDzien).
 		public static string A1BrakZgodyNaPrace8h(KalkulatorPlanuBase kalkulator, Date data)
 		{
 			if (!(kalkulator.ZrodloPlanu is Pracownik pracownik))
@@ -127,7 +147,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 				return null;
 			}
 
-			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(data).Stopien;
+			StNiepełnosprawności stopien = A1StopienNiepelnosprawnosciNaDzien(pracownik, data);
 			if (stopien != StNiepełnosprawności.Umiarkowany && stopien != StNiepełnosprawności.Znaczny)
 			{
 				return null;
@@ -179,7 +199,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 		// ---------- Norma tygodniowa 35h / 40h osoby z niepełnosprawnością (rodzaj Plan pracy) ----------
 		// Norma: stopień umiarkowany/znaczny bez zgody na pracę 8h (pole na etacie) - 7h/dobę, 35h/tydzień;
 		// stopień lekki oraz umiarkowany/znaczny ze zgodą 8h - 8h/dobę, 40h/tydzień (5 x norma dobowa).
-		// Stopień z orzeczeń PFRON/ZUS obowiązujących w danym dniu (Pracownik.StopienNiepelnosprawnosciNaDzien),
+		// Stopień z zapisu historii obowiązującego w danym dniu (A1StopienNiepelnosprawnosciNaDzien),
 		// zgoda z zapisu historii obowiązującego w dniu - norma ustalana osobno dla KAŻDEGO dnia.
 		// Tygodnie: 7 kolejnych dni od pierwszego dnia okresu rozliczeniowego (art. 128 § 3 pkt 1 KP) - jak w standardowym
 		// weryfikatorze odpoczynku tygodniowego enova; nie resetują się na granicy miesięcy, ostatni tydzień może być niepełny.
@@ -329,7 +349,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 		// stopnie); Time.Empty - brak orzeczenia o stopniu niepełnosprawności w tym dniu.
 		private static Time A1NormaDobowaNiepelnosprawnego(Pracownik pracownik, Date data)
 		{
-			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(data).Stopien;
+			StNiepełnosprawności stopien = A1StopienNiepelnosprawnosciNaDzien(pracownik, data);
 			if (stopien == StNiepełnosprawności.Brak)
 			{
 				return Time.Empty;
@@ -344,8 +364,8 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 		}
 
 		// ---------- Zgody osoby z niepełnosprawnością: nadgodziny i pora nocna ----------
-		// Dotyczy każdego stopnia niepełnosprawności (orzeczenie PFRON/ZUS obowiązujące w dniu,
-		// Pracownik.StopienNiepelnosprawnosciNaDzien) - pola zgód na etacie enova udostępnia przy każdym stopniu.
+		// Dotyczy każdego stopnia niepełnosprawności (z zapisu historii obowiązującego w dniu,
+		// A1StopienNiepelnosprawnosciNaDzien) - pola zgód na etacie enova udostępnia przy każdym stopniu.
 
 		// Plan pracy w porze nocnej bez zgody na pracę w porze nocnej (Dzień planu, Błąd).
 		// Pora nocna z kalendarza etatu (KalkulatorPracyBase.NocOkres), czas pracy = strefy wliczane do czasu pracy.
@@ -360,7 +380,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 			{
 				return null;
 			}
-			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(data).Stopien;
+			StNiepełnosprawności stopien = A1StopienNiepelnosprawnosciNaDzien(pracownik, data);
 			if (stopien == StNiepełnosprawności.Brak)
 			{
 				return null;
@@ -398,7 +418,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 			{
 				return null;
 			}
-			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(dzien.Data).Stopien;
+			StNiepełnosprawności stopien = A1StopienNiepelnosprawnosciNaDzien(pracownik, dzien.Data);
 			if (stopien == StNiepełnosprawności.Brak)
 			{
 				return null;
@@ -438,7 +458,7 @@ namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
 			{
 				return null;
 			}
-			StNiepełnosprawności stopien = pracownik.StopienNiepelnosprawnosciNaDzien(dzien.Data).Stopien;
+			StNiepełnosprawności stopien = A1StopienNiepelnosprawnosciNaDzien(pracownik, dzien.Data);
 			if (stopien == StNiepełnosprawności.Brak)
 			{
 				return null;

@@ -301,6 +301,19 @@ stamp `RuntimeProjects` 29 podbity. **Potwierdzone na żywo (2026-10-19, po rest
 NP8 13.11 = 8:00 → błąd 2069 ze stopniem „Umiarkowany”; 16.11 = 8:00 (lekki) → bez błędu 2069.
 Scenariusz 8 w arkuszu „Brak zgody 8h” zmieniony na pozytywny (10/10).
 
+**Wersja klienta 2512.10.12 (2026-10-20) — stopień znowu z zapisu historii.** Klient ma enova
+2512.10.12: tam **nie ma** `Pracownik.StopienNiepelnosprawnosciNaDzien` ani tabel
+`OrzeczeniaPFRON` / `OrzeczeniaZUS` — kod z 19.10 nie kompilował się (6 wywołań, a to jeden plik
+`CodeFiles` z wszystkimi weryfikatorami kalendarza). W 2512 stopień przechowywany jest w każdym
+zapisie historii pracownika: `PracHistoria.StopienNiepelnosp` (dane ubezpieczeniowe) i
+`PracHistoria.PFRON` (`Stopien`, `OkresExt`), bez oznaczenia „przestarzałe”. Wszystkie weryfikatory
+liczą teraz stopień jedną metodą pomocniczą `A1StopienNiepelnosprawnosciNaDzien(pracownik, data)`:
+zapis historii obowiązujący w dniu, wyższy z obu stopni, jeśli `OkresExt` obejmuje dzień (tak jak
+przed 19.10). W 2512 każdy zapis historii ma własne dane, więc problem scenariusza 8 nie występuje;
+w bazie testowej 2610 (nakładka) scenariusz 8 znowu jest negatywny. Kompilacja całej klasy z bazy:
+2512.10.12 (pakiety NuGet) — 0 błędów, 0 ostrzeżeń; 2610 („Sprawdź kod” w Al) — 0 błędów,
+5 ostrzeżeń „przestarzały”. Wgrane do `CodeFiles` 13 + stamp 29 + „Wymuś rekompilację”.
+
 **Uwaga z testu:** weryfikator normy okresu rozliczeniowego (definicja 37) liczy normę ogólną także
 dla osób ze stopniem umiarkowanym/znacznym bez zgody (norma 7h/dobę, 35h/tydzień) — dla nich oba
 weryfikatory się wykluczają (niedobór normy okresu każe wydłużyć dzień do 8:00, 2069 blokuje > 7:00).
@@ -318,9 +331,10 @@ do 12h (blokowane przez 2069) — tylko treść podpowiedzi, niezmieniane.
 ### 8a. Zgody osoby z niepełnosprawnością: nadgodziny i pora nocna (2026-10-19)
 
 Trzy nowe weryfikatory, podpięte do tych samych 14 kalendarzy co 2069 (45, 47, 1070–1081).
-Dotyczą **każdego** stopnia niepełnosprawności (orzeczenie PFRON/ZUS obowiązujące w dniu,
-`pracownik.StopienNiepelnosprawnosciNaDzien`) — enova udostępnia pola zgód na etacie przy każdym
-stopniu (`Etat.IsReadOnlyPracownikNiepelnosprawnyZgoda...` = brak orzeczenia o stopniu).
+Dotyczą **każdego** stopnia niepełnosprawności (z zapisu historii obowiązującego w dniu,
+`A1StopienNiepelnosprawnosciNaDzien` — zob. „Wersja klienta 2512.10.12” w sekcji 8) — enova udostępnia
+pola zgód na etacie przy każdym stopniu (w 2512: `Etat.IsReadOnlyPracownikNiepelnosprawnyZgoda...` =
+`Historia.StopienNiepelnosp.Kod == Brak`).
 Zgody czytane z zapisu historii obowiązującego w dniu (`pracownik[data].Etat`).
 
 | Def. | Nazwa | Rodzaj | Poziom | Metoda | Reguła |
@@ -351,9 +365,9 @@ kalendarza testowego 1086. Poziom (Błąd / Ostrzeżenie) to ustawienie podpięc
 | 3071 | A1_Doba niepełnosprawnych (równoważny) | Dzień planu | Ostrzeżenie | `A1DobaNiepelnosprawnegoWRownowaznym(kp, data)` |
 
 **Norma osoby (d = dobowa, W = 5 × d):** umiarkowany/znaczny bez zgody na pracę 8h (pole na etacie)
-→ 7h/35h; lekki oraz umiarkowany/znaczny ze zgodą 8h → 8h/40h. Stopień z orzeczeń PFRON/ZUS
-obowiązujących w danym dniu (`pracownik.StopienNiepelnosprawnosciNaDzien`), zgoda z zapisu historii
-obowiązującego w dniu. Brak orzeczenia → nic nie sprawdza.
+→ 7h/35h; lekki oraz umiarkowany/znaczny ze zgodą 8h → 8h/40h. Stopień i zgoda z zapisu historii
+obowiązującego w danym dniu (`A1StopienNiepelnosprawnosciNaDzien`, zob. „Wersja klienta 2512.10.12”
+w sekcji 8). Brak stopnia → nic nie sprawdza.
 
 **Tygodnie:** 7 kolejnych dni od pierwszego dnia okresu rozliczeniowego (`pracownik.WyliczOkresRoliczeniowyNadgodzin`,
 art. 128 § 3 pkt 1 KP). Tak samo liczy standardowy weryfikator odpoczynku tygodniowego enova. Tygodnie
