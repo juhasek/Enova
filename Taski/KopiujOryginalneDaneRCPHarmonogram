@@ -2,11 +2,12 @@
 // Task "Kopiuj oryginalne dane RCP harmonogram" - definicja zadania na tabeli CfgNodes, typ definicji
 // "Brak", bez wyzwalaczy (wzor: standardowe zadanie "Import RCP").
 //
-// Uruchamiany tylko przez harmonogram (zakladka Harmonogram definicji zadania, akcja
-// "Kopiuj oryginalne dane RCP"). Dogania zapisy Oryginalnych danych RCP z ostatnich
+// Uruchamiany tylko przez harmonogram zadania globalnego tej definicji (zakladka Automatyczne akcje,
+// akcja "Kopiuj oryginalne dane RCP"). Dogania zapisy Oryginalnych danych RCP z ostatnich
 // DniWsteczHarmonogramu dni, ktorych nie skopiowalo zadanie "Kopiuj oryginalne dane RCP"
 // (wyzwalacz przy zapisie) - np. wpisanych przez integracje bez operatora, z bledem kopiowania
-// albo sprzed uruchomienia zadan. Juz skopiowanych zapisow nie dubluje.
+// albo sprzed uruchomienia zadan. Juz skopiowanych zapisow nie dubluje - kopiowanie we wspolnym
+// dodatkowym kodzie A1KopiowanieRCP (projekt Business).
 public override bool IsEnable() {
     return false;
 }
@@ -43,7 +44,7 @@ public void KopiujOryginalneDaneRCP() {
             using (ITransaction transakcja = sesja.Logout(true)) {
                 foreach (Soneta.Kalend.WejscieWyjscieO oryginal in ((SubTable)kalend.WejsciaWyjsciaO.WgPracownik)[warunek]) {
                     try {
-                        if (KopiujZapisRCP(kalend, oryginal))
+                        if (A1.Runtime.Business.TblCodeFiles.A1KopiowanieRCP.KopiujZapis(kalend, oryginal))
                             skopiowane++;
                     }
                     catch (Exception ex) {
@@ -63,42 +64,6 @@ public void KopiujOryginalneDaneRCP() {
         if (ex.InnerException != null)
             LogHarmonogramu(ex.InnerException.Message, ConsoleColor.Red);
     }
-}
-
-// Kopiuje jeden oryginalny zapis do Danych RCP; false, gdy kopia juz istnieje.
-// Kopia istnieje, gdy w Danych RCP jest zapis powiazany z oryginalem (WeWyO) albo - dla danych
-// z importu standardowego, ktory zapisuje do obu tabel bez powiazania - zapis bez powiazania
-// z ta sama data, godzina i typem.
-// Ta sama metoda jest w zadaniu "Kopiuj oryginalne dane RCP" - zmiany wprowadzac w obu.
-private static bool KopiujZapisRCP(Soneta.Kalend.KalendModule kalend, Soneta.Kalend.WejscieWyjscieO oryginal) {
-    if (oryginal.Pracownik == null)
-        return false;
-    foreach (Soneta.Kalend.WejscieWyjscieI powiazany in kalend.WejsciaWyjsciaI.WgWeWyO[oryginal])
-        return false;
-
-    Date data = oryginal.DataEdytowana != Date.Empty ? oryginal.DataEdytowana : oryginal.Data;
-    // Godzina edytowana 0:00 przy pustej dacie edytowanej = brak edycji (tak zostaje po zapisie
-    // z pominieciem logiki enova, np. import wg rekordow albo zapis integracji prosto do bazy).
-    bool bezEdycjiGodziny = oryginal.GodzinaEdytowana == Time.Empty || (oryginal.GodzinaEdytowana == new Time(0, 0) && oryginal.DataEdytowana == Date.Empty);
-    Time godzina = bezEdycjiGodziny ? oryginal.Godzina : oryginal.GodzinaEdytowana;
-    // Klucz (pracownik, data) - obejmuje tez zapisy dodane w tej samej sesji (np. import z czytnika).
-    foreach (Soneta.Kalend.WejscieWyjscieI istniejacy in kalend.WejsciaWyjsciaI.WgPracownik[oryginal.Pracownik, data]) {
-        if (istniejacy.WeWyO == null && istniejacy.Godzina == godzina && istniejacy.Typ == oryginal.Typ)
-            return false;
-    }
-
-    Soneta.Kalend.WejscieWyjscieI kopia = new Soneta.Kalend.WejscieWyjscieI(oryginal.Pracownik);
-    kalend.WejsciaWyjsciaI.AddRow(kopia);
-    kopia.Data = data;
-    kopia.Godzina = godzina;
-    kopia.WeWyO = oryginal;
-    kopia.Typ = oryginal.Typ;
-    kopia.Operacja = oryginal.Operacja;
-    kopia.Zaimportowany = false;
-    kopia.Stan = Soneta.Kalend.TypWeryfikacjiWeWy.Nieoznaczony;
-    kopia.CzytnikRCP = oryginal.CzytnikRCP;
-    kopia.Uwagi = oryginal.Uwagi;
-    return true;
 }
 
 private static void LogHarmonogramu(string komunikat, ConsoleColor? kolor = null) {

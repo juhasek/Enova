@@ -8,7 +8,8 @@
 //
 // Kopia powstaje przy zapisie oryginalnych danych w sesji z operatorem (enova uruchamia wyzwalacze
 // tylko wtedy). Zapisy wpisane bez operatora dogania osobne zadanie na tabeli CfgNodes
-// "Kopiuj oryginalne dane RCP harmonogram" (akcja harmonogramu) - ta sama metoda kopiujaca.
+// "Kopiuj oryginalne dane RCP harmonogram" (akcja harmonogramu). Kopiowanie jednego zapisu - wspolny
+// dodatkowy kod A1KopiowanieRCP (projekt Business).
 //
 // Cala praca dzieje sie tutaj, a metoda zwraca false - dzieki temu enova nie tworzy
 // rekordow zadan (Tasks) przy kazdym zapisie.
@@ -20,7 +21,7 @@ public override bool IsEnable() {
             if (oryginal == null || oryginal.State == Soneta.Business.RowState.Deleted || oryginal.State == Soneta.Business.RowState.Detached)
                 continue;
             if (oryginal.Pracownik == Row)
-                KopiujZapisRCP(kalend, oryginal);
+                A1.Runtime.Business.TblCodeFiles.A1KopiowanieRCP.KopiujZapis(kalend, oryginal);
         }
     }
     catch {
@@ -48,39 +49,4 @@ public override void Action() {
 //** end action **
 
 //** begin other methods **
-// Kopiuje jeden oryginalny zapis do Danych RCP; false, gdy kopia juz istnieje.
-// Kopia istnieje, gdy w Danych RCP jest zapis powiazany z oryginalem (WeWyO) albo - dla danych
-// z importu standardowego, ktory zapisuje do obu tabel bez powiazania - zapis bez powiazania
-// z ta sama data, godzina i typem.
-// Ta sama metoda jest w zadaniu "Kopiuj oryginalne dane RCP harmonogram" - zmiany wprowadzac w obu.
-private static bool KopiujZapisRCP(Soneta.Kalend.KalendModule kalend, Soneta.Kalend.WejscieWyjscieO oryginal) {
-    if (oryginal.Pracownik == null)
-        return false;
-    foreach (Soneta.Kalend.WejscieWyjscieI powiazany in kalend.WejsciaWyjsciaI.WgWeWyO[oryginal])
-        return false;
-
-    Date data = oryginal.DataEdytowana != Date.Empty ? oryginal.DataEdytowana : oryginal.Data;
-    // Godzina edytowana 0:00 przy pustej dacie edytowanej = brak edycji (tak zostaje po zapisie
-    // z pominieciem logiki enova, np. import wg rekordow albo zapis integracji prosto do bazy).
-    bool bezEdycjiGodziny = oryginal.GodzinaEdytowana == Time.Empty || (oryginal.GodzinaEdytowana == new Time(0, 0) && oryginal.DataEdytowana == Date.Empty);
-    Time godzina = bezEdycjiGodziny ? oryginal.Godzina : oryginal.GodzinaEdytowana;
-    // Klucz (pracownik, data) - obejmuje tez zapisy dodane w tej samej sesji (np. import z czytnika).
-    foreach (Soneta.Kalend.WejscieWyjscieI istniejacy in kalend.WejsciaWyjsciaI.WgPracownik[oryginal.Pracownik, data]) {
-        if (istniejacy.WeWyO == null && istniejacy.Godzina == godzina && istniejacy.Typ == oryginal.Typ)
-            return false;
-    }
-
-    Soneta.Kalend.WejscieWyjscieI kopia = new Soneta.Kalend.WejscieWyjscieI(oryginal.Pracownik);
-    kalend.WejsciaWyjsciaI.AddRow(kopia);
-    kopia.Data = data;
-    kopia.Godzina = godzina;
-    kopia.WeWyO = oryginal;
-    kopia.Typ = oryginal.Typ;
-    kopia.Operacja = oryginal.Operacja;
-    kopia.Zaimportowany = false;
-    kopia.Stan = Soneta.Kalend.TypWeryfikacjiWeWy.Nieoznaczony;
-    kopia.CzytnikRCP = oryginal.CzytnikRCP;
-    kopia.Uwagi = oryginal.Uwagi;
-    return true;
-}
 //** end other methods **

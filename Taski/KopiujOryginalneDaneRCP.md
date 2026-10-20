@@ -17,9 +17,10 @@ do obu tabel — integracja klienta zapisuje tylko do oryginalnych.
 | Kopiuj oryginalne dane RCP | Pracownicy | wyzwalacz na `WejsciaWyjsciaO` — przy zapisie oryginału | `KopiujOryginalneDaneRCP` |
 | Kopiuj oryginalne dane RCP harmonogram | CfgNodes | harmonogram co 15 min, ostatnie 31 dni | `KopiujOryginalneDaneRCPHarmonogram` (opis: `KopiujOryginalneDaneRCPHarmonogram.md`) |
 
-Oba zadania kopiują tą samą metodą `KopiujZapisRCP` (kod zduplikowany w obu
-definicjach — zmiany wprowadzać w obu), tak jak worker enova
-`WejsciaWyjsciaOWorker.Kopiuj` (zdekompilowany, 2610):
+Oba zadania kopiują jedną metodą `A1KopiowanieRCP.KopiujZapis` z **dodatkowego kodu do
+kompilacji** „A1KopiowanieRCP” (Ustawienia/Systemowe/Dodatkowy kod do kompilacji, projekt
+Business — ten sam, w którym kompilują się definicje zadań; plik `A1KopiowanieRCP`), tak jak
+worker enova `WejsciaWyjsciaOWorker.Kopiuj` (zdekompilowany, 2610):
 
 | Dane RCP | Skąd |
 |---|---|
@@ -91,7 +92,9 @@ harmonogramu przekompilowuje się sama ok. minuty po zmianie stampu).
   TaskDefs **416** (harmonogram) + zadanie globalne Tasks **2** + ScheduleDefs **14**
   (host = zadanie; docelowo co 15 min, na czas testów użytkownik ustawił co minutę),
   planowane wywołanie aktywne. Usunięte próby: harmonogram 12 (z listy, bez hosta)
-  i 13 (host = definicja — nie wywołuje akcji).
+  i 13 (host = definicja — nie wywołuje akcji). Wspólny kod: CodeFiles **1016**
+  „A1KopiowanieRCP” (RuntimeProjects 2 Business) — „Sprawdź kod”: 0 błędów; po przeniesieniu
+  metody sprawdzone ponownie przy zapisie i harmonogramem.
 - Test live 20.10.2026: **W1–W4 i H1–H4 pozytywne** (arkusz scenariuszy). Dwie poprawki
   w trakcie: klucz `WgPracownik[pracownik, data]` (W3) oraz godzina edytowana 0:00 przy
   pustej dacie edytowanej = brak edycji (H1 — import wg rekordów zostawia w bazie
