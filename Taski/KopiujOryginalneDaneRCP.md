@@ -105,4 +105,26 @@ przy zapisach (zob. `PracaWNormieZPlanu.md`).
      ponawia próby — trzeba zrestartować proces.
 - Formularz „Oryginalne dane z RCP” jest w UI niedostępny („Brak praw do formularza danych”),
   więc wyzwalacza nie da się sprawdzić ręcznym dodaniem zapisu — test wymaga zapisu z integracji.
-- Nie przetestowany na żywo.
+- **Harmonogram w obecnej postaci nie działa:** zaplanowane wywołania (`ScheduleItems`) enova
+  przypina zawsze do zadania (`Tasks`). Powstają przy tworzeniu zadania danej definicji albo
+  czynnością „Uruchom harmonogramy”, dostępną tylko dla definicji globalnych (tabela `?`)
+  — `TaskDefinitionRunScheduleWorker` w Soneta.Core. Definicja 415 (Pracownicy, `IsEnable() == false`)
+  zadań nie tworzy, więc harmonogram 12 nigdy nie dostał wywołania (`ScheduleItems` puste).
+- Oryginał ID 3 (16.10, sprzed założenia taska) nie ma kopii w Danych RCP — wyzwalacz
+  kopiuje tylko nowe zapisy.
+
+## Decyzja 2026-10-20
+
+Dane do Oryginalnych danych RCP przychodzą integracją, więc **na razie zostaje jeden task**
+— definicja 415 z wyzwalaczem (kopiowanie przy zapisie). Harmonogram 12 jest nieaktywny
+(brak zaplanowanych wywołań); metoda `[AutoAction]` w kodzie 415 jest nieużywana.
+
+Docelowo (gdy okaże się potrzebny harmonogram, np. integracja zapisuje bez operatora):
+**dwa zadania** —
+1. obecna definicja 415 na Pracownikach (wyzwalacz przy zapisie),
+2. osobna definicja zadania do harmonogramu **na tabeli `CfgNodes`** (wzór: TaskDefs 61
+   „Import RCP”) z akcją `[AutoAction]` kopiującą zaległe oryginały z ostatnich 31 dni;
+   harmonogram przypięty do niej, a akcja harmonogramu usunięta z 415.
+
+Do zrobienia: test wyzwalacza pierwszym zapisem z integracji (czy kopia powstaje od razu,
+z powiązaniem WeWyO).
