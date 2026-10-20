@@ -94,9 +94,15 @@ przy zapisach (zob. `PracaWNormieZPlanu.md`).
   (WejsciaWyjsciaO) założone i skompilowane przez serwer 2610 (akcja `[AutoAction]` widoczna
   w definicji harmonogramu). Harmonogram ScheduleDefs **12** „Kopiuj oryginalne dane RCP”:
   co 15 minut od 20.10.2026, akcja „Kopiuj oryginalne dane RCP”.
-- Usługa harmonogramu zadań na serwerze 2610 jest **wyłączona** (`appsettings.json`:
-  `Scheduler.Enabled = false` w sekcji komponentów orkiestratora) — bez jej włączenia
-  harmonogram się nie uruchamia.
+- Uruchomienie usługi harmonogramu zadań na serwerze 2610 (`appsettings.json`, sekcja
+  `Orchestrator:Process:Composition:Scheduler`) wymagało trzech rzeczy:
+  1. `"Enabled": true` (domyślnie `false`),
+  2. `"Overrides": { "DbName": "Al" }` — bez bazy scheduler pada co ~10 s z błędem
+     „Database cannot be determined” (to odpowiednik `scheduler -d Al`),
+  3. odblokowanego operatora **„Harmonogram Zadań”** w bazie (Ustawienia/Systemowe/Uprawnienia/
+     Operatorzy, status „Wszystkie”) — scheduler loguje się na tego operatora, a zablokowany daje
+     „Nieznaleziony kontekst autoryzacji dla operatora”. Po nieudanym logowaniu scheduler nie
+     ponawia próby — trzeba zrestartować proces.
 - Formularz „Oryginalne dane z RCP” jest w UI niedostępny („Brak praw do formularza danych”),
   więc wyzwalacza nie da się sprawdzić ręcznym dodaniem zapisu — test wymaga zapisu z integracji.
 - Nie przetestowany na żywo.
