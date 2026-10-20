@@ -2,3 +2,8 @@
 # Wersjonowany jest wylacznie opis katalogu.
 Pobrane/*
 !Pobrane/README.md
+
+# Analizy i notatki konkretnych klientow - tylko lokalnie (nazwy, dane osobowe/placowe).
+Klienci/
+# Kopie robocze dokumentow zrodlowych przy budowie wzoru analizy.
+Wzor_analizy/_robocze/
