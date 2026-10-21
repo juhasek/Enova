@@ -50,6 +50,8 @@ sealed class OpisPola
     public JsonNode WymaganeGdy { get; set; }
     public JsonNode WidocznyGdy { get; set; }
     public JsonNode EdytowalnyGdy { get; set; }
+    /// <summary>Krótki powód nieaktywności dla klienta (zamiast opisu wyliczonego z warunku).</summary>
+    public string PowodNieaktywnosci { get; set; }
     /// <summary>Walidacje: min/max/wzorzec/unikalne.</summary>
     public JsonNode Walidacje { get; set; }
     /// <summary>Ograniczenie listy wartości enuma (np. zależnie od rodzaju elementu).</summary>

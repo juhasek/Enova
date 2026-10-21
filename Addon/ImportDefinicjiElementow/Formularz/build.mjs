@@ -9,7 +9,7 @@ const schemat = JSON.parse(czytaj('../schema/definicja-elementu.schema.json'));
 
 // Do formularza trafia tylko to, czego potrzebuje klient – bez reguł z kodu enova, typów .NET i uwag technicznych.
 const POLA_POLA = ['sciezka', 'etykieta', 'etykietaEnova', 'typ', 'enum', 'slownik', 'wymagane', 'wymaganeGdy', 'maxDlugosc',
-  'domyslna', 'widocznyGdy', 'edytowalnyGdy', 'walidacje', 'dozwoloneWartosci', 'licencja', 'opis', 'podpowiedz',
+  'domyslna', 'widocznyGdy', 'edytowalnyGdy', 'powodNieaktywnosci', 'walidacje', 'dozwoloneWartosci', 'licencja', 'opis', 'podpowiedz',
   'opisDoWeryfikacji', 'zrodloOpisu', 'kolumny'];
 const wybierz = (o, klucze) => Object.fromEntries(klucze.filter((k) => o[k] !== undefined && o[k] !== null).map((k) => [k, o[k]]));
 

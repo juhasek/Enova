@@ -92,7 +92,8 @@
       "pomin": "kod algorytmu w C# – pisze wdrożeniowiec na podstawie opisu klienta w polu „Uwagi dla wdrożeniowca”"
     },
     "NazwyParametrow": {
-      "pomin": "nazwy parametrów edytowalnych na dodatku/elemencie wypłaty – ustawia wdrożeniowiec zgodnie z algorytmem (do decyzji, czy pokazywać klientowi)"
+      "etykieta": "Nazwy parametrów",
+      "opis": "Nadanie nazwy parametrowi pozwala zmieniać go indywidualnie: na dodatku w kartotece pracownika (parametry dodatku) albo na naliczonym elemencie wypłaty. Parametr bez nazwy przyjmuje wartość z definicji i nie da się go zmienić u pracownika. Dostępne są tylko parametry, których używa wybrany algorytm."
     },
     "Podglad": {
       "pomin": "podgląd wygenerowanego kodu – tylko do odczytu"
@@ -369,6 +370,15 @@
     },
     "Nieobecnosci/... zasiłków": {
       "etykieta": "Okres wliczania do podstawy zasiłków"
+    },
+    "NazwyParametrow/Nazwy parametrów dodatku": {
+      "etykieta": "Parametry dodatku (kartoteka pracownika)"
+    },
+    "NazwyParametrow/Nazwy parametrów elementu wypłaty": {
+      "etykieta": "Parametry elementu wypłaty"
+    },
+    "NazwyParametrow/Nazwy parametrów elementu wypłaty / Suma wartości składników": {
+      "etykieta": "Suma wartości składników"
     }
   },
   "pola": {
@@ -2820,6 +2830,692 @@
       "opis": "Czy umowa podlega kontroli minimalnej stawki godzinowej: nie dotyczy, opcjonalna (wybór na umowie), dotyczy (zawsze).",
       "podpowiedz": "Umowy zlecenia: zwykle Dotyczy.",
       "zrodloOpisu": "instrukcja s. 1709–1710"
+    },
+    "Algorytm.DodPodstawa": {
+      "etykieta": "Nazwa parametru „Podstawa” (dodatek)",
+      "opis": "Nazwa kwoty podstawy na dodatku pracownika, np. „Kwota premii”. Po nadaniu nazwy kwotę można wpisać każdemu pracownikowi osobno.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              },
+              {
+                "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+                "wsrod": [
+                  "Kwota",
+                  "Cecha",
+                  "Wyrażenie",
+                  "KodMetody"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.DodCzas": {
+      "etykieta": "Nazwa parametru „Czas” (dodatek)",
+      "opis": "Nazwa liczby godzin wpisywanej na dodatku, np. „Czas pracy w warunkach szkodliwych”. Dostępne m.in. przy wartości za godzinę z wpisanym czasem pracy.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "JakEkwiwalentZaUrlop"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "wsrod": [
+                  "JakUrlopWypoczynkowy",
+                  "JakUrlopOkolicznościowy"
+                ]
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              },
+              {
+                "dowolny": [
+                  {
+                    "wszystkie": [
+                      {
+                        "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa",
+                        "rowne": "Godzinę"
+                      },
+                      {
+                        "pole": "Algorytm.KreatorAlgorytmu.Czas.Typ",
+                        "rowne": "WpisanyCzasPracy"
+                      }
+                    ]
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+                    "wsrod": [
+                      "Wyrażenie",
+                      "KodMetody"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.DodDni": {
+      "etykieta": "Nazwa parametru „Dni” (dodatek)",
+      "opis": "Nazwa liczby dni wpisywanej na dodatku pracownika.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "JakEkwiwalentZaUrlop"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              },
+              {
+                "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+                "wsrod": [
+                  "Wyrażenie",
+                  "KodMetody"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.DodUlamek": {
+      "etykieta": "Nazwa parametru „Ułamek” (dodatek)",
+      "opis": "Nazwa ułamka (mnożnika) zmienianego na dodatku pracownika. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "RodzajZrodla",
+                    "rowne": "Dodatek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Ułamek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+                    "rowne": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.DodProcent",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.DodWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik"
+    },
+    "Algorytm.DodProcent": {
+      "etykieta": "Nazwa parametru „Procent” (dodatek)",
+      "opis": "Nazwa procentu zmienianego na dodatku pracownika, np. „Procent premii”. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "RodzajZrodla",
+                    "rowne": "Dodatek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Procent"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+                    "rowne": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.DodUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.DodWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik"
+    },
+    "Algorytm.DodWspolczynnik": {
+      "etykieta": "Nazwa parametru „Współczynnik” (dodatek)",
+      "opis": "Nazwa współczynnika zmienianego na dodatku pracownika. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "RodzajZrodla",
+                    "rowne": "Dodatek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Współczynnik"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+                    "rowne": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.DodUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.DodProcent",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik"
+    },
+    "Algorytm.ElPodglad": {
+      "etykieta": "Parametry elementu wypłaty tylko do podglądu",
+      "opis": "Tak – nazwane parametry są widoczne na elemencie wypłaty, ale nie można ich tam zmieniać. Instrukcja nie opisuje pola wprost.",
+      "zrodloOpisu": "instrukcja s. 1706",
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.ElPodstawa1": {
+      "etykieta": "Nazwa „Podstawa 1” (element wypłaty)",
+      "opis": "Nazwa podstawy pokazywanej i korygowanej na elemencie wypłaty, np. „Wynagrodzenie zasadnicze”.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)"
+    },
+    "Algorytm.ElPodstawa2": {
+      "etykieta": "Nazwa „Podstawa 2” (element wypłaty)",
+      "opis": "Druga podstawa, gdy wartość liczy się z dwóch części (np. przy urlopie: z n ostatnich miesięcy i z bieżącego) albo przy potrąceniu do limitu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "wsrod": [
+              "JakEkwiwalentZaUrlop",
+              "JakUrlopWypoczynkowy",
+              "JakUrlopOkolicznościowy"
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Potracenie",
+                    "rowne": true
+                  },
+                  {
+                    "pole": "Deklaracje.Zaliczka.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Zdrowotne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Spoleczne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Algorytm.LimitPotracenia",
+                    "wsrod": [
+                      "Standardowy",
+                      "Alimenty",
+                      "Minimalne80",
+                      "Minimalne100"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElPodstawa3": {
+      "etykieta": "Nazwa „Podstawa 3” (element wypłaty)",
+      "opis": "Trzecia podstawa – przy potrąceniu do limitu (kreator) albo w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Potracenie",
+                    "rowne": true
+                  },
+                  {
+                    "pole": "Deklaracje.Zaliczka.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Zdrowotne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Spoleczne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Algorytm.LimitPotracenia",
+                    "wsrod": [
+                      "Standardowy",
+                      "Alimenty",
+                      "Minimalne80",
+                      "Minimalne100"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElPodstawa4": {
+      "etykieta": "Nazwa „Podstawa 4” (element wypłaty)",
+      "opis": "Czwarta podstawa – tylko w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "pole": "Algorytm.Typ",
+        "rowne": "EdytorAlgorytmu"
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElPodstawa5": {
+      "etykieta": "Nazwa „Podstawa 5” (element wypłaty)",
+      "opis": "Piąta podstawa – tylko w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "pole": "Algorytm.Typ",
+        "rowne": "EdytorAlgorytmu"
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElCzas": {
+      "etykieta": "Nazwa „Czas” (element wypłaty)",
+      "opis": "Nazwa czasu (godziny:minuty) na elemencie wypłaty.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "wsrod": [
+              "JakEkwiwalentZaUrlop",
+              "JakUrlopWypoczynkowy",
+              "JakUrlopOkolicznościowy"
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa",
+                "rowne": "Godzinę"
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElDni": {
+      "etykieta": "Nazwa „Dni” (element wypłaty)",
+      "opis": "Nazwa liczby dni na elemencie wypłaty.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "wsrod": [
+              "JakEkwiwalentZaUrlop",
+              "JakUrlopWypoczynkowy",
+              "JakUrlopOkolicznościowy",
+              "JakChorobowe"
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElUlamek": {
+      "etykieta": "Nazwa „Ułamek” (element wypłaty)",
+      "opis": "Nazwa ułamka na elemencie wypłaty. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Ułamek"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.ElProcent",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.ElWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik"
+    },
+    "Algorytm.ElProcent": {
+      "etykieta": "Nazwa „Procent” (element wypłaty)",
+      "opis": "Nazwa procentu na elemencie wypłaty, np. „Procent premii”. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "JakChorobowe"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "wsrod": [
+                      "Procent",
+                      "ZależnyOdStażuPracy",
+                      "ZależnyOdStażuPracyZwyczajowego"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.ElUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.ElWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik"
+    },
+    "Algorytm.ElWspolczynnik": {
+      "etykieta": "Nazwa „Współczynnik” (element wypłaty)",
+      "opis": "Nazwa współczynnika na elemencie wypłaty. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "JakChorobowe"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Współczynnik"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.ElUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.ElProcent",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik"
+    },
+    "Algorytm.ElIlosc": {
+      "etykieta": "Nazwa „Ilość” (element wypłaty)",
+      "opis": "Nazwa liczby dziesiętnej (ilości) na elemencie wypłaty.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "JakChorobowe"
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElPodstawaOkres": {
+      "etykieta": "Nazwa „Okres naliczania podstawy” (element wypłaty)",
+      "opis": "Nazwa okresu, z którego liczona jest podstawa – tylko w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "edytowalnyGdy": {
+        "pole": "Algorytm.Typ",
+        "rowne": "EdytorAlgorytmu"
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru"
+    },
+    "Algorytm.ElRazemCzas": {
+      "etykieta": "Nazwa „Czas” (suma składników)",
+      "opis": "Nazwa sumy czasu ze składników elementu wypłaty. Instrukcja nie opisuje pola wprost.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.ElRazemDni": {
+      "etykieta": "Nazwa „Dni” (suma składników)",
+      "opis": "Nazwa sumy dni ze składników elementu wypłaty. Instrukcja nie opisuje pola wprost.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "opisDoWeryfikacji": true
     }
   },
   "enumy": {

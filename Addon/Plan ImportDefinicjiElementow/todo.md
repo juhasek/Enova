@@ -18,7 +18,7 @@ Założenia (do potwierdzenia przy STOP po etapie 1):
 - [x] `opisy.json`: etykiety, opisy dla kadrowej (instrukcja), warunki widoczności/edytowalności/wymagalności, dozwolone wartości
 - [x] `PRZEGLAD.md` + lista pól do weryfikacji + domyślne do weryfikacji
 - [x] Wartości domyślne sprawdzone na żywo (baza Claude, 2026-10-21) – zgodne lub poprawione w opisy.json
-- [ ] Decyzje: pominięte zakładki (Nazwy parametrów, Pomniejszenia nieobecności), ukryte rodzaje elementów, wersja dodatku
+- [x] Decyzje (22.10): dodatek na 2610; „Nazwy parametrów” w formularzu (klient wpisuje nazwy, warunki z IDefinicjaAlgorytmu); ukryte rodzaje bez zmian; „Pomniejszenia nieobecności” nadal pominięte
 
 ## Etap 2 – formularz HTML dla klienta (GOTOWE)
 - [x] Szablon strony (vanilla JS, offline) + `build.mjs` wstawiający schemat (okrojony do potrzeb klienta) do jednego HTML

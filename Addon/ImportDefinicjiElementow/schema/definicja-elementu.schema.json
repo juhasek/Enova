@@ -1,7 +1,7 @@
 {
   "wersjaSchematu": "1.0",
   "wersjaEnova": "2610.0.0-beta.241094",
-  "wygenerowano": "2026-10-21",
+  "wygenerowano": "2026-10-22",
   "obiekt": "Soneta.Place.DefinicjaElementu",
   "zakladki": [
     {
@@ -1232,6 +1232,69 @@
             "Algorytm.Umowa.RodzajRozliczenia",
             "Algorytm.Umowa.TypWartosci",
             "Algorytm.Umowa.MinimalnaStawkaGodz"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "NazwyParametrow",
+      "etykieta": "Nazwy parametrów",
+      "etykietaEnova": "Algorytm/Nazwy parametrów",
+      "zasobEnova": "DefinicjaElementuParametry.pageform.xml",
+      "opis": "Nadanie nazwy parametrowi pozwala zmieniać go indywidualnie: na dodatku w kartotece pracownika (parametry dodatku) albo na naliczonym elemencie wypłaty. Parametr bez nazwy przyjmuje wartość z definicji i nie da się go zmienić u pracownika. Dostępne są tylko parametry, których używa wybrany algorytm.",
+      "licencja": null,
+      "widocznaGdy": null,
+      "regulyEnova": null,
+      "sekcje": [
+        {
+          "id": "NazwyParametrow/Nazwy parametrów dodatku",
+          "etykieta": "Parametry dodatku (kartoteka pracownika)",
+          "etykietaEnova": "Nazwy parametrów dodatku",
+          "opis": null,
+          "widocznaGdy": null,
+          "regulyEnova": null,
+          "pola": [
+            "Algorytm.DodPodstawa",
+            "Algorytm.DodCzas",
+            "Algorytm.DodDni",
+            "Algorytm.DodUlamek",
+            "Algorytm.DodProcent",
+            "Algorytm.DodWspolczynnik"
+          ]
+        },
+        {
+          "id": "NazwyParametrow/Nazwy parametrów elementu wypłaty",
+          "etykieta": "Parametry elementu wypłaty",
+          "etykietaEnova": "Nazwy parametrów elementu wypłaty",
+          "opis": null,
+          "widocznaGdy": null,
+          "regulyEnova": null,
+          "pola": [
+            "Algorytm.ElPodglad",
+            "Algorytm.ElPodstawa1",
+            "Algorytm.ElPodstawa2",
+            "Algorytm.ElPodstawa3",
+            "Algorytm.ElPodstawa4",
+            "Algorytm.ElPodstawa5",
+            "Algorytm.ElCzas",
+            "Algorytm.ElDni",
+            "Algorytm.ElUlamek",
+            "Algorytm.ElProcent",
+            "Algorytm.ElWspolczynnik",
+            "Algorytm.ElIlosc",
+            "Algorytm.ElPodstawaOkres"
+          ]
+        },
+        {
+          "id": "NazwyParametrow/Nazwy parametrów elementu wypłaty / Suma wartości składników",
+          "etykieta": "Suma wartości składników",
+          "etykietaEnova": "Nazwy parametrów elementu wypłaty / Suma wartości składników",
+          "opis": null,
+          "widocznaGdy": null,
+          "regulyEnova": null,
+          "pola": [
+            "Algorytm.ElRazemCzas",
+            "Algorytm.ElRazemDni"
           ]
         }
       ]
@@ -5444,6 +5507,914 @@
       "zrodloOpisu": "instrukcja s. 1709–1710",
       "bazaDanych": true,
       "typEnova": "Soneta.Place.KontrolaMinimalnaStawkaGodz"
+    },
+    "Algorytm.DodPodstawa": {
+      "sciezka": "Algorytm.DodPodstawa",
+      "etykieta": "Nazwa parametru „Podstawa” (dodatek)",
+      "etykietaEnova": "Podstawa",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              },
+              {
+                "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+                "wsrod": [
+                  "Kwota",
+                  "Cecha",
+                  "Wyrażenie",
+                  "KodMetody"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Nazwa kwoty podstawy na dodatku pracownika, np. „Kwota premii”. Po nadaniu nazwy kwotę można wpisać każdemu pracownikowi osobno.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyDodPodstawa"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.DodCzas": {
+      "sciezka": "Algorytm.DodCzas",
+      "etykieta": "Nazwa parametru „Czas” (dodatek)",
+      "etykietaEnova": "Czas",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "JakEkwiwalentZaUrlop"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "wsrod": [
+                  "JakUrlopWypoczynkowy",
+                  "JakUrlopOkolicznościowy"
+                ]
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              },
+              {
+                "dowolny": [
+                  {
+                    "wszystkie": [
+                      {
+                        "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa",
+                        "rowne": "Godzinę"
+                      },
+                      {
+                        "pole": "Algorytm.KreatorAlgorytmu.Czas.Typ",
+                        "rowne": "WpisanyCzasPracy"
+                      }
+                    ]
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+                    "wsrod": [
+                      "Wyrażenie",
+                      "KodMetody"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Nazwa liczby godzin wpisywanej na dodatku, np. „Czas pracy w warunkach szkodliwych”. Dostępne m.in. przy wartości za godzinę z wpisanym czasem pracy.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyDodCzas"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.DodDni": {
+      "sciezka": "Algorytm.DodDni",
+      "etykieta": "Nazwa parametru „Dni” (dodatek)",
+      "etykietaEnova": "Dni",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "JakEkwiwalentZaUrlop"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "RodzajZrodla",
+                "rowne": "Dodatek"
+              },
+              {
+                "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+                "wsrod": [
+                  "Wyrażenie",
+                  "KodMetody"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Nazwa liczby dni wpisywanej na dodatku pracownika.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyDodDni"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.DodUlamek": {
+      "sciezka": "Algorytm.DodUlamek",
+      "etykieta": "Nazwa parametru „Ułamek” (dodatek)",
+      "etykietaEnova": "Ułamek",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "RodzajZrodla",
+                    "rowne": "Dodatek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Ułamek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+                    "rowne": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.DodProcent",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.DodWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik",
+      "opis": "Nazwa ułamka (mnożnika) zmienianego na dodatku pracownika. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyDodUlamek"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.DodProcent": {
+      "sciezka": "Algorytm.DodProcent",
+      "etykieta": "Nazwa parametru „Procent” (dodatek)",
+      "etykietaEnova": "Procent",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "RodzajZrodla",
+                    "rowne": "Dodatek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Procent"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+                    "rowne": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.DodUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.DodWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik",
+      "opis": "Nazwa procentu zmienianego na dodatku pracownika, np. „Procent premii”. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyDodProcent"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.DodWspolczynnik": {
+      "sciezka": "Algorytm.DodWspolczynnik",
+      "etykieta": "Nazwa parametru „Współczynnik” (dodatek)",
+      "etykietaEnova": "Współczynnik",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "RodzajZrodla",
+                    "rowne": "Dodatek"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Współczynnik"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+                    "rowne": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.DodUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.DodProcent",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik",
+      "opis": "Nazwa współczynnika zmienianego na dodatku pracownika. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niezmienny u pracownika.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyDodWspolczynnik"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElPodglad": {
+      "sciezka": "Algorytm.ElPodglad",
+      "etykieta": "Parametry elementu wypłaty tylko do podglądu",
+      "etykietaEnova": "Tylko do podglądu",
+      "typ": "bool",
+      "wymagane": false,
+      "domyslna": false,
+      "opis": "Tak – nazwane parametry są widoczne na elemencie wypłaty, ale nie można ich tam zmieniać. Instrukcja nie opisuje pola wprost.",
+      "podpowiedz": null,
+      "opisDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1706",
+      "bazaDanych": true,
+      "typEnova": "System.Boolean"
+    },
+    "Algorytm.ElPodstawa1": {
+      "sciezka": "Algorytm.ElPodstawa1",
+      "etykieta": "Nazwa „Podstawa 1” (element wypłaty)",
+      "etykietaEnova": "Podstawa 1",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "opis": "Nazwa podstawy pokazywanej i korygowanej na elemencie wypłaty, np. „Wynagrodzenie zasadnicze”.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElPodstawa1"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElPodstawa2": {
+      "sciezka": "Algorytm.ElPodstawa2",
+      "etykieta": "Nazwa „Podstawa 2” (element wypłaty)",
+      "etykietaEnova": "Podstawa 2",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "wsrod": [
+              "JakEkwiwalentZaUrlop",
+              "JakUrlopWypoczynkowy",
+              "JakUrlopOkolicznościowy"
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Potracenie",
+                    "rowne": true
+                  },
+                  {
+                    "pole": "Deklaracje.Zaliczka.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Zdrowotne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Spoleczne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Algorytm.LimitPotracenia",
+                    "wsrod": [
+                      "Standardowy",
+                      "Alimenty",
+                      "Minimalne80",
+                      "Minimalne100"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Druga podstawa, gdy wartość liczy się z dwóch części (np. przy urlopie: z n ostatnich miesięcy i z bieżącego) albo przy potrąceniu do limitu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElPodstawa2"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElPodstawa3": {
+      "sciezka": "Algorytm.ElPodstawa3",
+      "etykieta": "Nazwa „Podstawa 3” (element wypłaty)",
+      "etykietaEnova": "Podstawa 3",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Potracenie",
+                    "rowne": true
+                  },
+                  {
+                    "pole": "Deklaracje.Zaliczka.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Zdrowotne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Deklaracje.Spoleczne.Typ",
+                    "rowne": "NieNaliczać"
+                  },
+                  {
+                    "pole": "Algorytm.LimitPotracenia",
+                    "wsrod": [
+                      "Standardowy",
+                      "Alimenty",
+                      "Minimalne80",
+                      "Minimalne100"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Trzecia podstawa – przy potrąceniu do limitu (kreator) albo w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElPodstawa3"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElPodstawa4": {
+      "sciezka": "Algorytm.ElPodstawa4",
+      "etykieta": "Nazwa „Podstawa 4” (element wypłaty)",
+      "etykietaEnova": "Podstawa 4",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "pole": "Algorytm.Typ",
+        "rowne": "EdytorAlgorytmu"
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Czwarta podstawa – tylko w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElPodstawa4"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElPodstawa5": {
+      "sciezka": "Algorytm.ElPodstawa5",
+      "etykieta": "Nazwa „Podstawa 5” (element wypłaty)",
+      "etykietaEnova": "Podstawa 5",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "pole": "Algorytm.Typ",
+        "rowne": "EdytorAlgorytmu"
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Piąta podstawa – tylko w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElPodstawa5"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElCzas": {
+      "sciezka": "Algorytm.ElCzas",
+      "etykieta": "Nazwa „Czas” (element wypłaty)",
+      "etykietaEnova": "Czas",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "wsrod": [
+              "JakEkwiwalentZaUrlop",
+              "JakUrlopWypoczynkowy",
+              "JakUrlopOkolicznościowy"
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "KreatorAlgorytmu"
+              },
+              {
+                "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa",
+                "rowne": "Godzinę"
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Nazwa czasu (godziny:minuty) na elemencie wypłaty.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElCzas"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElDni": {
+      "sciezka": "Algorytm.ElDni",
+      "etykieta": "Nazwa „Dni” (element wypłaty)",
+      "etykietaEnova": "Dni",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "wsrod": [
+              "JakEkwiwalentZaUrlop",
+              "JakUrlopWypoczynkowy",
+              "JakUrlopOkolicznościowy",
+              "JakChorobowe"
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Nazwa liczby dni na elemencie wypłaty.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElDni"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElUlamek": {
+      "sciezka": "Algorytm.ElUlamek",
+      "etykieta": "Nazwa „Ułamek” (element wypłaty)",
+      "etykietaEnova": "Ułamek",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Ułamek"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.ElProcent",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.ElWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik",
+      "opis": "Nazwa ułamka na elemencie wypłaty. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElUlamek"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElProcent": {
+      "sciezka": "Algorytm.ElProcent",
+      "etykieta": "Nazwa „Procent” (element wypłaty)",
+      "etykietaEnova": "Procent",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "JakChorobowe"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "wsrod": [
+                      "Procent",
+                      "ZależnyOdStażuPracy",
+                      "ZależnyOdStażuPracyZwyczajowego"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.ElUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.ElWspolczynnik",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik",
+      "opis": "Nazwa procentu na elemencie wypłaty, np. „Procent premii”. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElProcent"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElWspolczynnik": {
+      "sciezka": "Algorytm.ElWspolczynnik",
+      "etykieta": "Nazwa „Współczynnik” (element wypłaty)",
+      "etykietaEnova": "Współczynnik",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "wszystkie": [
+          {
+            "dowolny": [
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "EdytorAlgorytmu"
+              },
+              {
+                "pole": "Algorytm.Typ",
+                "rowne": "JakChorobowe"
+              },
+              {
+                "wszystkie": [
+                  {
+                    "pole": "Algorytm.Typ",
+                    "rowne": "KreatorAlgorytmu"
+                  },
+                  {
+                    "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+                    "rowne": "Współczynnik"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "wszystkie": [
+              {
+                "pole": "Algorytm.ElUlamek",
+                "pusty": true
+              },
+              {
+                "pole": "Algorytm.ElProcent",
+                "pusty": true
+              }
+            ]
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru albo nazwano już inny z trzech: ułamek, procent, współczynnik",
+      "opis": "Nazwa współczynnika na elemencie wypłaty. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElWspolczynnik"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElIlosc": {
+      "sciezka": "Algorytm.ElIlosc",
+      "etykieta": "Nazwa „Ilość” (element wypłaty)",
+      "etykietaEnova": "Ilość",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "dowolny": [
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "EdytorAlgorytmu"
+          },
+          {
+            "pole": "Algorytm.Typ",
+            "rowne": "JakChorobowe"
+          }
+        ]
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Nazwa liczby dziesiętnej (ilości) na elemencie wypłaty.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElIlosc"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElPodstawaOkres": {
+      "sciezka": "Algorytm.ElPodstawaOkres",
+      "etykieta": "Nazwa „Okres naliczania podstawy” (element wypłaty)",
+      "etykietaEnova": "Okres naliczania podstawy",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "edytowalnyGdy": {
+        "pole": "Algorytm.Typ",
+        "rowne": "EdytorAlgorytmu"
+      },
+      "powodNieaktywnosci": "wybrany algorytm nie używa tego parametru",
+      "opis": "Nazwa okresu, z którego liczona jest podstawa – tylko w edytorze algorytmu.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "regulyEnova": [
+        "AlgorytmDefElementu.IsReadOnlyElPodstawaOkres"
+      ],
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElRazemCzas": {
+      "sciezka": "Algorytm.ElRazemCzas",
+      "etykieta": "Nazwa „Czas” (suma składników)",
+      "etykietaEnova": "Czas",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "opis": "Nazwa sumy czasu ze składników elementu wypłaty. Instrukcja nie opisuje pola wprost.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "opisDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "bazaDanych": true,
+      "typEnova": "System.String"
+    },
+    "Algorytm.ElRazemDni": {
+      "sciezka": "Algorytm.ElRazemDni",
+      "etykieta": "Nazwa „Dni” (suma składników)",
+      "etykietaEnova": "Dni",
+      "typ": "string",
+      "wymagane": false,
+      "maxDlugosc": 30,
+      "domyslna": "",
+      "opis": "Nazwa sumy dni ze składników elementu wypłaty. Instrukcja nie opisuje pola wprost.",
+      "podpowiedz": "Puste = parametr niewidoczny na elemencie wypłaty.",
+      "opisDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1705–1707; AlgorytmDefElementu.IsReadOnly… i IDefinicjaAlgorytmu (2610)",
+      "bazaDanych": true,
+      "typEnova": "System.String"
     }
   },
   "enumy": {
@@ -12715,6 +13686,8 @@
         "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
         "Algorytm.ZaNieobecnosc.Opiekunczego": false,
         "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Algorytm.ElPodglad": false,
+        "Algorytm.ElPodstawa1": "Wynagrodzenie zasadnicze:",
         "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
         "Deklaracje.Priorytet": 0,
         "Deklaracje.Koszty.Typ": "ZeStosunkuPracy50",
@@ -12801,6 +13774,9 @@
         "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
         "Algorytm.ZaNieobecnosc.Opiekunczego": false,
         "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Algorytm.DodPodstawa": "Kwota premii",
+        "Algorytm.ElPodglad": false,
+        "Algorytm.ElPodstawa1": "Wartość premii:",
         "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
         "Deklaracje.Priorytet": 0,
         "Deklaracje.Koszty.Typ": "ZeStosunkuPracy",
@@ -12900,6 +13876,10 @@
         "Algorytm.ZaNieobecnosc.Opiekunczego": false,
         "Algorytm.ZaNieobecnosc.Chorobowego": false,
         "Algorytm.ZaNieobecnosc.Wychowawczego": false,
+        "Algorytm.DodProcent": "Procent premii",
+        "Algorytm.ElPodglad": false,
+        "Algorytm.ElPodstawa1": "Wynagrodzenie zasadnicze",
+        "Algorytm.ElProcent": "Procent premii",
         "Algorytm.Umowa.TypWartosci": "Dowolny",
         "Algorytm.Umowa.RodzajRozliczenia": "Dowolny",
         "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
@@ -13009,6 +13989,9 @@
         "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
         "Algorytm.ZaNieobecnosc.Opiekunczego": false,
         "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Algorytm.ElPodglad": false,
+        "Algorytm.ElPodstawa1": "Wynagrodzenie nominalne:",
+        "Algorytm.ElProcent": "Procent dodatku stażowego:",
         "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
         "Deklaracje.Priorytet": 0,
         "Deklaracje.Koszty.Typ": "ZeStosunkuPracy",
@@ -13164,6 +14147,9 @@
         "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
         "Algorytm.ZaNieobecnosc.Opiekunczego": false,
         "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Algorytm.DodPodstawa": "Dodatek funkcyjny",
+        "Algorytm.ElPodglad": false,
+        "Algorytm.ElPodstawa1": "Dodatek funkcyjny nominalnie:",
         "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
         "Deklaracje.Priorytet": 0,
         "Deklaracje.Koszty.Typ": "ZeStosunkuPracy",
@@ -13248,6 +14234,9 @@
         "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
         "Algorytm.ZaNieobecnosc.Opiekunczego": false,
         "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Algorytm.DodPodstawa": "Składka PZU",
+        "Algorytm.ElPodglad": false,
+        "Algorytm.ElPodstawa1": "Składka PZU:",
         "Deklaracje.Priorytet": 0,
         "Deklaracje.Koszty.Typ": "NieNaliczać",
         "Deklaracje.Koszty.Procent": 0,
@@ -13337,11 +14326,6 @@
       "sciezka": "zakładka Algorytm/Edytor",
       "etykieta": "Algorytm/Edytor",
       "powod": "kod algorytmu w C# – pisze wdrożeniowiec na podstawie opisu klienta w polu „Uwagi dla wdrożeniowca”"
-    },
-    {
-      "sciezka": "zakładka Algorytm/Nazwy parametrów",
-      "etykieta": "Algorytm/Nazwy parametrów",
-      "powod": "nazwy parametrów edytowalnych na dodatku/elemencie wypłaty – ustawia wdrożeniowiec zgodnie z algorytmem (do decyzji, czy pokazywać klientowi)"
     },
     {
       "sciezka": "zakładka Algorytm/Podgląd",

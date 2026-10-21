@@ -127,7 +127,7 @@
       wymagane: edytowalne && (pole.wymagane === true || (pole.wymaganeGdy ? ocen(pole.wymaganeGdy, ctx) : false)),
       dozwolone: this.dozwolone(pole, ctx),
       powod: !lic ? 'wymaga licencji ' + nazwaLicencji(pole.licencja)
-        : (widoczne && !edytowalne && pole.edytowalnyGdy) ? 'dostępne, gdy: ' + opisz(pole.edytowalnyGdy, this.schemat) : null
+        : (widoczne && !edytowalne && pole.edytowalnyGdy) ? (pole.powodNieaktywnosci || 'dostępne, gdy: ' + opisz(pole.edytowalnyGdy, this.schemat)) : null
     };
     this._stany[sciezka] = wynik;
     return wynik;

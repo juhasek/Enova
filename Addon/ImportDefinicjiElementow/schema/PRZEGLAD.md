@@ -1,11 +1,11 @@
 # Przegląd schematu definicji elementu wynagrodzenia
 
-Wygenerowano 2026-10-21 z bibliotek enova **2610.0.0-beta.241094** (wersja schematu 1.0).
+Wygenerowano 2026-10-22 z bibliotek enova **2610.0.0-beta.241094** (wersja schematu 1.0).
 Plik generowany — nie edytować ręcznie. Opisy i warunki zmienia się w `opisy.json`, układ w `zrodla.json`,
 potem uruchamia generator (patrz README).
 
-- zakładek: 12, pól: 180, enumów: 55, słowników: 12
-- pól z opisem do weryfikacji: **15**, pominiętych: 13, definicji standardowych enova: 255
+- zakładek: 13, pól: 201, enumów: 55, słowników: 12
+- pól z opisem do weryfikacji: **18**, pominiętych: 12, definicji standardowych enova: 255
 
 Legenda: **Wym.** — wymagane zawsze (✔) lub warunkowo (w kolumnie warunków); ⚠ — opis do weryfikacji; ⓓ — wartość domyślna do weryfikacji.
 
@@ -678,6 +678,49 @@ Wymuszenia na formularzu umowy cywilnoprawnej, do której przypięto element.
 | Typ wartości umowy | `Algorytm.Umowa.TypWartosci` | lista: `TypWartosciUmowyAlgorytm` |  | Dowolny |  | Czy umowa jest rozliczana od kwoty netto, brutto, czy dowolnie (wybór na umowie). |
 | Minimalna stawka godzinowa | `Algorytm.Umowa.MinimalnaStawkaGodz` | lista: `KontrolaMinimalnaStawkaGodz` |  | Nie dotyczy |  | Czy umowa podlega kontroli minimalnej stawki godzinowej: nie dotyczy, opcjonalna (wybór na umowie), dotyczy (zawsze). |
 
+## Nazwy parametrów
+
+Nadanie nazwy parametrowi pozwala zmieniać go indywidualnie: na dodatku w kartotece pracownika (parametry dodatku) albo na naliczonym elemencie wypłaty. Parametr bez nazwy przyjmuje wartość z definicji i nie da się go zmienić u pracownika. Dostępne są tylko parametry, których używa wybrany algorytm.
+
+### Nazwy parametrów dodatku
+
+
+| Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
+|---|---|---|---|---|---|---|
+| Nazwa parametru „Podstawa” (dodatek) | `Algorytm.DodPodstawa` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub („Algorytm” = Kreator algorytmu i „Rodzaj elementu” = Dodatek i „Podstawa” ∈ {Kwota, Cecha, Wyrażenie, Kod metody}) | Nazwa kwoty podstawy na dodatku pracownika, np. „Kwota premii”. Po nadaniu nazwy kwotę można wpisać każdemu pracownikowi osobno. |
+| Nazwa parametru „Czas” (dodatek) | `Algorytm.DodCzas` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub „Algorytm” = Jak ekwiwalent za urlop lub („Algorytm” ∈ {Jak urlop wypoczynkowy, Jak urlop okolicznościowy} i „Rodzaj elementu” = Dodatek) lub („Algorytm” = Kreator algorytmu i „Rodzaj elementu” = Dodatek i ((„Wartość za” = Za godzinę i „Czas pracy (podstawa)” = Wpisany czas pracy) lub „Podstawa” ∈ {Wyrażenie, Kod metody})) | Nazwa liczby godzin wpisywanej na dodatku, np. „Czas pracy w warunkach szkodliwych”. Dostępne m.in. przy wartości za godzinę z wpisanym czasem pracy. |
+| Nazwa parametru „Dni” (dodatek) | `Algorytm.DodDni` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub „Algorytm” = Jak ekwiwalent za urlop lub („Algorytm” = Kreator algorytmu i „Rodzaj elementu” = Dodatek i „Podstawa” ∈ {Wyrażenie, Kod metody}) | Nazwa liczby dni wpisywanej na dodatku pracownika. |
+| Nazwa parametru „Ułamek” (dodatek) | `Algorytm.DodUlamek` | string(30) |  |  | edytowalne: („Algorytm” = Edytor algorytmu lub („Algorytm” = Kreator algorytmu i „Rodzaj elementu” = Dodatek i „Typ mnożnika” = Ułamek i „Mnożnik ze wskaźnika” = Nie)) i („Nazwa parametru „Procent” (dodatek)” puste i „Nazwa parametru „Współczynnik” (dodatek)” puste) | Nazwa ułamka (mnożnika) zmienianego na dodatku pracownika. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik. |
+| Nazwa parametru „Procent” (dodatek) | `Algorytm.DodProcent` | string(30) |  |  | edytowalne: („Algorytm” = Edytor algorytmu lub („Algorytm” = Kreator algorytmu i „Rodzaj elementu” = Dodatek i „Typ mnożnika” = Procent i „Mnożnik ze wskaźnika” = Nie)) i („Nazwa parametru „Ułamek” (dodatek)” puste i „Nazwa parametru „Współczynnik” (dodatek)” puste) | Nazwa procentu zmienianego na dodatku pracownika, np. „Procent premii”. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik. |
+| Nazwa parametru „Współczynnik” (dodatek) | `Algorytm.DodWspolczynnik` | string(30) |  |  | edytowalne: („Algorytm” = Edytor algorytmu lub („Algorytm” = Kreator algorytmu i „Rodzaj elementu” = Dodatek i „Typ mnożnika” = Współczynnik i „Mnożnik ze wskaźnika” = Nie)) i („Nazwa parametru „Ułamek” (dodatek)” puste i „Nazwa parametru „Procent” (dodatek)” puste) | Nazwa współczynnika zmienianego na dodatku pracownika. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik. |
+
+### Nazwy parametrów elementu wypłaty
+
+
+| Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
+|---|---|---|---|---|---|---|
+| Parametry elementu wypłaty tylko do podglądu ⚠ | `Algorytm.ElPodglad` | bool |  | Nie |  | Tak – nazwane parametry są widoczne na elemencie wypłaty, ale nie można ich tam zmieniać. Instrukcja nie opisuje pola wprost. |
+| Nazwa „Podstawa 1” (element wypłaty) | `Algorytm.ElPodstawa1` | string(30) |  |  |  | Nazwa podstawy pokazywanej i korygowanej na elemencie wypłaty, np. „Wynagrodzenie zasadnicze”. |
+| Nazwa „Podstawa 2” (element wypłaty) | `Algorytm.ElPodstawa2` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub „Algorytm” ∈ {Jak ekwiwalent za urlop, Jak urlop wypoczynkowy, Jak urlop okolicznościowy} lub („Algorytm” = Kreator algorytmu i („Potrącenie” = Tak i „Zaliczka podatku (podatek)” = Nie naliczać i „Składka na ubezpieczenie zdrowotne” = Nie naliczać i „Podstawa naliczania składek ZUS” = Nie naliczać i „Potrącenie do limitu” ∈ {Standardowy, Alimenty, 80% minimalnego, 100% minimalnego})) | Druga podstawa, gdy wartość liczy się z dwóch części (np. przy urlopie: z n ostatnich miesięcy i z bieżącego) albo przy potrąceniu do limitu. |
+| Nazwa „Podstawa 3” (element wypłaty) | `Algorytm.ElPodstawa3` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub („Algorytm” = Kreator algorytmu i („Potrącenie” = Tak i „Zaliczka podatku (podatek)” = Nie naliczać i „Składka na ubezpieczenie zdrowotne” = Nie naliczać i „Podstawa naliczania składek ZUS” = Nie naliczać i „Potrącenie do limitu” ∈ {Standardowy, Alimenty, 80% minimalnego, 100% minimalnego})) | Trzecia podstawa – przy potrąceniu do limitu (kreator) albo w edytorze algorytmu. |
+| Nazwa „Podstawa 4” (element wypłaty) | `Algorytm.ElPodstawa4` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu | Czwarta podstawa – tylko w edytorze algorytmu. |
+| Nazwa „Podstawa 5” (element wypłaty) | `Algorytm.ElPodstawa5` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu | Piąta podstawa – tylko w edytorze algorytmu. |
+| Nazwa „Czas” (element wypłaty) | `Algorytm.ElCzas` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub „Algorytm” ∈ {Jak ekwiwalent za urlop, Jak urlop wypoczynkowy, Jak urlop okolicznościowy} lub („Algorytm” = Kreator algorytmu i „Wartość za” = Za godzinę) | Nazwa czasu (godziny:minuty) na elemencie wypłaty. |
+| Nazwa „Dni” (element wypłaty) | `Algorytm.ElDni` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub „Algorytm” ∈ {Jak ekwiwalent za urlop, Jak urlop wypoczynkowy, Jak urlop okolicznościowy, Jak chorobowe} | Nazwa liczby dni na elemencie wypłaty. |
+| Nazwa „Ułamek” (element wypłaty) | `Algorytm.ElUlamek` | string(30) |  |  | edytowalne: („Algorytm” = Edytor algorytmu lub („Algorytm” = Kreator algorytmu i „Typ mnożnika” = Ułamek)) i („Nazwa „Procent” (element wypłaty)” puste i „Nazwa „Współczynnik” (element wypłaty)” puste) | Nazwa ułamka na elemencie wypłaty. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik. |
+| Nazwa „Procent” (element wypłaty) | `Algorytm.ElProcent` | string(30) |  |  | edytowalne: („Algorytm” = Edytor algorytmu lub „Algorytm” = Jak chorobowe lub („Algorytm” = Kreator algorytmu i „Typ mnożnika” ∈ {Procent, Zależny od stażu pracy, Zależny od stażu pracy (liczonego zwyczajowo)})) i („Nazwa „Ułamek” (element wypłaty)” puste i „Nazwa „Współczynnik” (element wypłaty)” puste) | Nazwa procentu na elemencie wypłaty, np. „Procent premii”. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik. |
+| Nazwa „Współczynnik” (element wypłaty) | `Algorytm.ElWspolczynnik` | string(30) |  |  | edytowalne: („Algorytm” = Edytor algorytmu lub „Algorytm” = Jak chorobowe lub („Algorytm” = Kreator algorytmu i „Typ mnożnika” = Współczynnik)) i („Nazwa „Ułamek” (element wypłaty)” puste i „Nazwa „Procent” (element wypłaty)” puste) | Nazwa współczynnika na elemencie wypłaty. Nazwać można tylko jeden z parametrów: ułamek, procent albo współczynnik. |
+| Nazwa „Ilość” (element wypłaty) | `Algorytm.ElIlosc` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu lub „Algorytm” = Jak chorobowe | Nazwa liczby dziesiętnej (ilości) na elemencie wypłaty. |
+| Nazwa „Okres naliczania podstawy” (element wypłaty) | `Algorytm.ElPodstawaOkres` | string(30) |  |  | edytowalne: „Algorytm” = Edytor algorytmu | Nazwa okresu, z którego liczona jest podstawa – tylko w edytorze algorytmu. |
+
+### Nazwy parametrów elementu wypłaty / Suma wartości składników
+
+
+| Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
+|---|---|---|---|---|---|---|
+| Nazwa „Czas” (suma składników) ⚠ | `Algorytm.ElRazemCzas` | string(30) |  |  |  | Nazwa sumy czasu ze składników elementu wypłaty. Instrukcja nie opisuje pola wprost. |
+| Nazwa „Dni” (suma składników) ⚠ | `Algorytm.ElRazemDni` | string(30) |  |  |  | Nazwa sumy dni ze składników elementu wypłaty. Instrukcja nie opisuje pola wprost. |
+
 ## Pola do weryfikacji (`opisDoWeryfikacji`)
 
 Instrukcja enova nie opisuje tych pól wprost albo opis wymaga potwierdzenia — nie zgadujemy, pole czeka na decyzję.
@@ -699,6 +742,9 @@ Instrukcja enova nie opisuje tych pól wprost albo opis wymaga potwierdzenia —
 | Elementy sumowane w podstawie | `PodstawyDefinicji` | Suma elementów / Suma elementów | Podlista PodstawaDefinicjiElementu (ElementPodstawy, RodzajPodstawy); weryfikator PriorytetSumyElementowVerifier – sumowane elementy muszą mieć niższy priorytet. |
 | Element podstawowy | `Algorytm.RozliczenieCzasuUmowy.Podstawowa` | Rozliczenie czasu umowy / Rozliczenie czasu umowy |  |
 | Wliczany do rozliczenia umowy | `Algorytm.RozliczenieCzasuUmowy.WliczanyDoRozliczenia` | Rozliczenie czasu umowy / Rozliczenie czasu umowy |  |
+| Parametry elementu wypłaty tylko do podglądu | `Algorytm.ElPodglad` | Nazwy parametrów / Parametry elementu wypłaty |  |
+| Nazwa „Czas” (suma składników) | `Algorytm.ElRazemCzas` | Nazwy parametrów / Suma wartości składników |  |
+| Nazwa „Dni” (suma składników) | `Algorytm.ElRazemDni` | Nazwy parametrów / Suma wartości składników |  |
 
 ## Reguły enova bez odwzorowania w warunkach
 
@@ -707,6 +753,7 @@ Sprawdzić, czy warunek jest potrzebny w formularzu klienta (np. reguły licency
 
 - `Nazwa` (Nazwa): `DefinicjaElementu.IsReadOnlyNazwa` — IsReadOnlyNazwa blokuje tylko definicje standardowe – import ich nie nadpisuje.
 - `Deklaracje.PozycjaPIT` (Pozycja na deklaracji PIT): `DeklaracjeDefElementu.IsReadOnlyPozycjaPIT` — IsReadOnlyPozycjaPIT zależy od stanu bazy (definicja już wypłacona) – sprawdza import przy aktualizacji, nie formularz.
+- `Algorytm.ElPodstawa1` (Nazwa „Podstawa 1” (element wypłaty)): `AlgorytmDefElementu.IsReadOnlyElPodstawa1`
 
 ## Wartości domyślne do weryfikacji (`domyslnaDoWeryfikacji`)
 
@@ -1272,7 +1319,6 @@ Lista podpowiedzi + możliwość wpisania wartości spoza listy. Import sprawdza
 | Wyrażenie | `Algorytm.KreatorAlgorytmu.Wyrażenie` | wyrażenie w języku C# – instrukcja: „wyłącznie dla autoryzowanego serwisu”; klient opisuje zasadę w uwagach |
 | Nazwa log'a | `Algorytm.ZapisObliczen.Nazwa` | nazwa logu obliczeń – ustawienie techniczne |
 | Algorytm/Edytor | `zakładka Algorytm/Edytor` | kod algorytmu w C# – pisze wdrożeniowiec na podstawie opisu klienta w polu „Uwagi dla wdrożeniowca” |
-| Algorytm/Nazwy parametrów | `zakładka Algorytm/Nazwy parametrów` | nazwy parametrów edytowalnych na dodatku/elemencie wypłaty – ustawia wdrożeniowiec zgodnie z algorytmem (do decyzji, czy pokazywać klientowi) |
 | Algorytm/Podgląd | `zakładka Algorytm/Podgląd` | podgląd wygenerowanego kodu – tylko do odczytu |
 | Historia | `zakładka Historia` | historyczność definicji (tylko nadgodziny i nocne) – wskazanie innej definicji od daty robi wdrożeniowiec |
 | Algorytm/Pomniejszenia nieobecności | `zakładka Algorytm/Pomniejszenia nieobecności` | pomniejszenia wg pojedynczych definicji nieobecności (licencja platynowa, lista z bazy klienta) – do decyzji, czy dodać do formularza |

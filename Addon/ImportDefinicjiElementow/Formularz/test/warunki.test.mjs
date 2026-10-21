@@ -103,3 +103,15 @@ test('eksport zawiera tylko aktywne pola', () => {
   assert.equal('Algorytm.KreatorAlgorytmu.Podstawa' in w, false);
   assert.equal(w['Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy'], true);
 });
+
+test('nazwy parametrów: dostępne tylko dla parametrów używanych przez algorytm', () => {
+  const procent = def({ 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ': 'Procent' });
+  assert.equal(stan(procent, 'Algorytm.DodProcent').aktywne, true);
+  assert.equal(stan(procent, 'Algorytm.DodUlamek').aktywne, false);
+  assert.equal(stan(def({ RodzajZrodla: 'Etat', 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ': 'Procent' }), 'Algorytm.DodProcent').aktywne, false, 'parametry dodatku tylko dla rodzaju Dodatek');
+  const edytor = def({ 'Algorytm.Typ': 'EdytorAlgorytmu', 'Algorytm.DodProcent': 'Procent' });
+  assert.equal(stan(edytor, 'Algorytm.DodUlamek').aktywne, false, 'tylko jeden z: ułamek, procent, współczynnik');
+  assert.equal(stan(edytor, 'Algorytm.ElPodstawa5').aktywne, true);
+  assert.equal(stan(procent, 'Algorytm.ElPodstawa5').aktywne, false);
+  assert.equal(stan(procent, 'Algorytm.ElPodstawa1').aktywne, true);
+});

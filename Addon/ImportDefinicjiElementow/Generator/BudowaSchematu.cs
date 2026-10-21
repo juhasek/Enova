@@ -193,6 +193,7 @@ sealed class BudowaSchematu
         if (dom != null) j["domyslna"] = dom;
         if (op.WidocznyGdy != null) j["widocznyGdy"] = op.WidocznyGdy.DeepClone();
         if (op.EdytowalnyGdy != null) j["edytowalnyGdy"] = op.EdytowalnyGdy.DeepClone();
+        if (op.PowodNieaktywnosci != null) j["powodNieaktywnosci"] = op.PowodNieaktywnosci;
         if (op.Walidacje != null) j["walidacje"] = op.Walidacje.DeepClone();
         if (op.DozwoloneWartosci != null) j["dozwoloneWartosci"] = op.DozwoloneWartosci.DeepClone();
         if (op.Licencja != null) j["licencja"] = op.Licencja;

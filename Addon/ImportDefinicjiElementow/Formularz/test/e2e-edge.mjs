@@ -110,6 +110,15 @@ try {
   await zrzut('04-algorytm-jak-urlop');
   await ustaw('Algorytm.Typ', 'KreatorAlgorytmu');
 
+  // nazwy parametrów: przy mnożniku procentowym aktywny tylko „Procent”
+  await zakladka('NazwyParametrow');
+  await czekaj(200);
+  assert.equal(await js(`document.querySelector('[data-sciezka="Algorytm.DodProcent"]').value`), 'Procent premii', 'nazwa z szablonu');
+  assert.equal(await js(`document.querySelector('[data-sciezka="Algorytm.DodUlamek"]').disabled`), true, 'ułamek niedostępny');
+  await js(`window.scrollTo(0, 0)`);
+  await zrzut('04b-nazwy-parametrow');
+  await zakladka('Algorytm');
+
   // licencja srebrna: jedno pole ZUS zamiast czterech
   await js(`(() => { const s = document.getElementById('licencja'); s.value = 'srebrna'; s.dispatchEvent(new Event('change')); })()`);
   await czekaj(200);
