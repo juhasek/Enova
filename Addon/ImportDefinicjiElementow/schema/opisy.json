@@ -1759,7 +1759,7 @@
         "max": 100
       },
       "zrodloOpisu": "instrukcja s. 1699",
-      "domyslna": "100%",
+      "domyslna": 100,
       "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21)."
     },
     "Algorytm.JakChorobowe.Zatrudnienie": {
@@ -2723,7 +2723,11 @@
         ]
       },
       "opisDoWeryfikacji": true,
-      "uwagiTechniczne": "Podlista PodstawaDefinicjiElementu (ElementPodstawy, RodzajPodstawy); weryfikator PriorytetSumyElementowVerifier – sumowane elementy muszą mieć niższy priorytet."
+      "uwagiTechniczne": "Podlista PodstawaDefinicjiElementu (ElementPodstawy, RodzajPodstawy); weryfikator PriorytetSumyElementowVerifier – sumowane elementy muszą mieć niższy priorytet.",
+      "kolumny": {
+        "ElementPodstawy": "Definicja elementu",
+        "RodzajPodstawy": "Wartość wyliczona czy nominalna"
+      }
     },
     "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": {
       "etykieta": "Praca w organizacji",
@@ -2783,7 +2787,11 @@
           "ZależnyOdStażuPracyZwyczajowego"
         ]
       },
-      "zrodloOpisu": "instrukcja s. 1703"
+      "zrodloOpisu": "instrukcja s. 1703",
+      "kolumny": {
+        "Prog": "Staż od (lat)",
+        "Wartosc": "Procent dodatku"
+      }
     },
     "Algorytm.RozliczenieCzasuUmowy.Podstawowa": {
       "etykieta": "Element podstawowy",
@@ -3581,6 +3589,5 @@
         "opis": "Wartość nominalna (przed pomniejszeniami)."
       }
     }
-  },
-  "szablony": []
+  }
 }

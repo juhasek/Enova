@@ -77,11 +77,11 @@ Podatek, koszty uzyskania, składki ZUS i miejsce elementu na deklaracjach PIT i
 |---|---|---|---|---|---|---|
 | Pozycja na deklaracji PIT | `Deklaracje.PozycjaPIT` | słownik: `PozycjaPIT` |  |  |  | Pozycja deklaracji PIT, na której wykazuje się wypłatę. Wybór pozycji PIT-11/PIT-4R oznacza, że element jest opodatkowany. Dla elementu nieopodatkowanego zostaw puste. Po pierwszej wypłacie nie można już wyczyścić tego pola. |
 | Zaliczka podatku (podatek) | `Deklaracje.Zaliczka.Typ` | lista: `TypZaliczkiPodatku` |  | Nie naliczać | edytowalne: „Pozycja na deklaracji PIT” wypełnione | Jak liczyć zaliczkę podatku: nie naliczać (element nieopodatkowany), wg skali podatkowej (składniki pracownicze), procentowo (podany procent, np. umowy na IFT-1/PIT-8AR) lub procentowo jak umowy (procent z konfiguracji płac). |
-| Procent zaliczki | `Deklaracje.Zaliczka.Procent` | percent | warunk. | 0,00% | edytowalne: „Zaliczka podatku (podatek)” = Procentowe; wymagane: „Zaliczka podatku (podatek)” = Procentowe; walidacja: {"min":0,"max":100} | Stawka podatku, gdy zaliczka jest liczona procentowo, np. 20% dla umowy rozliczanej na IFT-1. |
+| Procent zaliczki | `Deklaracje.Zaliczka.Procent` | percent | warunk. | 0.00 | edytowalne: „Zaliczka podatku (podatek)” = Procentowe; wymagane: „Zaliczka podatku (podatek)” = Procentowe; walidacja: {"min":0,"max":100} | Stawka podatku, gdy zaliczka jest liczona procentowo, np. 20% dla umowy rozliczanej na IFT-1. |
 | Podstawa naliczania podatku pomniejszona o składki ZUS | `Deklaracje.Zaliczka.PomniejszonaZUS` | lista: `TypPomniejszeniaPodstawyFIS` |  | Nie | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy podstawę podatku pomniejszać o składki ZUS pracownika. Nie zaznacza się dla umów ryczałtowych. „Warunkowo” – umowy do 200 zł rozlicza ryczałtem, a wyższe w zwykły sposób. |
 | Naliczaj zwolnienie z podatku | `Deklaracje.Zaliczka.NaliczaniePit26` | lista: `NaliczaniePit26` |  | Warunkowo | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy stosować zwolnienia z PIT (do 26 lat, duża rodzina, pracujący senior, powrót z zagranicy). Warunkowo – dla elementów z pozycji PIT-4R 1, jeśli pracownik spełnia warunki; Tak – zawsze, gdy pracownik ma ustawione zwolnienie; Nie – nigdy (np. zasiłki, umowy o dzieło). |
 | Koszty uzyskania przychodu | `Deklaracje.Koszty.Typ` | lista: `TypKosztowUzyskaniaPrzychodu` |  | Nie naliczać | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy i jakie koszty uzyskania odliczać od elementu: ze stosunku pracy, ze stosunku pracy + 50% (prawa autorskie), procentowe (umowy cywilnoprawne) itd. enova nie odliczy w miesiącu więcej, niż przysługuje pracownikowi wg kartoteki. |
-| Procent kosztów | `Deklaracje.Koszty.Procent` | percent | warunk. | 0,00% | edytowalne: „Koszty uzyskania przychodu” ∈ {Procentowe, Procentowe 50, Procentowe warunkowo}; wymagane: „Koszty uzyskania przychodu” ∈ {Procentowe, Procentowe 50, Procentowe warunkowo}; walidacja: {"min":0,"max":100} | Procent kosztów uzyskania dla kosztów procentowych, np. 20% dla umowy zlecenia lub 50% dla praw autorskich. |
+| Procent kosztów | `Deklaracje.Koszty.Procent` | percent | warunk. | 0.00 | edytowalne: „Koszty uzyskania przychodu” ∈ {Procentowe, Procentowe 50, Procentowe warunkowo}; wymagane: „Koszty uzyskania przychodu” ∈ {Procentowe, Procentowe 50, Procentowe warunkowo}; walidacja: {"min":0,"max":100} | Procent kosztów uzyskania dla kosztów procentowych, np. 20% dla umowy zlecenia lub 50% dla praw autorskich. |
 | Ulga podatkowa | `Deklaracje.Ulga.Typ` | lista: `TypUlgiPodatkowej` |  | Nie naliczać | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy od zaliczki tego elementu można odliczyć kwotę zmniejszającą podatek. Wybierz „Naliczać” dla opodatkowanych składników pracowniczych (także zasiłków); enova odliczy najwyżej tyle, ile przysługuje pracownikowi. |
 
 ### Deklaracje ZUS
@@ -366,7 +366,7 @@ Sekcja widoczna, gdy: „Algorytm” = Jak chorobowe.
 |---|---|---|---|---|---|---|
 | Standardowy okres naliczania podstawy | `Algorytm.JakChorobowe.StdOkresPodstawy` | bool |  | Tak |  | Tak – podstawa zasiłku z 12 miesięcy (wartość z konfiguracji Zasiłki ogólne). Nie – własna liczba miesięcy. |
 | Okres naliczania podstawy (miesiące) | `Algorytm.JakChorobowe.OkresPodstawy` | int | warunk. |  | edytowalne: „Standardowy okres naliczania podstawy” = Nie; wymagane: „Standardowy okres naliczania podstawy” = Nie; walidacja: {"min":1,"max":24} | Liczba miesięcy podstawy własnego zasiłku, gdy okres nie jest standardowy. |
-| Procent zasiłku | `Algorytm.JakChorobowe.Procent` | percent | warunk. | 100% | wymagane: „Algorytm” = Jak chorobowe; walidacja: {"min":0,"max":100} | Wysokość definiowanego zasiłku jako procent podstawy, np. 80%. |
+| Procent zasiłku | `Algorytm.JakChorobowe.Procent` | percent | warunk. | 100 | wymagane: „Algorytm” = Jak chorobowe; walidacja: {"min":0,"max":100} | Wysokość definiowanego zasiłku jako procent podstawy, np. 80%. |
 | Rodzaj zatrudnienia | `Algorytm.JakChorobowe.Zatrudnienie` | lista: `ChorobowyZatrudnienie` | warunk. | Jak zatrudnienie | wymagane: „Algorytm” = Jak chorobowe | Komu wypłaca się zasiłek: pracownik (tylko etat), inny ubezpieczony (np. zleceniobiorcy), jak zatrudnienie (obu grupom). |
 
 ### Algorytm naliczania wartości / Jak ekwiwalent za urlop
@@ -627,7 +627,7 @@ Lista elementów, których suma jest podstawą (gdy w algorytmie wybrano podstaw
 
 | Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
 |---|---|---|---|---|---|---|
-| Elementy sumowane w podstawie ⚠ | `PodstawyDefinicji` | tabela: Definicja elementu, Rodzaj podstawy | warunk. |  | wymagane: „Algorytm” = Kreator algorytmu i „Podstawa” = Suma elementów | Lista elementów, których suma stanowi podstawę (gdy podstawa = „Suma elementów”). Dla każdego wskaż definicję elementu i czy brać wartość wyliczoną, czy nominalną. Instrukcja nie opisuje tej zakładki. |
+| Elementy sumowane w podstawie ⚠ | `PodstawyDefinicji` | tabela: Definicja elementu, Wartość wyliczona czy nominalna | warunk. |  | wymagane: „Algorytm” = Kreator algorytmu i „Podstawa” = Suma elementów | Lista elementów, których suma stanowi podstawę (gdy podstawa = „Suma elementów”). Dla każdego wskaż definicję elementu i czy brać wartość wyliczoną, czy nominalną. Instrukcja nie opisuje tej zakładki. |
 
 ## Staż pracy
 
@@ -650,7 +650,7 @@ Progi stażu i rodzaj stażu dla dodatków zależnych od stażu pracy.
 
 | Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
 |---|---|---|---|---|---|---|
-| Progi stażu pracy | `Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi` | tabela: Prog, Wartosc | warunk. |  | edytowalne: „Typ mnożnika” ∈ {Zależny od stażu pracy, Zależny od stażu pracy (liczonego zwyczajowo)}; wymagane: „Typ mnożnika” ∈ {Zależny od stażu pracy, Zależny od stażu pracy (liczonego zwyczajowo)} | Tabela: staż w latach i odpowiadający mu procent dodatku, np. 0 lat – 0%, 5 lat – 5%, 6 lat – 6%… Pierwszy wiersz powinien mieć 0 lat. |
+| Progi stażu pracy | `Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi` | tabela: Staż od (lat), Procent dodatku | warunk. |  | edytowalne: „Typ mnożnika” ∈ {Zależny od stażu pracy, Zależny od stażu pracy (liczonego zwyczajowo)}; wymagane: „Typ mnożnika” ∈ {Zależny od stażu pracy, Zależny od stażu pracy (liczonego zwyczajowo)} | Tabela: staż w latach i odpowiadający mu procent dodatku, np. 0 lat – 0%, 5 lat – 5%, 6 lat – 6%… Pierwszy wiersz powinien mieć 0 lat. |
 
 ## Rozliczenie czasu umowy
 

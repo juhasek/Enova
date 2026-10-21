@@ -45,6 +45,12 @@ sealed class Konfiguracja
     /// <summary>Zasoby *.dbinit.xml z definicjami standardowymi (lista nazw do ostrzeżeń przy imporcie).</summary>
     public List<string> DefinicjeStandardowe { get; set; } = new();
 
+    /// <summary>Typy elementów list (Grid), gdy właściwość nie jest generyczna: ścieżka listy → pełna nazwa typu.</summary>
+    public Dictionary<string, string> TypyList { get; set; } = new();
+
+    /// <summary>Szablony startowe formularza z definicji standardowych enova.</summary>
+    public List<KonfSzablon> Szablony { get; set; } = new();
+
     public static Konfiguracja Wczytaj(string plik) =>
         JsonSerializer.Deserialize<Konfiguracja>(File.ReadAllText(plik), Json.Opcje);
 }
@@ -57,6 +63,19 @@ sealed class KonfZakladka
     public string Zasob { get; set; }
     /// <summary>Opcjonalna etykieta zastępująca CaptionHtml strony.</summary>
     public string Etykieta { get; set; }
+}
+
+sealed class KonfSzablon
+{
+    public string Id { get; set; }
+    public string Etykieta { get; set; }
+    public string Opis { get; set; }
+    /// <summary>Guid definicji standardowej w zasobach *.dbinit.xml.</summary>
+    public string ZrodloGuid { get; set; }
+    /// <summary>Uwagi dla wdrożeniowca wstawiane do nowej definicji z tego szablonu.</summary>
+    public string Uwagi { get; set; }
+    /// <summary>Wartości nadpisujące (np. pusta nazwa – nazwy definicji muszą być unikalne).</summary>
+    public Dictionary<string, System.Text.Json.Nodes.JsonNode> Nadpisz { get; set; } = new();
 }
 
 sealed class KonfPoleDodatkowe

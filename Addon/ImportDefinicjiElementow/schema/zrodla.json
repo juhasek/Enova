@@ -34,6 +34,11 @@
     { "sciezka": "RodzajZrodla", "zakladka": "Ogolne", "etykieta": "Rodzaj elementu" }
   ],
 
+  // Listy, których właściwość nie jest generyczna (SubTable) – typ wiersza do odczytu kolumn.
+  "typyList": {
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi": "Soneta.Place.ProgStazuPracy"
+  },
+
   "wyrazenia": {
     "new DefinicjaElementuStazExtender.GetKreatorAlgorytmu()": "Algorytm.KreatorAlgorytmu"
   },
@@ -115,5 +120,15 @@
   },
 
   // Zasoby (regex po nazwie) z definicjami standardowymi enova – import ich nie nadpisuje.
-  "definicjeStandardowe": [ "\\.Place\\.DefinicjaElementu.*\\.dbinit\\.xml$", "\\.Place\\.b2b-definicje-elementów.*\\.dbinit\\.xml$" ]
+  "definicjeStandardowe": [ "\\.Place\\.DefinicjaElementu.*\\.dbinit\\.xml$", "\\.Place\\.b2b-definicje-elementów.*\\.dbinit\\.xml$" ],
+
+  // Szablony startowe formularza – wartości z definicji standardowych enova (dbinit), nazwa/skrót do uzupełnienia przez klienta.
+  "szablony": [
+    { "id": "zasadnicze", "etykieta": "Wynagrodzenie zasadnicze (miesięczne)", "opis": "Własne wynagrodzenie zasadnicze w stawce miesięcznej – ustawienia jak standardowe „Wynagrodzenie zasadnicze mies.”.", "zrodloGuid": "00000000-0007-0002-0002-000000000000", "uwagi": "Szablon: Wynagrodzenie zasadnicze (miesięczne). Podstawa „Wyrażenie” – skopiować wyrażenie ze standardowej definicji „Wynagrodzenie zasadnicze mies.”.", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "premiaUznaniowa", "etykieta": "Premia uznaniowa (kwota)", "opis": "Premia w kwocie wpisywanej u pracownika – ustawienia jak standardowa „Premia”.", "zrodloGuid": "c9c3dc52-be71-4b8f-b89b-728d83cd4a9a", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "premiaProcentowa", "etykieta": "Premia procentowa", "opis": "Procent od wynagrodzenia zasadniczego – ustawienia jak standardowa „Premia procentowa”.", "zrodloGuid": "35c29464-e2c4-4182-8944-1ddf87dff9ab", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "dodatekStazowy", "etykieta": "Dodatek stażowy", "opis": "Procent zależny od stażu pracy – ustawienia jak standardowy „Dodatek stażowy”; progi stażu uzupełnij wg regulaminu.", "zrodloGuid": "71a2fac0-4f66-43a5-9e25-13c97f8e4a00", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "dodatekFunkcyjny", "etykieta": "Dodatek funkcyjny", "opis": "Stały dodatek kwotowy – ustawienia jak standardowy „Dodatek funkcyjny”.", "zrodloGuid": "df97dc0b-2cb9-47b3-b8f0-81ce39934a06", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "potracenie", "etykieta": "Potrącenie (np. składka ubezpieczenia)", "opis": "Nieopodatkowane potrącenie kwotowe z wypłaty netto – ustawienia jak standardowa „Składka PZU”.", "zrodloGuid": "2b04aaba-22ec-4613-8fbc-a80e544c7245", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } }
+  ]
 }

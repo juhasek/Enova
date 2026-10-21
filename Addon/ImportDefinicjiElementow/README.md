@@ -7,8 +7,39 @@ ich do enova365. Plan i status: `Addon/Plan ImportDefinicjiElementow/todo.md`.
 |---|---|
 | `schema/` | **jedno źródło prawdy**: `definicja-elementu.schema.json` (generowany), `opisy.json` i `zrodla.json` (ręczne), `PRZEGLAD.md`, `ZMIANY.md` (generowane) |
 | `Generator/` | konsolówka .NET 10 budująca schemat z bibliotek serwera enova i opisów ręcznych |
+| `Formularz/` | formularz HTML dla klienta: źródła `src/`, build `build.mjs`, wynik `dist/formularz-elementow-wynagrodzenia.html`, testy `test/` |
 
-Etapy 2 (formularz HTML) i 3 (dodatek importu) – w przygotowaniu.
+Etap 3 (dodatek importu) – w przygotowaniu.
+
+## Formularz dla klienta
+
+Jeden plik `Formularz/dist/formularz-elementow-wynagrodzenia.html` – działa offline, z dysku, w Edge/Chrome/Firefox,
+bez instalacji i bez serwera. Dane zostają na komputerze klienta (szkic w `localStorage` przeglądarki).
+
+**Przekazanie klientowi:** wysłać sam plik HTML (mailem / na dysk współdzielony). Klient:
+1. otwiera plik w przeglądarce, ustawia licencję enova (srebrna/złota/platynowa),
+2. dodaje definicje (najlepiej z szablonu), wypełnia zakładki – przycisk „?” przy każdym polu ma opis i znaczenie opcji,
+3. opisuje nietypowe zasady na zakładce „Uwagi dla wdrożeniowca”,
+4. klika „Zapisz plik dla wdrożeniowca” → `elementy-wynagrodzenia.json` i odsyła ten plik.
+
+Plik JSON można wczytać z powrotem do formularza („Wczytaj plik…” – zastąp lub dołącz), np. po uwagach wdrożeniowca.
+Format pliku: `format`, `wersjaSchematu`, `wersjaEnova`, `dataEksportu`, `ustawienia.licencja`,
+`definicje[]` z `id`, `szablon`, `uwagi`, `wartosci` (tylko pola aktywne, w kolejności schematu) i `bledy`
+(komunikaty walidacji w chwili zapisu). Import odrzuca plik o innej głównej wersji schematu.
+
+**Szablony startowe** budowane są z definicji standardowych enova (`zrodla.json` → `szablony`, wartości z zasobów
+`*.dbinit.xml` po przekształceniu pól rekordu na pola formularza – `Generator/Szablony.cs`): wynagrodzenie zasadnicze,
+premia uznaniowa, premia procentowa, dodatek stażowy (z progami), dodatek funkcyjny, potrącenie.
+
+### Build i testy
+
+```bash
+node Formularz/build.mjs                        # schemat + src → dist (po każdej zmianie schematu lub src)
+node --test Formularz/test/warunki.test.mjs     # silnik reguł na prawdziwym schemacie
+node Formularz/test/e2e-edge.mjs                # Edge/Chrome headless: szablon, warunki, eksport, import, autozapis + zrzuty
+```
+
+Silnik reguł (`src/warunki.js`) ma tę samą semantykę co import – zmieniać oba naraz.
 
 ## Schemat – skąd co się bierze
 

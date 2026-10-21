@@ -44,6 +44,7 @@ sealed class TypeInspector
 {
     const BindingFlags Pub = BindingFlags.Public | BindingFlags.Instance;
     readonly Type typWiersza;
+    public Type TypWiersza => typWiersza;
     readonly Type typRekordu;
     readonly object rekord;
     public readonly Dictionary<string, InfoEnum> Enumy = new(StringComparer.Ordinal);
@@ -264,8 +265,23 @@ sealed class TypeInspector
             return Enum.GetName(t, v); // 0 spoza enuma = „nie ustawiono” → brak wartości domyślnej
         if (v is bool or int or long or decimal or string)
             return v;
-        // typy Soneta (Date, Percent, Fraction, Currency, Time) - postać tekstowa; IRow - brak
         var s = v.ToString();
-        return string.IsNullOrEmpty(s) ? null : s;
+        if (string.IsNullOrEmpty(s))
+            return null;
+        // Percent i Currency jako liczba (procent: 5 = 5%), niezależnie od ustawień regionalnych serwera
+        if (t.FullName is "Soneta.Types.Percent" or "Soneta.Types.Currency")
+            return Liczba(s);
+        // Date, Fraction, Time - postać tekstowa; IRow - brak
+        return s;
+    }
+
+    /// <summary>"0,00%", "5.00%", "100.00 PLN" → 0 / 5 / 100.</summary>
+    public static decimal? Liczba(string s)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(s ?? "", @"-?\d[\d\s\u00a0]*([.,]\d+)?");
+        if (!m.Success)
+            return null;
+        var z = System.Text.RegularExpressions.Regex.Replace(m.Value, @"[\s\u00a0]", "").Replace(",", ".");
+        return decimal.Parse(z, System.Globalization.CultureInfo.InvariantCulture);
     }
 }

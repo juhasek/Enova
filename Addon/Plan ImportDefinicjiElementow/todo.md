@@ -20,14 +20,14 @@ Założenia (do potwierdzenia przy STOP po etapie 1):
 - [x] Wartości domyślne sprawdzone na żywo (baza Claude, 2026-10-21) – zgodne lub poprawione w opisy.json
 - [ ] Decyzje: pominięte zakładki (Nazwy parametrów, Pomniejszenia nieobecności), ukryte rodzaje elementów, wersja dodatku
 
-## Etap 2 – formularz HTML dla klienta
-- [ ] Szablon strony (vanilla JS, offline) + skrypt builda wstawiający schemat do HTML
-- [ ] Lista definicji (dodaj/duplikuj/usuń), zakładki jak w enova, „?” z opisem, podpowiedzi, opisy wartości
-- [ ] Silnik warunków DSL (widoczny/edytowalny/wymagany/dozwolone wartości, licencja) – ten sam co w imporcie
-- [ ] Walidacja na żywo + licznik błędów, blokada/potwierdzenie eksportu
-- [ ] Szablony startowe (wynagrodzenie zasadnicze, premia uznaniowa, dodatek stażowy, potrącenie)
-- [ ] Uwagi dla wdrożeniowca, eksport/import JSON (wersja schematu, data), autozapis localStorage (try/catch)
-- [ ] Testy silnika warunków (node)
+## Etap 2 – formularz HTML dla klienta (GOTOWE)
+- [x] Szablon strony (vanilla JS, offline) + `build.mjs` wstawiający schemat (okrojony do potrzeb klienta) do jednego HTML
+- [x] Lista definicji (nowa/z szablonu, duplikuj, usuń), zakładki jak w enova, „?” z opisem i opisami wartości, podpowiedzi
+- [x] Silnik warunków DSL (`src/warunki.js`) – widoczność, edytowalność, wymagalność, dozwolone wartości, licencja, domyślne
+- [x] Walidacja na żywo (wymagane, typy, zakresy, wzorce, unikalność nazwy/skrótu, nazwy standardowe), liczniki błędów, potwierdzenie eksportu z błędami
+- [x] 6 szablonów z definicji standardowych enova (zasadnicze, premia uznaniowa, procentowa, stażowy z progami, funkcyjny, potrącenie)
+- [x] Uwagi dla wdrożeniowca, eksport/import JSON (wersja schematu, data, zastąp/dołącz), autozapis localStorage (try/catch)
+- [x] Testy: 9 testów silnika (node:test) + E2E w Edge headless (zrzuty, eksport, import, autozapis)
 
 ## Etap 3 – dodatek enova: import
 - [ ] Projekt dodatku (Soneta.MsBuild.SDK / Soneta.Sdk, bez HintPath), schemat jako zasób

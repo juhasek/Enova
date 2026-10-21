@@ -14,7 +14,6 @@ sealed class Opisy
     public Dictionary<string, OpisSekcji> Sekcje { get; set; } = new();
     public Dictionary<string, OpisPola> Pola { get; set; } = new();
     public Dictionary<string, Dictionary<string, OpisWartosci>> Enumy { get; set; } = new();
-    public JsonArray Szablony { get; set; }
 
     public static Opisy Wczytaj(string plik) =>
         File.Exists(plik) ? JsonSerializer.Deserialize<Opisy>(File.ReadAllText(plik), Json.Opcje) : new Opisy();
@@ -60,6 +59,8 @@ sealed class OpisPola
     public bool? OpisDoWeryfikacji { get; set; }
     public bool? DomyslnaDoWeryfikacji { get; set; }
     public string ZrodloOpisu { get; set; }
+    /// <summary>Etykiety kolumn listy (ścieżka kolumny → etykieta).</summary>
+    public Dictionary<string, string> Kolumny { get; set; }
     /// <summary>Uwagi dla wdrożeniowca/importu (nie pokazywane klientowi).</summary>
     public string UwagiTechniczne { get; set; }
 }

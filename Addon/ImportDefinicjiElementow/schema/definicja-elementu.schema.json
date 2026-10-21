@@ -1726,7 +1726,7 @@
         "pole": "Deklaracje.Zaliczka.Typ",
         "rowne": "Procentowe"
       },
-      "domyslna": "0,00%",
+      "domyslna": 0.00,
       "edytowalnyGdy": {
         "pole": "Deklaracje.Zaliczka.Typ",
         "rowne": "Procentowe"
@@ -1822,7 +1822,7 @@
           "ProcentoweWarunkowo"
         ]
       },
-      "domyslna": "0,00%",
+      "domyslna": 0.00,
       "edytowalnyGdy": {
         "pole": "Deklaracje.Koszty.Typ",
         "wsrod": [
@@ -3651,7 +3651,7 @@
         "pole": "Algorytm.Typ",
         "rowne": "JakChorobowe"
       },
-      "domyslna": "100%",
+      "domyslna": 100,
       "walidacje": {
         "min": 0,
         "max": 100
@@ -5250,7 +5250,7 @@
         },
         {
           "sciezka": "RodzajPodstawy",
-          "etykieta": "Rodzaj podstawy",
+          "etykieta": "Wartość wyliczona czy nominalna",
           "typ": "enum",
           "enum": "RodzajPodstawyElementu"
         }
@@ -5363,16 +5363,16 @@
       "kolumny": [
         {
           "sciezka": "Prog",
-          "etykieta": "Prog",
-          "typ": "inny"
+          "etykieta": "Staż od (lat)",
+          "typ": "int"
         },
         {
           "sciezka": "Wartosc",
-          "etykieta": "Wartosc",
-          "typ": "inny"
+          "etykieta": "Procent dodatku",
+          "typ": "percent"
         }
       ],
-      "typElementuEnova": null
+      "typElementuEnova": "Soneta.Place.ProgStazuPracy"
     },
     "Algorytm.RozliczenieCzasuUmowy.Podstawowa": {
       "sciezka": "Algorytm.RozliczenieCzasuUmowy.Podstawowa",
@@ -8612,11 +8612,13 @@
       "wartosciStandardowe": [
         {
           "klucz": "Zatrudnienie poza firmą",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0005-0003-0001-000000000000"
         },
         {
           "klucz": "Okres nauki",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0005-0003-0002-000000000000"
         }
       ]
     },
@@ -8634,507 +8636,633 @@
       "wartosciStandardowe": [
         {
           "klucz": "0110",
-          "opis": "10 – pracownik podlegający ubezpieczeniom społecznym i ubezpieczeniu zdrowotnemu"
+          "opis": "10 – pracownik podlegający ubezpieczeniom społecznym i ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-0110-000000000000"
         },
         {
           "klucz": "0111",
-          "opis": "11 – pracownik podlegający ubezpieczeniom społecznym i z mocy przepisów szczególnych niepodlegający ubezpieczeniu zdrowotnemu"
+          "opis": "11 – pracownik podlegający ubezpieczeniom społecznym i z mocy przepisów szczególnych niepodlegający ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-0111-000000000000"
         },
         {
           "klucz": "0112",
-          "opis": "12 – osoba pobierająca świadczenie szkoleniowe wypłacane po ustaniu zatrudnienia"
+          "opis": "12 – osoba pobierająca świadczenie szkoleniowe wypłacane po ustaniu zatrudnienia",
+          "guid": "00000000-0005-0002-0112-000000000000"
         },
         {
           "klucz": "0113",
-          "opis": "13 – pracownik, za którego płatnik składek skorzystał z dofinansowania składek na ubezpieczenia społeczne ze środków budżetu państwa i Państwowego Funduszu Rehabilitacji Osób Niepełnosprawnych na podstawie art. 25 ust. 2, 3 lub 3a ustawy z dnia 27 sierpn"
+          "opis": "13 – pracownik, za którego płatnik składek skorzystał z dofinansowania składek na ubezpieczenia społeczne ze środków budżetu państwa i Państwowego Funduszu Rehabilitacji Osób Niepełnosprawnych na podstawie art. 25 ust. 2, 3 lub 3a ustawy z dnia 27 sierpn",
+          "guid": "00000000-0005-0002-0113-000000000000"
         },
         {
           "klucz": "0120",
-          "opis": "20 - pracownik młodociany"
+          "opis": "20 - pracownik młodociany",
+          "guid": "00000000-0005-0002-0120-000000000000"
         },
         {
           "klucz": "0124",
-          "opis": "24 - były pracownik mianowany lub były urzędnik służby cywilnej, z którym został rozwiązany stosunek pracy, pobierający świadczenie pieniężne za okres po ustaniu zatrudnienia"
+          "opis": "24 - były pracownik mianowany lub były urzędnik służby cywilnej, z którym został rozwiązany stosunek pracy, pobierający świadczenie pieniężne za okres po ustaniu zatrudnienia",
+          "guid": "00000000-0005-0002-0124-000000000000"
         },
         {
           "klucz": "0125",
-          "opis": "25 - pracownik podlegający ubezpieczeniom społecznym i ubezpieczeniu zdrowotnemu, opłacający składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady (EWG) nr 574/72 z dnia 21 marca 1972 r. w sprawie wykonywania rozporządzeni"
+          "opis": "25 - pracownik podlegający ubezpieczeniom społecznym i ubezpieczeniu zdrowotnemu, opłacający składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady (EWG) nr 574/72 z dnia 21 marca 1972 r. w sprawie wykonywania rozporządzeni",
+          "guid": "00000000-0005-0002-0125-000000000000"
         },
         {
           "klucz": "0126",
-          "opis": "26 - pracownik podlegający ubezpieczeniom społecznym i z mocy przepisów szczególnych niepodlegający ubezpieczeniu zdrowotnemu, opłacający składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady (EWG) nr 574/72 albo w art. 21"
+          "opis": "26 - pracownik podlegający ubezpieczeniom społecznym i z mocy przepisów szczególnych niepodlegający ubezpieczeniu zdrowotnemu, opłacający składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady (EWG) nr 574/72 albo w art. 21",
+          "guid": "00000000-0005-0002-0126-000000000000"
         },
         {
           "klucz": "0200",
-          "opis": "00 - osoba wykonująca pracę nakładczą"
+          "opis": "00 - osoba wykonująca pracę nakładczą",
+          "guid": "00000000-0005-0002-0200-000000000000"
         },
         {
           "klucz": "0213",
-          "opis": "13 - osoba wykonująca pracę nakładczą, za którą płatnik składek skorzystał z dofinansowania składek na ubezpieczenia społeczne ze środków budżetu państwa i Państwowego Funduszu Rehabilitacji Osób Niepełnosprawnych na podstawie art. 25 ust. 2, 3 lub 3a us"
+          "opis": "13 - osoba wykonująca pracę nakładczą, za którą płatnik składek skorzystał z dofinansowania składek na ubezpieczenia społeczne ze środków budżetu państwa i Państwowego Funduszu Rehabilitacji Osób Niepełnosprawnych na podstawie art. 25 ust. 2, 3 lub 3a us",
+          "guid": "00000000-0005-0002-0213-000000000000"
         },
         {
           "klucz": "0310",
-          "opis": "10 - członek rolniczej spółdzielni produkcyjnej, spółdzielni kółek rolniczych lub innej spółdzielni zajmującej się produkcją rolną"
+          "opis": "10 - członek rolniczej spółdzielni produkcyjnej, spółdzielni kółek rolniczych lub innej spółdzielni zajmującej się produkcją rolną",
+          "guid": "00000000-0005-0002-0310-000000000000"
         },
         {
           "klucz": "0320",
-          "opis": "20 - osoba wykonująca pracę w spółdzielni lub w gospodarstwie rolnym spółdzielni na innej podstawie niż stosunek pracy, nie będąca jej członkiem i wynagradzana według zasad obowiązujących członków spółdzielni, w tym kandydat na członka spółdzielni"
+          "opis": "20 - osoba wykonująca pracę w spółdzielni lub w gospodarstwie rolnym spółdzielni na innej podstawie niż stosunek pracy, nie będąca jej członkiem i wynagradzana według zasad obowiązujących członków spółdzielni, w tym kandydat na członka spółdzielni",
+          "guid": "00000000-0005-0002-0320-000000000000"
         },
         {
           "klucz": "0411",
-          "opis": "11 – osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług"
+          "opis": "11 – osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług",
+          "guid": "00000000-0005-0002-0411-000000000000"
         },
         {
           "klucz": "0417",
-          "opis": "17 - osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu"
+          "opis": "17 - osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-0417-000000000000"
         },
         {
           "klucz": "0421",
-          "opis": "21 - osoba współpracująca z osobą wykonującą umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług"
+          "opis": "21 - osoba współpracująca z osobą wykonującą umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług",
+          "guid": "00000000-0005-0002-0421-000000000000"
         },
         {
           "klucz": "0424",
-          "opis": "24 - osoba współpracująca z osobą wykonującą umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu"
+          "opis": "24 - osoba współpracująca z osobą wykonującą umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-0424-000000000000"
         },
         {
           "klucz": "0426",
-          "opis": "26 - osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług, opłacająca składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady (EWG) nr 574/72 albo w art. 21 ust. 2 rozporządzenia Rady (WE) nr 987/20"
+          "opis": "26 - osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług, opłacająca składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady (EWG) nr 574/72 albo w art. 21 ust. 2 rozporządzenia Rady (WE) nr 987/20",
+          "guid": "00000000-0005-0002-0426-000000000000"
         },
         {
           "klucz": "0428",
-          "opis": "28 - osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu, opłacająca składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady"
+          "opis": "28 - osoba wykonująca umowę agencyjną, umowę zlecenia lub umowę o świadczenie usług, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu, opłacająca składki na własne ubezpieczenia w przypadku określonym w art. 109 rozporządzenia Rady",
+          "guid": "00000000-0005-0002-0428-000000000000"
         },
         {
           "klucz": "0430",
-          "opis": "30 - osoba sprawująca opiekę nad dziećmi w wieku do lat 3 na podstawie umowy uaktywniającej, której składki finansuje budżet państwa"
+          "opis": "30 - osoba sprawująca opiekę nad dziećmi w wieku do lat 3 na podstawie umowy uaktywniającej, której składki finansuje budżet państwa",
+          "guid": "00000000-0005-0002-0430-000000000000"
         },
         {
           "klucz": "0431",
-          "opis": "31 - osoba sprawująca opiekę nad dziećmi w wieku do lat 3 na podstawie umowy uaktywniającej, dla której podstawę wymiaru składek na ubezpieczenia stanowi nadwyżka ponad kwotę, od której składki finansuje budżet państwa"
+          "opis": "31 - osoba sprawująca opiekę nad dziećmi w wieku do lat 3 na podstawie umowy uaktywniającej, dla której podstawę wymiaru składek na ubezpieczenia stanowi nadwyżka ponad kwotę, od której składki finansuje budżet państwa",
+          "guid": "00000000-0005-0002-0431-000000000000"
         },
         {
           "klucz": "0510",
-          "opis": "10 - osoba prowadząca pozarolniczą działalność gospodarczą na podstawie przepisów o działalności gospodarczej lub innych przepisów szczególnych niemająca ustalonego prawa do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubez"
+          "opis": "10 - osoba prowadząca pozarolniczą działalność gospodarczą na podstawie przepisów o działalności gospodarczej lub innych przepisów szczególnych niemająca ustalonego prawa do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubez",
+          "guid": "00000000-0005-0002-0510-000000000000"
         },
         {
           "klucz": "0511",
-          "opis": "11 - osoba współpracująca z osobą prowadzącą pozarolniczą działalność oraz osobą fizyczną, o której mowa w art. 18 ust. 1 ustawy z dnia 6 marca 2018 r. - Prawo przedsiębiorców"
+          "opis": "11 - osoba współpracująca z osobą prowadzącą pozarolniczą działalność oraz osobą fizyczną, o której mowa w art. 18 ust. 1 ustawy z dnia 6 marca 2018 r. - Prawo przedsiębiorców",
+          "guid": "00000000-0005-0002-0511-000000000000"
         },
         {
           "klucz": "0512",
-          "opis": "12 - osoba prowadząca pozarolniczą działalność gospodarczą na podstawie przepisów o działalności gospodarczej lub innych przepisów szczególnych mająca ustalone prawo do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubezpie"
+          "opis": "12 - osoba prowadząca pozarolniczą działalność gospodarczą na podstawie przepisów o działalności gospodarczej lub innych przepisów szczególnych mająca ustalone prawo do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubezpie",
+          "guid": "00000000-0005-0002-0512-000000000000"
         },
         {
           "klucz": "0513",
-          "opis": "13 - osoba niepełnosprawna, która po raz pierwszy podjęła prowadzenie pozarolniczej działalności gospodarczej i skorzystała z dofinansowania składek na ubezpieczenia społeczne ze środków Państwowego Funduszu Rehabilitacji Osób Niepełnosprawnych na podsta"
+          "opis": "13 - osoba niepełnosprawna, która po raz pierwszy podjęła prowadzenie pozarolniczej działalności gospodarczej i skorzystała z dofinansowania składek na ubezpieczenia społeczne ze środków Państwowego Funduszu Rehabilitacji Osób Niepełnosprawnych na podsta",
+          "guid": "00000000-0005-0002-0513-000000000000"
         },
         {
           "klucz": "0520",
-          "opis": "20 - twórca"
+          "opis": "20 - twórca",
+          "guid": "00000000-0005-0002-0520-000000000000"
         },
         {
           "klucz": "0530",
-          "opis": "30 - artysta"
+          "opis": "30 - artysta",
+          "guid": "00000000-0005-0002-0530-000000000000"
         },
         {
           "klucz": "0540",
-          "opis": "40 - osoba niepodlegająca ubezpieczeniom społecznym i podlegająca ubezpieczeniu zdrowotnemu, zgodnie z art. 18 ust. 1 ustawy z dnia 6 marca 2018 r. - Prawo przedsiębiorców"
+          "opis": "40 - osoba niepodlegająca ubezpieczeniom społecznym i podlegająca ubezpieczeniu zdrowotnemu, zgodnie z art. 18 ust. 1 ustawy z dnia 6 marca 2018 r. - Prawo przedsiębiorców",
+          "guid": "00000000-0005-0002-0540-000000000000"
         },
         {
           "klucz": "0543",
-          "opis": "43 - wspólnik jednoosobowej spółki z ograniczoną odpowiedzialnością oraz wspólnicy spółki jawnej, komandytowej lub partnerskiej, "
+          "opis": "43 - wspólnik jednoosobowej spółki z ograniczoną odpowiedzialnością oraz wspólnicy spółki jawnej, komandytowej lub partnerskiej, ",
+          "guid": "00000000-0005-0002-0543-000000000000"
         },
         {
           "klucz": "0544",
-          "opis": "44 - osoba prowadząca pozarolniczą działalność, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu"
+          "opis": "44 - osoba prowadząca pozarolniczą działalność, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-0544-000000000000"
         },
         {
           "klucz": "0545",
-          "opis": "45 - osoba współpracująca z osobą prowadząca pozarolniczą działalność, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu"
+          "opis": "45 - osoba współpracująca z osobą prowadząca pozarolniczą działalność, z mocy przepisów szczególnych niepodlegająca ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-0545-000000000000"
         },
         {
           "klucz": "0570",
-          "opis": "70 - osoba prowadząca pozarolniczą działalność gospodarczą nie mająca ustalonego prawa do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi zadeklarowana kwota nie niższa niż 30% kwoty minimalnego"
+          "opis": "70 - osoba prowadząca pozarolniczą działalność gospodarczą nie mająca ustalonego prawa do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi zadeklarowana kwota nie niższa niż 30% kwoty minimalnego",
+          "guid": "00000000-0005-0002-0570-000000000000"
         },
         {
           "klucz": "0572",
-          "opis": "72 - osoba prowadząca pozarolniczą działalność gospodarczą mająca ustalone prawo do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi zadeklarowana kwota nie niższa niż 30% kwoty minimalnego wynag"
+          "opis": "72 - osoba prowadząca pozarolniczą działalność gospodarczą mająca ustalone prawo do renty z tytułu niezdolności do pracy, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi zadeklarowana kwota nie niższa niż 30% kwoty minimalnego wynag",
+          "guid": "00000000-0005-0002-0572-000000000000"
         },
         {
           "klucz": "0580",
-          "opis": "80 - osoba prowadząca pozarolniczą działalność, której zasiłek macierzyński nie przekracza kwoty świadczenia rodzicielskiego"
+          "opis": "80 - osoba prowadząca pozarolniczą działalność, której zasiłek macierzyński nie przekracza kwoty świadczenia rodzicielskiego",
+          "guid": "00000000-0005-0002-0580-000000000000"
         },
         {
           "klucz": "0581",
-          "opis": "81 - osoba współpracująca z osobą prowadzącą pozarolniczą działalność, której zasiłek macierzyński nie przekracza kwoty świadczenia rodzicielskiego"
+          "opis": "81 - osoba współpracująca z osobą prowadzącą pozarolniczą działalność, której zasiłek macierzyński nie przekracza kwoty świadczenia rodzicielskiego",
+          "guid": "00000000-0005-0002-0581-000000000000"
         },
         {
           "klucz": "0590",
-          "opis": "90 - osoba prowadząca pozarolniczą działalność gospodarczą niemająca ustalonego prawa do renty z tytułu niezdolności do pracy, dla której podstawa wymiaru składek na ubezpieczenia społeczne uzależniona jest od dochodu"
+          "opis": "90 - osoba prowadząca pozarolniczą działalność gospodarczą niemająca ustalonego prawa do renty z tytułu niezdolności do pracy, dla której podstawa wymiaru składek na ubezpieczenia społeczne uzależniona jest od dochodu",
+          "guid": "00000000-0005-0002-0590-000000000000"
         },
         {
           "klucz": "0592",
-          "opis": "92 - osoba prowadząca pozarolniczą działalność gospodarczą mająca ustalone prawo do renty z tytułu niezdolności do pracy, dla której podstawa wymiaru składek na ubezpieczenia społeczne uzależniona jest od dochodu"
+          "opis": "92 - osoba prowadząca pozarolniczą działalność gospodarczą mająca ustalone prawo do renty z tytułu niezdolności do pracy, dla której podstawa wymiaru składek na ubezpieczenia społeczne uzależniona jest od dochodu",
+          "guid": "00000000-0005-0002-0592-000000000000"
         },
         {
           "klucz": "0610",
-          "opis": "10 - poseł lub senator pobierający uposażenie"
+          "opis": "10 - poseł lub senator pobierający uposażenie",
+          "guid": "00000000-0005-0002-0610-000000000000"
         },
         {
           "klucz": "0710",
-          "opis": "10 - stypendysta sportowy pobierający stypendium podlegający z tego tytułu ubezpieczeniom społecznym oraz ubezpieczeniu zdrowotnemu albo wyłącznie ubezpieczeniu zdrowotnemu"
+          "opis": "10 - stypendysta sportowy pobierający stypendium podlegający z tego tytułu ubezpieczeniom społecznym oraz ubezpieczeniu zdrowotnemu albo wyłącznie ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-0710-000000000000"
         },
         {
           "klucz": "0720",
-          "opis": "20 - stypendysta sportowy pobierający stypendium podlegający z tego tytułu wyłącznie ubezpieczeniom społecznym"
+          "opis": "20 - stypendysta sportowy pobierający stypendium podlegający z tego tytułu wyłącznie ubezpieczeniom społecznym",
+          "guid": "00000000-0005-0002-0720-000000000000"
         },
         {
           "klucz": "0800",
-          "opis": "00 - osoba wykonująca odpłatnie pracę na podstawie skierowania do pracy, w czasie odbywania kary pozbawienia wolności lub tymczasowego aresztowania"
+          "opis": "00 - osoba wykonująca odpłatnie pracę na podstawie skierowania do pracy, w czasie odbywania kary pozbawienia wolności lub tymczasowego aresztowania",
+          "guid": "00000000-0005-0002-0800-000000000000"
         },
         {
           "klucz": "0900",
-          "opis": "00 - osoba pobierająca dodatek solidarnościowy"
+          "opis": "00 - osoba pobierająca dodatek solidarnościowy",
+          "guid": "00000000-0005-0002-0900-000000000000"
         },
         {
           "klucz": "0910",
-          "opis": "10 - osoba bezrobotna pobierająca zasiłek dla bezrobotnych, osoba pobierająca świadczenie integracyjne"
+          "opis": "10 - osoba bezrobotna pobierająca zasiłek dla bezrobotnych, osoba pobierająca świadczenie integracyjne",
+          "guid": "00000000-0005-0002-0910-000000000000"
         },
         {
           "klucz": "0911",
-          "opis": "11 - osoba bezrobotna niepobierająca zasiłku dla bezrobotnych lub stypendium"
+          "opis": "11 - osoba bezrobotna niepobierająca zasiłku dla bezrobotnych lub stypendium",
+          "guid": "00000000-0005-0002-0911-000000000000"
         },
         {
           "klucz": "0920",
-          "opis": "20 - osoba pobierająca stypendium w okresie odbywania szkolenia, stażu, przygotowania zawodowego dorosłych lub uczestnictwa w zleconych przez starostę działaniach w zakresie reintegracji społecznej, na które została skierowana przez powiatowy urząd pracy"
+          "opis": "20 - osoba pobierająca stypendium w okresie odbywania szkolenia, stażu, przygotowania zawodowego dorosłych lub uczestnictwa w zleconych przez starostę działaniach w zakresie reintegracji społecznej, na które została skierowana przez powiatowy urząd pracy",
+          "guid": "00000000-0005-0002-0920-000000000000"
         },
         {
           "klucz": "0940",
-          "opis": "40 - osoba zamieszkała w Rzeczypospolitej Polskiej pobierająca zasiłek przedemerytalny lub świadczenie przedemerytalne"
+          "opis": "40 - osoba zamieszkała w Rzeczypospolitej Polskiej pobierająca zasiłek przedemerytalny lub świadczenie przedemerytalne",
+          "guid": "00000000-0005-0002-0940-000000000000"
         },
         {
           "klucz": "0941",
-          "opis": "41 – osoba pobierająca zasiłek przedemerytalny lub świadczenie przedemerytalne, zamieszkała w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)"
+          "opis": "41 – osoba pobierająca zasiłek przedemerytalny lub świadczenie przedemerytalne, zamieszkała w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)",
+          "guid": "00000000-0005-0002-0941-000000000000"
         },
         {
           "klucz": "1010",
-          "opis": "10 - duchowny, nie prowadzący działalności gospodarczej, opłacający składkę od minimalnej podstawy wymiaru"
+          "opis": "10 - duchowny, nie prowadzący działalności gospodarczej, opłacający składkę od minimalnej podstawy wymiaru",
+          "guid": "00000000-0005-0002-1010-000000000000"
         },
         {
           "klucz": "1011",
-          "opis": "11 - Duchowny, nieprowadzący pozarolniczej działalności gospodarczej, opłacający składkę od minimalnej podstawy oraz od zadeklarowanej nadwyżki ponad minimalną podstawę wymiaru, należną za okres do dnia 31 marca 2004 r."
+          "opis": "11 - Duchowny, nieprowadzący pozarolniczej działalności gospodarczej, opłacający składkę od minimalnej podstawy oraz od zadeklarowanej nadwyżki ponad minimalną podstawę wymiaru, należną za okres do dnia 31 marca 2004 r.",
+          "guid": "00000000-0005-0002-1011-000000000000"
         },
         {
           "klucz": "1012",
-          "opis": "12 - Duchowny, nieprowadzący pozarolniczej działalności gospodarczej, opłacający składkę od zadeklarowanej nadwyżki ponad minimalną podstawę wymiaru"
+          "opis": "12 - Duchowny, nieprowadzący pozarolniczej działalności gospodarczej, opłacający składkę od zadeklarowanej nadwyżki ponad minimalną podstawę wymiaru",
+          "guid": "00000000-0005-0002-1012-000000000000"
         },
         {
           "klucz": "1020",
-          "opis": "20 - Duchowny, nieprowadzący pozarolniczej działalności gospodarczej, będący członkiem zakonu kontemplacyjnoklauzurowego lub misjonarzem, opłacający składkę od minimalnej podstawy wymiaru"
+          "opis": "20 - Duchowny, nieprowadzący pozarolniczej działalności gospodarczej, będący członkiem zakonu kontemplacyjnoklauzurowego lub misjonarzem, opłacający składkę od minimalnej podstawy wymiaru",
+          "guid": "00000000-0005-0002-1020-000000000000"
         },
         {
           "klucz": "1040",
-          "opis": "40 - alumn seminarium duchownego, nowicjusz, postulant, juniorysta przed ukończeniem 25 roku życia objęty dobrowolnie ubezpieczeniami emerytalnym i rentowymi (historyczny)"
+          "opis": "40 - alumn seminarium duchownego, nowicjusz, postulant, juniorysta przed ukończeniem 25 roku życia objęty dobrowolnie ubezpieczeniami emerytalnym i rentowymi (historyczny)",
+          "guid": "00000000-0005-0002-1040-000000000000"
         },
         {
           "klucz": "1050",
-          "opis": "50 - alumn seminarium duchownego, nowicjusz, postulant i juniorysta, podlegający ubezpieczeniu zdrowotnemu"
+          "opis": "50 - alumn seminarium duchownego, nowicjusz, postulant i juniorysta, podlegający ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-1050-000000000000"
         },
         {
           "klucz": "1110",
-          "opis": "10 – żołnierz niezawodowy w służbie czynnej oraz żołnierz odbywający zawodową służbę wojskową w trakcie kształcenia"
+          "opis": "10 – żołnierz niezawodowy w służbie czynnej oraz żołnierz odbywający zawodową służbę wojskową w trakcie kształcenia",
+          "guid": "00000000-0005-0002-1110-000000000000"
         },
         {
           "klucz": "1111",
-          "opis": "11 - Osoba odbywająca służbę zastępczą"
+          "opis": "11 - Osoba odbywająca służbę zastępczą",
+          "guid": "00000000-0005-0002-1111-000000000000"
         },
         {
           "klucz": "1112",
-          "opis": "12 - osoba odbywająca nadterminową zasadniczą służbę wojskową (historyczny)"
+          "opis": "12 - osoba odbywająca nadterminową zasadniczą służbę wojskową (historyczny)",
+          "guid": "00000000-0005-0002-1112-000000000000"
         },
         {
           "klucz": "1113",
-          "opis": "13 - osoba odbywająca okresową służbę wojskową (historyczny)"
+          "opis": "13 - osoba odbywająca okresową służbę wojskową (historyczny)",
+          "guid": "00000000-0005-0002-1113-000000000000"
         },
         {
           "klucz": "1114",
-          "opis": "14 - funkcjonariusz w służbie kandydackiej oraz kandydat na żołnierza zawodowego"
+          "opis": "14 - funkcjonariusz w służbie kandydackiej oraz kandydat na żołnierza zawodowego",
+          "guid": "00000000-0005-0002-1114-000000000000"
         },
         {
           "klucz": "1120",
-          "opis": "20 - żołnierz zawodowy"
+          "opis": "20 - żołnierz zawodowy",
+          "guid": "00000000-0005-0002-1120-000000000000"
         },
         {
           "klucz": "1130",
-          "opis": "30 - funkcjonariusz Policji"
+          "opis": "30 - funkcjonariusz Policji",
+          "guid": "00000000-0005-0002-1130-000000000000"
         },
         {
           "klucz": "1131",
-          "opis": "31 - funkcjonariusz Agencji Bezpieczeństwa Wewnętrznego i Agencji Wywiadu"
+          "opis": "31 - funkcjonariusz Agencji Bezpieczeństwa Wewnętrznego i Agencji Wywiadu",
+          "guid": "00000000-0005-0002-1131-000000000000"
         },
         {
           "klucz": "1132",
-          "opis": "32 - funkcjonariusz Straży Granicznej"
+          "opis": "32 - funkcjonariusz Straży Granicznej",
+          "guid": "00000000-0005-0002-1132-000000000000"
         },
         {
           "klucz": "1133",
-          "opis": "33 - funkcjonariusz Państwowej Straży Pożarnej"
+          "opis": "33 - funkcjonariusz Państwowej Straży Pożarnej",
+          "guid": "00000000-0005-0002-1133-000000000000"
         },
         {
           "klucz": "1134",
-          "opis": "34 - funkcjonariusz Służby Celno-Skarbowej"
+          "opis": "34 - funkcjonariusz Służby Celno-Skarbowej",
+          "guid": "00000000-0005-0002-1134-000000000000"
         },
         {
           "klucz": "1135",
-          "opis": "35 - funkcjonariusz Centralnego Biura Antykorupcyjnego, Służby Kontrwywiadu Wojskowego, Służby Wywiadu Wojskowego, Służby Ochrony Państwa albo Straży Marszałkowskiej"
+          "opis": "35 - funkcjonariusz Centralnego Biura Antykorupcyjnego, Służby Kontrwywiadu Wojskowego, Służby Wywiadu Wojskowego, Służby Ochrony Państwa albo Straży Marszałkowskiej",
+          "guid": "00000000-0005-0002-1135-000000000000"
         },
         {
           "klucz": "1140",
-          "opis": "40 - funkcjonariusz Służby Więziennej"
+          "opis": "40 - funkcjonariusz Służby Więziennej",
+          "guid": "00000000-0005-0002-1140-000000000000"
         },
         {
           "klucz": "1150",
-          "opis": "50 - osoba w stanie spoczynku pobierająca uposażenie"
+          "opis": "50 - osoba w stanie spoczynku pobierająca uposażenie",
+          "guid": "00000000-0005-0002-1150-000000000000"
         },
         {
           "klucz": "1151",
-          "opis": "51 - osoba pobierająca uposażenie rodzinne"
+          "opis": "51 - osoba pobierająca uposażenie rodzinne",
+          "guid": "00000000-0005-0002-1151-000000000000"
         },
         {
           "klucz": "1152",
-          "opis": "52 - osoba pobierająca uposażenie po zwolnieniu ze służby lub świadczenia o takim samym charakterze"
+          "opis": "52 - osoba pobierająca uposażenie po zwolnieniu ze służby lub świadczenia o takim samym charakterze",
+          "guid": "00000000-0005-0002-1152-000000000000"
         },
         {
           "klucz": "1153",
-          "opis": "53 - Żołnierz lub funkcjonariusz, za którego jest obowiązek opłacenia składek na ubezpieczenia emerytalne i rentowe w związku ze zwolnieniem ze służby lub utratą prawa do emerytury bądź renty"
+          "opis": "53 - Żołnierz lub funkcjonariusz, za którego jest obowiązek opłacenia składek na ubezpieczenia emerytalne i rentowe w związku ze zwolnieniem ze służby lub utratą prawa do emerytury bądź renty",
+          "guid": "00000000-0005-0002-1153-000000000000"
         },
         {
           "klucz": "1211",
-          "opis": "11 - osoba przebywająca na urlopie wychowawczym"
+          "opis": "11 - osoba przebywająca na urlopie wychowawczym",
+          "guid": "00000000-0005-0002-1211-000000000000"
         },
         {
           "klucz": "1240",
-          "opis": "40 - osoba pobierająca zasiłek macierzyński"
+          "opis": "40 - osoba pobierająca zasiłek macierzyński",
+          "guid": "00000000-0005-0002-1240-000000000000"
         },
         {
           "klucz": "1250",
-          "opis": "50 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed podjęciem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako osoba prowadząca pozarolniczą działalność"
+          "opis": "50 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed podjęciem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako osoba prowadząca pozarolniczą działalność",
+          "guid": "00000000-0005-0002-1250-000000000000"
         },
         {
           "klucz": "1260",
-          "opis": "60 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed sprawowaniem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako zleceniobiorca"
+          "opis": "60 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed sprawowaniem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako zleceniobiorca",
+          "guid": "00000000-0005-0002-1260-000000000000"
         },
         {
           "klucz": "1270",
-          "opis": "70 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed podjęciem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako osoba współpracująca z osobą prowadzącą pozarolniczą działalność albo ze zleceniobiorcą"
+          "opis": "70 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed podjęciem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako osoba współpracująca z osobą prowadzącą pozarolniczą działalność albo ze zleceniobiorcą",
+          "guid": "00000000-0005-0002-1270-000000000000"
         },
         {
           "klucz": "1280",
-          "opis": "80 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed podjęciem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako osoba duchowna"
+          "opis": "80 - osoba sprawująca osobistą opiekę nad dzieckiem, która bezpośrednio przed podjęciem opieki podlegała ubezpieczeniom emerytalnemu i rentowym jako osoba duchowna",
+          "guid": "00000000-0005-0002-1280-000000000000"
         },
         {
           "klucz": "1290",
-          "opis": "90 - osoba sprawująca osobistą opiekę nad dzieckiem, podlegająca wyłącznie ubezpieczeniu emerytalnemu"
+          "opis": "90 - osoba sprawująca osobistą opiekę nad dzieckiem, podlegająca wyłącznie ubezpieczeniu emerytalnemu",
+          "guid": "00000000-0005-0002-1290-000000000000"
         },
         {
           "klucz": "1310",
-          "opis": "10 - osoba, która na podstawie odrębnych przepisów lub układów zbiorowych pracy pobiera świadczenie socjalne wypłacane w czasie urlopu innego niż kolejowy"
+          "opis": "10 - osoba, która na podstawie odrębnych przepisów lub układów zbiorowych pracy pobiera świadczenie socjalne wypłacane w czasie urlopu innego niż kolejowy",
+          "guid": "00000000-0005-0002-1310-000000000000"
         },
         {
           "klucz": "1320",
-          "opis": "20 - osoba pobierająca zasiłek socjalny na czas przekwalifikowania zawodowego i poszukiwania nowego zatrudnienia"
+          "opis": "20 - osoba pobierająca zasiłek socjalny na czas przekwalifikowania zawodowego i poszukiwania nowego zatrudnienia",
+          "guid": "00000000-0005-0002-1320-000000000000"
         },
         {
           "klucz": "1321",
-          "opis": "21 - osoba, która na podstawie odrębnych przepisów lub układów zbiorowych pracy pobiera świadczenie socjalne wypłacane w czasie urlopu kolejowego"
+          "opis": "21 - osoba, która na podstawie odrębnych przepisów lub układów zbiorowych pracy pobiera świadczenie socjalne wypłacane w czasie urlopu kolejowego",
+          "guid": "00000000-0005-0002-1321-000000000000"
         },
         {
           "klucz": "1322",
-          "opis": "22 - osoba pobierająca świadczenia socjalne w okresie zwolnienia z obowiązku świadczenia pracy"
+          "opis": "22 - osoba pobierająca świadczenia socjalne w okresie zwolnienia z obowiązku świadczenia pracy",
+          "guid": "00000000-0005-0002-1322-000000000000"
         },
         {
           "klucz": "1422",
-          "opis": "22 - świadczeniobiorca, za którego jednostka organizacyjna pomocy społecznej, wójt, burmistrz lub prezydent miasta ma obowiązek opłacać składki"
+          "opis": "22 - świadczeniobiorca, za którego jednostka organizacyjna pomocy społecznej, wójt, burmistrz lub prezydent miasta ma obowiązek opłacać składki",
+          "guid": "00000000-0005-0002-1422-000000000000"
         },
         {
           "klucz": "1500",
-          "opis": "00 - małżonek pracownika skierowanego do pracy w przedstawicielstwie dyplomatycznym, urzędzie konsularnym, stałym przedstawicielstwie przy ONZ lub w innej misji specjalnej za granicą, w instytucie, ośrodku informacji kultury za granicą (historyczny)"
+          "opis": "00 - małżonek pracownika skierowanego do pracy w przedstawicielstwie dyplomatycznym, urzędzie konsularnym, stałym przedstawicielstwie przy ONZ lub w innej misji specjalnej za granicą, w instytucie, ośrodku informacji kultury za granicą (historyczny)",
+          "guid": "00000000-0005-0002-1500-000000000000"
         },
         {
           "klucz": "1610",
-          "opis": "10 - obywatel polski wykonujący pracę w podmiocie zagranicznym za granicą lub w podmiocie zagranicznym na terytorium RP, jeżeli podmiot nie posiada w Polsce swojej siedziby ani przedstawicielstw (historyczny)"
+          "opis": "10 - obywatel polski wykonujący pracę w podmiocie zagranicznym za granicą lub w podmiocie zagranicznym na terytorium RP, jeżeli podmiot nie posiada w Polsce swojej siedziby ani przedstawicielstw (historyczny)",
+          "guid": "00000000-0005-0002-1610-000000000000"
         },
         {
           "klucz": "1700",
-          "opis": "00 - osoba sprawująca opiekę nad członkiem rodziny spełniającym warunki do przyznania zasiłku pielęgnacyjnego, podlegająca dobrowolnym ubezpieczeniom emerytalnemu i rentowym, jeżeli nie podlega ubezpieczeniom emerytalnemu i rentowym z innych tytułów (his"
+          "opis": "00 - osoba sprawująca opiekę nad członkiem rodziny spełniającym warunki do przyznania zasiłku pielęgnacyjnego, podlegająca dobrowolnym ubezpieczeniom emerytalnemu i rentowym, jeżeli nie podlega ubezpieczeniom emerytalnemu i rentowym z innych tytułów (his",
+          "guid": "00000000-0005-0002-1700-000000000000"
         },
         {
           "klucz": "1810",
-          "opis": "10 - student, uczestnik studiów doktoranckich lub osoba odbywająca staż adaptacyjny, podlegający dobrowolnym ubezpieczeniom emerytalnemu i rentowym  (historyczny)"
+          "opis": "10 - student, uczestnik studiów doktoranckich lub osoba odbywająca staż adaptacyjny, podlegający dobrowolnym ubezpieczeniom emerytalnemu i rentowym  (historyczny)",
+          "guid": "00000000-0005-0002-1810-000000000000"
         },
         {
           "klucz": "1811",
-          "opis": "11 – student lub doktorant, którego nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne, z wyłączeniem osób, o których mowa w art. 3 ust. 1 pkt 3a ustawy z dnia 27 sierpnia 2004 r. o świadczeniach opieki zdrowotnej finanso"
+          "opis": "11 – student lub doktorant, którego nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne, z wyłączeniem osób, o których mowa w art. 3 ust. 1 pkt 3a ustawy z dnia 27 sierpnia 2004 r. o świadczeniach opieki zdrowotnej finanso",
+          "guid": "00000000-0005-0002-1811-000000000000"
         },
         {
           "klucz": "1812",
-          "opis": "12 – doktorant, podlegający z tego tytułu ubezpieczeniom społecznym oraz ubezpieczeniu zdrowotnemu, którego nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne"
+          "opis": "12 – doktorant, podlegający z tego tytułu ubezpieczeniom społecznym oraz ubezpieczeniu zdrowotnemu, którego nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne",
+          "guid": "00000000-0005-0002-1812-000000000000"
         },
         {
           "klucz": "1813",
-          "opis": "13 - doktorant, podlegający z tego tytułu ubezpieczeniom społecznym, niepodlegający ubezpieczeniu zdrowotnemu"
+          "opis": "13 - doktorant, podlegający z tego tytułu ubezpieczeniom społecznym, niepodlegający ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-1813-000000000000"
         },
         {
           "klucz": "1830",
-          "opis": "30 - słuchacz Krajowej Szkoły Administracji Publicznej im. Prezydenta Rzeczypospolitej Polskiej Lecha Kaczyńskiego"
+          "opis": "30 - słuchacz Krajowej Szkoły Administracji Publicznej im. Prezydenta Rzeczypospolitej Polskiej Lecha Kaczyńskiego",
+          "guid": "00000000-0005-0002-1830-000000000000"
         },
         {
           "klucz": "1900",
-          "opis": "00 - osoba podlegająca dobrowolnie ubezpieczeniom emerytalnemu i rentowym, na podstawie art. 7 ustawy z dnia 13 października 1998 r. o systemie ubezpieczeń społecznych"
+          "opis": "00 - osoba podlegająca dobrowolnie ubezpieczeniom emerytalnemu i rentowym, na podstawie art. 7 ustawy z dnia 13 października 1998 r. o systemie ubezpieczeń społecznych",
+          "guid": "00000000-0005-0002-1900-000000000000"
         },
         {
           "klucz": "1910",
-          "opis": "10 - osoba podlegająca dobrowolnie ubezpieczeniom emerytalnemu i rentowym w okresie zawieszenia wykonywania działalności gospodarczej"
+          "opis": "10 - osoba podlegająca dobrowolnie ubezpieczeniom emerytalnemu i rentowym w okresie zawieszenia wykonywania działalności gospodarczej",
+          "guid": "00000000-0005-0002-1910-000000000000"
         },
         {
           "klucz": "2010",
-          "opis": "10 - sędzia"
+          "opis": "10 - sędzia",
+          "guid": "00000000-0005-0002-2010-000000000000"
         },
         {
           "klucz": "2020",
-          "opis": "20 - prokurator, ławnik sądowy, aplikant Krajowej Szkoły Sądownictwa i Prokuratury"
+          "opis": "20 - prokurator, ławnik sądowy, aplikant Krajowej Szkoły Sądownictwa i Prokuratury",
+          "guid": "00000000-0005-0002-2020-000000000000"
         },
         {
           "klucz": "2030",
-          "opis": "30 - sędzia lub prokurator, za którego jest obowiązek opłacania składek na ubezpieczenia społeczne, w związku z rozwiązaniem lub wygaśnięciem stosunku służbowego"
+          "opis": "30 - sędzia lub prokurator, za którego jest obowiązek opłacania składek na ubezpieczenia społeczne, w związku z rozwiązaniem lub wygaśnięciem stosunku służbowego",
+          "guid": "00000000-0005-0002-2030-000000000000"
         },
         {
           "klucz": "2110",
-          "opis": "10 – dziecko, uczeń, absolwent odbywający w Rzeczypospolitej Polskiej obowiązkowy staż oraz osoba odbywająca kurs języka polskiego lub kurs przygotowawczy do podjęcia nauki w języku polskim, niepodlegający obowiązkowi ubezpieczenia zdrowotne"
+          "opis": "10 – dziecko, uczeń, absolwent odbywający w Rzeczypospolitej Polskiej obowiązkowy staż oraz osoba odbywająca kurs języka polskiego lub kurs przygotowawczy do podjęcia nauki w języku polskim, niepodlegający obowiązkowi ubezpieczenia zdrowotne",
+          "guid": "00000000-0005-0002-2110-000000000000"
         },
         {
           "klucz": "2120",
-          "opis": "20 - słuchacz zakładu kształcenia nauczycieli niepodlegający ubezpieczeniu zdrowotnemu z innego tytułu (historyczny)"
+          "opis": "20 - słuchacz zakładu kształcenia nauczycieli niepodlegający ubezpieczeniu zdrowotnemu z innego tytułu (historyczny)",
+          "guid": "00000000-0005-0002-2120-000000000000"
         },
         {
           "klucz": "2210",
-          "opis": "10 – kombatant lub osoba represjonowana albo działacz opozycji antykomunistycznej lub osoba represjonowana z powodów politycznych, których nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne"
+          "opis": "10 – kombatant lub osoba represjonowana albo działacz opozycji antykomunistycznej lub osoba represjonowana z powodów politycznych, których nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne",
+          "guid": "00000000-0005-0002-2210-000000000000"
         },
         {
           "klucz": "2230",
-          "opis": "30 - osoba podlegająca ubezpieczeniu zdrowotnemu z tytułu uprawnienia do świadczeń alimentacyjnych na podstawie ugody sądowej lub prawomocnego orzeczenia sądu"
+          "opis": "30 - osoba podlegająca ubezpieczeniu zdrowotnemu z tytułu uprawnienia do świadczeń alimentacyjnych na podstawie ugody sądowej lub prawomocnego orzeczenia sądu",
+          "guid": "00000000-0005-0002-2230-000000000000"
         },
         {
           "klucz": "2240",
-          "opis": "40 - członek rady nadzorczej, podlegający z tego tytułu wyłącznie ubezpieczeniu zdrowotnemu"
+          "opis": "40 - członek rady nadzorczej, podlegający z tego tytułu wyłącznie ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-2240-000000000000"
         },
         {
           "klucz": "2330",
-          "opis": "30 – małżonek Prezydenta Rzeczypospolitej Polskiej"
+          "opis": "30 – małżonek Prezydenta Rzeczypospolitej Polskiej",
+          "guid": "00000000-0005-0002-2330-000000000000"
         },
         {
           "klucz": "2241",
-          "opis": "41 - członek rady nadzorczej, podlegający z tego tytułu ubezpieczeniom emerytalnym i rentowym oraz ubezpieczeniu zdrowotnemu"
+          "opis": "41 - członek rady nadzorczej, podlegający z tego tytułu ubezpieczeniom emerytalnym i rentowym oraz ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-2241-000000000000"
         },
         {
           "klucz": "2242",
-          "opis": "42 - członek rady nadzorczej, podlegający z tego tytułu ubezpieczeniom emerytalnym i rentowym, nie podlegający ubezpieczeniu zdrowotnemu"
+          "opis": "42 - członek rady nadzorczej, podlegający z tego tytułu ubezpieczeniom emerytalnym i rentowym, nie podlegający ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-2242-000000000000"
         },
         {
           "klucz": "2410",
-          "opis": "10 - Osoba objęta dobrowolnym ubezpieczeniem zdrowotnym lub wolontariusz, niepodlegający ubezpieczeniu zdrowotnemu z innego tytułu, za którego składkę na ubezpieczenie zdrowotne dobrowolnie finansuje korzystający, o którym mowa w przepisach"
+          "opis": "10 - Osoba objęta dobrowolnym ubezpieczeniem zdrowotnym lub wolontariusz, niepodlegający ubezpieczeniu zdrowotnemu z innego tytułu, za którego składkę na ubezpieczenie zdrowotne dobrowolnie finansuje korzystający, o którym mowa w przepisach",
+          "guid": "00000000-0005-0002-2410-000000000000"
         },
         {
           "klucz": "2500",
-          "opis": "00 - emeryt lub rencista zamieszkały, lub osoba pobierająca rodzicielskie świadczenie uzupełniające zamieszkały w Rzeczypospolitej Polskiej, którego składka na ubezpieczenie zdrowotne finansowana jest przez świadczeniobiorcę"
+          "opis": "00 - emeryt lub rencista zamieszkały, lub osoba pobierająca rodzicielskie świadczenie uzupełniające zamieszkały w Rzeczypospolitej Polskiej, którego składka na ubezpieczenie zdrowotne finansowana jest przez świadczeniobiorcę",
+          "guid": "00000000-0005-0002-2500-000000000000"
         },
         {
           "klucz": "2501",
-          "opis": "01 – Emeryt lub rencista zamieszkały w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)"
+          "opis": "01 – Emeryt lub rencista zamieszkały w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)",
+          "guid": "00000000-0005-0002-2501-000000000000"
         },
         {
           "klucz": "2510",
-          "opis": "10 – emeryt lub rencista zamieszkały w Rzeczypospolitej Polskiej, którego nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne na podstawie art. 67 ust. 1 pkt 2 ustawy z dnia 27 sierpnia 2004 r. o świadczeniach opieki zdrowot"
+          "opis": "10 – emeryt lub rencista zamieszkały w Rzeczypospolitej Polskiej, którego nie dotyczy obowiązek opłacania składki na ubezpieczenie zdrowotne na podstawie art. 67 ust. 1 pkt 2 ustawy z dnia 27 sierpnia 2004 r. o świadczeniach opieki zdrowot",
+          "guid": "00000000-0005-0002-2510-000000000000"
         },
         {
           "klucz": "2511",
-          "opis": "11 – emeryt lub rencista zamieszkały w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA) lub w Zjednoczonym Królestwie Wielkiej Brytanii i Irlandii Północ"
+          "opis": "11 – emeryt lub rencista zamieszkały w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA) lub w Zjednoczonym Królestwie Wielkiej Brytanii i Irlandii Północ",
+          "guid": "00000000-0005-0002-2511-000000000000"
         },
         {
           "klucz": "2600",
-          "opis": "00 - osoba pobierająca nauczycielskie świadczenie kompensacyjne zamieszkała w Rzeczypospolitej Polskiej"
+          "opis": "00 - osoba pobierająca nauczycielskie świadczenie kompensacyjne zamieszkała w Rzeczypospolitej Polskiej",
+          "guid": "00000000-0005-0002-2600-000000000000"
         },
         {
           "klucz": "2601",
-          "opis": "01 - osoba pobierająca nauczycielskie świadczenie kompensacyjne zamieszkała w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)"
+          "opis": "01 - osoba pobierająca nauczycielskie świadczenie kompensacyjne zamieszkała w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)",
+          "guid": "00000000-0005-0002-2601-000000000000"
         },
         {
           "klucz": "2700",
-          "opis": "00 - osoba pobierająca emeryturę pomostową zamieszkała w Rzeczypospolitej Polskiej"
+          "opis": "00 - osoba pobierająca emeryturę pomostową zamieszkała w Rzeczypospolitej Polskiej",
+          "guid": "00000000-0005-0002-2700-000000000000"
         },
         {
           "klucz": "2701",
-          "opis": "01 - osoba pobierająca emeryturę pomostową zamieszkała w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)"
+          "opis": "01 - osoba pobierająca emeryturę pomostową zamieszkała w innym niż Rzeczpospolita Polska państwie członkowskim Unii Europejskiej, państwie członkowskim Europejskiego Porozumienia o Wolnym Handlu (EFTA)",
+          "guid": "00000000-0005-0002-2701-000000000000"
         },
         {
           "klucz": "3000",
-          "opis": "00 - Osoba, za którą należy rozliczyć i opłacić składki lub należne świadczenia w dokumentach rozliczeniowych składanych nie wcześniej niż za następny miesiąc, po ustaniu tytułu do ubezpieczeń"
+          "opis": "00 - Osoba, za którą należy rozliczyć i opłacić składki lub należne świadczenia w dokumentach rozliczeniowych składanych nie wcześniej niż za następny miesiąc, po ustaniu tytułu do ubezpieczeń",
+          "guid": "00000000-0005-0002-3000-000000000000"
         },
         {
           "klucz": "5000",
-          "opis": "00 - Inny tytuł do ubezpieczeń"
+          "opis": "00 - Inny tytuł do ubezpieczeń",
+          "guid": "00000000-0005-0002-5000-000000000000"
         },
         {
           "klucz": "2250",
-          "opis": "50 – osoba powołana do pełnienia funkcji na mocy aktu powołania oraz prokurent, o których mowa w art. 66 ust. 1 pkt 35a ustawy z dnia 27 sierpnia 2004 r. "
+          "opis": "50 – osoba powołana do pełnienia funkcji na mocy aktu powołania oraz prokurent, o których mowa w art. 66 ust. 1 pkt 35a ustawy z dnia 27 sierpnia 2004 r. ",
+          "guid": "00000000-0005-0002-2250-000000000000"
         },
         {
           "klucz": "0942",
-          "opis": "42 – osoba niepobierająca zasiłku przedemerytalnego lub świadczenia przedemerytalnego z przyczyn określonych w art. 27 ust. 1 pkt 3–6 i ust. 2 ustawy z dnia 14 grudnia 1994 r. o zatrudnie"
+          "opis": "42 – osoba niepobierająca zasiłku przedemerytalnego lub świadczenia przedemerytalnego z przyczyn określonych w art. 27 ust. 1 pkt 3–6 i ust. 2 ustawy z dnia 14 grudnia 1994 r. o zatrudnie",
+          "guid": "00000000-0005-0002-0942-000000000000"
         },
         {
           "klucz": "1823",
-          "opis": "23 – student lub doktorant, który odbywa kształcenie w Rzeczypospolitej Polskiej, absolwent, który odbywa w Rzeczypospolitej Polskiej obowiązkowy staż, oraz odbywający kursy języka polskie"
+          "opis": "23 – student lub doktorant, który odbywa kształcenie w Rzeczypospolitej Polskiej, absolwent, który odbywa w Rzeczypospolitej Polskiej obowiązkowy staż, oraz odbywający kursy języka polskie",
+          "guid": "00000000-0005-0002-1823-000000000000"
         },
         {
           "klucz": "1430",
-          "opis": "30 – osoba pobierająca świadczenie wspierające"
+          "opis": "30 – osoba pobierająca świadczenie wspierające",
+          "guid": "00000000-0005-0002-1430-000000000000"
         },
         {
           "klucz": "1431",
-          "opis": "31 – osoba niepodejmująca zatrudnienia lub innej pracy zarobkowej ze względu na potrzebę udzielenia wsparcia osobie pobierającej świadczenie wspierające, podlegająca z tego tytułu ubezpieczeniom społecznym oraz ubezpieczeniu zdrowotnemu"
+          "opis": "31 – osoba niepodejmująca zatrudnienia lub innej pracy zarobkowej ze względu na potrzebę udzielenia wsparcia osobie pobierającej świadczenie wspierające, podlegająca z tego tytułu ubezpieczeniom społecznym oraz ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-1431-000000000000"
         },
         {
           "klucz": "1432",
-          "opis": "32 – osoba niepodejmująca zatrudnienia lub innej pracy zarobkowej ze względu na potrzebę udzielenia wsparcia osobie pobierającej świadczenie wspierające, podlegająca z tego tytułu ubezpieczeniom społecznym, niepodlegająca ubezpieczeniu zdrowotnemu"
+          "opis": "32 – osoba niepodejmująca zatrudnienia lub innej pracy zarobkowej ze względu na potrzebę udzielenia wsparcia osobie pobierającej świadczenie wspierające, podlegająca z tego tytułu ubezpieczeniom społecznym, niepodlegająca ubezpieczeniu zdrowotnemu",
+          "guid": "00000000-0005-0002-1432-000000000000"
         },
         {
           "klucz": "1433",
-          "opis": "33 – osoba niepodejmująca zatrudnienia lub innej pracy zarobkowej ze względu na potrzebę udzielenia wsparcia osobie pobierającej świadczenie wspierające, podlegająca z tego tytułu ubezpieczeniu zdrowotnemu, niepodlegająca ubezpieczeniom społecznym"
+          "opis": "33 – osoba niepodejmująca zatrudnienia lub innej pracy zarobkowej ze względu na potrzebę udzielenia wsparcia osobie pobierającej świadczenie wspierające, podlegająca z tego tytułu ubezpieczeniu zdrowotnemu, niepodlegająca ubezpieczeniom społecznym",
+          "guid": "00000000-0005-0002-1433-000000000000"
         },
         {
           "klucz": "514",
-          "opis": "14 - osoba prowadząca pozarolniczą działalność gospodarczą zwolniona z opłacania składek, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi 60% kwoty prognozowanego przeciętnego wynagrodzenia miesięcznego"
+          "opis": "14 - osoba prowadząca pozarolniczą działalność gospodarczą zwolniona z opłacania składek, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi 60% kwoty prognozowanego przeciętnego wynagrodzenia miesięcznego",
+          "guid": "00000000-0005-0002-0514-000000000000"
         },
         {
           "klucz": "574",
-          "opis": "74 - osoba prowadząca pozarolniczą działalność gospodarczą zwolniona z opłacania składek, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi 30% kwoty minimalnego wynagrodzenia"
+          "opis": "74 - osoba prowadząca pozarolniczą działalność gospodarczą zwolniona z opłacania składek, dla której podstawę wymiaru składek na ubezpieczenia społeczne stanowi 30% kwoty minimalnego wynagrodzenia",
+          "guid": "00000000-0005-0002-0574-000000000000"
         },
         {
           "klucz": "594",
-          "opis": "94 - osoba prowadząca pozarolniczą działalność gospodarczą zwolniona z opłacania składek, dla której podstawa wymiaru składek na ubezpieczenia społeczne uzależniona jest od dochodu"
+          "opis": "94 - osoba prowadząca pozarolniczą działalność gospodarczą zwolniona z opłacania składek, dla której podstawa wymiaru składek na ubezpieczenia społeczne uzależniona jest od dochodu",
+          "guid": "00000000-0005-0002-0594-000000000000"
         },
         {
           "klucz": "0921",
-          "opis": "21 - osoba niepełnosprawna zarejestrowana w powiatowym urzędzie pracy jako poszukująca pracy niepozostająca w zatrudnieniu pobierająca stypendium na podstawie ustawy z dnia 20 marca 2025 r."
+          "opis": "21 - osoba niepełnosprawna zarejestrowana w powiatowym urzędzie pracy jako poszukująca pracy niepozostająca w zatrudnieniu pobierająca stypendium na podstawie ustawy z dnia 20 marca 2025 r.",
+          "guid": "00000000-0005-0002-0921-000000000000"
         },
         {
           "klucz": "2400",
-          "opis": "24 – marynarz"
+          "opis": "24 – marynarz",
+          "guid": "00000000-0005-0002-0922-000000000000"
         },
         {
           "klucz": "2401",
-          "opis": "24 – marynarz opłacający na swój wniosek składki na ubezpieczenia emerytalne i rentowe za wybrane miesiące w okresie od dnia 1 stycznia 2021 r. do dnia 31 grudnia 2025 r."
+          "opis": "24 – marynarz opłacający na swój wniosek składki na ubezpieczenia emerytalne i rentowe za wybrane miesiące w okresie od dnia 1 stycznia 2021 r. do dnia 31 grudnia 2025 r.",
+          "guid": "00000000-0005-0002-0923-000000000000"
         }
       ]
     },
@@ -9146,59 +9274,73 @@
       "wartosciStandardowe": [
         {
           "klucz": "Urlop wypoczynkowy",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0001-000000000000"
         },
         {
           "klucz": "Urlop wypoczynkowy dodatkowy",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0002-000000000000"
         },
         {
           "klucz": "Opieka nad zdrowym dzieckiem (dni)",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0003-000000000000"
         },
         {
           "klucz": "Urlop wypoczynkowy prac.tymcz.",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0004-000000000000"
         },
         {
           "klucz": "Opieka nad zdrowym dzieckiem (godz.)",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0005-000000000000"
         },
         {
           "klucz": "Urlop radcowski",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0006-000000000000"
         },
         {
           "klucz": "Zwolnienie od pracy - siła wyższa (dni)",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0007-000000000000"
         },
         {
           "klucz": "Zwolnienie od pracy - siła wyższa(godz.)",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0008-000000000000"
         },
         {
           "klucz": "Urlop opiekuńczy",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0009-000000000000"
         },
         {
           "klucz": "Urlop kombatancki",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0010-000000000000"
         },
         {
           "klucz": "Urlop doktorancki",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0011-000000000000"
         },
         {
           "klucz": "Urlop szkoleniowy",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0012-000000000000"
         },
         {
           "klucz": "Urlop weterana",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0013-000000000000"
         },
         {
           "klucz": "Przerwa w świadczeniu usług",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0004-0014-000000000000"
         }
       ]
     },
@@ -9210,95 +9352,118 @@
       "wartosciStandardowe": [
         {
           "klucz": "Praca w normie",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0001-000000000000"
         },
         {
           "klucz": "Przerwa bezpłatna",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0002-000000000000"
         },
         {
           "klucz": "Praca w godzinach nocnych",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0003-000000000000"
         },
         {
           "klucz": "Nadgodziny do przeniesienia",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0004-000000000000"
         },
         {
           "klucz": "Nadgodziny 50%",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0005-000000000000"
         },
         {
           "klucz": "Nadgodziny 100%",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0006-000000000000"
         },
         {
           "klucz": "Nadgodziny ŚW",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0007-000000000000"
         },
         {
           "klucz": "Praca w dni wolne",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0008-000000000000"
         },
         {
           "klucz": "Praca w niedziele i święta",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0009-000000000000"
         },
         {
           "klucz": "Rozliczenie nadgodzin (prac)",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0010-000000000000"
         },
         {
           "klucz": "Rozliczenie nadgodzin (firma)",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0011-000000000000"
         },
         {
           "klucz": "Rozliczenie wyjścia prywatnego",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0012-000000000000"
         },
         {
           "klucz": "Wyjście prywatne",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0013-000000000000"
         },
         {
           "klucz": "Przerwa na karmienie",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0014-000000000000"
         },
         {
           "klucz": "Wypłata nadgodzin",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0015-000000000000"
         },
         {
           "klucz": "Praca poza normą",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0016-000000000000"
         },
         {
           "klucz": "Przestój (KP)",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0017-000000000000"
         },
         {
           "klucz": "Przestój ekonomiczny",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0018-000000000000"
         },
         {
           "klucz": "Nadgodziny 100% okresowe",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0019-000000000000"
         },
         {
           "klucz": "Praca zdalna",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0021-000000000000"
         },
         {
           "klucz": "Delegacja służbowa",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0022-000000000000"
         },
         {
           "klucz": "Praca zdalna okazjonalna",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0023-000000000000"
         },
         {
           "klucz": "Nadgodziny ŚW okresowe",
-          "opis": null
+          "opis": null,
+          "guid": "00000000-0006-0001-0024-000000000000"
         }
       ]
     },
@@ -9327,769 +9492,1024 @@
       "poleKlucza": "Nazwa",
       "wartosciStandardowe": [
         {
-          "klucz": "Akord"
+          "klucz": "Akord",
+          "guid": "00000000-0007-0002-0004-000000000000"
         },
         {
-          "klucz": "Alimenty"
+          "klucz": "Alimenty",
+          "guid": "00000000-0007-0002-0158-000000000000"
         },
         {
-          "klucz": "Alimenty (stare)"
+          "klucz": "Alimenty (stare)",
+          "guid": "00000000-0007-0002-0144-000000000000"
         },
         {
-          "klucz": "Dochód deklarowany"
+          "klucz": "Dochód deklarowany",
+          "guid": "00000000-0007-0002-0003-000000000000"
         },
         {
-          "klucz": "Dochód deklarowany - składki budżetowe"
+          "klucz": "Dochód deklarowany - składki budżetowe",
+          "guid": "00000000-0007-0002-0193-000000000000"
         },
         {
-          "klucz": "Dod.z tytułu kształcenia i rehabilitacji"
+          "klucz": "Dod.z tytułu kształcenia i rehabilitacji",
+          "guid": "00000000-0007-0002-0097-000000000000"
         },
         {
-          "klucz": "Dod.z tytułu nauki (dojazd)"
+          "klucz": "Dod.z tytułu nauki (dojazd)",
+          "guid": "00000000-0007-0002-0099-000000000000"
         },
         {
-          "klucz": "Dod.z tytułu nauki (zamieszkanie)"
+          "klucz": "Dod.z tytułu nauki (zamieszkanie)",
+          "guid": "00000000-0007-0002-0098-000000000000"
         },
         {
-          "klucz": "Dod.z tytułu rozpoczęcia roku szkolnego"
+          "klucz": "Dod.z tytułu rozpoczęcia roku szkolnego",
+          "guid": "00000000-0007-0002-0100-000000000000"
         },
         {
-          "klucz": "Dod.z tytułu urodzenia dziecka"
+          "klucz": "Dod.z tytułu urodzenia dziecka",
+          "guid": "00000000-0007-0002-0101-000000000000"
         },
         {
-          "klucz": "Dodatek funkcyjny"
+          "klucz": "Dodatek funkcyjny",
+          "guid": "df97dc0b-2cb9-47b3-b8f0-81ce39934a06"
         },
         {
-          "klucz": "Dodatek rodzinny (jednorazowy)"
+          "klucz": "Dodatek rodzinny (jednorazowy)",
+          "guid": "00000000-0007-0002-0007-000000000000"
         },
         {
-          "klucz": "Dodatek stażowy"
+          "klucz": "Dodatek stażowy",
+          "guid": "71a2fac0-4f66-43a5-9e25-13c97f8e4a00"
         },
         {
-          "klucz": "Dodatkowy zas.opiekuńczy"
+          "klucz": "Dodatkowy zas.opiekuńczy",
+          "guid": "00000000-0007-0002-0190-000000000000"
         },
         {
-          "klucz": "Dodatkowy zas.opiekuńczy /zlec."
+          "klucz": "Dodatkowy zas.opiekuńczy /zlec.",
+          "guid": "00000000-0007-0002-0192-000000000000"
         },
         {
-          "klucz": "Dodatkowy zas.opiekuńczy RSP"
+          "klucz": "Dodatkowy zas.opiekuńczy RSP",
+          "guid": "00000000-0007-0002-0191-000000000000"
         },
         {
-          "klucz": "Dofinansowanie okulary lub soczewki kont"
+          "klucz": "Dofinansowanie okulary lub soczewki kont",
+          "guid": "00000000-0007-0002-0242-000000000000"
         },
         {
-          "klucz": "Dopłata do n.godz. 100%"
+          "klucz": "Dopłata do n.godz. 100%",
+          "guid": "00000000-0007-0002-0071-000000000000"
         },
         {
-          "klucz": "Dopłata do n.godz. 100% św"
+          "klucz": "Dopłata do n.godz. 100% św",
+          "guid": "00000000-0007-0002-0072-000000000000"
         },
         {
-          "klucz": "Dopłata do n.godz. 50%"
+          "klucz": "Dopłata do n.godz. 50%",
+          "guid": "00000000-0007-0002-0070-000000000000"
         },
         {
-          "klucz": "Dopłata godz.nocne 20%"
+          "klucz": "Dopłata godz.nocne 20%",
+          "guid": "00000000-0007-0002-0073-000000000000"
         },
         {
-          "klucz": "Dopłata godz.nocne 20% (2017)"
+          "klucz": "Dopłata godz.nocne 20% (2017)",
+          "guid": "00000000-0007-0002-0180-000000000000"
         },
         {
-          "klucz": "Dopłata KZP"
+          "klucz": "Dopłata KZP",
+          "guid": "10695756-2f73-4992-90f9-c4142c202bd3"
         },
         {
-          "klucz": "Dopłata KZP/kasa"
+          "klucz": "Dopłata KZP/kasa",
+          "guid": "b2c41dc4-10f3-4d61-b28f-9e9505b47339"
         },
         {
-          "klucz": "Ekwiwalent za czas urlopu"
+          "klucz": "Ekwiwalent za czas urlopu",
+          "guid": "00000000-0007-0002-0074-000000000000"
         },
         {
-          "klucz": "Ekwiwalent za czas urlopu dodatkowego"
+          "klucz": "Ekwiwalent za czas urlopu dodatkowego",
+          "guid": "00000000-0007-0002-0156-000000000000"
         },
         {
-          "klucz": "Ekwiwalent za czas urlopu prac. tymcz."
+          "klucz": "Ekwiwalent za czas urlopu prac. tymcz.",
+          "guid": "00000000-0007-0002-0162-000000000000"
         },
         {
-          "klucz": "Ekwiwalent za pracę zdalną"
+          "klucz": "Ekwiwalent za pracę zdalną",
+          "guid": "00000000-0007-0002-0270-000000000000"
         },
         {
-          "klucz": "Ekwiwalent za pracę zdalną/dni"
+          "klucz": "Ekwiwalent za pracę zdalną/dni",
+          "guid": "00000000-0007-0002-0271-000000000000"
         },
         {
-          "klucz": "IFT-1.1.Żegluga i transport lotniczy"
+          "klucz": "IFT-1.1.Żegluga i transport lotniczy",
+          "guid": "00000000-0007-0002-0033-000000000000"
         },
         {
-          "klucz": "IFT-1.10.Podwójne opodatkowanie"
+          "klucz": "IFT-1.10.Podwójne opodatkowanie",
+          "guid": "00000000-0007-0002-0035-000000000000"
         },
         {
-          "klucz": "IFT-1.2.Dywidendy"
+          "klucz": "IFT-1.2.Dywidendy",
+          "guid": "00000000-0007-0002-0028-000000000000"
         },
         {
-          "klucz": "IFT-1.3.Odsetki"
+          "klucz": "IFT-1.3.Odsetki",
+          "guid": "00000000-0007-0002-0031-000000000000"
         },
         {
-          "klucz": "IFT-1.4.Należności licencyjne"
+          "klucz": "IFT-1.4.Należności licencyjne",
+          "guid": "00000000-0007-0002-0034-000000000000"
         },
         {
-          "klucz": "IFT-1.5.Dochód z wyk.wolnych zawodów"
+          "klucz": "IFT-1.5.Dochód z wyk.wolnych zawodów",
+          "guid": "00000000-0007-0002-0029-000000000000"
         },
         {
-          "klucz": "IFT-1.6.Wynagrodzenie dyrektora"
+          "klucz": "IFT-1.6.Wynagrodzenie dyrektora",
+          "guid": "00000000-0007-0002-0093-000000000000"
         },
         {
-          "klucz": "IFT-1.7.Dział.artystyczna lub sportowa"
+          "klucz": "IFT-1.7.Dział.artystyczna lub sportowa",
+          "guid": "00000000-0007-0002-0032-000000000000"
         },
         {
-          "klucz": "IFT-1.8.Dochód z emerytury lub renty"
+          "klucz": "IFT-1.8.Dochód z emerytury lub renty",
+          "guid": "00000000-0007-0002-0096-000000000000"
         },
         {
-          "klucz": "IFT-1.9.Inne dochody"
+          "klucz": "IFT-1.9.Inne dochody",
+          "guid": "00000000-0007-0002-0030-000000000000"
         },
         {
-          "klucz": "Kara pieniężna"
+          "klucz": "Kara pieniężna",
+          "guid": "5c0db3e7-e06c-11d6-ac9e-00c1260746ee"
         },
         {
-          "klucz": "Korekta nadpłaconych składek PPK(etat)"
+          "klucz": "Korekta nadpłaconych składek PPK(etat)",
+          "guid": "00000000-0007-0002-0228-000000000000"
         },
         {
-          "klucz": "Korekta nadpłaconych składek PPK(um.poz)"
+          "klucz": "Korekta nadpłaconych składek PPK(um.poz)",
+          "guid": "00000000-0007-0002-0229-000000000000"
         },
         {
-          "klucz": "Korekta nadpłaconych składek PPK(umowa)"
+          "klucz": "Korekta nadpłaconych składek PPK(umowa)",
+          "guid": "00000000-0007-0002-0230-000000000000"
         },
         {
-          "klucz": "Korekta składek ZUS"
+          "klucz": "Korekta składek ZUS",
+          "guid": "00000000-0007-0002-0102-000000000000"
         },
         {
-          "klucz": "Korekta zaliczki podatku"
+          "klucz": "Korekta zaliczki podatku",
+          "guid": "00000000-0007-0002-0241-000000000000"
         },
         {
-          "klucz": "Kurs"
+          "klucz": "Kurs",
+          "guid": "5c0db3e4-e06c-11d6-ac9e-00c1260746ee"
         },
         {
-          "klucz": "Nagroda pieniężna"
+          "klucz": "Nagroda pieniężna",
+          "guid": "5c0db3e6-e06c-11d6-ac9e-00c1260746ee"
         },
         {
-          "klucz": "Odprawa"
+          "klucz": "Odprawa",
+          "guid": "00000000-0007-0002-0222-000000000000"
         },
         {
-          "klucz": "Odprawa emerytalna"
+          "klucz": "Odprawa emerytalna",
+          "guid": "C955AB11-B500-4D90-933D-0A0FB2EE7BE8"
         },
         {
-          "klucz": "Odsetki świad.rehabilitac. wypadek opod."
+          "klucz": "Odsetki świad.rehabilitac. wypadek opod.",
+          "guid": "00000000-0007-0002-0130-000000000000"
         },
         {
-          "klucz": "Odsetki świad.rehabilitacyjne"
+          "klucz": "Odsetki świad.rehabilitacyjne",
+          "guid": "00000000-0007-0002-0150-000000000000"
         },
         {
-          "klucz": "Odsetki świad.rehabilitacyjne opod."
+          "klucz": "Odsetki świad.rehabilitacyjne opod.",
+          "guid": "00000000-0007-0002-0129-000000000000"
         },
         {
-          "klucz": "Odsetki świad.rehabilitacyjne wypadek"
+          "klucz": "Odsetki świad.rehabilitacyjne wypadek",
+          "guid": "00000000-0007-0002-0151-000000000000"
         },
         {
-          "klucz": "Odsetki wynagr.chorobowe"
+          "klucz": "Odsetki wynagr.chorobowe",
+          "guid": "00000000-0007-0002-0131-000000000000"
         },
         {
-          "klucz": "Odsetki wynagr.chorobowe wypadek"
+          "klucz": "Odsetki wynagr.chorobowe wypadek",
+          "guid": "00000000-0007-0002-0132-000000000000"
         },
         {
-          "klucz": "Odsetki zas.chorobowy"
+          "klucz": "Odsetki zas.chorobowy",
+          "guid": "00000000-0007-0002-0152-000000000000"
         },
         {
-          "klucz": "Odsetki zas.chorobowy opod."
+          "klucz": "Odsetki zas.chorobowy opod.",
+          "guid": "00000000-0007-0002-0133-000000000000"
         },
         {
-          "klucz": "Odsetki zas.chorobowy wypadek opod."
+          "klucz": "Odsetki zas.chorobowy wypadek opod.",
+          "guid": "00000000-0007-0002-0134-000000000000"
         },
         {
-          "klucz": "Odsetki zas.chorobowy wypadek przy pracy"
+          "klucz": "Odsetki zas.chorobowy wypadek przy pracy",
+          "guid": "00000000-0007-0002-0153-000000000000"
         },
         {
-          "klucz": "Odsetki zas.macierzyński"
+          "klucz": "Odsetki zas.macierzyński",
+          "guid": "00000000-0007-0002-0154-000000000000"
         },
         {
-          "klucz": "Odsetki zas.macierzyński opod."
+          "klucz": "Odsetki zas.macierzyński opod.",
+          "guid": "00000000-0007-0002-0135-000000000000"
         },
         {
-          "klucz": "Odsetki zas.opiekuńczy"
+          "klucz": "Odsetki zas.opiekuńczy",
+          "guid": "00000000-0007-0002-0155-000000000000"
         },
         {
-          "klucz": "Odsetki zas.opiekuńczy opod."
+          "klucz": "Odsetki zas.opiekuńczy opod.",
+          "guid": "00000000-0007-0002-0136-000000000000"
         },
         {
-          "klucz": "Odszkodowanie za skrócony okres wyp."
+          "klucz": "Odszkodowanie za skrócony okres wyp.",
+          "guid": "00000000-0007-0002-0223-000000000000"
         },
         {
-          "klucz": "Okres wyczekiwania"
+          "klucz": "Okres wyczekiwania",
+          "guid": "00000000-0007-0002-0089-000000000000"
         },
         {
-          "klucz": "PIT-11.5.Działalność wyk. osobiście"
+          "klucz": "PIT-11.5.Działalność wyk. osobiście",
+          "guid": "00000000-0007-0002-0094-000000000000"
         },
         {
-          "klucz": "PIT-11.5.Kontrakt menedżerski"
+          "klucz": "PIT-11.5.Kontrakt menedżerski",
+          "guid": "00000000-0007-0002-0146-000000000000"
         },
         {
-          "klucz": "PIT-11.5.Kontrakt menedżerski ZUS"
+          "klucz": "PIT-11.5.Kontrakt menedżerski ZUS",
+          "guid": "00000000-0007-0002-0147-000000000000"
         },
         {
-          "klucz": "PIT-11.5.Udział w organach stanowiących"
+          "klucz": "PIT-11.5.Udział w organach stanowiących",
+          "guid": "00000000-0007-0002-0148-000000000000"
         },
         {
-          "klucz": "PIT-11.5.Umowa o dzieło (20% k.u.)"
+          "klucz": "PIT-11.5.Umowa o dzieło (20% k.u.)",
+          "guid": "00000000-0007-0002-0015-000000000000"
         },
         {
-          "klucz": "PIT-11.6.Umowa zlecenia (20% k.u.)"
+          "klucz": "PIT-11.6.Umowa zlecenia (20% k.u.)",
+          "guid": "00000000-0007-0002-0017-000000000000"
         },
         {
-          "klucz": "PIT-11.9.Prawa autorskie i inne prawa"
+          "klucz": "PIT-11.9.Prawa autorskie i inne prawa",
+          "guid": "00000000-0007-0002-0013-000000000000"
         },
         {
-          "klucz": "PIT-4 Kwota zal.do pobrania"
+          "klucz": "PIT-4 Kwota zal.do pobrania",
+          "guid": "00000000-0007-0002-0076-000000000000"
         },
         {
-          "klucz": "PIT-4 Kwota zal.dodat.pobór"
+          "klucz": "PIT-4 Kwota zal.dodat.pobór",
+          "guid": "00000000-0007-0002-0077-000000000000"
         },
         {
-          "klucz": "PIT-4 Kwota zal.pobór ogranicz"
+          "klucz": "PIT-4 Kwota zal.pobór ogranicz",
+          "guid": "00000000-0007-0002-0075-000000000000"
         },
         {
-          "klucz": "PIT-4 Zaliczenie nadpłaty"
+          "klucz": "PIT-4 Zaliczenie nadpłaty",
+          "guid": "00000000-0007-0002-0078-000000000000"
         },
         {
-          "klucz": "PIT-4 Zwrot nadpłaty"
+          "klucz": "PIT-4 Zwrot nadpłaty",
+          "guid": "00000000-0007-0002-0079-000000000000"
         },
         {
-          "klucz": "PIT-8A.02.Wygrane w konkursach, grach"
+          "klucz": "PIT-8A.02.Wygrane w konkursach, grach",
+          "guid": "00000000-0007-0002-0049-000000000000"
         },
         {
-          "klucz": "PIT-8A.03.Świadczenia pieniężne,zapomogi"
+          "klucz": "PIT-8A.03.Świadczenia pieniężne,zapomogi",
+          "guid": "00000000-0007-0002-0048-000000000000"
         },
         {
-          "klucz": "PIT-8A.04.Świadcz. dla funkcjonariuszy"
+          "klucz": "PIT-8A.04.Świadcz. dla funkcjonariuszy",
+          "guid": "00000000-0007-0002-0095-000000000000"
         },
         {
-          "klucz": "PIT-8A.08.Odszkodowania za skr.wypowiedz"
+          "klucz": "PIT-8A.08.Odszkodowania za skr.wypowiedz",
+          "guid": "00000000-0007-0002-0047-000000000000"
         },
         {
-          "klucz": "PIT-8A.12.Odsetki od pożyczek"
+          "klucz": "PIT-8A.12.Odsetki od pożyczek",
+          "guid": "00000000-0007-0002-0209-000000000000"
         },
         {
-          "klucz": "PIT-8A.13.Odsetki i dyskonto od papierów"
+          "klucz": "PIT-8A.13.Odsetki i dyskonto od papierów",
+          "guid": "00000000-0007-0002-0208-000000000000"
         },
         {
-          "klucz": "PIT-8A.14.Odsetki od środków pieniężnych"
+          "klucz": "PIT-8A.14.Odsetki od środków pieniężnych",
+          "guid": "00000000-0007-0002-0046-000000000000"
         },
         {
-          "klucz": "PIT-8A.15.Dywidendy, inne przychody"
+          "klucz": "PIT-8A.15.Dywidendy, inne przychody",
+          "guid": "00000000-0007-0002-0039-000000000000"
         },
         {
-          "klucz": "PIT-8A.16.Dochód z tyt.udziału w fundusz"
+          "klucz": "PIT-8A.16.Dochód z tyt.udziału w fundusz",
+          "guid": "00000000-0007-0002-0038-000000000000"
         },
         {
-          "klucz": "PIT-8A.18.Wypłaty po śmierci członka OFE"
+          "klucz": "PIT-8A.18.Wypłaty po śmierci członka OFE",
+          "guid": "00000000-0007-0002-0042-000000000000"
         },
         {
-          "klucz": "PIT-8A.19.Dochody członka PFE, akcje"
+          "klucz": "PIT-8A.19.Dochody członka PFE, akcje",
+          "guid": "00000000-0007-0002-0036-000000000000"
         },
         {
-          "klucz": "PIT-8A.20.Przychody z tyt.zbycia prawa"
+          "klucz": "PIT-8A.20.Przychody z tyt.zbycia prawa",
+          "guid": "00000000-0007-0002-0037-000000000000"
         },
         {
-          "klucz": "PIT-8A.26.Inne należności"
+          "klucz": "PIT-8A.26.Inne należności",
+          "guid": "00000000-0007-0002-0040-000000000000"
         },
         {
-          "klucz": "PIT-R.c.Czynności ...(zwolnione 'c')"
+          "klucz": "PIT-R.c.Czynności ...(zwolnione 'c')",
+          "guid": "00000000-0007-0002-0119-000000000000"
         },
         {
-          "klucz": "PIT-R.d.Czynności ...(zwolnione 'c')"
+          "klucz": "PIT-R.d.Czynności ...(zwolnione 'c')",
+          "guid": "00000000-0007-0002-0121-000000000000"
         },
         {
-          "klucz": "PIT-R.e.Czynności ...(opodatkowane)"
+          "klucz": "PIT-R.e.Czynności ...(opodatkowane)",
+          "guid": "00000000-0007-0002-0008-000000000000"
         },
         {
-          "klucz": "Potrącenie OPP"
+          "klucz": "Potrącenie OPP",
+          "guid": "00000000-0007-0002-0184-000000000000"
         },
         {
-          "klucz": "Pożyczka KZP"
+          "klucz": "Pożyczka KZP",
+          "guid": "d4596192-f744-4bdc-88bc-5d2b96b55711"
         },
         {
-          "klucz": "Pożyczka ZFM"
+          "klucz": "Pożyczka ZFM",
+          "guid": "49c56125-e7f5-4b5a-b858-8701e7d304f6"
         },
         {
-          "klucz": "Premia"
+          "klucz": "Premia",
+          "guid": "c9c3dc52-be71-4b8f-b89b-728d83cd4a9a"
         },
         {
-          "klucz": "Premia procentowa"
+          "klucz": "Premia procentowa",
+          "guid": "35c29464-e2c4-4182-8944-1ddf87dff9ab"
         },
         {
-          "klucz": "Przychód od skł. pracod. PPK (etat, W)"
+          "klucz": "Przychód od skł. pracod. PPK (etat, W)",
+          "guid": "00000000-0007-0002-0216-000000000000"
         },
         {
-          "klucz": "Przychód od skł. pracod. PPK (RSP, W)"
+          "klucz": "Przychód od skł. pracod. PPK (RSP, W)",
+          "guid": "00000000-0007-0002-0232-000000000000"
         },
         {
-          "klucz": "Przychód od skł. pracod. PPK (um.poz, W)"
+          "klucz": "Przychód od skł. pracod. PPK (um.poz, W)",
+          "guid": "00000000-0007-0002-0218-000000000000"
         },
         {
-          "klucz": "Przychód od skł. pracod. PPK (umowa, W)"
+          "klucz": "Przychód od skł. pracod. PPK (umowa, W)",
+          "guid": "00000000-0007-0002-0217-000000000000"
         },
         {
-          "klucz": "Przychód od skł. pracodawcy PPK (RSP)"
+          "klucz": "Przychód od skł. pracodawcy PPK (RSP)",
+          "guid": "00000000-0007-0002-0231-000000000000"
         },
         {
-          "klucz": "Rozliczenie depozytu komorniczego"
+          "klucz": "Rozliczenie depozytu komorniczego",
+          "guid": "00000000-0007-0002-0175-000000000000"
         },
         {
-          "klucz": "Rozliczenie odchyłek"
+          "klucz": "Rozliczenie odchyłek",
+          "guid": "00000000-0007-0002-0149-000000000000"
         },
         {
-          "klucz": "Rozliczenie przerwy na karmienie"
+          "klucz": "Rozliczenie przerwy na karmienie",
+          "guid": "00000000-0007-0002-0178-000000000000"
         },
         {
-          "klucz": "Ryczałt za paliwo do 900 cm"
+          "klucz": "Ryczałt za paliwo do 900 cm",
+          "guid": "00000000-0007-0002-0172-000000000000"
         },
         {
-          "klucz": "Ryczałt za paliwo powyżej 900 cm"
+          "klucz": "Ryczałt za paliwo powyżej 900 cm",
+          "guid": "00000000-0007-0002-0173-000000000000"
         },
         {
-          "klucz": "Ryczałt za pracę zdalną"
+          "klucz": "Ryczałt za pracę zdalną",
+          "guid": "00000000-0007-0002-0280-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.do 1600/dni"
+          "klucz": "Ryczałt, użyt.sam.służb.do 1600/dni",
+          "guid": "00000000-0007-0002-0168-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.do 1600/miesiąc"
+          "klucz": "Ryczałt, użyt.sam.służb.do 1600/miesiąc",
+          "guid": "00000000-0007-0002-0170-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.do 60kW/dni"
+          "klucz": "Ryczałt, użyt.sam.służb.do 60kW/dni",
+          "guid": "00000000-0007-0002-0237-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.do 60kW/miesiąc"
+          "klucz": "Ryczałt, użyt.sam.służb.do 60kW/miesiąc",
+          "guid": "00000000-0007-0002-0239-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.pow 60kW/dni"
+          "klucz": "Ryczałt, użyt.sam.służb.pow 60kW/dni",
+          "guid": "00000000-0007-0002-0240-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.pow 60kW/miesiąc"
+          "klucz": "Ryczałt, użyt.sam.służb.pow 60kW/miesiąc",
+          "guid": "00000000-0007-0002-0238-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.pow.1600/dni"
+          "klucz": "Ryczałt, użyt.sam.służb.pow.1600/dni",
+          "guid": "00000000-0007-0002-0171-000000000000"
         },
         {
-          "klucz": "Ryczałt, użyt.sam.służb.pow.1600/miesiąc"
+          "klucz": "Ryczałt, użyt.sam.służb.pow.1600/miesiąc",
+          "guid": "00000000-0007-0002-0169-000000000000"
         },
         {
-          "klucz": "s PIT-11.6.Kontrakt menedżerski"
+          "klucz": "s PIT-11.6.Kontrakt menedżerski",
+          "guid": "00000000-0007-0002-0012-000000000000"
         },
         {
-          "klucz": "s PIT-11.6.Kontrakt menedżerski ZUS"
+          "klucz": "s PIT-11.6.Kontrakt menedżerski ZUS",
+          "guid": "00000000-0007-0002-0117-000000000000"
         },
         {
-          "klucz": "s PIT-11.6.Udział w org. stanowiących"
+          "klucz": "s PIT-11.6.Udział w org. stanowiących",
+          "guid": "00000000-0007-0002-0014-000000000000"
         },
         {
-          "klucz": "s PIT-11.6.Umowa o dzieło (50% k.u.)"
+          "klucz": "s PIT-11.6.Umowa o dzieło (50% k.u.)",
+          "guid": "00000000-0007-0002-0016-000000000000"
         },
         {
-          "klucz": "s PIT-8A. Kwoty stanowiące obrót kapitał"
+          "klucz": "s PIT-8A. Kwoty stanowiące obrót kapitał",
+          "guid": "00000000-0007-0002-0041-000000000000"
         },
         {
-          "klucz": "s PIT-8A. Należności nieprzekraczające"
+          "klucz": "s PIT-8A. Należności nieprzekraczające",
+          "guid": "00000000-0007-0002-0043-000000000000"
         },
         {
-          "klucz": "s PIT-8A. Należności osób zagranicznych"
+          "klucz": "s PIT-8A. Należności osób zagranicznych",
+          "guid": "00000000-0007-0002-0044-000000000000"
         },
         {
-          "klucz": "s PIT-8A.07.Odsetki od pożyczek"
+          "klucz": "s PIT-8A.07.Odsetki od pożyczek",
+          "guid": "00000000-0007-0002-0045-000000000000"
         },
         {
-          "klucz": "s PIT-8B. Czynności biegłych"
+          "klucz": "s PIT-8B. Czynności biegłych",
+          "guid": "00000000-0007-0002-0009-000000000000"
         },
         {
-          "klucz": "s PIT-8B. Działalność artystyczna"
+          "klucz": "s PIT-8B. Działalność artystyczna",
+          "guid": "00000000-0007-0002-0010-000000000000"
         },
         {
-          "klucz": "s PIT-8B.11.Inne źródła"
+          "klucz": "s PIT-8B.11.Inne źródła",
+          "guid": "00000000-0007-0002-0011-000000000000"
         },
         {
-          "klucz": "Składka KZP"
+          "klucz": "Składka KZP",
+          "guid": "eb3655cd-b326-4433-adec-79b51f53c0df"
         },
         {
-          "klucz": "Składka PZU"
+          "klucz": "Składka PZU",
+          "guid": "2b04aaba-22ec-4613-8fbc-a80e544c7245"
         },
         {
-          "klucz": "Składka ZFM"
+          "klucz": "Składka ZFM",
+          "guid": "f767e03f-ff03-4d34-b9ca-57bba939bdb0"
         },
         {
-          "klucz": "Spłata poż. KZP wkładem"
+          "klucz": "Spłata poż. KZP wkładem",
+          "guid": "46aeace8-bbca-47ab-97ce-45d5b6c95695"
         },
         {
-          "klucz": "Spłata pożyczki KZP"
+          "klucz": "Spłata pożyczki KZP",
+          "guid": "cea004ac-d64b-4531-a41b-26317aeace62"
         },
         {
-          "klucz": "Spłata pożyczki KZP/Kasa"
+          "klucz": "Spłata pożyczki KZP/Kasa",
+          "guid": "60b08335-567e-4494-a76c-a55966069c90"
         },
         {
-          "klucz": "Spłata pożyczki ZFM"
+          "klucz": "Spłata pożyczki ZFM",
+          "guid": "e90e6b4c-a5f6-4077-8f3a-de35d493a98d"
         },
         {
-          "klucz": "Spłata pożyczki ZFM/Kasa"
+          "klucz": "Spłata pożyczki ZFM/Kasa",
+          "guid": "e5082cfa-7d54-4f86-86aa-5b6f94eef847"
         },
         {
-          "klucz": "Spłata zaliczki nieopodat."
+          "klucz": "Spłata zaliczki nieopodat.",
+          "guid": "00000000-0007-0002-0084-000000000000"
         },
         {
-          "klucz": "Spłata zaliczki opodat."
+          "klucz": "Spłata zaliczki opodat.",
+          "guid": "00000000-0007-0002-0085-000000000000"
         },
         {
-          "klucz": "Świad.rehab. wypadek /zlec.opod."
+          "klucz": "Świad.rehab. wypadek /zlec.opod.",
+          "guid": "00000000-0007-0002-0104-000000000000"
         },
         {
-          "klucz": "Świad.rehabilitacyjne"
+          "klucz": "Świad.rehabilitacyjne",
+          "guid": "00000000-0007-0002-0056-000000000000"
         },
         {
-          "klucz": "Świad.rehabilitacyjne /zlec."
+          "klucz": "Świad.rehabilitacyjne /zlec.",
+          "guid": "00000000-0007-0002-0142-000000000000"
         },
         {
-          "klucz": "Świad.rehabilitacyjne /zlec.opodatkowany"
+          "klucz": "Świad.rehabilitacyjne /zlec.opodatkowany",
+          "guid": "00000000-0007-0002-0103-000000000000"
         },
         {
-          "klucz": "Świad.rehabilitacyjne RSP"
+          "klucz": "Świad.rehabilitacyjne RSP",
+          "guid": "00000000-0007-0002-0200-000000000000"
         },
         {
-          "klucz": "Świad.rehabilitacyjne wypadek"
+          "klucz": "Świad.rehabilitacyjne wypadek",
+          "guid": "00000000-0007-0002-0057-000000000000"
         },
         {
-          "klucz": "Świad.rehabilitacyjne wypadek /zlec."
+          "klucz": "Świad.rehabilitacyjne wypadek /zlec.",
+          "guid": "00000000-0007-0002-0143-000000000000"
         },
         {
-          "klucz": "Świad.rehabilitacyjne wypadek RSP"
+          "klucz": "Świad.rehabilitacyjne wypadek RSP",
+          "guid": "00000000-0007-0002-0201-000000000000"
         },
         {
-          "klucz": "Świadczenie socjalne"
+          "klucz": "Świadczenie socjalne",
+          "guid": "5c0db3e5-e06c-11d6-ac9e-00c1260746ee"
         },
         {
-          "klucz": "Świadczenie socjalne (z limitem,dodatek)"
+          "klucz": "Świadczenie socjalne (z limitem,dodatek)",
+          "guid": "00000000-0007-0002-0235-000000000000"
         },
         {
-          "klucz": "Świadczenie socjalne (z limitem)"
+          "klucz": "Świadczenie socjalne (z limitem)",
+          "guid": "00000000-0007-0002-0236-000000000000"
         },
         {
-          "klucz": "Umorzenie pożyczki"
+          "klucz": "Umorzenie pożyczki",
+          "guid": "00000000-0007-0002-0086-000000000000"
         },
         {
-          "klucz": "Umorzenie pożyczki KZP"
+          "klucz": "Umorzenie pożyczki KZP",
+          "guid": "5ab8bdd1-8d49-432d-8865-347226efb2c5"
         },
         {
-          "klucz": "Umorzenie pożyczki ZFM"
+          "klucz": "Umorzenie pożyczki ZFM",
+          "guid": "21d347b9-2fe2-4792-8dbe-cb1d650d50b5"
         },
         {
-          "klucz": "Umorzenie raty KZP"
+          "klucz": "Umorzenie raty KZP",
+          "guid": "92dc378c-2c48-498c-9e57-71f63db91ed6"
         },
         {
-          "klucz": "Umorzenie raty pożyczki"
+          "klucz": "Umorzenie raty pożyczki",
+          "guid": "00000000-0007-0002-0080-000000000000"
         },
         {
-          "klucz": "Umorzenie raty ZFM"
+          "klucz": "Umorzenie raty ZFM",
+          "guid": "033269f0-4b6b-4f8e-baba-afa254fc8e08"
         },
         {
-          "klucz": "Urlop wychowawczy"
+          "klucz": "Urlop wychowawczy",
+          "guid": "00000000-0007-0002-0161-000000000000"
         },
         {
-          "klucz": "Urlop wychowawczy (zbieg)"
+          "klucz": "Urlop wychowawczy (zbieg)",
+          "guid": "00000000-0007-0002-0163-000000000000"
         },
         {
-          "klucz": "Wpisowe KZP"
+          "klucz": "Wpisowe KZP",
+          "guid": "ef8b6f5c-a4e0-4785-949b-cf18fe5c89a3"
         },
         {
-          "klucz": "Wpisowe KZP/kasa"
+          "klucz": "Wpisowe KZP/kasa",
+          "guid": "6cebb3ba-ba82-4880-a691-809f7e771656"
         },
         {
-          "klucz": "Wycofanie wkładu KZP"
+          "klucz": "Wycofanie wkładu KZP",
+          "guid": "c9d33d59-bdde-41eb-9659-6f242c964cf1"
         },
         {
-          "klucz": "Wycofanie wkładu KZP/kasa"
+          "klucz": "Wycofanie wkładu KZP/kasa",
+          "guid": "a3d08506-b883-4cd6-8df8-fe676bf73cfc"
         },
         {
-          "klucz": "Wycofanie wkładu ZFM"
+          "klucz": "Wycofanie wkładu ZFM",
+          "guid": "b8961cc0-cf82-45fd-a42a-8a9de6f4b513"
         },
         {
-          "klucz": "Wynagr.badania lekarskie"
+          "klucz": "Wynagr.badania lekarskie",
+          "guid": "00000000-0007-0002-0050-000000000000"
         },
         {
-          "klucz": "Wynagr.chorobowe"
+          "klucz": "Wynagr.chorobowe",
+          "guid": "00000000-0007-0002-0061-000000000000"
         },
         {
-          "klucz": "Wynagr.chorobowe FGŚP"
+          "klucz": "Wynagr.chorobowe FGŚP",
+          "guid": "00000000-0007-0002-0063-000000000000"
         },
         {
-          "klucz": "Wynagr.chorobowe wypadek"
+          "klucz": "Wynagr.chorobowe wypadek",
+          "guid": "00000000-0007-0002-0059-000000000000"
         },
         {
-          "klucz": "Wynagr.chorobowe wypadek FGŚP"
+          "klucz": "Wynagr.chorobowe wypadek FGŚP",
+          "guid": "00000000-0007-0002-0062-000000000000"
         },
         {
-          "klucz": "Wynagr.chorobowe zerowe"
+          "klucz": "Wynagr.chorobowe zerowe",
+          "guid": "00000000-0007-0002-0087-000000000000"
         },
         {
-          "klucz": "Wynagr.chorobowe zerowe (alkohol)"
+          "klucz": "Wynagr.chorobowe zerowe (alkohol)",
+          "guid": "00000000-0007-0002-0167-000000000000"
         },
         {
-          "klucz": "Wynagr.delegacja"
+          "klucz": "Wynagr.delegacja",
+          "guid": "00000000-0007-0002-0052-000000000000"
         },
         {
-          "klucz": "Wynagr.nieobecność płatna"
+          "klucz": "Wynagr.nieobecność płatna",
+          "guid": "00000000-0007-0002-0053-000000000000"
         },
         {
-          "klucz": "Wynagr.turnus rehabilitacyjny"
+          "klucz": "Wynagr.turnus rehabilitacyjny",
+          "guid": "00000000-0007-0002-0287-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop doktorancki"
+          "klucz": "Wynagr.urlop doktorancki",
+          "guid": "00000000-0007-0002-0244-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop kombatancki"
+          "klucz": "Wynagr.urlop kombatancki",
+          "guid": "00000000-0007-0002-0243-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop na poszukiwanie pracy"
+          "klucz": "Wynagr.urlop na poszukiwanie pracy",
+          "guid": "00000000-0007-0002-0157-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop okolicznościowy"
+          "klucz": "Wynagr.urlop okolicznościowy",
+          "guid": "00000000-0007-0002-0068-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop opieka"
+          "klucz": "Wynagr.urlop opieka",
+          "guid": "00000000-0007-0002-0069-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop radcowski"
+          "klucz": "Wynagr.urlop radcowski",
+          "guid": "00000000-0007-0002-0260-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop siła wyższa"
+          "klucz": "Wynagr.urlop siła wyższa",
+          "guid": "00000000-0007-0002-0261-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop szkoleniowy"
+          "klucz": "Wynagr.urlop szkoleniowy",
+          "guid": "00000000-0007-0002-0051-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop weterana"
+          "klucz": "Wynagr.urlop weterana",
+          "guid": "00000000-0007-0002-0245-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop wypoczynkowy"
+          "klucz": "Wynagr.urlop wypoczynkowy",
+          "guid": "00000000-0007-0002-0067-000000000000"
         },
         {
-          "klucz": "Wynagr.urlop wypoczynkowy dodatkowy"
+          "klucz": "Wynagr.urlop wypoczynkowy dodatkowy",
+          "guid": "00000000-0007-0002-0090-000000000000"
         },
         {
-          "klucz": "Wynagr.za oddanie krwi lub osocza"
+          "klucz": "Wynagr.za oddanie krwi lub osocza",
+          "guid": "00000000-0007-0002-0234-000000000000"
         },
         {
-          "klucz": "Wynagr.za zwol.ze świadczenia pracy"
+          "klucz": "Wynagr.za zwol.ze świadczenia pracy",
+          "guid": "00000000-0007-0002-0177-000000000000"
         },
         {
-          "klucz": "Wynagrodzenie postojowe (ekonomiczne)"
+          "klucz": "Wynagrodzenie postojowe (ekonomiczne)",
+          "guid": "00000000-0007-0002-0220-000000000000"
         },
         {
-          "klucz": "Wynagrodzenie postojowe (KP)"
+          "klucz": "Wynagrodzenie postojowe (KP)",
+          "guid": "00000000-0007-0002-0221-000000000000"
         },
         {
-          "klucz": "Wynagrodzenie zasadnicze godz."
+          "klucz": "Wynagrodzenie zasadnicze godz.",
+          "guid": "00000000-0007-0002-0001-000000000000"
         },
         {
-          "klucz": "Wynagrodzenie zasadnicze mies."
+          "klucz": "Wynagrodzenie zasadnicze mies.",
+          "guid": "00000000-0007-0002-0002-000000000000"
         },
         {
-          "klucz": "Wyrównanie do minimalnej płacy"
+          "klucz": "Wyrównanie do minimalnej płacy",
+          "guid": "00000000-0007-0002-0005-000000000000"
         },
         {
-          "klucz": "Wyrównanie do minimalnej płacy prac.tym."
+          "klucz": "Wyrównanie do minimalnej płacy prac.tym.",
+          "guid": "00000000-0007-0002-0185-000000000000"
         },
         {
-          "klucz": "Wyrównanie do minimalnej płacy RSP"
+          "klucz": "Wyrównanie do minimalnej płacy RSP",
+          "guid": "00000000-0007-0002-0207-000000000000"
         },
         {
-          "klucz": "Wyrównanie kontraktu menadżerskiego"
+          "klucz": "Wyrównanie kontraktu menadżerskiego",
+          "guid": "00000000-0007-0002-0182-000000000000"
         },
         {
-          "klucz": "Wyrównanie kontraktu menadżerskiego ZUS"
+          "klucz": "Wyrównanie kontraktu menadżerskiego ZUS",
+          "guid": "00000000-0007-0002-0183-000000000000"
         },
         {
-          "klucz": "Wyrównanie umowy zlecenia (20% k.u.)"
+          "klucz": "Wyrównanie umowy zlecenia (20% k.u.)",
+          "guid": "00000000-0007-0002-0179-000000000000"
         },
         {
-          "klucz": "Wyrównanie zas. macierzyńskiego"
+          "klucz": "Wyrównanie zas. macierzyńskiego",
+          "guid": "00000000-0007-0002-0176-000000000000"
         },
         {
-          "klucz": "Zajęcia komornicze"
+          "klucz": "Zajęcia komornicze",
+          "guid": "00000000-0007-0002-0159-000000000000"
         },
         {
-          "klucz": "Zajęcia komornicze (stare)"
+          "klucz": "Zajęcia komornicze (stare)",
+          "guid": "00000000-0007-0002-0128-000000000000"
         },
         {
-          "klucz": "Zaliczka nieopodat."
+          "klucz": "Zaliczka nieopodat.",
+          "guid": "00000000-0007-0002-0083-000000000000"
         },
         {
-          "klucz": "Zaliczka opodat."
+          "klucz": "Zaliczka opodat.",
+          "guid": "00000000-0007-0002-0082-000000000000"
         },
         {
-          "klucz": "Zarejestrowanie nadpłaty ZFM/kasa"
+          "klucz": "Zarejestrowanie nadpłaty ZFM/kasa",
+          "guid": "{39F82AB2-8C7D-4707-A97C-93DF7571EA16}"
         },
         {
-          "klucz": "Zas. chorobowy po 50-tce (szpital)"
+          "klucz": "Zas. chorobowy po 50-tce (szpital)",
+          "guid": "00000000-0007-0002-0160-000000000000"
         },
         {
-          "klucz": "Zas.chorob. wypadek w drodze/zlec.opod."
+          "klucz": "Zas.chorob. wypadek w drodze/zlec.opod.",
+          "guid": "00000000-0007-0002-0107-000000000000"
         },
         {
-          "klucz": "Zas.chorob.wypadek przy pracy/zlec.opod."
+          "klucz": "Zas.chorob.wypadek przy pracy/zlec.opod.",
+          "guid": "00000000-0007-0002-0106-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy"
+          "klucz": "Zas.chorobowy",
+          "guid": "00000000-0007-0002-0055-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy /zlec."
+          "klucz": "Zas.chorobowy /zlec.",
+          "guid": "00000000-0007-0002-0137-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy /zlec.opodatkowany"
+          "klucz": "Zas.chorobowy /zlec.opodatkowany",
+          "guid": "00000000-0007-0002-0105-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy RSP"
+          "klucz": "Zas.chorobowy RSP",
+          "guid": "00000000-0007-0002-0202-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy wypadek"
+          "klucz": "Zas.chorobowy wypadek",
+          "guid": "00000000-0007-0002-0058-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy wypadek przy pracy"
+          "klucz": "Zas.chorobowy wypadek przy pracy",
+          "guid": "00000000-0007-0002-0125-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy wypadek przy pracy /zlec."
+          "klucz": "Zas.chorobowy wypadek przy pracy /zlec.",
+          "guid": "00000000-0007-0002-0138-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy wypadek przy pracy RSP"
+          "klucz": "Zas.chorobowy wypadek przy pracy RSP",
+          "guid": "00000000-0007-0002-0203-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy wypadek w drodze"
+          "klucz": "Zas.chorobowy wypadek w drodze",
+          "guid": "00000000-0007-0002-0126-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy wypadek w drodze /zlec."
+          "klucz": "Zas.chorobowy wypadek w drodze /zlec.",
+          "guid": "00000000-0007-0002-0139-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy wypadek w drodze RSP"
+          "klucz": "Zas.chorobowy wypadek w drodze RSP",
+          "guid": "00000000-0007-0002-0204-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy zerowy"
+          "klucz": "Zas.chorobowy zerowy",
+          "guid": "00000000-0007-0002-0092-000000000000"
         },
         {
-          "klucz": "Zas.chorobowy zerowy (alkohol)"
+          "klucz": "Zas.chorobowy zerowy (alkohol)",
+          "guid": "00000000-0007-0002-0181-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński"
+          "klucz": "Zas.macierzyński",
+          "guid": "00000000-0007-0002-0054-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński (rodz. 9 tyg.)"
+          "klucz": "Zas.macierzyński (rodz. 9 tyg.)",
+          "guid": "00000000-0007-0002-0281-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński (rodz. Za życiem)"
+          "klucz": "Zas.macierzyński (rodz. Za życiem)",
+          "guid": "00000000-0007-0002-0282-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński (uzupełniający)"
+          "klucz": "Zas.macierzyński (uzupełniający)",
+          "guid": "00000000-0007-0002-0194-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński (zbieg, uzupełniający)"
+          "klucz": "Zas.macierzyński (zbieg, uzupełniający)",
+          "guid": "00000000-0007-0002-0197-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński (zbieg,rodz. 9 tyg.)"
+          "klucz": "Zas.macierzyński (zbieg,rodz. 9 tyg.)",
+          "guid": "00000000-0007-0002-0283-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński (zbieg,rodz. Za życiem)"
+          "klucz": "Zas.macierzyński (zbieg,rodz. Za życiem)",
+          "guid": "00000000-0007-0002-0284-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński (zbieg)"
+          "klucz": "Zas.macierzyński (zbieg)",
+          "guid": "00000000-0007-0002-0164-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński /zlec."
+          "klucz": "Zas.macierzyński /zlec.",
+          "guid": "00000000-0007-0002-0140-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński /zlec. (uzupełniający)"
+          "klucz": "Zas.macierzyński /zlec. (uzupełniający)",
+          "guid": "00000000-0007-0002-0196-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński /zlec.(rodz. 9 tyg.)"
+          "klucz": "Zas.macierzyński /zlec.(rodz. 9 tyg.)",
+          "guid": "00000000-0007-0002-0286-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński /zlec.(rodz. Za życiem)"
+          "klucz": "Zas.macierzyński /zlec.(rodz. Za życiem)",
+          "guid": "00000000-0007-0002-0285-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński RSP"
+          "klucz": "Zas.macierzyński RSP",
+          "guid": "00000000-0007-0002-0205-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński RSP (uzupełniający)"
+          "klucz": "Zas.macierzyński RSP (uzupełniający)",
+          "guid": "00000000-0007-0002-0195-000000000000"
         },
         {
-          "klucz": "Zas.macierzyński/zlec.opodatkowany"
+          "klucz": "Zas.macierzyński/zlec.opodatkowany",
+          "guid": "00000000-0007-0002-0108-000000000000"
         },
         {
-          "klucz": "Zas.opiekuńczy"
+          "klucz": "Zas.opiekuńczy",
+          "guid": "00000000-0007-0002-0060-000000000000"
         },
         {
-          "klucz": "Zas.opiekuńczy /zlec."
+          "klucz": "Zas.opiekuńczy /zlec.",
+          "guid": "00000000-0007-0002-0141-000000000000"
         },
         {
-          "klucz": "Zas.opiekuńczy RSP"
+          "klucz": "Zas.opiekuńczy RSP",
+          "guid": "00000000-0007-0002-0206-000000000000"
         },
         {
-          "klucz": "Zas.opiekuńczy/zlec.opodatkowany"
+          "klucz": "Zas.opiekuńczy/zlec.opodatkowany",
+          "guid": "00000000-0007-0002-0109-000000000000"
         },
         {
-          "klucz": "Zas.pielęgnacyjny"
+          "klucz": "Zas.pielęgnacyjny",
+          "guid": "00000000-0007-0002-0018-000000000000"
         },
         {
-          "klucz": "Zas.pogrzebowy"
+          "klucz": "Zas.pogrzebowy",
+          "guid": "00000000-0007-0002-0088-000000000000"
         },
         {
-          "klucz": "Zas.pogrzebowy wypadek"
+          "klucz": "Zas.pogrzebowy wypadek",
+          "guid": "00000000-0007-0002-0091-000000000000"
         },
         {
-          "klucz": "Zas.porodowy"
+          "klucz": "Zas.porodowy",
+          "guid": "00000000-0007-0002-0019-000000000000"
         },
         {
-          "klucz": "Zas.rodzinny"
+          "klucz": "Zas.rodzinny",
+          "guid": "00000000-0007-0002-0081-000000000000"
         },
         {
-          "klucz": "Zas.rodzinny (1,2 dziecko)"
+          "klucz": "Zas.rodzinny (1,2 dziecko)",
+          "guid": "00000000-0007-0002-0020-000000000000"
         },
         {
-          "klucz": "Zas.rodzinny (3 dziecko)"
+          "klucz": "Zas.rodzinny (3 dziecko)",
+          "guid": "00000000-0007-0002-0021-000000000000"
         },
         {
-          "klucz": "Zas.rodzinny (4... dziecko)"
+          "klucz": "Zas.rodzinny (4... dziecko)",
+          "guid": "00000000-0007-0002-0022-000000000000"
         },
         {
-          "klucz": "Zas.rodzinny x2 (1,2 dziecko)"
+          "klucz": "Zas.rodzinny x2 (1,2 dziecko)",
+          "guid": "00000000-0007-0002-0023-000000000000"
         },
         {
-          "klucz": "Zas.rodzinny x2 (3 dziecko)"
+          "klucz": "Zas.rodzinny x2 (3 dziecko)",
+          "guid": "00000000-0007-0002-0024-000000000000"
         },
         {
-          "klucz": "Zas.rodzinny x2 (4... dziecko)"
+          "klucz": "Zas.rodzinny x2 (4... dziecko)",
+          "guid": "00000000-0007-0002-0025-000000000000"
         },
         {
-          "klucz": "Zas.wychowawczy (1,2 dziecko)"
+          "klucz": "Zas.wychowawczy (1,2 dziecko)",
+          "guid": "00000000-0007-0002-0064-000000000000"
         },
         {
-          "klucz": "Zas.wychowawczy (3... dziecko)"
+          "klucz": "Zas.wychowawczy (3... dziecko)",
+          "guid": "00000000-0007-0002-0065-000000000000"
         },
         {
-          "klucz": "Zas.wychowawczy (osoba samotn)"
+          "klucz": "Zas.wychowawczy (osoba samotn)",
+          "guid": "00000000-0007-0002-0066-000000000000"
         },
         {
-          "klucz": "Zwolnienie opieka (ZUS) bez prawa do zas"
+          "klucz": "Zwolnienie opieka (ZUS) bez prawa do zas",
+          "guid": "00000000-0007-0002-0127-000000000000"
         },
         {
-          "klucz": "Zwrot nadpłaty"
+          "klucz": "Zwrot nadpłaty",
+          "guid": "00000000-0007-0002-0174-000000000000"
         },
         {
-          "klucz": "Zwrot nadpłaty ZFM"
+          "klucz": "Zwrot nadpłaty ZFM",
+          "guid": "{70F84B4D-A3CB-4dc5-BFB9-B176D13E5828}"
         },
         {
-          "klucz": "Zwrot nadpłaty ZFM/kasa"
+          "klucz": "Zwrot nadpłaty ZFM/kasa",
+          "guid": "{B1965446-B14A-462d-8077-EA453E1A653D}"
         },
         {
-          "klucz": "Zwrot składki PPK (pracodawca)"
+          "klucz": "Zwrot składki PPK (pracodawca)",
+          "guid": "00000000-0007-0002-0233-000000000000"
         }
       ]
     },
@@ -10101,35 +10521,43 @@
       "wartosciStandardowe": [
         {
           "klucz": "LPBO",
-          "opis": "Lista-bilans otwarcia"
+          "opis": "Lista-bilans otwarcia",
+          "guid": "00000000-0007-0001-0005-000000000000"
         },
         {
           "klucz": "LPD",
-          "opis": "Lista płac-dochód deklarowany"
+          "opis": "Lista płac-dochód deklarowany",
+          "guid": "00000000-0007-0001-0004-000000000000"
         },
         {
           "klucz": "LPE",
-          "opis": "Lista płac-etaty"
+          "opis": "Lista płac-etaty",
+          "guid": "00000000-0007-0001-0001-000000000000"
         },
         {
           "klucz": "LPI",
-          "opis": "Lista płac-inne"
+          "opis": "Lista płac-inne",
+          "guid": "00000000-0007-0001-0003-000000000000"
         },
         {
           "klucz": "LPP",
-          "opis": "Lista płac-pożyczki"
+          "opis": "Lista płac-pożyczki",
+          "guid": "00000000-0007-0001-0006-000000000000"
         },
         {
           "klucz": "LPU",
-          "opis": "Lista płac-umowy"
+          "opis": "Lista płac-umowy",
+          "guid": "00000000-0007-0001-0002-000000000000"
         },
         {
           "klucz": "LPZ",
-          "opis": "Lista płac-zaliczki"
+          "opis": "Lista płac-zaliczki",
+          "guid": "00000000-0007-0001-0007-000000000000"
         },
         {
           "klucz": "RZW",
-          "opis": "Rozliczenia zajęć wynagrodzeń"
+          "opis": "Rozliczenia zajęć wynagrodzeń",
+          "guid": "00000000-0007-0001-0008-000000000000"
         }
       ]
     },
@@ -10141,179 +10569,223 @@
       "wartosciStandardowe": [
         {
           "klucz": "111",
-          "opis": "111 - urlop bezpłatny"
+          "opis": "111 - urlop bezpłatny",
+          "guid": "00000000-0007-0003-0111-000000000000"
         },
         {
           "klucz": "121",
-          "opis": "121 - urlop wychowawczy udzielony na podstawie § 1 rozporządzenia Rady Ministrów z dnia 28 maja 1996 r. w sprawie urlopów i zasiłków wychowawczych (Dz.U. Nr 60, poz. 277) lub art. 186 § 1 Kodeksu pracy"
+          "opis": "121 - urlop wychowawczy udzielony na podstawie § 1 rozporządzenia Rady Ministrów z dnia 28 maja 1996 r. w sprawie urlopów i zasiłków wychowawczych (Dz.U. Nr 60, poz. 277) lub art. 186 § 1 Kodeksu pracy",
+          "guid": "00000000-0007-0003-0121-000000000000"
         },
         {
           "klucz": "122",
-          "opis": "122 - urlop wychowawczy udzielony na podstawie § 2 rozporządzenia Rady Ministrów z dnia 28 maja 1996 r. w sprawie urlopów i zasiłków wychowawczych lub art. 186 § 2 Kodeksu pracy"
+          "opis": "122 - urlop wychowawczy udzielony na podstawie § 2 rozporządzenia Rady Ministrów z dnia 28 maja 1996 r. w sprawie urlopów i zasiłków wychowawczych lub art. 186 § 2 Kodeksu pracy",
+          "guid": "00000000-0007-0003-0122-000000000000"
         },
         {
           "klucz": "151",
-          "opis": "151 - okres nieobecności w pracy usprawiedliwionej bez prawa do wynagrodzenia lub zasiłku"
+          "opis": "151 - okres nieobecności w pracy usprawiedliwionej bez prawa do wynagrodzenia lub zasiłku",
+          "guid": "00000000-0007-0003-0151-000000000000"
         },
         {
           "klucz": "152",
-          "opis": "152 - okres nieobecności w pracy nieusprawiedliwionej"
+          "opis": "152 - okres nieobecności w pracy nieusprawiedliwionej",
+          "guid": "00000000-0007-0003-0152-000000000000"
         },
         {
           "klucz": "155",
-          "opis": "155 - okres niezdolności do pracy bez prawa do wynagrodzenia z przyczyn określonych w art. 92 § 1 Kodeksu pracy, w okresie od 1 stycznia do 31 grudnia 2003r."
+          "opis": "155 - okres niezdolności do pracy bez prawa do wynagrodzenia z przyczyn określonych w art. 92 § 1 Kodeksu pracy, w okresie od 1 stycznia do 31 grudnia 2003r.",
+          "guid": "00000000-0007-0003-0155-000000000000"
         },
         {
           "klucz": "211",
-          "opis": "211 - zasiłek porodowy"
+          "opis": "211 - zasiłek porodowy",
+          "guid": "00000000-0007-0003-0211-000000000000"
         },
         {
           "klucz": "212",
-          "opis": "212 - zasiłek wyrównawczy z ubezpieczenia chorobowego"
+          "opis": "212 - zasiłek wyrównawczy z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0212-000000000000"
         },
         {
           "klucz": "214",
-          "opis": "214 - zasiłek wyrównawczy z ubezpieczenia wypadkowego"
+          "opis": "214 - zasiłek wyrównawczy z ubezpieczenia wypadkowego",
+          "guid": "00000000-0007-0003-0214-000000000000"
         },
         {
           "klucz": "215",
-          "opis": "215 - wyrównanie zasiłku wyrównawczego z ubezpieczenia chorobowego"
+          "opis": "215 - wyrównanie zasiłku wyrównawczego z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0215-000000000000"
         },
         {
           "klucz": "216",
-          "opis": "216 - wyrównanie zasiłku wyrównawczego z ubezpieczenia wypadkowego"
+          "opis": "216 - wyrównanie zasiłku wyrównawczego z ubezpieczenia wypadkowego",
+          "guid": "00000000-0007-0003-0216-000000000000"
         },
         {
           "klucz": "311",
-          "opis": "311 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu macierzyńskiego lub urlopu na warunkach urlopu macierzyńskiego"
+          "opis": "311 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu macierzyńskiego lub urlopu na warunkach urlopu macierzyńskiego",
+          "guid": "00000000-0007-0003-0311-000000000000"
         },
         {
           "klucz": "312",
-          "opis": "312 - zasiłek opiekuńczy z ubezpieczenia chorobowego"
+          "opis": "312 - zasiłek opiekuńczy z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0312-000000000000"
         },
         {
           "klucz": "313",
-          "opis": "313 - zasiłek chorobowy z ubezpieczenia chorobowego"
+          "opis": "313 - zasiłek chorobowy z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0313-000000000000"
         },
         {
           "klucz": "314",
-          "opis": "314 - zasiłek chorobowy z ubezpieczenia wypadkowego"
+          "opis": "314 - zasiłek chorobowy z ubezpieczenia wypadkowego",
+          "guid": "00000000-0007-0003-0314-000000000000"
         },
         {
           "klucz": "315",
-          "opis": "315 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu macierzyńskiego lub urlopu na warunkach urlopu macierzyńskiego"
+          "opis": "315 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu macierzyńskiego lub urlopu na warunkach urlopu macierzyńskiego",
+          "guid": "00000000-0007-0003-0315-000000000000"
         },
         {
           "klucz": "316",
-          "opis": "316 - wyrównanie zasiłku opiekuńczego z ubezpieczenia chorobowego"
+          "opis": "316 - wyrównanie zasiłku opiekuńczego z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0316-000000000000"
         },
         {
           "klucz": "317",
-          "opis": "317 - wyrównanie zasiłku chorobowego z ubezpieczenia chorobowego"
+          "opis": "317 - wyrównanie zasiłku chorobowego z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0317-000000000000"
         },
         {
           "klucz": "318",
-          "opis": "318 - wyrównanie zasiłku chorobowego z ubezpieczenia wypadkowego"
+          "opis": "318 - wyrównanie zasiłku chorobowego z ubezpieczenia wypadkowego",
+          "guid": "00000000-0007-0003-0318-000000000000"
         },
         {
           "klucz": "319",
-          "opis": "319 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego"
+          "opis": "319 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego",
+          "guid": "00000000-0007-0003-0319-000000000000"
         },
         {
           "klucz": "320",
-          "opis": "320 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego"
+          "opis": "320 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego",
+          "guid": "00000000-0007-0003-0320-000000000000"
         },
         {
           "klucz": "321",
-          "opis": "321 - świadczenie rehabilitacyjne z ubezpieczenia chorobowego"
+          "opis": "321 - świadczenie rehabilitacyjne z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0321-000000000000"
         },
         {
           "klucz": "322",
-          "opis": "322 - świadczenie rehabilitacyjne z ubezpieczenia wypadkowego"
+          "opis": "322 - świadczenie rehabilitacyjne z ubezpieczenia wypadkowego",
+          "guid": "00000000-0007-0003-0322-000000000000"
         },
         {
           "klucz": "323",
-          "opis": "323 - wyrównanie świadczenia rehabilitacyjnego z ubezpieczenia chorobowego"
+          "opis": "323 - wyrównanie świadczenia rehabilitacyjnego z ubezpieczenia chorobowego",
+          "guid": "00000000-0007-0003-0323-000000000000"
         },
         {
           "klucz": "324",
-          "opis": "324 - wyrównanie świadczenia rehabilitacyjnego z ubezpieczenia wypadkowego"
+          "opis": "324 - wyrównanie świadczenia rehabilitacyjnego z ubezpieczenia wypadkowego",
+          "guid": "00000000-0007-0003-0324-000000000000"
         },
         {
           "klucz": "325",
-          "opis": "325 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres dodatkowego urlopu macierzyńskiego lub dodatkowego urlopu na warunkach urlopu macierzyńskiego"
+          "opis": "325 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres dodatkowego urlopu macierzyńskiego lub dodatkowego urlopu na warunkach urlopu macierzyńskiego",
+          "guid": "00000000-0007-0003-0325-000000000000"
         },
         {
           "klucz": "326",
-          "opis": "326 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres dodatkowego urlopu macierzyńskiego lub dodatkowego urlopu na warunkach urlopu macierzyńskiego"
+          "opis": "326 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres dodatkowego urlopu macierzyńskiego lub dodatkowego urlopu na warunkach urlopu macierzyńskiego",
+          "guid": "00000000-0007-0003-0326-000000000000"
         },
         {
           "klucz": "327",
-          "opis": "327 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu ojcowskiego"
+          "opis": "327 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu ojcowskiego",
+          "guid": "00000000-0007-0003-0327-000000000000"
         },
         {
           "klucz": "328",
-          "opis": "328 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu ojcowskiego"
+          "opis": "328 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu ojcowskiego",
+          "guid": "00000000-0007-0003-0328-000000000000"
         },
         {
           "klucz": "329",
-          "opis": "329 - podwyższenie zasiłku macierzyńskiego do kwoty świadczenia rodzicielskiego"
+          "opis": "329 - podwyższenie zasiłku macierzyńskiego do kwoty świadczenia rodzicielskiego",
+          "guid": "00000000-0007-0003-0329-000000000000"
         },
         {
           "klucz": "331",
-          "opis": "331 - wynagrodzenie za czas niezdolności do pracy z powodu choroby, finansowane ze środków pracodawcy"
+          "opis": "331 - wynagrodzenie za czas niezdolności do pracy z powodu choroby, finansowane ze środków pracodawcy",
+          "guid": "00000000-0007-0003-0331-000000000000"
         },
         {
           "klucz": "332",
-          "opis": "332 - wynagrodzenie za czas niezdolności do pracy z powodu choroby, finansowane ze środków FGŚP"
+          "opis": "332 - wynagrodzenie za czas niezdolności do pracy z powodu choroby, finansowane ze środków FGŚP",
+          "guid": "00000000-0007-0003-0332-000000000000"
         },
         {
           "klucz": "333",
-          "opis": "333 - wynagrodzenie za czas niezdolności do pracy w związku z wypadkiem przy pracy lub chorobą zawodową za okres do dnia 31 grudnia 2002 r., finansowane ze środków pracodawcy"
+          "opis": "333 - wynagrodzenie za czas niezdolności do pracy w związku z wypadkiem przy pracy lub chorobą zawodową za okres do dnia 31 grudnia 2002 r., finansowane ze środków pracodawcy",
+          "guid": "00000000-0007-0003-0333-000000000000"
         },
         {
           "klucz": "334",
-          "opis": "334 - wynagrodzenie za czas niezdolności do pracy w związku z wypadkiem przy pracy lub chorobą zawodową za okres do dnia 31 grudnia 2002 r., finansowane ze środków FGŚP"
+          "opis": "334 - wynagrodzenie za czas niezdolności do pracy w związku z wypadkiem przy pracy lub chorobą zawodową za okres do dnia 31 grudnia 2002 r., finansowane ze środków FGŚP",
+          "guid": "00000000-0007-0003-0334-000000000000"
         },
         {
           "klucz": "335",
-          "opis": "335 - wyrównanie wynagrodzenia za czas niezdolności do pracy z powodu choroby, finansowane ze środków pracodawcy"
+          "opis": "335 - wyrównanie wynagrodzenia za czas niezdolności do pracy z powodu choroby, finansowane ze środków pracodawcy",
+          "guid": "00000000-0007-0003-0335-000000000000"
         },
         {
           "klucz": "336",
-          "opis": "336 - wyrównanie wynagrodzenia za czas niezdolności do pracy z powodu choroby, finansowane ze środków FGŚP"
+          "opis": "336 - wyrównanie wynagrodzenia za czas niezdolności do pracy z powodu choroby, finansowane ze środków FGŚP",
+          "guid": "00000000-0007-0003-0336-000000000000"
         },
         {
           "klucz": "337",
-          "opis": "337 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego, art.4ust.3ustawy z dnia 4.11.2016r. o wsparciu kobiet w ciąży i rodzin \"Za życiem\""
+          "opis": "337 - zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego, art.4ust.3ustawy z dnia 4.11.2016r. o wsparciu kobiet w ciąży i rodzin \"Za życiem\"",
+          "guid": "00000000-0007-0003-0337-000000000000"
         },
         {
           "klucz": "338",
-          "opis": "338 – zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego do 9 tygodni, art. 1821a § 4 albo art. 183 § 5 ustawy z dnia 26 czerwca 1974 r. – Kodeks pracy"
+          "opis": "338 – zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego do 9 tygodni, art. 1821a § 4 albo art. 183 § 5 ustawy z dnia 26 czerwca 1974 r. – Kodeks pracy",
+          "guid": "00000000-0007-0003-0338-000000000000"
         },
         {
           "klucz": "350",
-          "opis": "350 – inne świadczenia i przerwy"
+          "opis": "350 – inne świadczenia i przerwy",
+          "guid": "00000000-0007-0003-0350-000000000000"
         },
         {
           "klucz": "131",
-          "opis": "131 – urlop opiekuńczy w rozumieniu art. 1731 ustawy z dnia 26 czerwca 1974 r. – Kodeks pracy"
+          "opis": "131 – urlop opiekuńczy w rozumieniu art. 1731 ustawy z dnia 26 czerwca 1974 r. – Kodeks pracy",
+          "guid": "00000000-0007-0003-0131-000000000000"
         },
         {
           "klucz": "340",
-          "opis": "340 – wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego do 9 tygodni,art. 1821a § 4 albo art. 183 § 5 ustawy z dnia 26.06.1974r. – Kodeks pracy"
+          "opis": "340 – wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego do 9 tygodni,art. 1821a § 4 albo art. 183 § 5 ustawy z dnia 26.06.1974r. – Kodeks pracy",
+          "guid": "00000000-0007-0003-0340-000000000000"
         },
         {
           "klucz": "339",
-          "opis": "339 – wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego,art. 4 ust. 3 ustawy z dnia 4.11.2016 r. o wsparciu kobiet w ciąży i rodzin \"Za życiem\""
+          "opis": "339 – wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres urlopu rodzicielskiego,art. 4 ust. 3 ustawy z dnia 4.11.2016 r. o wsparciu kobiet w ciąży i rodzin \"Za życiem\"",
+          "guid": "00000000-0007-0003-0339-000000000000"
         },
         {
           "klucz": "342",
-          "opis": "342 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres uzupełniającego urlopu macierzyńskiego"
+          "opis": "342 - wyrównanie zasiłku macierzyńskiego z ubezpieczenia chorobowego za okres ustalony jako okres uzupełniającego urlopu macierzyńskiego",
+          "guid": "00000000-0007-0003-0342-000000000000"
         },
         {
           "klucz": "341",
-          "opis": "341 – zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres uzupełniającego urlopu macierzyńskiego"
+          "opis": "341 – zasiłek macierzyński z ubezpieczenia chorobowego za okres ustalony jako okres uzupełniającego urlopu macierzyńskiego",
+          "guid": "00000000-0007-0003-0341-000000000000"
         }
       ]
     },
@@ -10325,279 +10797,348 @@
       "wartosciStandardowe": [
         {
           "klucz": "PIT-11 1/PIT-4R 1",
-          "opis": "PIT-11 1/PIT-4R 1. Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej ..."
+          "opis": "PIT-11 1/PIT-4R 1. Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej ...",
+          "guid": "00000000-0007-0004-0001-000000000000"
         },
         {
           "klucz": "PIT-11 15 1/PIT-4R 2",
-          "opis": "PIT-11 15/PIT-4R 2. Dniówki obrachunkowe i udziały w dochodzie podzielonym rsp (brak kosztów uzyskania)"
+          "opis": "PIT-11 15/PIT-4R 2. Dniówki obrachunkowe i udziały w dochodzie podzielonym rsp (brak kosztów uzyskania)",
+          "guid": "00000000-0007-0004-0003-000000000000"
         },
         {
           "klucz": "PIT-11 4/PIT-4R 2",
-          "opis": "PIT-11 4/PIT-4R 2. Emerytury – renty zagraniczne (brak kosztów uzyskania)"
+          "opis": "PIT-11 4/PIT-4R 2. Emerytury – renty zagraniczne (brak kosztów uzyskania)",
+          "guid": "00000000-0007-0004-0005-000000000000"
         },
         {
           "klucz": "PIT-11 15 2/PIT-4R 2",
-          "opis": "PIT-11 15/PIT-4R 2. Należności wypłacane za pracę tymczasowo aresztowanym lub skazanym (brak kosztów uzyskania)"
+          "opis": "PIT-11 15/PIT-4R 2. Należności wypłacane za pracę tymczasowo aresztowanym lub skazanym (brak kosztów uzyskania)",
+          "guid": "00000000-0007-0004-0007-000000000000"
         },
         {
           "klucz": "PIT-11 15 3/PIT-4R 2",
-          "opis": "PIT-11 15/PIT-4R 2. Świadczenia wypłacane przez organ zatrudnienia z FP oraz FGŚP (brak kosztów uzyskania)"
+          "opis": "PIT-11 15/PIT-4R 2. Świadczenia wypłacane przez organ zatrudnienia z FP oraz FGŚP (brak kosztów uzyskania)",
+          "guid": "00000000-0007-0004-0008-000000000000"
         },
         {
           "klucz": "PIT-11 5/PIT-4R 3",
-          "opis": "PIT-11 5/PIT-4R 3. Przychody z niektórych rodzajów osobiście wykonywanej działalności, w tym z umów o dzieło, o których mowa w art.13 pkt 2, 4-9 ustawy"
+          "opis": "PIT-11 5/PIT-4R 3. Przychody z niektórych rodzajów osobiście wykonywanej działalności, w tym z umów o dzieło, o których mowa w art.13 pkt 2, 4-9 ustawy",
+          "guid": "00000000-0007-0004-0089-000000000000"
         },
         {
           "klucz": "PIT-11 6/PIT-4R 3",
-          "opis": "PIT-11 6/PIT-4R 3. Należności z tytułu umowy zlecenia, o której mowa w art. 13 pkt 8 ustawy"
+          "opis": "PIT-11 6/PIT-4R 3. Należności z tytułu umowy zlecenia, o której mowa w art. 13 pkt 8 ustawy",
+          "guid": "00000000-0007-0004-0105-000000000000"
         },
         {
           "klucz": "PIT-11/PIT-4R s1",
-          "opis": "s PIT-11/PIT-4R. Udział w organach stanowiących"
+          "opis": "s PIT-11/PIT-4R. Udział w organach stanowiących",
+          "guid": "00000000-0007-0004-0063-000000000000"
         },
         {
           "klucz": "PIT-11/PIT-4R s2",
-          "opis": "s PIT-11/PIT-4R. Kontrakt menedżerski"
+          "opis": "s PIT-11/PIT-4R. Kontrakt menedżerski",
+          "guid": "00000000-0007-0004-0066-000000000000"
         },
         {
           "klucz": "PIT-11 9/PIT-4R 3",
-          "opis": "PIT-11 9/PIT-4R 3. Prawa autorskie i inne prawa"
+          "opis": "PIT-11 9/PIT-4R 3. Prawa autorskie i inne prawa",
+          "guid": "00000000-0007-0004-0067-000000000000"
         },
         {
           "klucz": "PIT-11 15 5/PIT-4R 4",
-          "opis": "PIT-11 15/PIT-4R 4. Należności wynikające z umowy aktywizacyjnej"
+          "opis": "PIT-11 15/PIT-4R 4. Należności wynikające z umowy aktywizacyjnej",
+          "guid": "00000000-0007-0004-0069-000000000000"
         },
         {
           "klucz": "PIT-11 15 6/PIT-4R 4",
-          "opis": "PIT-11 15/PIT-4R 4. Inne źródła"
+          "opis": "PIT-11 15/PIT-4R 4. Inne źródła",
+          "guid": "00000000-0007-0004-0009-000000000000"
         },
         {
           "klucz": "PIT-R c",
-          "opis": "PIT-R c.Czynności związane z pełnieniem obowiązków społecznych lub obywatelskich (przychód zwolniony od podatku na podstawie art.21 ust.1 pkt 16 lit.b ustawy)"
+          "opis": "PIT-R c.Czynności związane z pełnieniem obowiązków społecznych lub obywatelskich (przychód zwolniony od podatku na podstawie art.21 ust.1 pkt 16 lit.b ustawy)",
+          "guid": "00000000-0007-0004-0092-000000000000"
         },
         {
           "klucz": "PIT-R d",
-          "opis": "PIT-R d.Czynności związane z pełnieniem obowiązków społecznych lub obywatelskich (przychód zwolniony od podatku na podstawie art.21 ust.1 pkt 17 ustawy)"
+          "opis": "PIT-R d.Czynności związane z pełnieniem obowiązków społecznych lub obywatelskich (przychód zwolniony od podatku na podstawie art.21 ust.1 pkt 17 ustawy)",
+          "guid": "00000000-0007-0004-0093-000000000000"
         },
         {
           "klucz": "PIT-R e",
-          "opis": "PIT-R e.Czynności związane z pełnieniem obowiązków społecznych lub obywatelskich (opodatkowane)"
+          "opis": "PIT-R e.Czynności związane z pełnieniem obowiązków społecznych lub obywatelskich (opodatkowane)",
+          "guid": "00000000-0007-0004-0061-000000000000"
         },
         {
           "klucz": "PIT-11 95",
-          "opis": "PIT-11 95. Składki na ubezpieczenia społeczne, o których mowa w art.26 ust.1 pkt 2 lit.b ustawy"
+          "opis": "PIT-11 95. Składki na ubezpieczenia społeczne, o których mowa w art.26 ust.1 pkt 2 lit.b ustawy",
+          "guid": "00000000-0007-0004-0037-000000000000"
         },
         {
           "klucz": "PIT-11 78.",
-          "opis": "PIT-11 78. Składki na ubezpieczenie zdrowotne, o których mowa w art.27b ust.1 pkt 2, z zastrzeżeniem art.27b ust.2 ustawy"
+          "opis": "PIT-11 78. Składki na ubezpieczenie zdrowotne, o których mowa w art.27b ust.1 pkt 2, z zastrzeżeniem art.27b ust.2 ustawy",
+          "guid": "00000000-0007-0004-0038-000000000000"
         },
         {
           "klucz": "PIT-11 107",
-          "opis": "PIT-11 107. Przychody otrzymywane z zagranicy, między innymi renty inwalidzkie z tytułu inwalidztwa wojennego"
+          "opis": "PIT-11 107. Przychody otrzymywane z zagranicy, między innymi renty inwalidzkie z tytułu inwalidztwa wojennego",
+          "guid": "00000000-0007-0004-0032-000000000000"
         },
         {
           "klucz": "PIT-11 108",
-          "opis": "PIT-11 108. Przychody pochodzące ze środków bezzwrotnej pomocy zagranicznej"
+          "opis": "PIT-11 108. Przychody pochodzące ze środków bezzwrotnej pomocy zagranicznej",
+          "guid": "00000000-0007-0004-0033-000000000000"
         },
         {
           "klucz": "PIT-4R 6.",
-          "opis": "PIT-4R 6. Zaliczki na podatek, których pobór został ograniczony na podstawie art. 32 ust. 5 ustawy"
+          "opis": "PIT-4R 6. Zaliczki na podatek, których pobór został ograniczony na podstawie art. 32 ust. 5 ustawy",
+          "guid": "00000000-0007-0004-0010-000000000000"
         },
         {
           "klucz": "PIT-4R 7.",
-          "opis": "PIT-4R 7. Zaliczki, ktore przypadały do pobrania w związku z ograniczeniem poboru zaliczek w poprzednich miesiącach na podstawie art.32 ust.5 ustawy"
+          "opis": "PIT-4R 7. Zaliczki, ktore przypadały do pobrania w związku z ograniczeniem poboru zaliczek w poprzednich miesiącach na podstawie art.32 ust.5 ustawy",
+          "guid": "00000000-0007-0004-0011-000000000000"
         },
         {
           "klucz": "PIT-4R 8.",
-          "opis": "PIT-4R 8. Dodatkowo pobrany podatek wynikający z rozliczenia za rok ubiegły"
+          "opis": "PIT-4R 8. Dodatkowo pobrany podatek wynikający z rozliczenia za rok ubiegły",
+          "guid": "00000000-0007-0004-0012-000000000000"
         },
         {
           "klucz": "PIT-4R 9a.",
-          "opis": "PIT-4R 9. Zaliczenie nadpłaty wynikającej z rozliczenia za rok ubiegły"
+          "opis": "PIT-4R 9. Zaliczenie nadpłaty wynikającej z rozliczenia za rok ubiegły",
+          "guid": "00000000-0007-0004-0013-000000000000"
         },
         {
           "klucz": "PIT-4R 9b.",
-          "opis": "PIT-4R 9. Zwrot nadpłaty w gotówce wynikającej z rozliczenia za rok ubiegły"
+          "opis": "PIT-4R 9. Zwrot nadpłaty w gotówce wynikającej z rozliczenia za rok ubiegły",
+          "guid": "00000000-0007-0004-0014-000000000000"
         },
         {
           "klucz": "PIT-11 1e",
-          "opis": "PIT-11 1e. Dochód zwolniony z podatku"
+          "opis": "PIT-11 1e. Dochód zwolniony z podatku",
+          "guid": "00000000-0007-0004-0096-000000000000"
         },
         {
           "klucz": "PIT-11 4e",
-          "opis": "PIT-11 4e. Dochód zwolniony z podatku"
+          "opis": "PIT-11 4e. Dochód zwolniony z podatku",
+          "guid": "00000000-0007-0004-0097-000000000000"
         },
         {
           "klucz": "PIT-11 15e",
-          "opis": "PIT-11 15e. Dochód zwolniony z podatku"
+          "opis": "PIT-11 15e. Dochód zwolniony z podatku",
+          "guid": "00000000-0007-0004-0098-000000000000"
         },
         {
           "klucz": "PIT-11 15 4/PIT-4R 2",
-          "opis": "PIT-11 15/PIT-4R 2. Inne źródła/ Zaliczki o których mowa w art.33-35 ustawy"
+          "opis": "PIT-11 15/PIT-4R 2. Inne źródła/ Zaliczki o których mowa w art.33-35 ustawy",
+          "guid": "00000000-0007-0004-0099-000000000000"
         },
         {
           "klucz": "PIT-11 10/PIT-4R 4",
-          "opis": "PIT-11 10/PIT-4R 8. Należności z tytułu praktyk absolwenckich lub staży uczniowskich"
+          "opis": "PIT-11 10/PIT-4R 8. Należności z tytułu praktyk absolwenckich lub staży uczniowskich",
+          "guid": "00000000-0007-0004-0106-000000000000"
         },
         {
           "klucz": "PIT-11 F 98",
-          "opis": "PIT-11 F 98. Wynagrodzenie z tytułu umowy o pomocy przy zbiorach"
+          "opis": "PIT-11 F 98. Wynagrodzenie z tytułu umowy o pomocy przy zbiorach",
+          "guid": "00000000-0007-0004-0107-000000000000"
         },
         {
           "klucz": "PIT-11 123",
-          "opis": "PIT-11 123. Składki członkowskie na rzecz związków zawodowych pobrane przez płatnika, podlegające odliczeniu od dochodu, o których mowa w art. 26 ust. 1 pkt 2c ustawy"
+          "opis": "PIT-11 123. Składki członkowskie na rzecz związków zawodowych pobrane przez płatnika, podlegające odliczeniu od dochodu, o których mowa w art. 26 ust. 1 pkt 2c ustawy",
+          "guid": "00000000-0007-0004-0108-000000000000"
         },
         {
           "klucz": "PIT-11 2.",
-          "opis": "t PIT-11 2. Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej - do 26 r.ż."
+          "opis": "t PIT-11 2. Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej - do 26 r.ż.",
+          "guid": "00000000-0007-0004-0109-000000000000"
         },
         {
           "klucz": "PIT-11 7",
-          "opis": "t PIT-11 7 Należności z tytułu umowy zlecenia, o której mowa w art. 13 pkt 8 ustawy - do 26 r.ż."
+          "opis": "t PIT-11 7 Należności z tytułu umowy zlecenia, o której mowa w art. 13 pkt 8 ustawy - do 26 r.ż.",
+          "guid": "00000000-0007-0004-0110-000000000000"
         },
         {
           "klucz": "PIT-11 3.",
-          "opis": "t PIT-11 3. Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej - emeryta"
+          "opis": "t PIT-11 3. Wynagrodzenia ze stosunku: pracy, służbowego, spółdzielczego i z pracy nakładczej - emeryta",
+          "guid": "00000000-0007-0004-0111-000000000000"
         },
         {
           "klucz": "PIT-11 8",
-          "opis": "t PIT-11 8 Należności z tytułu umowy zlecenia, o której mowa w art. 13 pkt 8 ustawy - emeryta"
+          "opis": "t PIT-11 8 Należności z tytułu umowy zlecenia, o której mowa w art. 13 pkt 8 ustawy - emeryta",
+          "guid": "00000000-0007-0004-0112-000000000000"
         },
         {
           "klucz": "PIT-11 11.",
-          "opis": "t PIT-11 11. Należności z tytułu praktyk absolwenckich lub staży uczniowskich - do 26 r.ż."
+          "opis": "t PIT-11 11. Należności z tytułu praktyk absolwenckich lub staży uczniowskich - do 26 r.ż.",
+          "guid": "00000000-0007-0004-0113-000000000000"
         },
         {
           "klucz": "PIT-11 12.",
-          "opis": "t PIT-11 12. Zasiłki macierzyńskie"
+          "opis": "t PIT-11 12. Zasiłki macierzyńskie",
+          "guid": "00000000-0007-0004-0114-000000000000"
         },
         {
           "klucz": "PIT-11 13.",
-          "opis": "t PIT-11 13. Zasiłki macierzyńskie - do 26 r.ż."
+          "opis": "t PIT-11 13. Zasiłki macierzyńskie - do 26 r.ż.",
+          "guid": "00000000-0007-0004-0115-000000000000"
         },
         {
           "klucz": "PIT-11 14.",
-          "opis": "t PIT-11 14. Zasiłki macierzyńskie - emeryta"
+          "opis": "t PIT-11 14. Zasiłki macierzyńskie - emeryta",
+          "guid": "00000000-0007-0004-0116-000000000000"
         },
         {
           "klucz": "PIT-8AR 2.",
-          "opis": "PIT-8AR 2.Wygrane w konkursach, grach i zakładach wzajemnych oraz nagrody związane ze sprzedażą premiową (art.30 ust.1 pkt 2 ustawy)."
+          "opis": "PIT-8AR 2.Wygrane w konkursach, grach i zakładach wzajemnych oraz nagrody związane ze sprzedażą premiową (art.30 ust.1 pkt 2 ustawy).",
+          "guid": "00000000-0007-0004-0044-000000000000"
         },
         {
           "klucz": "PIT-8AR 3.",
-          "opis": "PIT-8AR 3.Świadczenia otrzymane przez emerytów, rencistów lub osoby pobierające nauczycielskie świadczenie kompensacyjne będących byłymi pracownikami (art.30 ust.1 pkt 4 ustawy)."
+          "opis": "PIT-8AR 3.Świadczenia otrzymane przez emerytów, rencistów lub osoby pobierające nauczycielskie świadczenie kompensacyjne będących byłymi pracownikami (art.30 ust.1 pkt 4 ustawy).",
+          "guid": "00000000-0007-0004-0046-000000000000"
         },
         {
           "klucz": "PIT-8AR 4.",
-          "opis": "PIT-8AR 4.Świadczenia pieniężne otrzymane przez funkconariuszy służb mundurowych oraz żołnierzy, wymienione w art.30 ust.1 pkt 4a ustawy)."
+          "opis": "PIT-8AR 4.Świadczenia pieniężne otrzymane przez funkconariuszy służb mundurowych oraz żołnierzy, wymienione w art.30 ust.1 pkt 4a ustawy).",
+          "guid": "00000000-0007-0004-0090-000000000000"
         },
         {
           "klucz": "PIT-8AR 8 .",
-          "opis": "PIT-8AR 7.Jednorazowe odszkodowania za skrócenie okresu wypowiedzenia, wypłacone żołnierzom zwalnianym ze służby wojskowej (art.30 ust.1 pkt 13 ustawy)"
+          "opis": "PIT-8AR 7.Jednorazowe odszkodowania za skrócenie okresu wypowiedzenia, wypłacone żołnierzom zwalnianym ze służby wojskowej (art.30 ust.1 pkt 13 ustawy)",
+          "guid": "00000000-0007-0004-0051-000000000000"
         },
         {
           "klucz": "PIT-8AR 7 .",
-          "opis": "s PIT-8AR 7.Odsetki od pożyczek (z wyjątkiem gdy udzielanie pożyczek jest przedmiotem działalności gospodarczej), odsetki i dyskonto od papierów wartościowych (art.30a ust.1 pkt 1 i 2 ustawy)."
+          "opis": "s PIT-8AR 7.Odsetki od pożyczek (z wyjątkiem gdy udzielanie pożyczek jest przedmiotem działalności gospodarczej), odsetki i dyskonto od papierów wartościowych (art.30a ust.1 pkt 1 i 2 ustawy).",
+          "guid": "00000000-0007-0004-0040-000000000000"
         },
         {
           "klucz": "PIT-8AR 10.",
-          "opis": "PIT-8AR 10.Odszkodowania przyznane na podstawie przepisów o zakazie konkurencji (art. 30 ust. 1 pkt 15 ustawy)"
+          "opis": "PIT-8AR 10.Odszkodowania przyznane na podstawie przepisów o zakazie konkurencji (art. 30 ust. 1 pkt 15 ustawy)",
+          "guid": "00000000-0007-0004-0101-000000000000"
         },
         {
           "klucz": "PIT-8AR 11.",
-          "opis": "PIT-8AR 11.Odprawy lub odszkodowania z tytułu skrócenia okresu wypowiedzenia umowy o pracę lub umowy o świadczenie usług zarządzania (art. 30 ust. 1 pkt 16 ustawy)"
+          "opis": "PIT-8AR 11.Odprawy lub odszkodowania z tytułu skrócenia okresu wypowiedzenia umowy o pracę lub umowy o świadczenie usług zarządzania (art. 30 ust. 1 pkt 16 ustawy)",
+          "guid": "00000000-0007-0004-0102-000000000000"
         },
         {
           "klucz": "PIT-8AR 12.",
-          "opis": "PIT-8AR 14.Odsetki od pożyczek (z wyjątkiem gdy udzielanie pożyczek jest przedmiotem działalności gospodarczej), (art. 30a ust. 1 pkt. 1 ustawy)"
+          "opis": "PIT-8AR 14.Odsetki od pożyczek (z wyjątkiem gdy udzielanie pożyczek jest przedmiotem działalności gospodarczej), (art. 30a ust. 1 pkt. 1 ustawy)",
+          "guid": "00000000-0007-0004-0103-000000000000"
         },
         {
           "klucz": "PIT-8AR 13.",
-          "opis": "PIT-8AR 15.Odsetki i dyskonto od papierów wartościowych oraz dochód z wykupu przez emitenta obligacji (art. 30a ust. 1 pkt. 2 i 2a ustawy)"
+          "opis": "PIT-8AR 15.Odsetki i dyskonto od papierów wartościowych oraz dochód z wykupu przez emitenta obligacji (art. 30a ust. 1 pkt. 2 i 2a ustawy)",
+          "guid": "00000000-0007-0004-0104-000000000000"
         },
         {
           "klucz": "PIT-8AR 14 .",
-          "opis": "PIT-8AR 16.Odsetki lub inne przychody od środków pieniężnych zgromadzonych na rachunku podatnika lub w innych formach oszczędzania, przechowywania lub inwestowania (art.30a ust.1 pkt 3 ustawy)."
+          "opis": "PIT-8AR 16.Odsetki lub inne przychody od środków pieniężnych zgromadzonych na rachunku podatnika lub w innych formach oszczędzania, przechowywania lub inwestowania (art.30a ust.1 pkt 3 ustawy).",
+          "guid": "00000000-0007-0004-0042-000000000000"
         },
         {
           "klucz": "PIT-8AR 15 .",
-          "opis": "PIT-8AR 17.Dywidendy i inne przychody z tytułu udziału w zyskach osób prawnych (art.30a ust.1 pkt 4 ustawy)."
+          "opis": "PIT-8AR 17.Dywidendy i inne przychody z tytułu udziału w zyskach osób prawnych (art.30a ust.1 pkt 4 ustawy).",
+          "guid": "00000000-0007-0004-0041-000000000000"
         },
         {
           "klucz": "PIT-8AR 16 .",
-          "opis": "PIT-8AR 18.Świadczenia otrzymywane przez uczestników funduszu kapitałowego z dochodów tego funduszu wypłacane bez unicestwiania tytułów uczestnictwa (art.30a ust.1 pkt 5 ustawy).."
+          "opis": "PIT-8AR 18.Świadczenia otrzymywane przez uczestników funduszu kapitałowego z dochodów tego funduszu wypłacane bez unicestwiania tytułów uczestnictwa (art.30a ust.1 pkt 5 ustawy)..",
+          "guid": "00000000-0007-0004-0043-000000000000"
         },
         {
           "klucz": "PIT-8AR 18 .",
-          "opis": "PIT-8AR 20.Wypłaty po śmierci członka otwartego funduszu emerytalnego (art.30a ust.1 pkt 6 ustawy)."
+          "opis": "PIT-8AR 20.Wypłaty po śmierci członka otwartego funduszu emerytalnego (art.30a ust.1 pkt 6 ustawy).",
+          "guid": "00000000-0007-0004-0048-000000000000"
         },
         {
           "klucz": "PIT-8AR 19 .",
-          "opis": "PIT-8AR 21.Dochód członka pracowniczego funduszu emerytalnego z tytułu przeniesienia akcji (art.30a ust.1 pkt 7 ustawy)."
+          "opis": "PIT-8AR 21.Dochód członka pracowniczego funduszu emerytalnego z tytułu przeniesienia akcji (art.30a ust.1 pkt 7 ustawy).",
+          "guid": "00000000-0007-0004-0049-000000000000"
         },
         {
           "klucz": "PIT-8AR 20 .",
-          "opis": "PIT-8AR 22.Przychody z tytułu zbycia prawa poboru akcji (art.30a ust.1 pkt 8 ustawy)."
+          "opis": "PIT-8AR 22.Przychody z tytułu zbycia prawa poboru akcji (art.30a ust.1 pkt 8 ustawy).",
+          "guid": "00000000-0007-0004-0050-000000000000"
         },
         {
           "klucz": "PIT-8AR 26 .",
-          "opis": "PIT-8AR 35.Inne należności nie wymienione w wierszach 1-34."
+          "opis": "PIT-8AR 35.Inne należności nie wymienione w wierszach 1-34.",
+          "guid": "00000000-0007-0004-0053-000000000000"
         },
         {
           "klucz": "IFT-1 1",
-          "opis": "IFT-1 1. Dochody z żeglugi morskiej, żeglugi śródlądowej i transportu lotniczego"
+          "opis": "IFT-1 1. Dochody z żeglugi morskiej, żeglugi śródlądowej i transportu lotniczego",
+          "guid": "00000000-0007-0004-0085-000000000000"
         },
         {
           "klucz": "IFT-1 2",
-          "opis": "IFT-1 2. Dywidendy"
+          "opis": "IFT-1 2. Dywidendy",
+          "guid": "00000000-0007-0004-0083-000000000000"
         },
         {
           "klucz": "IFT-1 3",
-          "opis": "IFT-1 3. Odsetki"
+          "opis": "IFT-1 3. Odsetki",
+          "guid": "00000000-0007-0004-0082-000000000000"
         },
         {
           "klucz": "IFT-1 4",
-          "opis": "IFT-1 4. Należności licencyjne"
+          "opis": "IFT-1 4. Należności licencyjne",
+          "guid": "00000000-0007-0004-0081-000000000000"
         },
         {
           "klucz": "IFT-1 5",
-          "opis": "IFT-1 5. Dochód z wykonywania wolnych zawodów"
+          "opis": "IFT-1 5. Dochód z wykonywania wolnych zawodów",
+          "guid": "00000000-0007-0004-0080-000000000000"
         },
         {
           "klucz": "IFT-1 6",
-          "opis": "IFT-1 6. Wynagrodzenie dyrektorów"
+          "opis": "IFT-1 6. Wynagrodzenie dyrektorów",
+          "guid": "00000000-0007-0004-0088-000000000000"
         },
         {
           "klucz": "IFT-1 7",
-          "opis": "IFT-1 7. Dochód z działalności artystycznej lub sportowej"
+          "opis": "IFT-1 7. Dochód z działalności artystycznej lub sportowej",
+          "guid": "00000000-0007-0004-0084-000000000000"
         },
         {
           "klucz": "IFT-1 8",
-          "opis": "IFT-1 8. Dochód z emerytury lub renty i innych podobnych świadczeń"
+          "opis": "IFT-1 8. Dochód z emerytury lub renty i innych podobnych świadczeń",
+          "guid": "00000000-0007-0004-0091-000000000000"
         },
         {
           "klucz": "IFT-1 9",
-          "opis": "IFT-1 9. Inne dochody"
+          "opis": "IFT-1 9. Inne dochody",
+          "guid": "00000000-0007-0004-0087-000000000000"
         },
         {
           "klucz": "IFT-1 10/art.29",
-          "opis": "IFT-1 10. Przychód określony zgodnie z art.29 ustawy"
+          "opis": "IFT-1 10. Przychód określony zgodnie z art.29 ustawy",
+          "guid": "00000000-0007-0004-0086-000000000000"
         },
         {
           "klucz": "IFT-1 10/art.30a",
-          "opis": "IFT-1 10. Przychód określony zgodnie z art.30a ustawy"
+          "opis": "IFT-1 10. Przychód określony zgodnie z art.30a ustawy",
+          "guid": "00000000-0007-0004-0100-000000000000"
         },
         {
           "klucz": "IFT-1 10/art.30",
-          "opis": "IFT-1 10. Przychód określony zgodnie z art. 30 ustawy"
+          "opis": "IFT-1 10. Przychód określony zgodnie z art. 30 ustawy",
+          "guid": "00000000-0007-0004-0117-000000000000"
         },
         {
           "klucz": "PIT-11 F.",
-          "opis": "PIT-11 F. Informacja o wysokości przychodów, o których mowa w art.20 ust.1 ustawy"
+          "opis": "PIT-11 F. Informacja o wysokości przychodów, o których mowa w art.20 ust.1 ustawy",
+          "guid": "00000000-0007-0004-0094-000000000000"
         },
         {
           "klucz": "PIT-11 E,G/PIT-4R 2",
-          "opis": "PIT-11 E,G/PIT-4R 2. Stypendium (art. 21 ust.1 pkt 40b ustawy) E.15 (kwota opodatkowana)/ G (kwota nieopodatkowana)"
+          "opis": "PIT-11 E,G/PIT-4R 2. Stypendium (art. 21 ust.1 pkt 40b ustawy) E.15 (kwota opodatkowana)/ G (kwota nieopodatkowana)",
+          "guid": "00000000-0007-0004-0095-000000000000"
         }
       ]
     }
@@ -12134,7 +12675,623 @@
       "rodzajZrodla": "PrzychódOdSkładkiPracodawcyPPK"
     }
   ],
-  "szablony": [],
+  "szablony": [
+    {
+      "id": "zasadnicze",
+      "etykieta": "Wynagrodzenie zasadnicze (miesięczne)",
+      "opis": "Własne wynagrodzenie zasadnicze w stawce miesięcznej – ustawienia jak standardowe „Wynagrodzenie zasadnicze mies.”.",
+      "uwagi": "Szablon: Wynagrodzenie zasadnicze (miesięczne). Podstawa „Wyrażenie” – skopiować wyrażenie ze standardowej definicji „Wynagrodzenie zasadnicze mies.”.",
+      "zrodlo": "definicja standardowa enova „Wynagrodzenie zasadnicze mies.” (00000000-0007-0002-0002-000000000000)",
+      "wartosci": {
+        "RodzajZrodla": "Etat",
+        "Nazwa": "",
+        "Skrot": "",
+        "Blokada": false,
+        "Kolejnosc": 0,
+        "Zatrudnienie": "Etat",
+        "DefinicjaListyPlac": "LPE",
+        "OkresNaliczania.Naliczanie": "PłatnaZGóry",
+        "OkresNaliczania.Opoznienie": 0,
+        "OkresNaliczania.Typ": "Każda",
+        "OkresNaliczania.Ilosc": 0,
+        "Algorytm.Priorytet": 0,
+        "Algorytm.Potracenie": false,
+        "Algorytm.Typ": "KreatorAlgorytmu",
+        "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Wyrażenie",
+        "Algorytm.KreatorAlgorytmu.PodstawaZa": "Miesięcznie",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": false,
+        "Algorytm.KreatorAlgorytmu.Czas.Typ": "NieUwzględniaj",
+        "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": true,
+        "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Platne": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "JednaTrzydziesta",
+        "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "JednaTrzydziesta",
+        "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "JednaTrzydziesta",
+        "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "JednaTrzydziesta",
+        "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "Proporcjonalnie",
+        "Algorytm.ZaNieobecnosc.Macierzynskiego": false,
+        "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
+        "Algorytm.ZaNieobecnosc.Opiekunczego": false,
+        "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
+        "Deklaracje.Priorytet": 0,
+        "Deklaracje.Koszty.Typ": "ZeStosunkuPracy50",
+        "Deklaracje.Koszty.Procent": 0,
+        "Deklaracje.Zaliczka.Typ": "NaliczaćWgSkaliPodatkowej",
+        "Deklaracje.Zaliczka.Procent": 0,
+        "Deklaracje.Zaliczka.PomniejszonaZUS": "True",
+        "Deklaracje.Ulga.Typ": "Naliczać",
+        "Deklaracje.PozycjaRCA": "NieDotyczy",
+        "Deklaracje.PozycjaRP7": "SkładnikiStałe",
+        "Deklaracje.Spoleczne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.PomniejszaFIS": "PomniejszaDoFIS",
+        "Deklaracje.Zdrowotne.PomniejszoneZUS": true,
+        "Deklaracje.PodstawaSkladek.UrlopWychowawczy": "DopełniaćJakZasadniczeDla",
+        "Nieobecnosci.Urlop.Typ": "WliczaćAktualnąWartość",
+        "Nieobecnosci.Ekwiwalent.Typ": "WliczaćAktualnąWartość",
+        "Nieobecnosci.Ekwiwalent.Dopelnienie": true,
+        "Nieobecnosci.ZasilkiPracownicy.Typ": "DopełniaćJakZasadniczeDla",
+        "Nieobecnosci.ZasilkiPracownicy.Chorobowych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": true,
+        "Nieobecnosci.ZasilkiInni.Typ": "DopełniaćJakZasadniczeDla",
+        "Nieobecnosci.ZasilkiInni.Chorobowych": true,
+        "Nieobecnosci.ZasilkiInni.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiInni.Opiekunczych": true,
+        "Zaokraglenie.Precyzja": "DoPełnegoGrosza",
+        "Zaokraglenie.Sposob": "Standardowe",
+        "Zaokraglenie.Podstawa": false,
+        "Korygowany": true,
+        "MinimalneWynagrodzenie": true,
+        "DoWyplaty": true,
+        "ZawszeGotowka": false,
+        "GenerujZerowy": true,
+        "Aktualizacja": false,
+        "Zerowanie": false,
+        "Algorytm.KreatorAlgorytmu.Podstawa": 0.00,
+        "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Wszystkich",
+        "Kod": ""
+      },
+      "polaRekorduBezOdpowiednika": [
+        "Deklaracje.KodRNA"
+      ]
+    },
+    {
+      "id": "premiaUznaniowa",
+      "etykieta": "Premia uznaniowa (kwota)",
+      "opis": "Premia w kwocie wpisywanej u pracownika – ustawienia jak standardowa „Premia”.",
+      "uwagi": null,
+      "zrodlo": "definicja standardowa enova „Premia” (c9c3dc52-be71-4b8f-b89b-728d83cd4a9a)",
+      "wartosci": {
+        "RodzajZrodla": "Dodatek",
+        "Nazwa": "",
+        "Skrot": "",
+        "Blokada": false,
+        "Kolejnosc": 0,
+        "Zatrudnienie": "Etat",
+        "DefinicjaListyPlac": "LPE",
+        "OkresNaliczania.Naliczanie": "PłatnaZDołu",
+        "OkresNaliczania.Opoznienie": 0,
+        "OkresNaliczania.Typ": "CoNMiesięcy",
+        "OkresNaliczania.Ilosc": 1,
+        "Algorytm.Priorytet": 0,
+        "Algorytm.Potracenie": false,
+        "Algorytm.Typ": "KreatorAlgorytmu",
+        "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Kwota",
+        "Algorytm.KreatorAlgorytmu.PodstawaZa": "NieZależyOdCzasu",
+        "Algorytm.KreatorAlgorytmu.SposobProporcjonalnosci": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": false,
+        "Algorytm.KreatorAlgorytmu.Czas.Typ": "NieUwzględniaj",
+        "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Platne": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "NiePomniejsza",
+        "Algorytm.ZaNieobecnosc.Macierzynskiego": false,
+        "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
+        "Algorytm.ZaNieobecnosc.Opiekunczego": false,
+        "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
+        "Deklaracje.Priorytet": 0,
+        "Deklaracje.Koszty.Typ": "ZeStosunkuPracy",
+        "Deklaracje.Koszty.Procent": 0,
+        "Deklaracje.Zaliczka.Typ": "NaliczaćWgSkaliPodatkowej",
+        "Deklaracje.Zaliczka.Procent": 0,
+        "Deklaracje.Zaliczka.PomniejszonaZUS": "True",
+        "Deklaracje.Ulga.Typ": "Naliczać",
+        "Deklaracje.PozycjaRCA": "NieDotyczy",
+        "Deklaracje.PozycjaRP7": "SkładnikiZmienne",
+        "Deklaracje.Spoleczne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.PomniejszaFIS": "PomniejszaDoFIS",
+        "Deklaracje.Zdrowotne.PomniejszoneZUS": true,
+        "Deklaracje.PodstawaSkladek.UrlopWychowawczy": "WliczaćDla",
+        "Nieobecnosci.Urlop.Typ": "Wliczać",
+        "Nieobecnosci.Ekwiwalent.Typ": "Wliczać",
+        "Nieobecnosci.Ekwiwalent.Dopelnienie": false,
+        "Nieobecnosci.ZasilkiPracownicy.Typ": "WliczaćDla",
+        "Nieobecnosci.ZasilkiPracownicy.Chorobowych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": true,
+        "Nieobecnosci.ZasilkiInni.Typ": "WliczaćDla",
+        "Nieobecnosci.ZasilkiInni.Chorobowych": true,
+        "Nieobecnosci.ZasilkiInni.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiInni.Opiekunczych": true,
+        "Zaokraglenie.Precyzja": "DoPełnegoGrosza",
+        "Zaokraglenie.Sposob": "Standardowe",
+        "Zaokraglenie.Podstawa": false,
+        "Korygowany": false,
+        "MinimalneWynagrodzenie": true,
+        "DoWyplaty": true,
+        "ZawszeGotowka": false,
+        "GenerujZerowy": false,
+        "Aktualizacja": false,
+        "Zerowanie": false,
+        "Dodatkowe.DodatekDoEtatu": true,
+        "Algorytm.KreatorAlgorytmu.Podstawa": 0.00,
+        "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Nie",
+        "Kod": ""
+      },
+      "polaRekorduBezOdpowiednika": [
+        "Deklaracje.KodRNA"
+      ]
+    },
+    {
+      "id": "premiaProcentowa",
+      "etykieta": "Premia procentowa",
+      "opis": "Procent od wynagrodzenia zasadniczego – ustawienia jak standardowa „Premia procentowa”.",
+      "uwagi": null,
+      "zrodlo": "definicja standardowa enova „Premia procentowa” (35c29464-e2c4-4182-8944-1ddf87dff9ab)",
+      "wartosci": {
+        "RodzajZrodla": "Dodatek",
+        "Nazwa": "",
+        "Skrot": "",
+        "Blokada": false,
+        "Kolejnosc": 50,
+        "Zatrudnienie": "Etat",
+        "DefinicjaListyPlac": "LPE",
+        "OkresNaliczania.Naliczanie": "PłatnaZDołu",
+        "OkresNaliczania.Opoznienie": 0,
+        "OkresNaliczania.Typ": "Każda",
+        "OkresNaliczania.Ilosc": 0,
+        "Algorytm.Priorytet": 1,
+        "Algorytm.Potracenie": false,
+        "Algorytm.LimitPotracenia": "NieDotyczy",
+        "Algorytm.Typ": "KreatorAlgorytmu",
+        "Algorytm.KreatorAlgorytmu.PodstawaTyp": "ZasadniczeNominalne",
+        "Algorytm.KreatorAlgorytmu.SposobProporcjonalnosci": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.PodstawaZa": "Miesięcznie",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "Procent",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik": false,
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": false,
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaNaDzien": "OstatniDzieńOkresu",
+        "Algorytm.KreatorAlgorytmu.Czas.Typ": "NieUwzględniaj",
+        "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": true,
+        "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Platne": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "JakZasadnicze",
+        "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "JakZasadnicze",
+        "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "JakZasadnicze",
+        "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "JakZasadnicze",
+        "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.OgraniczeniePomniejszen": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiMinus": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiAkord": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlus50": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlus100": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlusSW": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlusPozostale": false,
+        "Algorytm.JakEkwiwalentZaUrlop.WgWymiaruEtatu": false,
+        "Algorytm.ZaNieobecnosc.Macierzynskiego": false,
+        "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
+        "Algorytm.ZaNieobecnosc.Opiekunczego": false,
+        "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Algorytm.ZaNieobecnosc.Wychowawczego": false,
+        "Algorytm.Umowa.TypWartosci": "Dowolny",
+        "Algorytm.Umowa.RodzajRozliczenia": "Dowolny",
+        "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
+        "Deklaracje.Priorytet": 0,
+        "Deklaracje.Koszty.Typ": "ZeStosunkuPracy",
+        "Deklaracje.Koszty.Procent": 0.00,
+        "Deklaracje.Zaliczka.Typ": "NaliczaćWgSkaliPodatkowej",
+        "Deklaracje.Zaliczka.Procent": 0.00,
+        "Deklaracje.Zaliczka.PomniejszonaZUS": "True",
+        "Deklaracje.Ulga.Typ": "Naliczać",
+        "Deklaracje.PozycjaRCA": "NieDotyczy",
+        "Deklaracje.PozycjaRP7": "SkładnikiZmienne",
+        "Deklaracje.Spoleczne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.PomniejszaFIS": "PomniejszaDoFIS",
+        "Deklaracje.Zdrowotne.PomniejszoneZUS": true,
+        "Deklaracje.Narzuty.SkladkaFP": "Domyślna",
+        "Deklaracje.Narzuty.SkladkaFGSP": "Domyślna",
+        "Deklaracje.Umowa": "NieDotyczy",
+        "Deklaracje.UmowaJakEtat": false,
+        "Deklaracje.PodstawaSkladek.UrlopWychowawczy": "WliczaćDla",
+        "Nieobecnosci.WahaniaWysokosci": false,
+        "Nieobecnosci.Urlop.Typ": "WliczaćJakZasadnicze",
+        "Nieobecnosci.Ekwiwalent.Typ": "WliczaćJakZasadnicze",
+        "Nieobecnosci.Ekwiwalent.Dopelnienie": true,
+        "Nieobecnosci.ZasilkiPracownicy.Typ": "DopełniaćJakZasadniczeDla",
+        "Nieobecnosci.ZasilkiPracownicy.Chorobowych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": true,
+        "Nieobecnosci.ZasilkiInni.Typ": "DopełniaćJakZasadniczeDla",
+        "Nieobecnosci.ZasilkiInni.Chorobowych": true,
+        "Nieobecnosci.ZasilkiInni.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiInni.Opiekunczych": true,
+        "Nieobecnosci.WliczanieDoPodstawyChorobowego": "Domyślnie",
+        "Zaokraglenie.Precyzja": "DoPełnegoGrosza",
+        "Zaokraglenie.Sposob": "Standardowe",
+        "Zaokraglenie.Podstawa": false,
+        "GUS.Kategoria": "WgDefinicjiElementu",
+        "Rozliczenie.ZmianaOdbiorcy": false,
+        "Rozliczenie.WspolnaPlatnosc": false,
+        "Zajecie.Komornik": "Domyślnie",
+        "Zajecie.Alimenty": "Domyślnie",
+        "Zajecie.Pozostale": "Domyślnie",
+        "Korygowany": true,
+        "MinimalneWynagrodzenie": true,
+        "DoWyplaty": true,
+        "ZawszeGotowka": false,
+        "GenerujZerowy": true,
+        "Aktualizacja": false,
+        "Zerowanie": false,
+        "Dodatkowe.DodatekDoEtatu": true,
+        "RodzajNaliczania": "Wszystkie",
+        "Algorytm.KreatorAlgorytmu.Podstawa": 0.00,
+        "Algorytm.KreatorAlgorytmu.Czas.Czas": "0:00",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent": 100,
+        "Deklaracje.WliczajSOD": true,
+        "Deklaracje.RozrzucajPodatkiISkładki": true,
+        "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Wszystkich",
+        "Kod": ""
+      },
+      "polaRekorduBezOdpowiednika": [
+        "Deklaracje.KodRNA",
+        "Nieobecnosci.Urlop.Dopelnienie",
+        "PracownicyZaGranica.KorektaPodstaw",
+        "PracownicyZaGranica.Podstawa"
+      ]
+    },
+    {
+      "id": "dodatekStazowy",
+      "etykieta": "Dodatek stażowy",
+      "opis": "Procent zależny od stażu pracy – ustawienia jak standardowy „Dodatek stażowy”; progi stażu uzupełnij wg regulaminu.",
+      "uwagi": null,
+      "zrodlo": "definicja standardowa enova „Dodatek stażowy” (71a2fac0-4f66-43a5-9e25-13c97f8e4a00)",
+      "wartosci": {
+        "RodzajZrodla": "Dodatek",
+        "Nazwa": "",
+        "Skrot": "",
+        "Blokada": false,
+        "Kolejnosc": 0,
+        "Zatrudnienie": "Etat",
+        "DefinicjaListyPlac": "LPE",
+        "OkresNaliczania.Naliczanie": "PłatnaZDołu",
+        "OkresNaliczania.Opoznienie": 0,
+        "OkresNaliczania.Typ": "CoNMiesięcy",
+        "OkresNaliczania.Ilosc": 1,
+        "Algorytm.Priorytet": 10,
+        "Algorytm.Potracenie": false,
+        "Algorytm.Typ": "KreatorAlgorytmu",
+        "Algorytm.KreatorAlgorytmu.PodstawaTyp": "ZasadniczeNominalne",
+        "Algorytm.KreatorAlgorytmu.PodstawaZa": "Miesięcznie",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "ZależnyOdStażuPracy",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": true,
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PodstawaStazu": "Zatrudnienie poza firmą",
+        "Algorytm.KreatorAlgorytmu.Czas.Typ": "NieUwzględniaj",
+        "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Platne": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "NiePomniejsza",
+        "Algorytm.ZaNieobecnosc.Macierzynskiego": false,
+        "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
+        "Algorytm.ZaNieobecnosc.Opiekunczego": false,
+        "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
+        "Deklaracje.Priorytet": 0,
+        "Deklaracje.Koszty.Typ": "ZeStosunkuPracy",
+        "Deklaracje.Koszty.Procent": 0,
+        "Deklaracje.Zaliczka.Typ": "NaliczaćWgSkaliPodatkowej",
+        "Deklaracje.Zaliczka.Procent": 0,
+        "Deklaracje.Zaliczka.PomniejszonaZUS": "True",
+        "Deklaracje.Ulga.Typ": "Naliczać",
+        "Deklaracje.PozycjaRCA": "NieDotyczy",
+        "Deklaracje.PozycjaRP7": "SkładnikiStałe",
+        "Deklaracje.Spoleczne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.PomniejszaFIS": "PomniejszaDoFIS",
+        "Deklaracje.Zdrowotne.PomniejszoneZUS": true,
+        "Deklaracje.PodstawaSkladek.UrlopWychowawczy": "WliczaćDla",
+        "Nieobecnosci.Urlop.Typ": "NieWliczać",
+        "Nieobecnosci.Ekwiwalent.Typ": "NieWliczać",
+        "Nieobecnosci.ZasilkiPracownicy.Typ": "NieWliczać",
+        "Nieobecnosci.ZasilkiPracownicy.Chorobowych": false,
+        "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": false,
+        "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": false,
+        "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": false,
+        "Nieobecnosci.ZasilkiInni.Typ": "NieWliczać",
+        "Nieobecnosci.ZasilkiInni.Chorobowych": false,
+        "Nieobecnosci.ZasilkiInni.Macierzynskich": false,
+        "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": false,
+        "Nieobecnosci.ZasilkiInni.Opiekunczych": false,
+        "Zaokraglenie.Precyzja": "DoPełnegoGrosza",
+        "Zaokraglenie.Sposob": "Standardowe",
+        "Zaokraglenie.Podstawa": false,
+        "Korygowany": true,
+        "MinimalneWynagrodzenie": true,
+        "DoWyplaty": true,
+        "ZawszeGotowka": false,
+        "GenerujZerowy": true,
+        "Aktualizacja": false,
+        "Zerowanie": false,
+        "Dodatkowe.DodatekDoEtatu": true,
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi": [
+          {
+            "Prog": 0,
+            "Wartosc": 0
+          },
+          {
+            "Prog": 5,
+            "Wartosc": 5.00
+          },
+          {
+            "Prog": 6,
+            "Wartosc": 6.00
+          },
+          {
+            "Prog": 7,
+            "Wartosc": 7.00
+          },
+          {
+            "Prog": 8,
+            "Wartosc": 8.00
+          },
+          {
+            "Prog": 9,
+            "Wartosc": 9.00
+          },
+          {
+            "Prog": 10,
+            "Wartosc": 10.00
+          },
+          {
+            "Prog": 11,
+            "Wartosc": 11.00
+          },
+          {
+            "Prog": 12,
+            "Wartosc": 12.00
+          },
+          {
+            "Prog": 13,
+            "Wartosc": 13.00
+          },
+          {
+            "Prog": 14,
+            "Wartosc": 14.00
+          },
+          {
+            "Prog": 15,
+            "Wartosc": 15.00
+          },
+          {
+            "Prog": 16,
+            "Wartosc": 16.00
+          },
+          {
+            "Prog": 17,
+            "Wartosc": 17.00
+          },
+          {
+            "Prog": 18,
+            "Wartosc": 18.00
+          },
+          {
+            "Prog": 19,
+            "Wartosc": 19.00
+          },
+          {
+            "Prog": 20,
+            "Wartosc": 20.00
+          }
+        ],
+        "Algorytm.KreatorAlgorytmu.Podstawa": 0.00,
+        "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Nie",
+        "Kod": ""
+      },
+      "polaRekorduBezOdpowiednika": [
+        "Deklaracje.KodRNA"
+      ]
+    },
+    {
+      "id": "dodatekFunkcyjny",
+      "etykieta": "Dodatek funkcyjny",
+      "opis": "Stały dodatek kwotowy – ustawienia jak standardowy „Dodatek funkcyjny”.",
+      "uwagi": null,
+      "zrodlo": "definicja standardowa enova „Dodatek funkcyjny” (df97dc0b-2cb9-47b3-b8f0-81ce39934a06)",
+      "wartosci": {
+        "RodzajZrodla": "Dodatek",
+        "Nazwa": "",
+        "Skrot": "",
+        "Blokada": false,
+        "Kolejnosc": 0,
+        "Zatrudnienie": "Etat",
+        "DefinicjaListyPlac": "LPE",
+        "OkresNaliczania.Naliczanie": "PłatnaZDołu",
+        "OkresNaliczania.Opoznienie": 0,
+        "OkresNaliczania.Typ": "CoNMiesięcy",
+        "OkresNaliczania.Ilosc": 1,
+        "Algorytm.Priorytet": 0,
+        "Algorytm.Potracenie": false,
+        "Algorytm.Typ": "KreatorAlgorytmu",
+        "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Kwota",
+        "Algorytm.KreatorAlgorytmu.PodstawaZa": "Miesięcznie",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": false,
+        "Algorytm.KreatorAlgorytmu.Czas.Typ": "NieUwzględniaj",
+        "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": true,
+        "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Platne": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "Proporcjonalnie",
+        "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "Proporcjonalnie",
+        "Algorytm.ZaNieobecnosc.Macierzynskiego": false,
+        "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
+        "Algorytm.ZaNieobecnosc.Opiekunczego": false,
+        "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Deklaracje.PozycjaPIT": "PIT-11 1/PIT-4R 1",
+        "Deklaracje.Priorytet": 0,
+        "Deklaracje.Koszty.Typ": "ZeStosunkuPracy",
+        "Deklaracje.Koszty.Procent": 0,
+        "Deklaracje.Zaliczka.Typ": "NaliczaćWgSkaliPodatkowej",
+        "Deklaracje.Zaliczka.Procent": 0,
+        "Deklaracje.Zaliczka.PomniejszonaZUS": "True",
+        "Deklaracje.Ulga.Typ": "Naliczać",
+        "Deklaracje.PozycjaRCA": "NieDotyczy",
+        "Deklaracje.PozycjaRP7": "SkładnikiStałe",
+        "Deklaracje.Spoleczne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.Typ": "Naliczać",
+        "Deklaracje.Zdrowotne.PomniejszaFIS": "PomniejszaDoFIS",
+        "Deklaracje.Zdrowotne.PomniejszoneZUS": true,
+        "Deklaracje.PodstawaSkladek.UrlopWychowawczy": "WliczaćDla",
+        "Nieobecnosci.Urlop.Typ": "NieWliczać",
+        "Nieobecnosci.Ekwiwalent.Typ": "NieWliczać",
+        "Nieobecnosci.ZasilkiPracownicy.Typ": "WliczaćDla",
+        "Nieobecnosci.ZasilkiPracownicy.Chorobowych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": true,
+        "Nieobecnosci.ZasilkiInni.Typ": "WliczaćDla",
+        "Nieobecnosci.ZasilkiInni.Chorobowych": true,
+        "Nieobecnosci.ZasilkiInni.Macierzynskich": true,
+        "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": true,
+        "Nieobecnosci.ZasilkiInni.Opiekunczych": true,
+        "Zaokraglenie.Precyzja": "DoPełnegoGrosza",
+        "Zaokraglenie.Sposob": "Standardowe",
+        "Zaokraglenie.Podstawa": false,
+        "Korygowany": true,
+        "MinimalneWynagrodzenie": true,
+        "DoWyplaty": true,
+        "ZawszeGotowka": false,
+        "GenerujZerowy": false,
+        "Aktualizacja": false,
+        "Zerowanie": false,
+        "Dodatkowe.DodatekDoEtatu": true,
+        "Algorytm.KreatorAlgorytmu.Podstawa": 0.00,
+        "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Wszystkich",
+        "Kod": ""
+      },
+      "polaRekorduBezOdpowiednika": [
+        "Deklaracje.KodRNA"
+      ]
+    },
+    {
+      "id": "potracenie",
+      "etykieta": "Potrącenie (np. składka ubezpieczenia)",
+      "opis": "Nieopodatkowane potrącenie kwotowe z wypłaty netto – ustawienia jak standardowa „Składka PZU”.",
+      "uwagi": null,
+      "zrodlo": "definicja standardowa enova „Składka PZU” (2b04aaba-22ec-4613-8fbc-a80e544c7245)",
+      "wartosci": {
+        "RodzajZrodla": "Dodatek",
+        "Nazwa": "",
+        "Skrot": "",
+        "Blokada": false,
+        "Kolejnosc": 0,
+        "Zatrudnienie": "Warunkowy",
+        "OkresNaliczania.Naliczanie": "PłatnaZDołu",
+        "OkresNaliczania.Opoznienie": 0,
+        "OkresNaliczania.Typ": "CoNMiesięcy",
+        "OkresNaliczania.Ilosc": 1,
+        "Algorytm.Priorytet": 0,
+        "Algorytm.Potracenie": true,
+        "Algorytm.Typ": "KreatorAlgorytmu",
+        "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Kwota",
+        "Algorytm.KreatorAlgorytmu.PodstawaZa": "NieZależyOdCzasu",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": false,
+        "Algorytm.KreatorAlgorytmu.Czas.Typ": "NieUwzględniaj",
+        "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": false,
+        "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Platne": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "NiePomniejsza",
+        "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "NiePomniejsza",
+        "Algorytm.ZaNieobecnosc.Macierzynskiego": false,
+        "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": false,
+        "Algorytm.ZaNieobecnosc.Opiekunczego": false,
+        "Algorytm.ZaNieobecnosc.Chorobowego": false,
+        "Deklaracje.Priorytet": 0,
+        "Deklaracje.Koszty.Typ": "NieNaliczać",
+        "Deklaracje.Koszty.Procent": 0,
+        "Deklaracje.Zaliczka.Typ": "NieNaliczać",
+        "Deklaracje.Zaliczka.Procent": 0,
+        "Deklaracje.Zaliczka.PomniejszonaZUS": "False",
+        "Deklaracje.Ulga.Typ": "NieNaliczać",
+        "Deklaracje.PozycjaRCA": "NieDotyczy",
+        "Deklaracje.PozycjaRP7": "NieDotyczy",
+        "Deklaracje.Spoleczne.Typ": "NieNaliczać",
+        "Deklaracje.Zdrowotne.Typ": "NieNaliczać",
+        "Deklaracje.Zdrowotne.PomniejszaFIS": "NiePomniejsza",
+        "Deklaracje.Zdrowotne.PomniejszoneZUS": false,
+        "Nieobecnosci.Urlop.Typ": "NieWliczać",
+        "Nieobecnosci.Ekwiwalent.Typ": "NieWliczać",
+        "Nieobecnosci.ZasilkiPracownicy.Typ": "NieWliczać",
+        "Nieobecnosci.ZasilkiPracownicy.Chorobowych": false,
+        "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": false,
+        "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": false,
+        "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": false,
+        "Nieobecnosci.ZasilkiInni.Typ": "NieWliczać",
+        "Nieobecnosci.ZasilkiInni.Chorobowych": false,
+        "Nieobecnosci.ZasilkiInni.Macierzynskich": false,
+        "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": false,
+        "Nieobecnosci.ZasilkiInni.Opiekunczych": false,
+        "Zaokraglenie.Precyzja": "DoPełnegoGrosza",
+        "Zaokraglenie.Sposob": "Standardowe",
+        "Zaokraglenie.Podstawa": false,
+        "Korygowany": false,
+        "MinimalneWynagrodzenie": false,
+        "DoWyplaty": true,
+        "ZawszeGotowka": false,
+        "GenerujZerowy": false,
+        "Aktualizacja": false,
+        "Zerowanie": false,
+        "Algorytm.KreatorAlgorytmu.Podstawa": 0.00,
+        "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Nie",
+        "Kod": ""
+      },
+      "polaRekorduBezOdpowiednika": [
+        "Deklaracje.KodRNA"
+      ]
+    }
+  ],
   "pominiete": [
     {
       "sciezka": "IsStandard",

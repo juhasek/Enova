@@ -128,6 +128,7 @@ sealed class BudowaSchematu
         foreach (var sc in opisy.Pola.Keys.Where(k => !pola.ContainsKey(k) && !pominiete.Any(p => p["sciezka"]?.GetValue<string>() == k)))
             Ostrzezenia.Add($"opisy.json: pole {sc} nie występuje już na formularzach enova (usunięte/przeniesione?).");
 
+        var slowniki = Slowniki();
         return new JsonObject
         {
             ["wersjaSchematu"] = konf.WersjaSchematu,
@@ -137,9 +138,9 @@ sealed class BudowaSchematu
             ["zakladki"] = jZakladki,
             ["pola"] = pola,
             ["enumy"] = Enumy(),
-            ["slowniki"] = Slowniki(),
+            ["slowniki"] = slowniki,
             ["definicjeStandardowe"] = DefinicjeStandardowe(),
-            ["szablony"] = opisy.Szablony?.DeepClone() ?? new JsonArray(),
+            ["szablony"] = Szablony.Buduj(konf, zasobyLogiki, pola, slowniki, Ostrzezenia),
             ["pominiete"] = pominiete,
         };
     }
@@ -213,12 +214,14 @@ sealed class BudowaSchematu
 
         if (lista)
         {
-            var typEl = insp.TypElementuListy(sc);
+            var typEl = konf.TypyList.TryGetValue(sc, out var nazwaTypu) ? insp.TypWiersza.Assembly.GetType(nazwaTypu) : insp.TypElementuListy(sc);
             var kol = new JsonArray();
             foreach (var k in pole.Kolumny.Where(k => !k.TylkoOdczytUI && k.Sciezka != null))
             {
                 var ik = typEl == null ? null : insp.RozwinNaTypie(typEl, k.Sciezka);
-                var jk = new JsonObject { ["sciezka"] = k.Sciezka, ["etykieta"] = k.Etykieta, ["typ"] = ik?.Typ ?? "inny" };
+                string etykietaKol = null;
+                op.Kolumny?.TryGetValue(k.Sciezka, out etykietaKol);
+                var jk = new JsonObject { ["sciezka"] = k.Sciezka, ["etykieta"] = etykietaKol ?? k.Etykieta, ["typ"] = ik?.Typ ?? "inny" };
                 if (ik?.Enum != null)
                 {
                     jk["enum"] = KluczEnuma(ik.Enum);
@@ -282,7 +285,7 @@ sealed class BudowaSchematu
             if (ks != null && ks.Zasoby.Count > 0)
                 j["wartosciStandardowe"] = WartosciSlownika(ks);
             else if (krotka == "DefinicjaElementu")
-                j["wartosciStandardowe"] = new JsonArray(DefinicjeStandardowe().Select(d => (JsonNode)new JsonObject { ["klucz"] = d["nazwa"]!.GetValue<string>() }).ToArray());
+                j["wartosciStandardowe"] = new JsonArray(DefinicjeStandardowe().Select(d => (JsonNode)new JsonObject { ["klucz"] = d["nazwa"]!.GetValue<string>(), ["guid"] = d["guid"]!.GetValue<string>() }).ToArray());
             wynik[krotka] = j;
         }
         return wynik;
@@ -324,7 +327,7 @@ sealed class BudowaSchematu
             if (wynik.Any(n => n["klucz"]!.GetValue<string>() == kl))
                 continue;
             r.TryGetValue(ks.PoleOpisu ?? "", out var opis);
-            wynik.Add(new JsonObject { ["klucz"] = kl, ["opis"] = opis });
+            wynik.Add(new JsonObject { ["klucz"] = kl, ["opis"] = opis, ["guid"] = g });
         }
         return wynik;
     }

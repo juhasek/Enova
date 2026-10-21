@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Definicje elementów wynagrodzenia</title>
+<style>
+/*__STYLE__*/
+</style>
+</head>
+<body>
+<header class="pasek">
+  <div class="tytul">
+    <h1>Definicje elementów wynagrodzenia</h1>
+    <div class="podtytul" id="podtytul"></div>
+  </div>
+  <label class="licencja">Licencja enova w firmie
+    <select id="licencja">
+      <option value="srebrna">Srebrna</option>
+      <option value="zlota">Złota</option>
+      <option value="platynowa">Platynowa</option>
+    </select>
+  </label>
+  <div class="akcje">
+    <button type="button" id="btnImport">Wczytaj plik…</button>
+    <button type="button" id="btnEksport" class="glowny">Zapisz plik dla wdrożeniowca</button>
+    <button type="button" id="btnPomoc" title="Jak wypełniać formularz">Pomoc</button>
+    <input type="file" id="plik" accept=".json,application/json" hidden>
+  </div>
+</header>
+
+<main class="uklad">
+  <aside class="lista">
+    <div class="lista-akcje">
+      <div class="nowa">
+        <button type="button" id="btnNowa" class="glowny" aria-haspopup="true" aria-expanded="false">+ Nowa definicja</button>
+        <div class="menu" id="menuNowa" hidden></div>
+      </div>
+      <button type="button" id="btnDuplikuj" title="Utwórz kopię zaznaczonej definicji">Duplikuj</button>
+      <button type="button" id="btnUsun" title="Usuń zaznaczoną definicję">Usuń</button>
+    </div>
+    <ul id="definicje" class="definicje"></ul>
+    <p class="autozapis" id="autozapis"></p>
+  </aside>
+  <section class="edytor" id="edytor"></section>
+</main>
+
+<dialog id="dialog">
+  <form method="dialog">
+    <h2 id="dialogTytul"></h2>
+    <div id="dialogTresc" class="dialog-tresc"></div>
+    <menu id="dialogPrzyciski"></menu>
+  </form>
+</dialog>
+
+<script type="application/json" id="schemat">/*__SCHEMAT__*/</script>
+<script>
+/*__WARUNKI__*/
+</script>
+<script>
+/*__APP__*/
+</script>
+</body>
+</html>
