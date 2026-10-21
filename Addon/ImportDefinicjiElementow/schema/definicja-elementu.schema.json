@@ -1396,9 +1396,8 @@
       ],
       "opis": "Jak często element jest naliczany: jednorazowo, za każdy okres (miesiąc), z każdą wypłatą w miesiącu, co n tygodni, co n miesięcy lub co n lat. Uwaga: elementy za okres dłuższy niż rok nie są wliczane do podstawy zasiłków ZUS.",
       "podpowiedz": "Np. premia miesięczna: co n miesięcy = 1; kwartalna: co 3 miesiące.",
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1671–1672; lista z OkresNaliczania.GetListTyp (2610)",
-      "uwagiTechniczne": "Rekord ma 0 (brak wartości); domyślną przyjęto wg standardowych definicji typu Dodatek (CoNMiesięcy/1) – potwierdzić na nowym elemencie w enova.",
+      "uwagiTechniczne": "Domyślnie co n miesięcy, n = 1. Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "regulyEnova": [
         "OkresNaliczania.GetListTyp"
       ],
@@ -1483,9 +1482,8 @@
       },
       "opis": "Czy element ma być dzielony na okresy kolejnych umów o pracę. Domyślnie – zgodnie z ustawieniem w konfiguracji płac (Okres naliczania podstawy urlopów… ograniczony do danej umowy); Tak – dzieli zawsze; Nie – nie dzieli. Nie dotyczy nadgodzin i nocnych.",
       "podpowiedz": "Zwykle: Domyślnie.",
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1672",
-      "uwagiTechniczne": "Instrukcja nazywa „Domyślnie” ustawieniem domyślnym, a rekord ma wartość początkową Nie (0) – sprawdzić na nowym elemencie.",
+      "uwagiTechniczne": "enova ustawia Nie (instrukcja nazywa „Domyślnie” ustawieniem domyślnym – nieaktualne). Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "regulyEnova": [
         "OkresNaliczania.IsReadOnlyDlaKazdejUmowy"
       ],
@@ -1760,8 +1758,8 @@
       },
       "opis": "Czy podstawę podatku pomniejszać o składki ZUS pracownika. Nie zaznacza się dla umów ryczałtowych. „Warunkowo” – umowy do 200 zł rozlicza ryczałtem, a wyższe w zwykły sposób.",
       "podpowiedz": "Składniki pracownicze: Tak.",
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1714",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "regulyEnova": [
         "ZaliczkaPodatku.IsReadOnlyPomniejszonaZUS"
       ],
@@ -2070,7 +2068,7 @@
       "opis": "Dotyczy elementów, które nie wpływają na kwotę do wypłaty (np. bony). Nie – na tym elemencie podatek i składki są zawsze zerowe, a odpowiednie kwoty pokazują się na innych elementach wypłaty (np. na liście z wynagrodzeniem zasadniczym).",
       "podpowiedz": "Zwykle Tak.",
       "zrodloOpisu": "instrukcja s. 1728–1729",
-      "uwagiTechniczne": "Właściwość wyliczana z pola bazodanowego Deklaracje.NieRozrzucaj (odwrotność).",
+      "uwagiTechniczne": "Właściwość wyliczana z pola bazodanowego Deklaracje.NieRozrzucaj (odwrotność). Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "regulyEnova": [
         "DeklaracjeDefElementu.IsReadOnlyRozrzucajPodatkiISkładki"
       ],
@@ -3570,8 +3568,8 @@
       "domyslna": true,
       "opis": "Tak – podstawa z liczby miesięcy ustawionej w konfiguracji płac (Urlop wypoczynkowy: 3 miesiące, składniki o znacznych wahaniach 12). Nie – własna liczba miesięcy dla składników o małych wahaniach.",
       "podpowiedz": null,
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1696–1697",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": false,
       "typEnova": "System.Boolean"
     },
@@ -3611,8 +3609,8 @@
       "domyslna": true,
       "opis": "Tak – podstawa zasiłku z 12 miesięcy (wartość z konfiguracji Zasiłki ogólne). Nie – własna liczba miesięcy.",
       "podpowiedz": null,
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1699",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": false,
       "typEnova": "System.Boolean"
     },
@@ -3653,6 +3651,7 @@
         "pole": "Algorytm.Typ",
         "rowne": "JakChorobowe"
       },
+      "domyslna": "100%",
       "walidacje": {
         "min": 0,
         "max": 100
@@ -3660,6 +3659,7 @@
       "opis": "Wysokość definiowanego zasiłku jako procent podstawy, np. 80%.",
       "podpowiedz": null,
       "zrodloOpisu": "instrukcja s. 1699",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": false,
       "typEnova": "Soneta.Types.Percent"
     },
@@ -3674,9 +3674,11 @@
         "pole": "Algorytm.Typ",
         "rowne": "JakChorobowe"
       },
+      "domyslna": "JakZatrudnienie",
       "opis": "Komu wypłaca się zasiłek: pracownik (tylko etat), inny ubezpieczony (np. zleceniobiorcy), jak zatrudnienie (obu grupom).",
       "podpowiedz": null,
       "zrodloOpisu": "instrukcja s. 1699",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": true,
       "typEnova": "Soneta.Place.ChorobowyZatrudnienie"
     },
@@ -3704,6 +3706,7 @@
       "opis": "Tak – podstawa z okresu standardowego dla ekwiwalentu; Nie – własna liczba miesięcy.",
       "podpowiedz": null,
       "zrodloOpisu": "instrukcja s. 1692, 1695",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": false,
       "typEnova": "System.Boolean"
     },
@@ -3744,6 +3747,7 @@
       "opis": "Tak – miesięczna podstawa dzielona przez współczynnik standardowy (nominalna liczba dni pracy w roku / 12). Nie – własny współczynnik (np. dla odprawy liczonej jak ekwiwalent).",
       "podpowiedz": null,
       "zrodloOpisu": "instrukcja s. 1692, 1695",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": false,
       "typEnova": "System.Boolean"
     },
@@ -3783,9 +3787,8 @@
       "domyslna": true,
       "opis": "Czy we współczynniku / średniej miesięcznej normie czasu pracy uwzględniać wymiar etatu pracownika.",
       "podpowiedz": null,
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1692",
-      "uwagiTechniczne": "Instrukcja: domyślnie Tak (dla „jak ekwiwalent” w edytorze); rekord ma false – sprawdzić na nowym elemencie.",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": true,
       "typEnova": "System.Boolean"
     },
@@ -4683,9 +4686,8 @@
       ],
       "opis": "Od czego liczony jest element: kwota (np. 300 zł), cecha pracownika, wynagrodzenia lub zasiłki z konfiguracji (np. najniższe), wskaźnik firmy, stawki godzinowe (najniższa, zaszeregowania), wynagrodzenie zasadnicze (nominalne, rzeczywiste), brutto, suma wybranych elementów, podstawa urlopu itd. Kod metody i wyrażenie wymagają programowania – opisz zasadę w uwagach.",
       "podpowiedz": "Np. premia 10% od zasadniczego: Zasadnicze rzeczywiste + mnożnik Procent.",
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1685–1686; KreatorAlgorytmu.GetListPodstawaTyp (2610)",
-      "uwagiTechniczne": "Rekord ma 0 (brak wartości) – domyślną „Kwota” potwierdzić na nowym elemencie.",
+      "uwagiTechniczne": "Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "regulyEnova": [
         "KreatorAlgorytmu.IsReadOnlyPodstawaTyp",
         "KreatorAlgorytmu.GetListPodstawaTyp"
@@ -5182,9 +5184,8 @@
       "domyslna": "DoPełnegoGrosza",
       "opis": "Dokładność zaokrąglenia wyniku: do grosza (standard), do 5 lub 10 groszy, do złotego, do 5, 10, 50 lub 100 zł.",
       "podpowiedz": "Standardowo: do pełnego grosza.",
-      "domyslnaDoWeryfikacji": true,
       "zrodloOpisu": "instrukcja s. 1700",
-      "uwagiTechniczne": "Instrukcja: standardowo do pełnego grosza; wartość początkowa rekordu = DoPełnegoZłotego (0) – sprawdzić na nowym elemencie.",
+      "uwagiTechniczne": "Wartość początkowa rekordu (do złotego) jest nadpisywana przez enova. Potwierdzone na nowym elemencie w bazie Claude (enova 2610, 2026-10-21).",
       "bazaDanych": true,
       "typEnova": "Soneta.Place.PrecyzjaZaokraglenia"
     },

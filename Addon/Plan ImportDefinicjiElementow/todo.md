@@ -17,7 +17,8 @@ Założenia (do potwierdzenia przy STOP po etapie 1):
 - [x] Enumy z etykietami enova, słowniki z wartościami standardowymi (PIT, RSA, tytuły ubezpieczeń, limity, strefy, listy płac, 255 definicji standardowych)
 - [x] `opisy.json`: etykiety, opisy dla kadrowej (instrukcja), warunki widoczności/edytowalności/wymagalności, dozwolone wartości
 - [x] `PRZEGLAD.md` + lista pól do weryfikacji + domyślne do weryfikacji
-- [ ] Akceptacja użytkownika; decyzje: pominięte zakładki, ukryte rodzaje elementów, wartości domyślne (sprawdzenie na żywej bazie)
+- [x] Wartości domyślne sprawdzone na żywo (baza Claude, 2026-10-21) – zgodne lub poprawione w opisy.json
+- [ ] Decyzje: pominięte zakładki (Nazwy parametrów, Pomniejszenia nieobecności), ukryte rodzaje elementów, wersja dodatku
 
 ## Etap 2 – formularz HTML dla klienta
 - [ ] Szablon strony (vanilla JS, offline) + skrypt builda wstawiający schemat do HTML

@@ -33,9 +33,9 @@ Nazwa, sposób i częstotliwość naliczania elementu oraz jego miejsce na liśc
 |---|---|---|---|---|---|---|
 | Naliczanie | `OkresNaliczania.Naliczanie` | lista: `TypNaliczenia` | ✔ | Płatna z dołu |  | Z dołu – element płacony po przepracowanym miesiącu (standard). Z góry – płacony przed przepracowaniem miesiąca, a nieobecności rozliczają się w następnej wypłacie; działa tylko wtedy, gdy także lista płac jest liczona z góry. |
 | Opóźnienie (miesiące) | `OkresNaliczania.Opoznienie` | int |  | 0 | edytowalne: „Naliczanie” = Płatna z dołu; walidacja: {"min":0,"max":120} | O ile miesięcy okres, za który liczony jest element, jest przesunięty względem wypłaty. Przykład: nagroda roczna za ubiegły rok wypłacana w lutym – typ okresu „co n miesięcy”, 12 miesięcy, opóźnienie 2. |
-| Typ okresu naliczania | `OkresNaliczania.Typ` | lista: `TypOkresuNaliczania` | ✔ | Co n miesięcy ⓓ | wartości zależne od warunków | Jak często element jest naliczany: jednorazowo, za każdy okres (miesiąc), z każdą wypłatą w miesiącu, co n tygodni, co n miesięcy lub co n lat. Uwaga: elementy za okres dłuższy niż rok nie są wliczane do podstawy zasiłków ZUS. |
+| Typ okresu naliczania | `OkresNaliczania.Typ` | lista: `TypOkresuNaliczania` | ✔ | Co n miesięcy | wartości zależne od warunków | Jak często element jest naliczany: jednorazowo, za każdy okres (miesiąc), z każdą wypłatą w miesiącu, co n tygodni, co n miesięcy lub co n lat. Uwaga: elementy za okres dłuższy niż rok nie są wliczane do podstawy zasiłków ZUS. |
 | Co ile okresów (tygodni / miesięcy / lat) | `OkresNaliczania.Ilosc` | int | warunk. | 1 | edytowalne: „Typ okresu naliczania” ∈ {Co n miesięcy, Co n lat, Co n tygodni} i „Naliczanie” ≠ Płatna z góry; wymagane: „Typ okresu naliczania” ∈ {Co n miesięcy, Co n lat, Co n tygodni} i „Naliczanie” ≠ Płatna z góry; walidacja: {"min":1,"max":120} | Liczba tygodni, miesięcy lub lat (zależnie od typu okresu) między kolejnymi naliczeniami. Np. premia kwartalna: co n miesięcy = 3; nagroda roczna: co n lat = 1 (albo co 12 miesięcy). |
-| Naliczanie w okresie danej umowy o pracę | `OkresNaliczania.DlaKazdejUmowy` | lista: `DlaKażdejUmowy` |  | Nie ⓓ | edytowalne: „Typ okresu naliczania” ∈ {Co n miesięcy, Co n lat, Co n tygodni} i „Naliczanie” ≠ Płatna z góry | Czy element ma być dzielony na okresy kolejnych umów o pracę. Domyślnie – zgodnie z ustawieniem w konfiguracji płac (Okres naliczania podstawy urlopów… ograniczony do danej umowy); Tak – dzieli zawsze; Nie – nie dzieli. Nie dotyczy nadgodzin i nocnych. |
+| Naliczanie w okresie danej umowy o pracę | `OkresNaliczania.DlaKazdejUmowy` | lista: `DlaKażdejUmowy` |  | Nie | edytowalne: „Typ okresu naliczania” ∈ {Co n miesięcy, Co n lat, Co n tygodni} i „Naliczanie” ≠ Płatna z góry | Czy element ma być dzielony na okresy kolejnych umów o pracę. Domyślnie – zgodnie z ustawieniem w konfiguracji płac (Okres naliczania podstawy urlopów… ograniczony do danej umowy); Tak – dzieli zawsze; Nie – nie dzieli. Nie dotyczy nadgodzin i nocnych. |
 
 ### Najniższe wynagrodzenie
 
@@ -78,7 +78,7 @@ Podatek, koszty uzyskania, składki ZUS i miejsce elementu na deklaracjach PIT i
 | Pozycja na deklaracji PIT | `Deklaracje.PozycjaPIT` | słownik: `PozycjaPIT` |  |  |  | Pozycja deklaracji PIT, na której wykazuje się wypłatę. Wybór pozycji PIT-11/PIT-4R oznacza, że element jest opodatkowany. Dla elementu nieopodatkowanego zostaw puste. Po pierwszej wypłacie nie można już wyczyścić tego pola. |
 | Zaliczka podatku (podatek) | `Deklaracje.Zaliczka.Typ` | lista: `TypZaliczkiPodatku` |  | Nie naliczać | edytowalne: „Pozycja na deklaracji PIT” wypełnione | Jak liczyć zaliczkę podatku: nie naliczać (element nieopodatkowany), wg skali podatkowej (składniki pracownicze), procentowo (podany procent, np. umowy na IFT-1/PIT-8AR) lub procentowo jak umowy (procent z konfiguracji płac). |
 | Procent zaliczki | `Deklaracje.Zaliczka.Procent` | percent | warunk. | 0,00% | edytowalne: „Zaliczka podatku (podatek)” = Procentowe; wymagane: „Zaliczka podatku (podatek)” = Procentowe; walidacja: {"min":0,"max":100} | Stawka podatku, gdy zaliczka jest liczona procentowo, np. 20% dla umowy rozliczanej na IFT-1. |
-| Podstawa naliczania podatku pomniejszona o składki ZUS | `Deklaracje.Zaliczka.PomniejszonaZUS` | lista: `TypPomniejszeniaPodstawyFIS` |  | Nie ⓓ | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy podstawę podatku pomniejszać o składki ZUS pracownika. Nie zaznacza się dla umów ryczałtowych. „Warunkowo” – umowy do 200 zł rozlicza ryczałtem, a wyższe w zwykły sposób. |
+| Podstawa naliczania podatku pomniejszona o składki ZUS | `Deklaracje.Zaliczka.PomniejszonaZUS` | lista: `TypPomniejszeniaPodstawyFIS` |  | Nie | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy podstawę podatku pomniejszać o składki ZUS pracownika. Nie zaznacza się dla umów ryczałtowych. „Warunkowo” – umowy do 200 zł rozlicza ryczałtem, a wyższe w zwykły sposób. |
 | Naliczaj zwolnienie z podatku | `Deklaracje.Zaliczka.NaliczaniePit26` | lista: `NaliczaniePit26` |  | Warunkowo | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy stosować zwolnienia z PIT (do 26 lat, duża rodzina, pracujący senior, powrót z zagranicy). Warunkowo – dla elementów z pozycji PIT-4R 1, jeśli pracownik spełnia warunki; Tak – zawsze, gdy pracownik ma ustawione zwolnienie; Nie – nigdy (np. zasiłki, umowy o dzieło). |
 | Koszty uzyskania przychodu | `Deklaracje.Koszty.Typ` | lista: `TypKosztowUzyskaniaPrzychodu` |  | Nie naliczać | edytowalne: „Zaliczka podatku (podatek)” ≠ Nie naliczać | Czy i jakie koszty uzyskania odliczać od elementu: ze stosunku pracy, ze stosunku pracy + 50% (prawa autorskie), procentowe (umowy cywilnoprawne) itd. enova nie odliczy w miesiącu więcej, niż przysługuje pracownikowi wg kartoteki. |
 | Procent kosztów | `Deklaracje.Koszty.Procent` | percent | warunk. | 0,00% | edytowalne: „Koszty uzyskania przychodu” ∈ {Procentowe, Procentowe 50, Procentowe warunkowo}; wymagane: „Koszty uzyskania przychodu” ∈ {Procentowe, Procentowe 50, Procentowe warunkowo}; walidacja: {"min":0,"max":100} | Procent kosztów uzyskania dla kosztów procentowych, np. 20% dla umowy zlecenia lub 50% dla praw autorskich. |
@@ -355,7 +355,7 @@ Sekcja widoczna, gdy: „Algorytm” = Jak urlop wypoczynkowy.
 
 | Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
 |---|---|---|---|---|---|---|
-| Standardowy okres naliczania podstawy | `Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy` | bool |  | Tak ⓓ |  | Tak – podstawa z liczby miesięcy ustawionej w konfiguracji płac (Urlop wypoczynkowy: 3 miesiące, składniki o znacznych wahaniach 12). Nie – własna liczba miesięcy dla składników o małych wahaniach. |
+| Standardowy okres naliczania podstawy | `Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy` | bool |  | Tak |  | Tak – podstawa z liczby miesięcy ustawionej w konfiguracji płac (Urlop wypoczynkowy: 3 miesiące, składniki o znacznych wahaniach 12). Nie – własna liczba miesięcy dla składników o małych wahaniach. |
 | Okres naliczania podstawy (miesiące) | `Algorytm.JakUrlopWypoczynkowy.OkresPodstawy` | int | warunk. |  | edytowalne: „Standardowy okres naliczania podstawy” = Nie; wymagane: „Standardowy okres naliczania podstawy” = Nie; walidacja: {"min":1,"max":12} | Liczba miesięcy, z których liczona jest podstawa składników o małych wahaniach, gdy okres nie jest standardowy. |
 
 ### Algorytm naliczania wartości / Jak chorobowe
@@ -364,10 +364,10 @@ Sekcja widoczna, gdy: „Algorytm” = Jak chorobowe.
 
 | Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
 |---|---|---|---|---|---|---|
-| Standardowy okres naliczania podstawy | `Algorytm.JakChorobowe.StdOkresPodstawy` | bool |  | Tak ⓓ |  | Tak – podstawa zasiłku z 12 miesięcy (wartość z konfiguracji Zasiłki ogólne). Nie – własna liczba miesięcy. |
+| Standardowy okres naliczania podstawy | `Algorytm.JakChorobowe.StdOkresPodstawy` | bool |  | Tak |  | Tak – podstawa zasiłku z 12 miesięcy (wartość z konfiguracji Zasiłki ogólne). Nie – własna liczba miesięcy. |
 | Okres naliczania podstawy (miesiące) | `Algorytm.JakChorobowe.OkresPodstawy` | int | warunk. |  | edytowalne: „Standardowy okres naliczania podstawy” = Nie; wymagane: „Standardowy okres naliczania podstawy” = Nie; walidacja: {"min":1,"max":24} | Liczba miesięcy podstawy własnego zasiłku, gdy okres nie jest standardowy. |
-| Procent zasiłku | `Algorytm.JakChorobowe.Procent` | percent | warunk. |  | wymagane: „Algorytm” = Jak chorobowe; walidacja: {"min":0,"max":100} | Wysokość definiowanego zasiłku jako procent podstawy, np. 80%. |
-| Rodzaj zatrudnienia | `Algorytm.JakChorobowe.Zatrudnienie` | lista: `ChorobowyZatrudnienie` | warunk. |  | wymagane: „Algorytm” = Jak chorobowe | Komu wypłaca się zasiłek: pracownik (tylko etat), inny ubezpieczony (np. zleceniobiorcy), jak zatrudnienie (obu grupom). |
+| Procent zasiłku | `Algorytm.JakChorobowe.Procent` | percent | warunk. | 100% | wymagane: „Algorytm” = Jak chorobowe; walidacja: {"min":0,"max":100} | Wysokość definiowanego zasiłku jako procent podstawy, np. 80%. |
+| Rodzaj zatrudnienia | `Algorytm.JakChorobowe.Zatrudnienie` | lista: `ChorobowyZatrudnienie` | warunk. | Jak zatrudnienie | wymagane: „Algorytm” = Jak chorobowe | Komu wypłaca się zasiłek: pracownik (tylko etat), inny ubezpieczony (np. zleceniobiorcy), jak zatrudnienie (obu grupom). |
 
 ### Algorytm naliczania wartości / Jak ekwiwalent za urlop
 
@@ -380,7 +380,7 @@ Sekcja widoczna, gdy: „Algorytm” = Jak ekwiwalent za urlop lub („Algorytm�
 | Okres naliczania podstawy (miesiące) | `Algorytm.JakEkwiwalentZaUrlop.OkresPodstawy` | int | warunk. |  | edytowalne: „Standardowy okres naliczania podstawy” = Nie; wymagane: „Standardowy okres naliczania podstawy” = Nie; walidacja: {"min":1,"max":24} | Liczba miesięcy podstawy, gdy okres nie jest standardowy. |
 | Standardowy współczynnik | `Algorytm.JakEkwiwalentZaUrlop.StdWspółczynnik` | bool |  | Tak |  | Tak – miesięczna podstawa dzielona przez współczynnik standardowy (nominalna liczba dni pracy w roku / 12). Nie – własny współczynnik (np. dla odprawy liczonej jak ekwiwalent). |
 | Współczynnik | `Algorytm.JakEkwiwalentZaUrlop.Ulamek` | fraction | warunk. |  | edytowalne: „Standardowy współczynnik” = Nie; wymagane: „Standardowy współczynnik” = Nie; walidacja: {"wzorzec":"^\\s*\\d\u002B([.,]\\d\u002B)?\\s*(/\\s*\\d\u002B([.,]\\d\u002B)?)?\\s*$","komunikat":"Wpisz u\u0142amek, np. 21/1 lub 2/3."} | Własny współczynnik w postaci ułamka (np. 21/1), gdy współczynnik nie jest standardowy. |
-| Uwzględniaj wymiar etatu we współczynniku | `Algorytm.JakEkwiwalentZaUrlop.WgWymiaruEtatu` | bool |  | Tak ⓓ |  | Czy we współczynniku / średniej miesięcznej normie czasu pracy uwzględniać wymiar etatu pracownika. |
+| Uwzględniaj wymiar etatu we współczynniku | `Algorytm.JakEkwiwalentZaUrlop.WgWymiaruEtatu` | bool |  | Tak |  | Czy we współczynniku / średniej miesięcznej normie czasu pracy uwzględniać wymiar etatu pracownika. |
 
 ### Algorytm naliczania wartości / Za okres nieobecności
 
@@ -495,7 +495,7 @@ Sekcja widoczna, gdy: „Algorytm” = Kreator algorytmu.
 
 | Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
 |---|---|---|---|---|---|---|
-| Podstawa | `Algorytm.KreatorAlgorytmu.PodstawaTyp` | lista: `TypPodstawyAlgorytmu` | ✔ | Kwota ⓓ | wartości zależne od warunków | Od czego liczony jest element: kwota (np. 300 zł), cecha pracownika, wynagrodzenia lub zasiłki z konfiguracji (np. najniższe), wskaźnik firmy, stawki godzinowe (najniższa, zaszeregowania), wynagrodzenie zasadnicze (nominalne, rzeczywiste), brutto, suma wybranych elementów, podstawa urlopu itd. Kod metody i wyrażenie wymagają programowania – opisz zasadę w uwagach. |
+| Podstawa | `Algorytm.KreatorAlgorytmu.PodstawaTyp` | lista: `TypPodstawyAlgorytmu` | ✔ | Kwota | wartości zależne od warunków | Od czego liczony jest element: kwota (np. 300 zł), cecha pracownika, wynagrodzenia lub zasiłki z konfiguracji (np. najniższe), wskaźnik firmy, stawki godzinowe (najniższa, zaszeregowania), wynagrodzenie zasadnicze (nominalne, rzeczywiste), brutto, suma wybranych elementów, podstawa urlopu itd. Kod metody i wyrażenie wymagają programowania – opisz zasadę w uwagach. |
 | Kwota | `Algorytm.KreatorAlgorytmu.Podstawa` | currency |  |  | widoczne: „Podstawa” = Kwota; walidacja: {"min":0} | Kwota podstawy, np. 100 zł premii uznaniowej. Może być potem zmieniana indywidualnie u pracownika, jeśli parametr ma nazwę. |
 | Cecha | `Algorytm.KreatorAlgorytmu.Cecha` | string | warunk. |  | widoczne: „Podstawa” = Cecha; wymagane: „Podstawa” = Cecha | Nazwa cechy (np. pracownika lub etatu), z której pobierana jest kwota podstawy. Cecha musi istnieć w bazie – podaj jej nazwę, wdrożeniowiec wskaże pełną ścieżkę. |
 | Wskaźnik | `Algorytm.KreatorAlgorytmu.Wskaźniki` | string | warunk. |  | widoczne: „Podstawa” = Wskaźniki; wymagane: „Podstawa” = Wskaźniki | Nazwa wskaźnika zdefiniowanego w konfiguracji płac (Płace/Wskaźniki), np. stawka dodatku za pracę w warunkach szkodliwych za godzinę. |
@@ -613,7 +613,7 @@ Sekcja widoczna, gdy: „Algorytm” = Kreator algorytmu.
 
 | Pole | Ścieżka | Typ | Wym. | Domyślna | Warunki | Opis |
 |---|---|---|---|---|---|---|
-| Zaokrąglenie – precyzja | `Zaokraglenie.Precyzja` | lista: `PrecyzjaZaokraglenia` |  | Do pełnego grosza ⓓ |  | Dokładność zaokrąglenia wyniku: do grosza (standard), do 5 lub 10 groszy, do złotego, do 5, 10, 50 lub 100 zł. |
+| Zaokrąglenie – precyzja | `Zaokraglenie.Precyzja` | lista: `PrecyzjaZaokraglenia` |  | Do pełnego grosza |  | Dokładność zaokrąglenia wyniku: do grosza (standard), do 5 lub 10 groszy, do złotego, do 5, 10, 50 lub 100 zł. |
 | Zaokrąglenie – sposób | `Zaokraglenie.Sposob` | lista: `SposobZaokraglenia` |  | Standardowe |  | Standardowe (matematyczne), zawsze w górę albo zawsze w dół. |
 | Podstawa zaokrąglana do pełnego grosza | `Zaokraglenie.Podstawa` | bool |  | Nie |  | Tak – także podstawa obliczeń (wynik pośredni) jest zaokrąglana do grosza. |
 
@@ -712,14 +712,6 @@ Sprawdzić, czy warunek jest potrzebny w formularzu klienta (np. reguły licency
 
 Wartość początkowa rekordu enova różni się od instrukcji albo nie jest ustawiona (0) — potwierdzić na nowym elemencie w enova.
 
-- `OkresNaliczania.Typ` (Typ okresu naliczania): przyjęto **Co n miesięcy** — Rekord ma 0 (brak wartości); domyślną przyjęto wg standardowych definicji typu Dodatek (CoNMiesięcy/1) – potwierdzić na nowym elemencie w enova.
-- `OkresNaliczania.DlaKazdejUmowy` (Naliczanie w okresie danej umowy o pracę): przyjęto **Nie** — Instrukcja nazywa „Domyślnie” ustawieniem domyślnym, a rekord ma wartość początkową Nie (0) – sprawdzić na nowym elemencie.
-- `Deklaracje.Zaliczka.PomniejszonaZUS` (Podstawa naliczania podatku pomniejszona o składki ZUS): przyjęto **Nie**
-- `Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy` (Standardowy okres naliczania podstawy): przyjęto **Tak**
-- `Algorytm.JakChorobowe.StdOkresPodstawy` (Standardowy okres naliczania podstawy): przyjęto **Tak**
-- `Algorytm.JakEkwiwalentZaUrlop.WgWymiaruEtatu` (Uwzględniaj wymiar etatu we współczynniku): przyjęto **Tak** — Instrukcja: domyślnie Tak (dla „jak ekwiwalent” w edytorze); rekord ma false – sprawdzić na nowym elemencie.
-- `Algorytm.KreatorAlgorytmu.PodstawaTyp` (Podstawa): przyjęto **Kwota** — Rekord ma 0 (brak wartości) – domyślną „Kwota” potwierdzić na nowym elemencie.
-- `Zaokraglenie.Precyzja` (Zaokrąglenie – precyzja): przyjęto **Do pełnego grosza** — Instrukcja: standardowo do pełnego grosza; wartość początkowa rekordu = DoPełnegoZłotego (0) – sprawdzić na nowym elemencie.
 
 ## Słowniki (wartości z bazy klienta)
 
