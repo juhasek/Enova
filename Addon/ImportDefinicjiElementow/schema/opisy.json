@@ -1,0 +1,1675 @@
+{
+  "zakladki": {
+    "Ogolne": { "opis": "Nazwa, sposób i częstotliwość naliczania elementu oraz jego miejsce na liście płac." },
+    "Prawa": { "pomin": "prawa do definicji wg wydziału ustawia administrator enova (licencja platynowa) – nie dotyczy opisu składnika" },
+    "Deklaracje": { "opis": "Podatek, koszty uzyskania, składki ZUS i miejsce elementu na deklaracjach PIT i ZUS. Dla elementów nieopodatkowanych i nieoskładkowanych zakładkę można pominąć." },
+    "DeklaracjeCd": { "etykieta": "Deklaracje (cd)", "opis": "Ubezpieczenie umów cywilnoprawnych, deklaracje SOD (PFRON), PIT-11 cz. F i podstawa składek na urlopie wychowawczym." },
+    "Nieobecnosci": { "opis": "Czy i jak element wchodzi do podstawy wynagrodzenia urlopowego, ekwiwalentu i zasiłków ZUS." },
+    "Rozliczenie": { "opis": "Sposób wypłaty (gotówka/ewidencja), odbiorca potrącenia, zajęcia komornicze, koszty firmy, PPK i limit ZFŚS." },
+    "DaneStatystyczne": { "etykieta": "Dane statystyczne", "opis": "Klasyfikacja elementu na sprawozdaniach GUS." },
+    "Dodatkowe": { "opis": "Umowa o pracę, luka płacowa, refundacja z FP/FGŚP, pulpit pracownika, podstawa dopłat do nadgodzin, staż pracy." },
+    "Algorytm": { "etykieta": "Algorytm", "opis": "Jak wyliczana jest wartość elementu (podstawa × mnożnik × zależność od czasu), priorytet, potrącenie i zaokrąglenie." },
+    "SumaElementow": {
+      "etykieta": "Suma elementów",
+      "opis": "Lista elementów, których suma jest podstawą (gdy w algorytmie wybrano podstawę „Suma elementów”).",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "SumaElementów" } ] }
+    },
+    "StazPracy": {
+      "etykieta": "Staż pracy",
+      "opis": "Progi stażu i rodzaj stażu dla dodatków zależnych od stażu pracy.",
+      "widocznaGdy": { "dowolny": [
+        { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "ZależnyOdStażuPracy", "ZależnyOdStażuPracyZwyczajowego" ] } ] },
+        { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" }
+      ] }
+    },
+    "RozliczenieCzasuUmowy": {
+      "etykieta": "Rozliczenie czasu umowy",
+      "widocznaGdy": { "pole": "RodzajZrodla", "rowne": "UmowaRozliczenie" }
+    },
+    "Umowy": {
+      "etykieta": "Umowy",
+      "opis": "Wymuszenia na formularzu umowy cywilnoprawnej, do której przypięto element.",
+      "widocznaGdy": { "pole": "RodzajZrodla", "rowne": "Umowa" }
+    },
+    "Edytor": { "pomin": "kod algorytmu w C# – pisze wdrożeniowiec na podstawie opisu klienta w polu „Uwagi dla wdrożeniowca”" },
+    "NazwyParametrow": { "pomin": "nazwy parametrów edytowalnych na dodatku/elemencie wypłaty – ustawia wdrożeniowiec zgodnie z algorytmem (do decyzji, czy pokazywać klientowi)" },
+    "Podglad": { "pomin": "podgląd wygenerowanego kodu – tylko do odczytu" },
+    "Historia": { "pomin": "historyczność definicji (tylko nadgodziny i nocne) – wskazanie innej definicji od daty robi wdrożeniowiec" },
+    "PomniejszeniaNieobecnosci": { "pomin": "pomniejszenia wg pojedynczych definicji nieobecności (licencja platynowa, lista z bazy klienta) – do decyzji, czy dodać do formularza" }
+  },
+
+  "sekcje": {
+    "Algorytm/Algorytm naliczania wartości / Jak urlop wypoczynkowy": { "etykieta": "Jak urlop wypoczynkowy", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "JakUrlopWypoczynkowy" } },
+    "Algorytm/Algorytm naliczania wartości / Jak chorobowe": { "etykieta": "Jak chorobowe", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "JakChorobowe" } },
+    "Algorytm/Algorytm naliczania wartości / Jak ekwiwalent za urlop": {
+      "etykieta": "Jak ekwiwalent za urlop",
+      "widocznaGdy": { "dowolny": [
+        { "pole": "Algorytm.Typ", "rowne": "JakEkwiwalentZaUrlop" },
+        { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" }, { "pole": "RodzajZrodla", "rowne": "Nieobecność" }, { "pole": "Algorytm.JakEkwiwalent", "rowne": true } ] }
+      ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Za okres nieobecności": { "etykieta": "Za okres nieobecności", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "ZaOkresNieobecności" } },
+    "Algorytm/Algorytm naliczania wartości / Za okres nieobecności / Wypłata elementu za okres": { "etykieta": "Wypłata elementu za okres", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "ZaOkresNieobecności" } },
+    "Algorytm/Algorytm naliczania wartości / Edytor": {
+      "etykieta": "Edytor algorytmu",
+      "opis": "Wartość liczy kod przygotowany przez wdrożeniowca. Opisz zasadę naliczania w polu „Uwagi dla wdrożeniowca”.",
+      "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" }
+    },
+    "Algorytm/Algorytm naliczania wartości / Edytor / Korekta wartości z tytułu nieobecności (pomniejszenia)": {
+      "etykieta": "Pomniejszenia za nieobecności",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa", "rowne": "Miesięcznie" } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Edytor / Korekta wartości z tytułu nieobecności (pomniejszenia) / Korekta wartości z tytułu czasu pracy (odchyłki)": {
+      "etykieta": "Odchyłki czasu pracy",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa", "rowne": "Miesięcznie" } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Pomniejszenia i odchyłki": { "etykieta": "Pomniejszenia i odchyłki", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "PomniejszeniaIOdchyłki" } },
+    "Algorytm/Algorytm naliczania wartości / Pomniejszenia i odchyłki / Korekta wartości z tytułu nieobecności (pomniejszenia)": {
+      "etykieta": "Pomniejszenia za nieobecności",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "PomniejszeniaIOdchyłki" }, { "pole": "Algorytm.PomniejszeniaIOdchylki.WybranaStrefa", "pusty": true } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Pomniejszenia i odchyłki / Korekta wartości z tytułu nieobecności (pomniejszenia) / Korekta wartości z tytułu czasu pracy (odchyłki)": {
+      "etykieta": "Odchyłki czasu pracy",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "PomniejszeniaIOdchyłki" }, { "pole": "Algorytm.PomniejszeniaIOdchylki.WybranaStrefa", "pusty": true } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Podstawa": {
+      "etykieta": "Krok 1: Podstawa",
+      "opis": "Kreator liczy wartość jako: podstawa × mnożnik × zależność od czasu pracy.",
+      "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }
+    },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Podstawa / Za okres nieobecności": {
+      "etykieta": "Podstawa za okres nieobecności",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "ZaOkresNieobecności" } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Podstawa / Za okres nieobecności / Wypłata elementu za okres": {
+      "etykieta": "Wypłata elementu za okres",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "ZaOkresNieobecności" } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Przeliczenie podstawy": { "etykieta": "Przeliczenie podstawy", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" } },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Mnożnik": { "etykieta": "Krok 2: Mnożnik (współczynnik)", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" } },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Zależność od czasu": { "etykieta": "Krok 3: Zależność od czasu pracy", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" } },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Zależność od czasu / Korekta wartości z tytułu nieobecności (pomniejszenia)": {
+      "etykieta": "Pomniejszenia za nieobecności",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa", "rowne": "Miesięcznie" } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Zależność od czasu / Korekta wartości z tytułu nieobecności (pomniejszenia) / Korekta wartości z tytułu czasu pracy (odchyłki)": {
+      "etykieta": "Odchyłki czasu pracy",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa", "rowne": "Miesięcznie" } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Zależność od czasu / Czas pracy": {
+      "etykieta": "Czas pracy (wartość za godzinę)",
+      "widocznaGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa", "rowne": "Godzinę" } ] }
+    },
+    "Algorytm/Algorytm naliczania wartości / Kreator algorytmu / Pomniejsz do zera": { "etykieta": "Pomniejsz do zera", "widocznaGdy": { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" } },
+    "Rozliczenie/Ewidencja Środków Pieniężnych": { "etykieta": "Ewidencja środków pieniężnych" },
+    "Nieobecnosci/Definiowany element wynagrodzenia w podstawie naliczania urlopów": { "etykieta": "Podstawa urlopu" },
+    "Nieobecnosci/Definiowany element wynagrodzenia w podstawie naliczania urlopów / Wynagrodzenia za czas urlopu": { "etykieta": "Wynagrodzenie za czas urlopu" },
+    "Nieobecnosci/Definiowany element wynagrodzenia w podstawie naliczania urlopów / Wynagrodzenia za ekwiwalent": { "etykieta": "Ekwiwalent za urlop" },
+    "Nieobecnosci/... zasiłków (pracownicy)": { "etykieta": "Podstawa zasiłków – pracownicy" },
+    "Nieobecnosci/... zasiłków (inni ubezpieczeni)": { "etykieta": "Podstawa zasiłków – inni ubezpieczeni (np. zleceniobiorcy)" },
+    "Nieobecnosci/... płacy minimalnej": { "etykieta": "Przyrównanie podstawy zasiłku do płacy minimalnej" },
+    "Nieobecnosci/... zasiłków": { "etykieta": "Okres wliczania do podstawy zasiłków" }
+  },
+
+  "pola": {
+    "RodzajZrodla": {
+      "etykieta": "Rodzaj elementu",
+      "opis": "Określa, czym jest element w enova: dodatek lub potrącenie przypisywane pracownikowi (Dodatek), wynagrodzenie zasadnicze (Etat), rozliczenie nieobecności, np. wynagrodzenie za urlop lub zasiłek (Nieobecność), wypłata do umowy cywilnoprawnej (Umowa). Rodzaju nie można zmienić po utworzeniu definicji – większość nowych składników to Dodatek.",
+      "podpowiedz": "Najczęściej: Dodatek. Nie da się zmienić po zapisie w enova.",
+      "wymagane": true,
+      "domyslna": "Dodatek",
+      "opisDoWeryfikacji": true,
+      "uwagiTechniczne": "Selektor tabeli DefElementow: nowy wiersz = new DefinicjaElementu(RodzajŹródłaWypłaty). Instrukcja nie opisuje rodzajów w rozdziale o definicjach – opisy wartości i lista ukrytych rodzajów do akceptacji."
+    },
+    "Nazwa": {
+      "opis": "Pełna nazwa elementu (maks. 40 znaków). Musi być unikalna w całej bazie – enova nie zapisze drugiej definicji o tej samej nazwie. Nazwy definicji standardowych nie można zmienić.",
+      "podpowiedz": "Maks. 40 znaków, unikalna, np. „Premia kwartalna”.",
+      "walidacje": { "unikalne": "blad" },
+      "zrodloOpisu": "instrukcja s. 1670",
+      "uwagiTechniczne": "IsReadOnlyNazwa blokuje tylko definicje standardowe – import ich nie nadpisuje."
+    },
+    "NazwaPomocnicza": {
+      "opis": "Nazwa elementu pokazywana na raportach (np. pasek wypłaty), jeżeli ma być inna niż nazwa definicji.",
+      "podpowiedz": "Opcjonalnie – nazwa na wydrukach.",
+      "licencja": "zlota",
+      "zrodloOpisu": "instrukcja s. 1670"
+    },
+    "Skrot": {
+      "opis": "Krótka nazwa (maks. 12 znaków) używana na wydrukach, gdzie pełna nazwa się nie mieści, np. na liście płac. Dobierz tak, by była czytelna, np. „Prem.kw.”.",
+      "podpowiedz": "Maks. 12 znaków, czytelny na wydruku.",
+      "walidacje": { "unikalne": "ostrzezenie" },
+      "zrodloOpisu": "instrukcja s. 1670"
+    },
+    "Kod": {
+      "opis": "Dodatkowy kod elementu (maks. 12 znaków), np. używany w raportach lub w wymianie danych z innymi systemami. Instrukcja nie opisuje jego zastosowania – wypełnij, jeśli firma stosuje kody składników.",
+      "podpowiedz": "Opcjonalnie, maks. 12 znaków.",
+      "opisDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1670 (tylko nazwa pola)"
+    },
+    "Blokada": {
+      "opis": "Zablokowanego elementu nie da się przypisać kolejnym pracownikom; pozostaje tylko tam, gdzie już był. Używa się go dla składników archiwalnych, których nie można usunąć, bo są na starych listach płac.",
+      "podpowiedz": "Zwykle Nie – nowe elementy mają być dostępne.",
+      "zrodloOpisu": "instrukcja s. 1670"
+    },
+    "OkresNaliczania.Naliczanie": {
+      "etykieta": "Naliczanie",
+      "opis": "Z dołu – element płacony po przepracowanym miesiącu (standard). Z góry – płacony przed przepracowaniem miesiąca, a nieobecności rozliczają się w następnej wypłacie; działa tylko wtedy, gdy także lista płac jest liczona z góry.",
+      "podpowiedz": "Standardowo: płatna z dołu.",
+      "wymagane": true,
+      "domyslna": "PłatnaZDołu",
+      "zrodloOpisu": "instrukcja s. 1670–1671"
+    },
+    "OkresNaliczania.Opoznienie": {
+      "etykieta": "Opóźnienie (miesiące)",
+      "opis": "O ile miesięcy okres, za który liczony jest element, jest przesunięty względem wypłaty. Przykład: nagroda roczna za ubiegły rok wypłacana w lutym – typ okresu „co n miesięcy”, 12 miesięcy, opóźnienie 2.",
+      "podpowiedz": "0 = bez przesunięcia.",
+      "edytowalnyGdy": { "pole": "OkresNaliczania.Naliczanie", "rowne": "PłatnaZDołu" },
+      "walidacje": { "min": 0, "max": 120 },
+      "zrodloOpisu": "instrukcja s. 1672"
+    },
+    "OkresNaliczania.Typ": {
+      "etykieta": "Typ okresu naliczania",
+      "opis": "Jak często element jest naliczany: jednorazowo, za każdy okres (miesiąc), z każdą wypłatą w miesiącu, co n tygodni, co n miesięcy lub co n lat. Uwaga: elementy za okres dłuższy niż rok nie są wliczane do podstawy zasiłków ZUS.",
+      "podpowiedz": "Np. premia miesięczna: co n miesięcy = 1; kwartalna: co 3 miesiące.",
+      "wymagane": true,
+      "domyslna": "CoNMiesięcy",
+      "domyslnaDoWeryfikacji": true,
+      "dozwoloneWartosci": [
+        { "gdy": { "pole": "OkresNaliczania.Naliczanie", "rowne": "PłatnaZGóry" }, "wartosci": [ "Jednorazowa", "Każda", "KażdaWypłata", "CoNMiesięcy" ] }
+      ],
+      "zrodloOpisu": "instrukcja s. 1671–1672; lista z OkresNaliczania.GetListTyp (2610)",
+      "uwagiTechniczne": "Rekord ma 0 (brak wartości); domyślną przyjęto wg standardowych definicji typu Dodatek (CoNMiesięcy/1) – potwierdzić na nowym elemencie w enova."
+    },
+    "OkresNaliczania.Ilosc": {
+      "etykieta": "Co ile okresów (tygodni / miesięcy / lat)",
+      "opis": "Liczba tygodni, miesięcy lub lat (zależnie od typu okresu) między kolejnymi naliczeniami. Np. premia kwartalna: co n miesięcy = 3; nagroda roczna: co n lat = 1 (albo co 12 miesięcy).",
+      "podpowiedz": "Liczba całkowita ≥ 1.",
+      "domyslna": 1,
+      "edytowalnyGdy": { "wszystkie": [
+        { "pole": "OkresNaliczania.Typ", "wsrod": [ "CoNMiesięcy", "CoNLat", "CoNTygodni" ] },
+        { "pole": "OkresNaliczania.Naliczanie", "rozne": "PłatnaZGóry" }
+      ] },
+      "wymaganeGdy": { "wszystkie": [
+        { "pole": "OkresNaliczania.Typ", "wsrod": [ "CoNMiesięcy", "CoNLat", "CoNTygodni" ] },
+        { "pole": "OkresNaliczania.Naliczanie", "rozne": "PłatnaZGóry" }
+      ] },
+      "walidacje": { "min": 1, "max": 120 },
+      "zrodloOpisu": "instrukcja s. 1671–1672; etykieta w enova zmienia się (Tygodnie/Miesiące/Lata)"
+    },
+    "OkresNaliczania.DlaKazdejUmowy": {
+      "opis": "Czy element ma być dzielony na okresy kolejnych umów o pracę. Domyślnie – zgodnie z ustawieniem w konfiguracji płac (Okres naliczania podstawy urlopów… ograniczony do danej umowy); Tak – dzieli zawsze; Nie – nie dzieli. Nie dotyczy nadgodzin i nocnych.",
+      "podpowiedz": "Zwykle: Domyślnie.",
+      "edytowalnyGdy": { "wszystkie": [
+        { "pole": "OkresNaliczania.Typ", "wsrod": [ "CoNMiesięcy", "CoNLat", "CoNTygodni" ] },
+        { "pole": "OkresNaliczania.Naliczanie", "rozne": "PłatnaZGóry" }
+      ] },
+      "domyslnaDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1672",
+      "uwagiTechniczne": "Instrukcja nazywa „Domyślnie” ustawieniem domyślnym, a rekord ma wartość początkową Nie (0) – sprawdzić na nowym elemencie."
+    },
+    "MinimalneWynagrodzenie": {
+      "opis": "Zaznacz, jeśli element ma być brany pod uwagę przy porównaniu wynagrodzenia z płacą minimalną (wyrównanie do minimalnej). Nie zaznacza się np. nagród jubileuszowych, odpraw, nadgodzin ani świadczeń nieopodatkowanych.",
+      "podpowiedz": "Tak dla stałych składników wynagrodzenia (np. dodatek funkcyjny).",
+      "zrodloOpisu": "instrukcja s. 1673"
+    },
+    "Korygowany": {
+      "opis": "Czy enova ma przeliczyć element za poprzedni, już rozliczony miesiąc, gdy później zmieni się czas pracy lub nieobecności (np. zwolnienie lekarskie dostarczone po wypłacie). Bez zaznaczenia zaległa nieobecność nie zmieni wartości tego elementu.",
+      "podpowiedz": "Tak dla elementów zależnych od obecności (np. premia procentowa).",
+      "zrodloOpisu": "instrukcja s. 1673–1674"
+    },
+    "GenerujZerowy": {
+      "opis": "Czy pokazywać element na wypłacie także wtedy, gdy wyliczy się 0 zł. Standardowo elementy zerowe są pomijane.",
+      "podpowiedz": "Tak, jeśli zaznaczasz „Aktualizuj zapis po wypłacie”.",
+      "zrodloOpisu": "instrukcja s. 1674–1675"
+    },
+    "ZawszeGotowka": {
+      "etykieta": "Wypłata zawsze gotówką",
+      "opis": "Element zostanie wypłacony gotówką bez względu na rachunki bankowe pracownika zapisane w kartotece. Nie można zaznaczyć, gdy wskazano ewidencję wypłaty na zakładce Rozliczenie.",
+      "podpowiedz": "Zwykle Nie.",
+      "edytowalnyGdy": { "pole": "Rozliczenie.Ewidencja", "pusty": true },
+      "zrodloOpisu": "instrukcja s. 1674, 1746"
+    },
+    "DoWyplaty": {
+      "etykieta": "Wpływa na kwotę „do wypłaty”",
+      "opis": "Odznacz dla świadczeń w naturze (np. bony, pakiety): wartość wchodzi do podstawy podatku i składek, ale nie zwiększa kwoty przelewu/gotówki dla pracownika.",
+      "podpowiedz": "Zwykle Tak; Nie dla świadczeń w naturze.",
+      "domyslna": true,
+      "zrodloOpisu": "instrukcja s. 1674; wartość początkowa z DefinicjaElementu.OnAdded (2610)"
+    },
+    "Aktualizacja": {
+      "etykieta": "Aktualizuj zapis po wypłacie",
+      "opis": "Po każdej wypłacie enova dopisuje zapis historyczny dodatku pracownika z wartościami parametrów (np. procentu premii), dzięki czemu każdą wypłatę można odtworzyć. Dostępne tylko dla rodzaju Dodatek.",
+      "podpowiedz": "Tak dla dodatków o zmiennym parametrze (np. procent premii).",
+      "edytowalnyGdy": { "pole": "RodzajZrodla", "rowne": "Dodatek" },
+      "zrodloOpisu": "instrukcja s. 1674–1675"
+    },
+    "Zerowanie": {
+      "etykieta": "Zeruj parametry po wypłacie",
+      "opis": "Po wypłacie parametry dodatku (np. liczba godzin, kwota) są zerowane, żeby w kolejnym miesiącu nie wypłacić omyłkowo starej wartości. Dostępne, gdy zaznaczono „Aktualizuj zapis po wypłacie”.",
+      "podpowiedz": "Tak dla dodatków wpisywanych co miesiąc ręcznie.",
+      "edytowalnyGdy": { "pole": "Aktualizacja", "rowne": true },
+      "zrodloOpisu": "instrukcja s. 1675"
+    },
+    "DefinicjaListyPlac": {
+      "opis": "Na jakiej liście płac ma się pojawiać element (np. LPE – etaty, LPU – umowy, LPI – inne). Puste = enova wybierze listę sama wg rodzaju zatrudnienia. Dla wypłat osobom niezatrudnionym (np. emerytom) trzeba wskazać LPI.",
+      "podpowiedz": "Zwykle puste.",
+      "licencja": "zlota",
+      "zrodloOpisu": "instrukcja s. 1675–1676"
+    },
+    "Zatrudnienie": {
+      "etykieta": "Rodzaj wypłaty",
+      "opis": "Komu wypłaca się element: Etat – pracownikom, Umowa – zleceniobiorcom, Inna wypłata – osobom niezatrudnionym (np. byłym pracownikom), Warunkowy – zarówno pracownikom, jak i zleceniobiorcom (np. rozliczenie delegacji).",
+      "podpowiedz": "Etat dla składników pracowniczych.",
+      "wymagane": true,
+      "domyslna": { "wgWarunku": [ { "gdy": { "pole": "RodzajZrodla", "rowne": "Umowa" }, "wartosc": "Umowa" } ], "inaczej": "Etat" },
+      "licencja": "zlota",
+      "zrodloOpisu": "instrukcja s. 1676; wartość początkowa z DefinicjaElementu.OnAdded (2610)"
+    },
+    "RodzajNaliczania": {
+      "opis": "Na jakich listach płac naliczać element: wszystkich, tylko rzeczywistych lub tylko planowanych (planowanie wynagrodzeń, rezerwy). Instrukcja nie opisuje pola w rozdziale o definicjach.",
+      "podpowiedz": "Zwykle: Wszystkie.",
+      "licencja": "platynowa",
+      "opisDoWeryfikacji": true,
+      "uwagiTechniczne": "IsReadOnlyRodzajNaliczania: edycja tylko z licencją platynową i gdy PlanListyPlac.GetEnabled (moduł planowanych list płac)."
+    },
+    "Kolejnosc": {
+      "opis": "Kolejność elementu na paskach i listach płac (mniejsza liczba = wyżej). 0 – enova ustali kolejność sama wg rodzaju elementu (np. wynagrodzenie zasadnicze 0, dodatki 50, elementy nieopodatkowane +100).",
+      "podpowiedz": "0 = automatycznie.",
+      "walidacje": { "min": 0, "max": 9999 },
+      "zrodloOpisu": "instrukcja s. 1677; DefinicjaElementu.OnImported/GetKolejność (2610)"
+    },
+
+    "Deklaracje.PozycjaPIT": {
+      "opis": "Pozycja deklaracji PIT, na której wykazuje się wypłatę. Wybór pozycji PIT-11/PIT-4R oznacza, że element jest opodatkowany. Dla elementu nieopodatkowanego zostaw puste. Po pierwszej wypłacie nie można już wyczyścić tego pola.",
+      "podpowiedz": "Puste = element nieopodatkowany. Np. „PIT-11 1/PIT-4R 1” dla wynagrodzeń ze stosunku pracy.",
+      "zrodloOpisu": "instrukcja s. 1712–1713",
+      "uwagiTechniczne": "IsReadOnlyPozycjaPIT zależy od stanu bazy (definicja już wypłacona) – sprawdza import przy aktualizacji, nie formularz."
+    },
+    "Deklaracje.Zaliczka.Typ": {
+      "etykieta": "Zaliczka podatku (podatek)",
+      "opis": "Jak liczyć zaliczkę podatku: nie naliczać (element nieopodatkowany), wg skali podatkowej (składniki pracownicze), procentowo (podany procent, np. umowy na IFT-1/PIT-8AR) lub procentowo jak umowy (procent z konfiguracji płac).",
+      "podpowiedz": "Składniki pracownicze: wg skali podatkowej.",
+      "domyslna": "NieNaliczać",
+      "edytowalnyGdy": { "pole": "Deklaracje.PozycjaPIT", "pusty": false },
+      "zrodloOpisu": "instrukcja s. 1713"
+    },
+    "Deklaracje.Zaliczka.Procent": {
+      "etykieta": "Procent zaliczki",
+      "opis": "Stawka podatku, gdy zaliczka jest liczona procentowo, np. 20% dla umowy rozliczanej na IFT-1.",
+      "podpowiedz": "Np. 12%.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Zaliczka.Typ", "rowne": "Procentowe" },
+      "wymaganeGdy": { "pole": "Deklaracje.Zaliczka.Typ", "rowne": "Procentowe" },
+      "walidacje": { "min": 0, "max": 100 },
+      "zrodloOpisu": "instrukcja s. 1713"
+    },
+    "Deklaracje.Zaliczka.PomniejszonaZUS": {
+      "opis": "Czy podstawę podatku pomniejszać o składki ZUS pracownika. Nie zaznacza się dla umów ryczałtowych. „Warunkowo” – umowy do 200 zł rozlicza ryczałtem, a wyższe w zwykły sposób.",
+      "podpowiedz": "Składniki pracownicze: Tak.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Zaliczka.Typ", "rozne": "NieNaliczać" },
+      "domyslnaDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1714"
+    },
+    "Deklaracje.Zaliczka.NaliczaniePit26": {
+      "etykieta": "Naliczaj zwolnienie z podatku",
+      "opis": "Czy stosować zwolnienia z PIT (do 26 lat, duża rodzina, pracujący senior, powrót z zagranicy). Warunkowo – dla elementów z pozycji PIT-4R 1, jeśli pracownik spełnia warunki; Tak – zawsze, gdy pracownik ma ustawione zwolnienie; Nie – nigdy (np. zasiłki, umowy o dzieło).",
+      "podpowiedz": "Zwykle: Warunkowo.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Zaliczka.Typ", "rozne": "NieNaliczać" },
+      "zrodloOpisu": "instrukcja s. 1714–1715"
+    },
+    "Deklaracje.Koszty.Typ": {
+      "etykieta": "Koszty uzyskania przychodu",
+      "opis": "Czy i jakie koszty uzyskania odliczać od elementu: ze stosunku pracy, ze stosunku pracy + 50% (prawa autorskie), procentowe (umowy cywilnoprawne) itd. enova nie odliczy w miesiącu więcej, niż przysługuje pracownikowi wg kartoteki.",
+      "podpowiedz": "Składniki pracownicze: ze stosunku pracy.",
+      "domyslna": "NieNaliczać",
+      "edytowalnyGdy": { "pole": "Deklaracje.Zaliczka.Typ", "rozne": "NieNaliczać" },
+      "zrodloOpisu": "instrukcja s. 1715–1717"
+    },
+    "Deklaracje.Koszty.Procent": {
+      "etykieta": "Procent kosztów",
+      "opis": "Procent kosztów uzyskania dla kosztów procentowych, np. 20% dla umowy zlecenia lub 50% dla praw autorskich.",
+      "podpowiedz": "Np. 20%.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Koszty.Typ", "wsrod": [ "Procentowe", "Procentowe50", "ProcentoweWarunkowo" ] },
+      "wymaganeGdy": { "pole": "Deklaracje.Koszty.Typ", "wsrod": [ "Procentowe", "Procentowe50", "ProcentoweWarunkowo" ] },
+      "walidacje": { "min": 0, "max": 100 },
+      "zrodloOpisu": "instrukcja s. 1717"
+    },
+    "Deklaracje.Ulga.Typ": {
+      "etykieta": "Ulga podatkowa",
+      "opis": "Czy od zaliczki tego elementu można odliczyć kwotę zmniejszającą podatek. Wybierz „Naliczać” dla opodatkowanych składników pracowniczych (także zasiłków); enova odliczy najwyżej tyle, ile przysługuje pracownikowi.",
+      "podpowiedz": "Składniki pracownicze: Naliczać.",
+      "domyslna": "NieNaliczać",
+      "edytowalnyGdy": { "pole": "Deklaracje.Zaliczka.Typ", "rozne": "NieNaliczać" },
+      "zrodloOpisu": "instrukcja s. 1718"
+    },
+    "Deklaracje.KodRSA": {
+      "etykieta": "Kod świadczenia / przerwy (RSA)",
+      "opis": "Kod świadczenia lub przerwy na raporcie ZUS RSA – tylko dla rozliczeń nieobecności (np. 313 zasiłek chorobowy, 331 wynagrodzenie chorobowe) albo pomniejszeń za nieobecności niepłatne (np. 111 urlop bezpłatny). Dla zwykłych dodatków zostaw puste.",
+      "podpowiedz": "Zwykle puste.",
+      "zrodloOpisu": "instrukcja s. 1719–1721"
+    },
+    "Deklaracje.PozycjaRCA": {
+      "etykieta": "Pozycja na deklaracji RCA",
+      "opis": "Dla świadczeń finansowanych z budżetu państwa wykazywanych na RCA (np. zasiłek rodzinny, pielęgnacyjny) lub podstawowej składki na PFE. Niedostępne, gdy wybrano kod RSA.",
+      "podpowiedz": "Zwykle: Nie dotyczy.",
+      "edytowalnyGdy": { "pole": "Deklaracje.KodRSA", "pusty": true },
+      "zrodloOpisu": "instrukcja s. 1721–1722"
+    },
+    "Deklaracje.PozycjaRP7": {
+      "etykieta": "Kod składnika wynagrodzenia (ERP-7)",
+      "opis": "Kolumna zaświadczenia ERP-7 (kapitał początkowy): składniki stałe (np. zasadnicze, stażowe, funkcyjne), zmienne (premie, nagrody, nadgodziny), inne, świadczenia w naturze, świadczenia z ubezpieczenia (zasiłki) albo nie dotyczy.",
+      "podpowiedz": "Np. premia regulaminowa: składniki zmienne.",
+      "zrodloOpisu": "instrukcja s. 1722"
+    },
+    "Deklaracje.Spoleczne.Typ": {
+      "etykieta": "Podstawa naliczania składek ZUS",
+      "opis": "Czy element wchodzi do podstawy składek emerytalnej, rentowej, chorobowej i wypadkowej. „Naliczać” – dla opodatkowanych składników, które nie są ustawowo wyłączone z oskładkowania; „Nie mniej niż” – tylko dla dochodu deklarowanego właściciela.",
+      "podpowiedz": "Składniki pracownicze: Naliczać.",
+      "domyslna": "NieNaliczać",
+      "zrodloOpisu": "instrukcja s. 1722–1723"
+    },
+    "Deklaracje.Narzuty.SkladkaFP": {
+      "etykieta": "Składka na Fundusz Pracy",
+      "opis": "Jak sprawdzać obowiązek składki na FP (porównanie z płacą minimalną): Domyślna – wg wbudowanych reguł enova; Bez przyrównania – bez przeliczania na pełny miesiąc; Z przyrównaniem – wartość przeliczana na pełny miesiąc (umowy zawarte w trakcie miesiąca).",
+      "podpowiedz": "Zwykle: Domyślna.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Spoleczne.Typ", "rozne": "NieNaliczać" },
+      "zrodloOpisu": "instrukcja s. 1723–1724"
+    },
+    "Deklaracje.Narzuty.SkladkaFGSP": {
+      "etykieta": "Składka na FGŚP",
+      "opis": "Domyślna – składka na Fundusz Gwarantowanych Świadczeń Pracowniczych zależy od ustawienia w kartotece pracownika; Nie naliczać – np. dla umów o udział w organach stanowiących.",
+      "podpowiedz": "Zwykle: Domyślna.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Spoleczne.Typ", "rozne": "NieNaliczać" },
+      "zrodloOpisu": "instrukcja s. 1724"
+    },
+    "Deklaracje.Zdrowotne.Typ": {
+      "etykieta": "Składka na ubezpieczenie zdrowotne",
+      "opis": "Czy od elementu liczyć składkę zdrowotną. Zwykle tak jak składki społeczne; wyjątek to wynagrodzenie chorobowe (bez społecznych, ze zdrowotną). „Warunkowo” – dla elementów rozliczających umowy zarówno ryczałtowe, jak i zwykłe.",
+      "podpowiedz": "Składniki pracownicze: Naliczać.",
+      "domyslna": "NieNaliczać",
+      "zrodloOpisu": "instrukcja s. 1724–1725"
+    },
+    "Deklaracje.Zdrowotne.PomniejszoneZUS": {
+      "etykieta": "Podstawa składki zdrowotnej pomniejszona o składki ZUS",
+      "opis": "Czy podstawę składki zdrowotnej pomniejszać o składki społeczne pracownika. Nie zaznacza się m.in. dla dochodu deklarowanego właściciela.",
+      "podpowiedz": "Składniki pracownicze: Tak.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Zdrowotne.Typ", "rozne": "NieNaliczać" },
+      "zrodloOpisu": "instrukcja s. 1725"
+    },
+    "Deklaracje.Zdrowotne.PomniejszaFIS": {
+      "etykieta": "Składka zdrowotna pomniejsza zaliczkę podatku",
+      "opis": "Jak składka zdrowotna ma się do zaliczki podatku: nie pomniejsza (np. umowy na PIT-8AR), pomniejsza do wysokości zaliczki (składniki ze stosunku pracy), pomniejsza bez ograniczenia lub warunkowo (nie dla umów ryczałtowych).",
+      "podpowiedz": "Składniki pracownicze: Pomniejsza do FIS.",
+      "edytowalnyGdy": { "pole": "Deklaracje.Zdrowotne.Typ", "rozne": "NieNaliczać" },
+      "zrodloOpisu": "instrukcja s. 1725–1726"
+    },
+    "Deklaracje.NieoskladkowanyZUS": {
+      "etykieta": "Element nieoskładkowany w okresie nieobecności ZUS",
+      "opis": "Tak – element jest wykazywany na ZUS RPA/RIA jako przychód wypłacony obok zasiłku lub wynagrodzenia chorobowego, który w tym okresie nie był podstawą składek emerytalnej i rentowej (np. dodatek stażowy za okres choroby).",
+      "podpowiedz": "Zwykle Nie.",
+      "zrodloOpisu": "instrukcja s. 1726"
+    },
+    "Deklaracje.Priorytet": {
+      "etykieta": "Priorytet naliczania podatków i składek",
+      "opis": "Kolejność przypisywania podatku i składek do poszczególnych elementów wypłaty (0, 1, 2…). Na elemencie o największej liczbie zostaje różnica z zaokrągleń. Wpływa tylko na podział kwot między elementy, nie na sumę.",
+      "podpowiedz": "Zwykle 0.",
+      "walidacje": { "min": 0, "max": 999 },
+      "zrodloOpisu": "instrukcja s. 1727–1728"
+    },
+    "Deklaracje.RozrzucajPodatkiISkładki": {
+      "etykieta": "Uwzględniaj podczas rozrzucania składek ZUS i podatku",
+      "opis": "Dotyczy elementów, które nie wpływają na kwotę do wypłaty (np. bony). Nie – na tym elemencie podatek i składki są zawsze zerowe, a odpowiednie kwoty pokazują się na innych elementach wypłaty (np. na liście z wynagrodzeniem zasadniczym).",
+      "podpowiedz": "Zwykle Tak.",
+      "domyslna": true,
+      "edytowalnyGdy": { "pole": "DoWyplaty", "rowne": false },
+      "zrodloOpisu": "instrukcja s. 1728–1729",
+      "uwagiTechniczne": "Właściwość wyliczana z pola bazodanowego Deklaracje.NieRozrzucaj (odwrotność)."
+    },
+    "Deklaracje.TrybPodleganiaRozpMF070122": {
+      "etykieta": "Podlega rozporządzeniu MF z 7.01.2022",
+      "opis": "Czy element podlega przepisom o przedłużonym terminie poboru zaliczek (rozporządzenie MF z 7.01.2022). Domyślnie – podlegają elementy z pozycji PIT-11 1/PIT-4R 1 (etat) i PIT-11 5/PIT-4R 3 (zlecenie).",
+      "podpowiedz": "Zwykle: Domyślnie.",
+      "zrodloOpisu": "instrukcja s. 1729"
+    },
+
+    "Deklaracje.Umowa": {
+      "etykieta": "Umowa ubezpieczona jak",
+      "opis": "Tylko dla rodzaju Umowa: domyślny tytuł ubezpieczenia proponowany po dodaniu umowy – udział w organach stanowiących (2240), umowa o dzieło (bez ubezpieczenia), umowa zlecenia (0411), albo „Nie dotyczy”, aby wybrać tytuł samodzielnie.",
+      "podpowiedz": "Np. umowa zlecenia.",
+      "edytowalnyGdy": { "pole": "RodzajZrodla", "rowne": "Umowa" },
+      "zrodloOpisu": "instrukcja s. 1730"
+    },
+    "Deklaracje.UmowaTyUb": {
+      "etykieta": "Domyślny tytuł ubezpieczenia",
+      "opis": "Kod tytułu ubezpieczenia podpowiadany przy umowie z tym elementem, gdy w polu „Umowa ubezpieczona jak” wybrano „Nie dotyczy”.",
+      "podpowiedz": "Np. 0411.",
+      "edytowalnyGdy": { "wszystkie": [ { "pole": "RodzajZrodla", "rowne": "Umowa" }, { "pole": "Deklaracje.Umowa", "rowne": "NieDotyczy" } ] },
+      "zrodloOpisu": "instrukcja s. 1730"
+    },
+    "Deklaracje.UmowaJakEtat": {
+      "etykieta": "Ubezpieczenie pracownika etatowego",
+      "opis": "Tak – gdy umowę zawiera osoba zatrudniona też na etacie, tytuł ubezpieczenia zostanie przepisany z umowy o pracę; w przeciwnym razie użyty zostanie domyślny tytuł ubezpieczenia.",
+      "podpowiedz": "Zwykle Nie.",
+      "edytowalnyGdy": { "wszystkie": [ { "pole": "RodzajZrodla", "rowne": "Umowa" }, { "pole": "Deklaracje.Umowa", "rowne": "NieDotyczy" } ] },
+      "zrodloOpisu": "instrukcja s. 1730–1731"
+    },
+    "Deklaracje.WliczajSOD": {
+      "etykieta": "Wliczaj do wynagrodzenia osiąganego i wypłaconego (SOD)",
+      "opis": "Czy element ma być uwzględniony w deklaracji Wn-D i załącznikach INF-DP (dofinansowanie PFRON do wynagrodzeń osób niepełnosprawnych).",
+      "podpowiedz": "Zwykle Tak.",
+      "domyslna": true,
+      "zrodloOpisu": "instrukcja s. 1731",
+      "uwagiTechniczne": "Właściwość wyliczana z pola bazodanowego Deklaracje.NieWliczajSOD (odwrotność)."
+    },
+    "Deklaracje.WliczDoKosztowPlacy": {
+      "etykieta": "Wliczaj do kosztów płacy (SOD)",
+      "opis": "Czy element wlicza się do kosztów płacy na Wn-D: Domyślnie – tylko elementy opodatkowane; Tak – zawsze (np. ekwiwalent za pracę zdalną); Nie – nigdy.",
+      "podpowiedz": "Zwykle: Domyślnie.",
+      "domyslna": "Domyślnie",
+      "zrodloOpisu": "instrukcja s. 1731"
+    },
+    "Deklaracje.OpisNaPIT8C": {
+      "etykieta": "Opis rodzaju przychodu (PIT-11 cz. F)",
+      "opis": "Dla przychodów z art. 20 ust. 1 ustawy o PIT wykazywanych w części F PIT-11 – rodzaj przychodu, który pojawi się na deklaracji (maks. 80 znaków).",
+      "podpowiedz": "Wypełnij tylko dla przychodów z cz. F PIT-11.",
+      "zrodloOpisu": "instrukcja s. 1731"
+    },
+    "Deklaracje.PodstawaSkladek.UrlopWychowawczy": {
+      "etykieta": "Podstawa składek osób na urlopie wychowawczym",
+      "opis": "Czy i jak element wliczać do podstawy składek emerytalnej i rentowej osób przebywających na urlopie wychowawczym (nie wliczać, wliczać, dopełniać wg godzin/dni/1/30, jak zasadnicze, w nominalnej wysokości).",
+      "podpowiedz": "Zwykle tak jak podstawa zasiłków dla pracowników.",
+      "zrodloOpisu": "instrukcja s. 1731–1732"
+    },
+
+    "Nieobecnosci.WahaniaWysokosci": {
+      "etykieta": "Element o znacznych wahaniach wysokości",
+      "opis": "Tak – zmienny element wlicza się do podstawy wynagrodzenia urlopowego z 12 miesięcy (zamiast 3), bo jego wysokość mocno się zmienia, np. prowizja.",
+      "podpowiedz": "Tak dla składników o dużych wahaniach.",
+      "zrodloOpisu": "instrukcja s. 1734"
+    },
+    "Nieobecnosci.Urlop.Typ": {
+      "etykieta": "Podstawa wynagrodzenia za czas urlopu",
+      "opis": "Jak element wlicza się do wynagrodzenia urlopowego: nie wliczać (np. nagrody, odprawy), wliczać aktualną wartość (stałe składniki miesięczne), wliczać po przeliczeniu (zmiana stawki, wymaga współczynnika), wliczać (zmienne – z 3 miesięcy), wliczać jak zasadnicze (np. premia procentowa od zasadniczego).",
+      "podpowiedz": "Np. premia uznaniowa: Nie wliczać; dodatek stały: aktualna wartość.",
+      "zrodloOpisu": "instrukcja s. 1734–1736"
+    },
+    "Nieobecnosci.Urlop.WspolczynnikTyp": {
+      "etykieta": "Współczynnik proporcjonalności (urlop)",
+      "opis": "Wielkość, według której przelicza się element przy zmianie stawek w okresie podstawy: wynagrodzenia (np. najniższe), zasiłki, wskaźniki firmy, stawka zaszeregowania 1h, zasadnicze nominalne, w zerowej wartości itd.",
+      "podpowiedz": "Np. nadgodziny: stawka zaszeregowania.",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.Urlop.Typ", "rowne": "WliczaćPoPrzeliczeniu" },
+      "wymaganeGdy": { "pole": "Nieobecnosci.Urlop.Typ", "rowne": "WliczaćPoPrzeliczeniu" },
+      "zrodloOpisu": "instrukcja s. 1735"
+    },
+    "Nieobecnosci.Urlop.Wynagrodzenie": {
+      "etykieta": "Rodzaj wynagrodzenia (współczynnik urlopu)",
+      "opis": "Które wynagrodzenie z konfiguracji płac jest współczynnikiem przeliczenia, np. Najniższe.",
+      "widocznyGdy": { "pole": "Nieobecnosci.Urlop.WspolczynnikTyp", "rowne": "Wynagrodzenia" },
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Nieobecnosci.Urlop.Typ", "rowne": "WliczaćPoPrzeliczeniu" }, { "pole": "Nieobecnosci.Urlop.WspolczynnikTyp", "rowne": "Wynagrodzenia" } ] },
+      "dozwoloneWartosci": [ { "wartosci": [ "Przeciętne miesięczne", "Minimalny dochód deklarowany", "Najniższe", "Najniższe ucznia I roku", "Najniższe ucznia II roku", "Najniższe ucznia III roku", "Minimalna podstawa zdrowotnego" ] } ],
+      "zrodloOpisu": "instrukcja s. 1735; lista z PodstawaUrlopu.GetListWynagrodzenie (2610)"
+    },
+    "Nieobecnosci.Urlop.Zasiłek": {
+      "etykieta": "Rodzaj zasiłku (współczynnik urlopu)",
+      "opis": "Który zasiłek z konfiguracji płac jest współczynnikiem przeliczenia.",
+      "widocznyGdy": { "pole": "Nieobecnosci.Urlop.WspolczynnikTyp", "rowne": "Zasiłki" },
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Nieobecnosci.Urlop.Typ", "rowne": "WliczaćPoPrzeliczeniu" }, { "pole": "Nieobecnosci.Urlop.WspolczynnikTyp", "rowne": "Zasiłki" } ] },
+      "dozwoloneWartosci": [ { "wartosci": [ "Porodowy", "Pogrzebowy", "Pielęgnacyjny", "Rodzinny na 1 i 2 dziecko", "Rodzinny na 3 dziecko", "Rodzinny na kolejne dziecko", "Wychowawczy podstawa ER", "Wychowawczy", "Wychowawczy samotni", "Wychowawczy 3 i następne", "Rodzinny jednorazowy" ] } ],
+      "zrodloOpisu": "instrukcja s. 1735; lista z PodstawaUrlopu.GetListZasiłek (2610)"
+    },
+    "Nieobecnosci.Urlop.Wskaźnik": {
+      "etykieta": "Wskaźnik (współczynnik urlopu)",
+      "opis": "Nazwa wskaźnika z konfiguracji płac (Płace/Wskaźniki) używanego jako współczynnik przeliczenia. Wpisz nazwę wskaźnika istniejącego w bazie.",
+      "widocznyGdy": { "pole": "Nieobecnosci.Urlop.WspolczynnikTyp", "rowne": "Wskaźniki" },
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Nieobecnosci.Urlop.Typ", "rowne": "WliczaćPoPrzeliczeniu" }, { "pole": "Nieobecnosci.Urlop.WspolczynnikTyp", "rowne": "Wskaźniki" } ] },
+      "zrodloOpisu": "instrukcja s. 1735",
+      "uwagiTechniczne": "Lista z konfiguracji bazy (Config.Wskaźniki) – import sprawdza istnienie."
+    },
+    "Nieobecnosci.Ekwiwalent.Typ": {
+      "etykieta": "Podstawa ekwiwalentu za urlop",
+      "opis": "Jak element wlicza się do podstawy ekwiwalentu za niewykorzystany urlop. Zasady jak dla wynagrodzenia urlopowego; składniki za okresy dłuższe niż miesiąc (np. premia kwartalna) wybierz „Wliczać” – wejdą średnio z 12 miesięcy.",
+      "podpowiedz": "Zwykle tak samo jak dla urlopu.",
+      "zrodloOpisu": "instrukcja s. 1737"
+    },
+    "Nieobecnosci.Ekwiwalent.Dopelnienie": {
+      "etykieta": "Po dopełnieniu (ekwiwalent)",
+      "opis": "Dopełnia element do pełnego miesiąca, jeśli był pomniejszony za okres niezatrudnienia. Dostępne, gdy element wlicza się do podstawy ekwiwalentu; enova zaznacza je automatycznie przy zmianie z „Nie wliczać”.",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.Ekwiwalent.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1737; PodstawaUrlopu.Typ setter (2610)"
+    },
+    "Nieobecnosci.Ekwiwalent.WspolczynnikTyp": {
+      "etykieta": "Współczynnik proporcjonalności (ekwiwalent)",
+      "opis": "Wielkość, według której przelicza się element w podstawie ekwiwalentu przy opcji „Wliczać po przeliczeniu” – jak dla urlopu.",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.Ekwiwalent.Typ", "rowne": "WliczaćPoPrzeliczeniu" },
+      "wymaganeGdy": { "pole": "Nieobecnosci.Ekwiwalent.Typ", "rowne": "WliczaćPoPrzeliczeniu" },
+      "zrodloOpisu": "instrukcja s. 1737–1738"
+    },
+    "Nieobecnosci.Ekwiwalent.Wynagrodzenie": {
+      "etykieta": "Rodzaj wynagrodzenia (współczynnik ekwiwalentu)",
+      "opis": "Które wynagrodzenie z konfiguracji płac jest współczynnikiem przeliczenia.",
+      "widocznyGdy": { "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp", "rowne": "Wynagrodzenia" },
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Nieobecnosci.Ekwiwalent.Typ", "rowne": "WliczaćPoPrzeliczeniu" }, { "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp", "rowne": "Wynagrodzenia" } ] },
+      "dozwoloneWartosci": [ { "wartosci": [ "Przeciętne miesięczne", "Minimalny dochód deklarowany", "Najniższe", "Najniższe ucznia I roku", "Najniższe ucznia II roku", "Najniższe ucznia III roku", "Minimalna podstawa zdrowotnego" ] } ],
+      "zrodloOpisu": "instrukcja s. 1737; PodstawaUrlopu.GetListWynagrodzenie (2610)"
+    },
+    "Nieobecnosci.Ekwiwalent.Zasiłek": {
+      "etykieta": "Rodzaj zasiłku (współczynnik ekwiwalentu)",
+      "opis": "Który zasiłek z konfiguracji płac jest współczynnikiem przeliczenia.",
+      "widocznyGdy": { "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp", "rowne": "Zasiłki" },
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Nieobecnosci.Ekwiwalent.Typ", "rowne": "WliczaćPoPrzeliczeniu" }, { "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp", "rowne": "Zasiłki" } ] },
+      "dozwoloneWartosci": [ { "wartosci": [ "Porodowy", "Pogrzebowy", "Pielęgnacyjny", "Rodzinny na 1 i 2 dziecko", "Rodzinny na 3 dziecko", "Rodzinny na kolejne dziecko", "Wychowawczy podstawa ER", "Wychowawczy", "Wychowawczy samotni", "Wychowawczy 3 i następne", "Rodzinny jednorazowy" ] } ],
+      "zrodloOpisu": "instrukcja s. 1737; PodstawaUrlopu.GetListZasiłek (2610)"
+    },
+    "Nieobecnosci.Ekwiwalent.Wskaźnik": {
+      "etykieta": "Wskaźnik (współczynnik ekwiwalentu)",
+      "opis": "Nazwa wskaźnika z konfiguracji płac (Płace/Wskaźniki) używanego jako współczynnik przeliczenia.",
+      "widocznyGdy": { "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp", "rowne": "Wskaźniki" },
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Nieobecnosci.Ekwiwalent.Typ", "rowne": "WliczaćPoPrzeliczeniu" }, { "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp", "rowne": "Wskaźniki" } ] },
+      "zrodloOpisu": "instrukcja s. 1737",
+      "uwagiTechniczne": "Lista z konfiguracji bazy (Config.Wskaźniki) – import sprawdza istnienie."
+    },
+    "Nieobecnosci.ZasilkiPracownicy.Typ": {
+      "etykieta": "Wliczanie do podstawy zasiłków (pracownicy)",
+      "opis": "Jak element wchodzi do podstawy zasiłku pracownika: nie wliczać (składnik zachowany w czasie zasiłku), wliczać dla (w kwocie wypłaconej, bez uzupełnienia, np. nadgodziny), wliczać w nominalnej wysokości, dopełniać wg dni / godzin / jak zasadnicze / wg 1/30 (składniki pomniejszane proporcjonalnie za nieobecność).",
+      "podpowiedz": "Np. premia pomniejszana za chorobę: dopełniać jak zasadnicze.",
+      "zrodloOpisu": "instrukcja s. 1738–1740"
+    },
+    "Nieobecnosci.ZasilkiPracownicy.Chorobowych": {
+      "etykieta": "… zasiłków chorobowych",
+      "opis": "Czy wliczać element do podstawy zasiłków chorobowych (pracownicy). Ten sam składnik może np. wchodzić do podstawy macierzyńskiego, a nie chorobowego.",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiPracownicy.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1739–1740"
+    },
+    "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": {
+      "etykieta": "… zasiłków rehabilitacyjnych",
+      "opis": "Czy wliczać element do podstawy świadczenia rehabilitacyjnego (pracownicy).",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiPracownicy.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": {
+      "etykieta": "… zasiłków macierzyńskich",
+      "opis": "Czy wliczać element do podstawy zasiłków macierzyńskich (pracownicy).",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiPracownicy.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": {
+      "etykieta": "… zasiłków opiekuńczych",
+      "opis": "Czy wliczać element do podstawy zasiłków opiekuńczych (pracownicy).",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiPracownicy.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.ZasilkiInni.Typ": {
+      "etykieta": "Wliczanie do podstawy zasiłków (inni ubezpieczeni)",
+      "opis": "Jak element wchodzi do podstawy zasiłku osób niebędących pracownikami (np. zleceniobiorców). Najczęściej „Nie wliczać” albo „Wliczać dla”.",
+      "podpowiedz": "Elementy umów: zwykle „Wliczać dla”.",
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.ZasilkiInni.Chorobowych": {
+      "etykieta": "… zasiłków chorobowych",
+      "opis": "Czy wliczać element do podstawy zasiłków chorobowych (inni ubezpieczeni).",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiInni.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": {
+      "etykieta": "… zasiłków rehabilitacyjnych",
+      "opis": "Czy wliczać element do podstawy świadczenia rehabilitacyjnego (inni ubezpieczeni).",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiInni.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.ZasilkiInni.Macierzynskich": {
+      "etykieta": "… zasiłków macierzyńskich",
+      "opis": "Czy wliczać element do podstawy zasiłków macierzyńskich (inni ubezpieczeni).",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiInni.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.ZasilkiInni.Opiekunczych": {
+      "etykieta": "… zasiłków opiekuńczych",
+      "opis": "Czy wliczać element do podstawy zasiłków opiekuńczych (inni ubezpieczeni).",
+      "edytowalnyGdy": { "pole": "Nieobecnosci.ZasilkiInni.Typ", "rozne": "NieWliczać" },
+      "zrodloOpisu": "instrukcja s. 1740"
+    },
+    "Nieobecnosci.DoMinimalnej": {
+      "etykieta": "Uwzględnij przy przyrównaniu podstawy chorobowego do płacy minimalnej",
+      "opis": "Tak – pracownik zachowuje prawo do tego elementu w czasie zasiłku, więc jego wartość dolicza się przy sprawdzaniu, czy podstawa zasiłku nie jest niższa od płacy minimalnej (np. dodatek stażowy bez ZUS za okres choroby).",
+      "podpowiedz": "Zwykle Nie.",
+      "zrodloOpisu": "instrukcja s. 1740–1742"
+    },
+    "Nieobecnosci.WliczanieDoPodstawyChorobowego": {
+      "etykieta": "Okres wliczania do podstawy zasiłków",
+      "opis": "Do kiedy element jest wliczany do podstawy zasiłków: domyślnie (wg reguł enova), zawsze, do końca okresu wypłaty dodatku albo do daty zakończenia wypłaty wpisanej na dodatku. Dotyczy dodatków wliczanych do podstawy zasiłków.",
+      "podpowiedz": "Zwykle: Domyślnie.",
+      "edytowalnyGdy": { "wszystkie": [
+        { "pole": "RodzajZrodla", "rowne": "Dodatek" },
+        { "dowolny": [ { "pole": "Nieobecnosci.ZasilkiPracownicy.Typ", "rozne": "NieWliczać" }, { "pole": "Nieobecnosci.ZasilkiInni.Typ", "rozne": "NieWliczać" } ] }
+      ] },
+      "zrodloOpisu": "instrukcja s. 1742–1743"
+    },
+    "Nieobecnosci.OdMiesiaca": {
+      "etykieta": "Okres elementu w podstawie zasiłku liczony od miesiąca",
+      "opis": "Dla elementów za okres dłuższy niż miesiąc (np. premia kwartalna lub roczna): od którego miesiąca zaczyna się okres. Np. premia roczna z ustawieniem „marzec” wlicza się do podstawy za okresy marzec–luty.",
+      "podpowiedz": "Zwykle: styczeń.",
+      "edytowalnyGdy": { "wszystkie": [
+        { "pole": "RodzajZrodla", "rowne": "Dodatek" },
+        { "dowolny": [ { "pole": "Nieobecnosci.ZasilkiPracownicy.Typ", "rozne": "NieWliczać" }, { "pole": "Nieobecnosci.ZasilkiInni.Typ", "rozne": "NieWliczać" } ] },
+        { "dowolny": [ { "pole": "OkresNaliczania.Typ", "rowne": "CoNLat" }, { "wszystkie": [ { "pole": "OkresNaliczania.Typ", "rowne": "CoNMiesięcy" }, { "pole": "OkresNaliczania.Ilosc", "wiekszeOd": 1 } ] } ] }
+      ] },
+      "zrodloOpisu": "instrukcja s. 1743"
+    },
+    "Nieobecnosci.DefinicjaLimitu": {
+      "etykieta": "Wypłacony dodatek jest ekwiwalentem z tytułu limitu",
+      "opis": "Jeśli dodatek jest ekwiwalentem za limit nieobecności (np. urlop wypoczynkowy), wskaż ten limit – wypłata pomniejszy limit pracownika i zapisze się w polu „W tym wypłacony ekwiwalent”. Tylko dla rodzaju Dodatek.",
+      "podpowiedz": "Zwykle puste.",
+      "edytowalnyGdy": { "pole": "RodzajZrodla", "rowne": "Dodatek" },
+      "zrodloOpisu": "instrukcja s. 1743–1744"
+    },
+
+    "Rozliczenie.Ewidencja": {
+      "etykieta": "Wypłata z ewidencji",
+      "opis": "Ewidencja środków pieniężnych (kasa/rachunek firmy), z której ma być wypłacany element; zobowiązania powstaną w tej ewidencji. Niedostępne, gdy zaznaczono „Wypłata zawsze gotówką”.",
+      "podpowiedz": "Zwykle puste.",
+      "edytowalnyGdy": { "pole": "ZawszeGotowka", "rowne": false },
+      "zrodloOpisu": "instrukcja s. 1746"
+    },
+    "Rozliczenie.Odbiorca": {
+      "opis": "Odbiorca kwoty potrącenia (np. towarzystwo ubezpieczeniowe, związek zawodowy). Po zatwierdzeniu listy płac enova przygotuje zobowiązanie wobec tego odbiorcy. Ustawia się dla potrąceń i dodatków niewpływających na wypłatę.",
+      "podpowiedz": "Tylko dla potrąceń przekazywanych dalej.",
+      "zrodloOpisu": "instrukcja s. 1746, 1750"
+    },
+    "Rozliczenie.RachunekOdbiorcy": {
+      "opis": "Rachunek bankowy odbiorcy, na który ma trafić przelew. Wpisz numer rachunku zapisanego u odbiorcy w enova.",
+      "edytowalnyGdy": { "pole": "Rozliczenie.Odbiorca", "pusty": false },
+      "zrodloOpisu": "instrukcja s. 1746",
+      "opisDoWeryfikacji": true,
+      "uwagiTechniczne": "Słownik zależny od odbiorcy (RozliczenieElementu.GetListRachunekOdbiorcy) – klucz wyszukiwania rachunku do potwierdzenia."
+    },
+    "Rozliczenie.ZmianaOdbiorcy": {
+      "etykieta": "Modyfikacja odbiorcy na dodatku",
+      "opis": "Tak – odbiorcę można zmienić na dodatku w kartotece pracownika (np. inny komornik dla każdego pracownika). Dostępne dla dodatków i zajęć komorniczych, gdy nie zaznaczono wspólnej płatności.",
+      "edytowalnyGdy": { "wszystkie": [
+        { "pole": "RodzajZrodla", "wsrod": [ "Dodatek", "ZajęcieKomornicze", "ZajęcieKomorniczeZwrotNadpłaty", "ZajęcieKomorniczeRozliczDepozytu" ] },
+        { "pole": "Rozliczenie.WspolnaPlatnosc", "rowne": false }
+      ] },
+      "zrodloOpisu": "instrukcja s. 1746"
+    },
+    "Rozliczenie.WspolnaPlatnosc": {
+      "etykieta": "Wspólna płatność dla całej listy płac",
+      "opis": "Tak – dla wszystkich pracowników z listy płac powstanie jedno zsumowane zobowiązanie wobec odbiorcy; Nie – osobne dla każdego pracownika. Niedostępne, gdy odbiorcę można zmieniać na dodatku.",
+      "edytowalnyGdy": { "pole": "Rozliczenie.ZmianaOdbiorcy", "rowne": false },
+      "zrodloOpisu": "instrukcja s. 1747"
+    },
+    "Rozliczenie.OpisPrzelewu": {
+      "opis": "Tytuł przelewu wspólnej płatności (maks. 80 znaków). Bez opisu enova użyje opisu standardowego.",
+      "edytowalnyGdy": { "pole": "Rozliczenie.WspolnaPlatnosc", "rowne": true },
+      "zrodloOpisu": "instrukcja s. 1747–1749"
+    },
+    "Zajecie.Alimenty": {
+      "etykieta": "Zajęcie – alimenty",
+      "opis": "Jak element wchodzi do podstawy potrąceń alimentacyjnych: domyślnie (enova pilnuje limitów i kwoty wolnej), nie podlega, do limitu (60%), do limitu zasiłki, w pełnej wysokości (np. umowy niebędące jedynym źródłem utrzymania), tylko podatki i składki.",
+      "podpowiedz": "Dla nowych elementów zdecyduj świadomie; zwykle Domyślnie.",
+      "zrodloOpisu": "instrukcja s. 1751"
+    },
+    "Zajecie.Komornik": {
+      "etykieta": "Zajęcie – komornik",
+      "opis": "Jak element wchodzi do podstawy zajęć komorniczych (niealimentacyjnych): domyślnie, nie podlega, do limitu (50% i kwota wolna), do limitu zasiłki (25%), w pełnej wysokości, tylko podatki i składki.",
+      "podpowiedz": "Zwykle Domyślnie.",
+      "zrodloOpisu": "instrukcja s. 1751–1752"
+    },
+    "Zajecie.Pozostale": {
+      "etykieta": "Pozostałe zajęcia (art. 91 KP)",
+      "opis": "Jak element wchodzi do podstawy innych potrąceń za zgodą pracownika (art. 91 KP): domyślnie / do limitu (procent z pola „do limitu” na potrąceniu), nie podlega, do limitu zasiłki (25%), w pełnej wysokości, tylko podatki i składki.",
+      "podpowiedz": "Zwykle Domyślnie.",
+      "zrodloOpisu": "instrukcja s. 1752–1753"
+    },
+    "Zajecie.UwzgledniajJakWyplatyZFSS": {
+      "etykieta": "Uwzględniaj jak wypłaty z ZFŚS",
+      "opis": "Tak – element traktowany przy zajęciach komorniczych jak świadczenie z ZFŚS (standardowo ustawione na świadczeniach socjalnych).",
+      "podpowiedz": "Tak tylko dla świadczeń socjalnych.",
+      "zrodloOpisu": "instrukcja s. 1753"
+    },
+    "StanowiKUP": {
+      "etykieta": "Stanowi koszt uzyskania przychodu (firmy)",
+      "opis": "Czy wartość elementu jest kosztem firmy (do schematów księgowych): domyślnie – elementy opodatkowane poza zasiłkami, świadczeniami socjalnymi i elementami niewpływającymi na wypłatę; wliczany; nie wliczany; PPK pracodawcy.",
+      "podpowiedz": "Zwykle Domyślnie.",
+      "zrodloOpisu": "instrukcja s. 1753–1754"
+    },
+    "UwzgledniajZwrotSkladkiPPK": {
+      "etykieta": "Uwzględnij w zwrotach składek PPK",
+      "opis": "Czy element jest zwrotem składki PPK – po stronie pracownika albo pracodawcy – na wydrukach płacowych.",
+      "podpowiedz": "Zwykle: Nie dotyczy.",
+      "zrodloOpisu": "instrukcja s. 1754"
+    },
+    "UwzgledniajWLimicieZFSS": {
+      "etykieta": "Uwzględnij w limicie świadczeń zwolnionych z podatku",
+      "opis": "Dla świadczeń socjalnych liczonych kodem (edytor algorytmu) z obsługą limitu zwolnienia z podatku – enova pilnuje wspólnego limitu na wszystkich tak oznaczonych świadczeniach.",
+      "podpowiedz": "Zwykle Nie.",
+      "zrodloOpisu": "instrukcja s. 1754"
+    },
+
+    "GUS.Kategoria": {
+      "etykieta": "Rodzaj składnika wynagrodzenia (GUS)",
+      "opis": "Jak element jest kwalifikowany na sprawozdaniach GUS. „Wg definicji elementu” – enova ustala sama; inną wartość wybierz, gdy element ma trafić do innej pozycji.",
+      "podpowiedz": "Zwykle: Wg definicji elementu.",
+      "zrodloOpisu": "instrukcja s. 1755"
+    },
+    "GUS.RodzajSkladnikaWynagrodzeniaGus": {
+      "etykieta": "Rodzaj składnika wynagrodzenia GUS Z-12",
+      "opis": "Kolumna sprawozdania GUS Z-12, do której trafia element (np. wynagrodzenie zasadnicze, premie regulaminowe, nagrody i premie uznaniowe, dodatki za pracę zmianową). „Wg definicji elementu” – enova ustala sama.",
+      "podpowiedz": "Zwykle: Wg definicji elementu.",
+      "zrodloOpisu": "instrukcja s. 1755–1757"
+    },
+    "GUS.ZaliczajDoCzasuPracy": {
+      "opis": "Pole widoczne tylko dla elementów rodzaju Odchyłki: czy odchyłki czasu pracy zaliczać do czasu pracy na sprawozdaniach GUS. Instrukcja nie opisuje pola.",
+      "widocznyGdy": { "pole": "RodzajZrodla", "rowne": "Odchyłki" },
+      "opisDoWeryfikacji": true,
+      "uwagiTechniczne": "Widoczność: DefinicjaElementuExtender.IsVisibleGUSZaliczajDoCzasuPracy; OnAdded ustawia Tak dla rodzaju Odchyłki.",
+      "domyslna": { "wgWarunku": [ { "gdy": { "pole": "RodzajZrodla", "rowne": "Odchyłki" }, "wartosc": true } ], "inaczej": false }
+    },
+
+    "Dodatkowe.DodatekDoEtatu": {
+      "etykieta": "Dodatek wynika z umowy o pracę",
+      "opis": "Tak – element pojawi się na wydruku umowy o pracę pracownika, któremu go przypisano (zakładka Etat/Dodatki). Tylko dla rodzaju Dodatek.",
+      "podpowiedz": "Tak dla stałych dodatków z umowy (np. funkcyjny).",
+      "edytowalnyGdy": { "pole": "RodzajZrodla", "rowne": "Dodatek" },
+      "zrodloOpisu": "instrukcja s. 1758"
+    },
+    "Zakres": {
+      "etykieta": "Zakres danych (fundusz pożyczkowy)",
+      "opis": "Dla elementów obsługujących fundusz pożyczkowy (wpisowe, wycofanie, składka, pożyczka, spłata) – wskaż fundusz (PKZP, ZFM…), którego dotyczy element.",
+      "widocznyGdy": { "pole": "RodzajZrodla", "wsrod": [ "FundPożWpisowe", "FundPożWycofanie", "FundPożSkładka", "Pożyczka", "PożyczkaSpłata" ] },
+      "wymaganeGdy": { "pole": "RodzajZrodla", "wsrod": [ "FundPożWpisowe", "FundPożWycofanie", "FundPożSkładka", "Pożyczka", "PożyczkaSpłata" ] },
+      "zrodloOpisu": "instrukcja s. 1758"
+    },
+    "Dodatkowe.LukaPlacowa": {
+      "etykieta": "Uwzględniaj w wyliczeniu luki płacowej",
+      "opis": "Czy i jako jaki składnik (stały/zmienny) element ma być uwzględniony przy wyliczeniu luki płacowej (dyrektywa o jawności wynagrodzeń). Instrukcja nie opisuje pola.",
+      "podpowiedz": "Zwykle: Domyślnie.",
+      "licencja": "zlota",
+      "opisDoWeryfikacji": true
+    },
+    "Dodatkowe.RefundowanyInfo": {
+      "etykieta": "Refundacja wynagrodzenia z FP lub FGŚP",
+      "opis": "Wykorzystywane w raporcie „Wykaz pracowników uprawnionych do świadczeń wypłaconych z FGŚP” (przestój ekonomiczny, obniżony wymiar czasu pracy).",
+      "podpowiedz": "Zwykle: Domyślny.",
+      "zrodloOpisu": "instrukcja s. 1759"
+    },
+    "PulpitPracownika": {
+      "etykieta": "Widoczne w pulpicie pracownika",
+      "opis": "Tak – dodatek będzie widoczny dla pracownika w Pulpicie pracownika (Dane finansowe/Dodatki).",
+      "podpowiedz": "Domyślnie Nie.",
+      "zrodloOpisu": "instrukcja s. 1759"
+    },
+    "WliczajDoPodstawyWynagrodzeniaZaNadgodziny": {
+      "etykieta": "Wliczaj do podstawy dopłat do nadgodzin",
+      "opis": "Czy element wlicza się do stawki dopłat za nadgodziny: nie, z nominału (składnik podzielony przez czas nominalny) albo wypłacone (wartość wypłacona podzielona przez czas przepracowany).",
+      "podpowiedz": "Domyślnie Nie.",
+      "zrodloOpisu": "instrukcja s. 1759"
+    },
+    "WliczajUmoweDoStazuPracy": {
+      "etykieta": "Wliczaj umowę do stażu pracy",
+      "opis": "Tylko dla elementów rodzaju Umowa: czy okres umowy z tym elementem wlicza się do stażu pracy.",
+      "edytowalnyGdy": { "pole": "RodzajZrodla", "rowne": "Umowa" },
+      "zrodloOpisu": "instrukcja s. 1759"
+    },
+
+    "Algorytm.Typ": {
+      "etykieta": "Algorytm",
+      "opis": "Metoda wyliczenia wartości: kreator algorytmu (podstawa × mnożnik × czas – wystarcza w większości przypadków), edytor algorytmu (indywidualny kod – opisz zasadę w uwagach dla wdrożeniowca), za okres nieobecności, jak ekwiwalent za urlop, jak urlop wypoczynkowy / okolicznościowy, jak chorobowe.",
+      "podpowiedz": "Najczęściej: Kreator algorytmu.",
+      "wymagane": true,
+      "domyslna": "KreatorAlgorytmu",
+      "dozwoloneWartosci": [
+        { "gdy": { "pole": "RodzajZrodla", "rowne": "Nieobecność" }, "wartosci": [ "KreatorAlgorytmu", "EdytorAlgorytmu", "JakUrlopWypoczynkowy", "JakUrlopOkolicznościowy", "JakChorobowe" ] },
+        { "gdy": { "pole": "RodzajZrodla", "rowne": "ZbiegPracyIRodzicielstwa" }, "wartosci": [ "KreatorAlgorytmu", "EdytorAlgorytmu", "JakChorobowe" ] },
+        { "gdy": { "pole": "RodzajZrodla", "rowne": "Dodatek" }, "wartosci": [ "KreatorAlgorytmu", "EdytorAlgorytmu", "ZaOkresNieobecności", "JakEkwiwalentZaUrlop", "JakUrlopWypoczynkowy", "JakUrlopOkolicznościowy" ] },
+        { "gdy": { "pole": "RodzajZrodla", "rowne": "DodatekAutomatyczny" }, "wartosci": [ "KreatorAlgorytmu", "EdytorAlgorytmu", "ZaOkresNieobecności" ] },
+        { "gdy": { "pole": "RodzajZrodla", "rowne": "Odchyłki" }, "wartosci": [ "KreatorAlgorytmu", "PomniejszeniaIOdchyłki" ] },
+        { "wartosci": [ "KreatorAlgorytmu", "EdytorAlgorytmu" ] }
+      ],
+      "zrodloOpisu": "instrukcja s. 1679–1680; lista z AlgorytmDefElementu.GetListTyp (2610, licencja złota/platynowa, bez historycznej „Klasa algorytmu”)",
+      "uwagiTechniczne": "Licencja srebrna: Dodatek tylko Kreator/Za okres nieobecności, pozostałe rodzaje bez wyboru – import zgłosi błąd enova."
+    },
+    "Algorytm.Priorytet": {
+      "opis": "Kolejność wyliczania elementu w wypłacie (0 = najwcześniej). Element liczony od innych (np. premia od zasadniczego i funkcyjnego) musi mieć większą liczbę niż one; potrącenia liczone od brutto – większą niż elementy opodatkowane.",
+      "podpowiedz": "Np. dodatek kwotowy 0, premia procentowa 10.",
+      "walidacje": { "min": 0, "max": 9999 },
+      "zrodloOpisu": "instrukcja s. 1681–1682"
+    },
+    "Algorytm.Potracenie": {
+      "etykieta": "Potrącenie",
+      "opis": "Tak – element jest potrąceniem (np. składka PZU): enova pomnoży wynik przez −1, a kwoty wpisuje się zawsze bez minusa.",
+      "podpowiedz": "Tak dla potrąceń.",
+      "zrodloOpisu": "instrukcja s. 1682"
+    },
+    "Algorytm.LimitPotracenia": {
+      "etykieta": "Potrącenie do limitu",
+      "opis": "Dla nieopodatkowanych potrąceń: nie dotyczy, uwzględniaj (w logu zajęć), standardowy (50% wynagrodzenia netto, nie więcej niż kwota wolna), alimenty (40%), do 80% lub 100% minimalnego wynagrodzenia netto. Limity inne niż „uwzględniaj” działają tylko w kreatorze i edytorze algorytmu (w edytorze wymagają kodu).",
+      "podpowiedz": "Zwykle: Nie dotyczy.",
+      "edytowalnyGdy": { "wszystkie": [
+        { "pole": "Algorytm.Potracenie", "rowne": true },
+        { "pole": "Deklaracje.Zaliczka.Typ", "rowne": "NieNaliczać" },
+        { "pole": "Deklaracje.Zdrowotne.Typ", "rowne": "NieNaliczać" },
+        { "pole": "Deklaracje.Spoleczne.Typ", "rowne": "NieNaliczać" }
+      ] },
+      "dozwoloneWartosci": [
+        { "gdy": { "pole": "Algorytm.Typ", "poza": [ "KreatorAlgorytmu", "EdytorAlgorytmu" ] }, "wartosci": [ "NieDotyczy", "Uwzględniaj" ] }
+      ],
+      "zrodloOpisu": "instrukcja s. 1682–1683; AlgorytmDefElementu.IsReadOnlyLimitPotracenia/GetListLimitPotracenia (2610)"
+    },
+    "Algorytm.TylkoPelnePotracenie": {
+      "etykieta": "Potrącaj tylko pełne kwoty",
+      "opis": "Tak – jeśli całej kwoty nie da się potrącić w ramach limitu (alimenty, 80% lub 100% minimalnego), potrącenie w ogóle nie zostanie naliczone.",
+      "edytowalnyGdy": { "wszystkie": [ { "pole": "Algorytm.Potracenie", "rowne": true }, { "pole": "Algorytm.LimitPotracenia", "wsrod": [ "Alimenty", "Minimalne80", "Minimalne100" ] } ] },
+      "zrodloOpisu": "instrukcja s. 1683"
+    },
+    "Algorytm.JakEkwiwalent": {
+      "etykieta": "Jak ekwiwalent za urlop",
+      "opis": "Dla rozliczeń nieobecności liczonych edytorem algorytmu: Tak – pokazuje parametry podstawy jak dla ekwiwalentu (okres podstawy, współczynnik), z których korzysta kod algorytmu.",
+      "widocznyGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" }, { "pole": "RodzajZrodla", "rowne": "Nieobecność" } ] },
+      "zrodloOpisu": "instrukcja s. 1692"
+    },
+    "Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy": {
+      "etykieta": "Standardowy okres naliczania podstawy",
+      "opis": "Tak – podstawa z liczby miesięcy ustawionej w konfiguracji płac (Urlop wypoczynkowy: 3 miesiące, składniki o znacznych wahaniach 12). Nie – własna liczba miesięcy dla składników o małych wahaniach.",
+      "domyslna": true,
+      "domyslnaDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1696–1697"
+    },
+    "Algorytm.JakUrlopWypoczynkowy.OkresPodstawy": {
+      "etykieta": "Okres naliczania podstawy (miesiące)",
+      "opis": "Liczba miesięcy, z których liczona jest podstawa składników o małych wahaniach, gdy okres nie jest standardowy.",
+      "edytowalnyGdy": { "pole": "Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy", "rowne": false },
+      "wymaganeGdy": { "pole": "Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy", "rowne": false },
+      "walidacje": { "min": 1, "max": 12 },
+      "zrodloOpisu": "instrukcja s. 1697"
+    },
+    "Algorytm.JakChorobowe.StdOkresPodstawy": {
+      "etykieta": "Standardowy okres naliczania podstawy",
+      "opis": "Tak – podstawa zasiłku z 12 miesięcy (wartość z konfiguracji Zasiłki ogólne). Nie – własna liczba miesięcy.",
+      "domyslna": true,
+      "domyslnaDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1699"
+    },
+    "Algorytm.JakChorobowe.OkresPodstawy": {
+      "etykieta": "Okres naliczania podstawy (miesiące)",
+      "opis": "Liczba miesięcy podstawy własnego zasiłku, gdy okres nie jest standardowy.",
+      "edytowalnyGdy": { "pole": "Algorytm.JakChorobowe.StdOkresPodstawy", "rowne": false },
+      "wymaganeGdy": { "pole": "Algorytm.JakChorobowe.StdOkresPodstawy", "rowne": false },
+      "walidacje": { "min": 1, "max": 24 },
+      "zrodloOpisu": "instrukcja s. 1699"
+    },
+    "Algorytm.JakChorobowe.Procent": {
+      "etykieta": "Procent zasiłku",
+      "opis": "Wysokość definiowanego zasiłku jako procent podstawy, np. 80%.",
+      "wymaganeGdy": { "pole": "Algorytm.Typ", "rowne": "JakChorobowe" },
+      "walidacje": { "min": 0, "max": 100 },
+      "zrodloOpisu": "instrukcja s. 1699"
+    },
+    "Algorytm.JakChorobowe.Zatrudnienie": {
+      "etykieta": "Rodzaj zatrudnienia",
+      "opis": "Komu wypłaca się zasiłek: pracownik (tylko etat), inny ubezpieczony (np. zleceniobiorcy), jak zatrudnienie (obu grupom).",
+      "wymaganeGdy": { "pole": "Algorytm.Typ", "rowne": "JakChorobowe" },
+      "zrodloOpisu": "instrukcja s. 1699"
+    },
+    "Algorytm.JakEkwiwalentZaUrlop.DefinicjaLimitu": {
+      "etykieta": "Definicja limitu",
+      "opis": "Limit nieobecności, którego dotyczy ekwiwalent (np. urlop wypoczynkowy).",
+      "zrodloOpisu": "instrukcja s. 1692, 1695",
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.JakEkwiwalentZaUrlop.StdOkresPodstawy": {
+      "etykieta": "Standardowy okres naliczania podstawy",
+      "opis": "Tak – podstawa z okresu standardowego dla ekwiwalentu; Nie – własna liczba miesięcy.",
+      "domyslna": true,
+      "zrodloOpisu": "instrukcja s. 1692, 1695"
+    },
+    "Algorytm.JakEkwiwalentZaUrlop.OkresPodstawy": {
+      "etykieta": "Okres naliczania podstawy (miesiące)",
+      "opis": "Liczba miesięcy podstawy, gdy okres nie jest standardowy.",
+      "edytowalnyGdy": { "pole": "Algorytm.JakEkwiwalentZaUrlop.StdOkresPodstawy", "rowne": false },
+      "wymaganeGdy": { "pole": "Algorytm.JakEkwiwalentZaUrlop.StdOkresPodstawy", "rowne": false },
+      "walidacje": { "min": 1, "max": 24 },
+      "zrodloOpisu": "instrukcja s. 1695"
+    },
+    "Algorytm.JakEkwiwalentZaUrlop.StdWspółczynnik": {
+      "etykieta": "Standardowy współczynnik",
+      "opis": "Tak – miesięczna podstawa dzielona przez współczynnik standardowy (nominalna liczba dni pracy w roku / 12). Nie – własny współczynnik (np. dla odprawy liczonej jak ekwiwalent).",
+      "domyslna": true,
+      "zrodloOpisu": "instrukcja s. 1692, 1695"
+    },
+    "Algorytm.JakEkwiwalentZaUrlop.Ulamek": {
+      "etykieta": "Współczynnik",
+      "opis": "Własny współczynnik w postaci ułamka (np. 21/1), gdy współczynnik nie jest standardowy.",
+      "edytowalnyGdy": { "pole": "Algorytm.JakEkwiwalentZaUrlop.StdWspółczynnik", "rowne": false },
+      "wymaganeGdy": { "pole": "Algorytm.JakEkwiwalentZaUrlop.StdWspółczynnik", "rowne": false },
+      "walidacje": { "wzorzec": "^\\s*\\d+([.,]\\d+)?\\s*(/\\s*\\d+([.,]\\d+)?)?\\s*$", "komunikat": "Wpisz ułamek, np. 21/1 lub 2/3." },
+      "zrodloOpisu": "instrukcja s. 1695"
+    },
+    "Algorytm.JakEkwiwalentZaUrlop.WgWymiaruEtatu": {
+      "etykieta": "Uwzględniaj wymiar etatu we współczynniku",
+      "opis": "Czy we współczynniku / średniej miesięcznej normie czasu pracy uwzględniać wymiar etatu pracownika.",
+      "domyslna": true,
+      "domyslnaDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1692",
+      "uwagiTechniczne": "Instrukcja: domyślnie Tak (dla „jak ekwiwalent” w edytorze); rekord ma false – sprawdzić na nowym elemencie."
+    },
+    "Algorytm.ZaNieobecnosc.Podstawowa": {
+      "etykieta": "Bazowa definicja elementu",
+      "opis": "Element wypłacany za okres obecności, którego pomniejszenia za wybrane nieobecności ma wypłacić ten element (np. „Dodatek stażowy oskładkowany”). Bazowy element musi mieć wartość „za miesiąc” i niższy priorytet liczbowo niż ten element.",
+      "podpowiedz": "Wybierz istniejący element z bazy.",
+      "wymaganeGdy": { "dowolny": [
+        { "pole": "Algorytm.Typ", "rowne": "ZaOkresNieobecności" },
+        { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "ZaOkresNieobecności" } ] }
+      ] },
+      "zrodloOpisu": "instrukcja s. 1693–1694; ZaOkresNieobecnosci.GetListPodstawowa (2610)"
+    },
+    "Algorytm.ZaNieobecnosc.ZUS": {
+      "etykieta": "Zwolnień lekarskich (wszystkich ZUS)",
+      "opis": "W wersji srebrnej: wypłacaj element za okres wszystkich zwolnień ZUS (chorobowe, macierzyńskie, rehabilitacyjne, opiekuńcze) łącznie.",
+      "widocznyGdy": { "nie": { "licencja": "zlota" } },
+      "zrodloOpisu": "instrukcja s. 1693; ZaOkresNieobecnosci.ZUS (2610)"
+    },
+    "Algorytm.ZaNieobecnosc.Macierzynskiego": {
+      "etykieta": "Urlopów macierzyńskich",
+      "opis": "Wypłacaj element za okres urlopów macierzyńskich.",
+      "widocznyGdy": { "licencja": "zlota" },
+      "zrodloOpisu": "instrukcja s. 1693"
+    },
+    "Algorytm.ZaNieobecnosc.Rehabilitacyjnego": {
+      "etykieta": "Urlopów rehabilitacyjnych",
+      "opis": "Wypłacaj element za okres świadczeń rehabilitacyjnych.",
+      "widocznyGdy": { "licencja": "zlota" },
+      "zrodloOpisu": "instrukcja s. 1693"
+    },
+    "Algorytm.ZaNieobecnosc.Opiekunczego": {
+      "etykieta": "Urlopów opiekuńczych",
+      "opis": "Wypłacaj element za okres zasiłków opiekuńczych.",
+      "widocznyGdy": { "licencja": "zlota" },
+      "zrodloOpisu": "instrukcja s. 1693"
+    },
+    "Algorytm.ZaNieobecnosc.Chorobowego": {
+      "etykieta": "Zwolnień chorobowych",
+      "opis": "Wypłacaj element za okres zwolnień chorobowych.",
+      "widocznyGdy": { "licencja": "zlota" },
+      "zrodloOpisu": "instrukcja s. 1693"
+    },
+    "Algorytm.ZaNieobecnosc.Wychowawczego": {
+      "etykieta": "Urlopów wychowawczych",
+      "opis": "Wypłacaj element za okres urlopów wychowawczych.",
+      "zrodloOpisu": "instrukcja s. 1693"
+    },
+    "Algorytm.KreatorAlgorytmu.PodstawaZa": {
+      "etykieta": "Wartość za",
+      "opis": "Czy wartość zależy od czasu pracy: nie zależy od czasu (np. premia kwotowa), za godzinę (stawka × liczba godzin), miesięcznie (kwota miesięczna pomniejszana za nieobecności – ustawienia pomniejszeń poniżej).",
+      "podpowiedz": "Np. dodatek za godziny w nocy: za godzinę.",
+      "domyslna": "NieZależyOdCzasu",
+      "dozwoloneWartosci": [
+        { "gdy": { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" }, "wartosci": [ "NieZależyOdCzasu", "Miesięcznie" ] },
+        { "wartosci": [ "NieZależyOdCzasu", "Godzinę", "Miesięcznie" ] }
+      ],
+      "zrodloOpisu": "instrukcja s. 1687–1688, 1691; EdytorAlgorytmu.GetListPodstawaZa (2610)",
+      "uwagiTechniczne": "Wartość „Pomniejszenia za wybrane nieobecności” wiąże się z zakładką Pomniejszenia nieobecności (platynowa) – pominięta do decyzji."
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": {
+      "etykieta": "Nieobecności nieusprawiedliwione",
+      "opis": "Jak pomniejszać element za nieobecności nieusprawiedliwione: nie pomniejsza, proporcjonalnie (do godzin), 1/30 za dzień, jak zasadnicze, za każdy dzień, proporcjonalnie zero, algorytm (tylko edytor).",
+      "domyslna": "NiePomniejsza",
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1688–1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": {
+      "etykieta": "Nieobecności niepłatne",
+      "opis": "Jak pomniejszać element za nieobecności usprawiedliwione bez prawa do wynagrodzenia (np. urlop bezpłatny).",
+      "domyslna": "NiePomniejsza",
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Platne": {
+      "etykieta": "Urlopy i inne płatne",
+      "opis": "Jak pomniejszać element za urlopy wypoczynkowe, okolicznościowe i inne płatne nieobecności. Zwykle nie pomniejsza – za urlop płaci się wynagrodzenie urlopowe. „Proporcjonalnie zero” – gdy wynagrodzenie za urlop ma wyjść zerowe, a element nie ma być pomniejszony.",
+      "domyslna": "NiePomniejsza",
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": {
+      "etykieta": "Urlopy wychowawcze",
+      "opis": "Jak pomniejszać element za urlopy wychowawcze.",
+      "domyslna": "NiePomniejsza",
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.ZUS": {
+      "etykieta": "Zwolnienia lekarskie (wszystkie ZUS)",
+      "opis": "W wersji srebrnej: jedno ustawienie pomniejszania dla wszystkich nieobecności ZUS.",
+      "widocznyGdy": { "nie": { "licencja": "zlota" } },
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": {
+      "etykieta": "Urlopy macierzyńskie",
+      "opis": "Jak pomniejszać element za urlopy macierzyńskie (i rodzicielskie).",
+      "domyslna": "NiePomniejsza",
+      "widocznyGdy": { "licencja": "zlota" },
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": {
+      "etykieta": "Urlopy rehabilitacyjne",
+      "opis": "Jak pomniejszać element za okres świadczenia rehabilitacyjnego.",
+      "domyslna": "NiePomniejsza",
+      "widocznyGdy": { "licencja": "zlota" },
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": {
+      "etykieta": "Urlopy opiekuńcze (ZUS)",
+      "opis": "Jak pomniejszać element za okres zasiłku opiekuńczego.",
+      "domyslna": "NiePomniejsza",
+      "widocznyGdy": { "licencja": "zlota" },
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": {
+      "etykieta": "Zwolnienia chorobowe",
+      "opis": "Jak pomniejszać element za zwolnienia chorobowe. Np. dodatek stażowy, który przysługuje w czasie choroby: nie pomniejsza.",
+      "domyslna": "NiePomniejsza",
+      "widocznyGdy": { "licencja": "zlota" },
+      "dozwoloneWartosci": [ { "gdy": { "pole": "Algorytm.Typ", "rozne": "EdytorAlgorytmu" }, "wartosci": [ "NiePomniejsza", "Proporcjonalnie", "JednaTrzydziesta", "JakZasadnicze", "ZaKażdyDzień", "ProporcjonalnieZero" ] } ],
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OgraniczeniePomniejszen": {
+      "etykieta": "Ogranicz pomniejszenia do wartości elementu",
+      "opis": "Tak – suma pomniejszeń nie przekroczy wartości elementu, co chroni przed ujemnymi elementami wypłaty.",
+      "widocznyGdy": { "licencja": "zlota" },
+      "zrodloOpisu": "instrukcja s. 1689"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": {
+      "etykieta": "Odchyłki czasu pracy",
+      "opis": "Czy element zmienia się, gdy pracownik przepracuje więcej lub mniej godzin niż w normie (poza nieobecnościami): nie, wszystkich (plus i minus), wybranych (wskazujesz rodzaje poniżej). Np. dodatek stały wliczany do normalnego wynagrodzenia za nadgodziny: wszystkich.",
+      "podpowiedz": "Zwykle: Nie.",
+      "widocznyGdy": { "licencja": "zlota" },
+      "zrodloOpisu": "instrukcja s. 1689–1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": {
+      "etykieta": "Odchyłki czasu pracy",
+      "opis": "W wersji srebrnej: Tak – element zwiększa się o nadgodziny i zmniejsza o niedogodziny.",
+      "widocznyGdy": { "nie": { "licencja": "zlota" } },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta._OdchyłkiPlus": {
+      "etykieta": "Odchyłki plus",
+      "opis": "Które odchyłki dodatnie zwiększają element: nie, wszystkich (dobowe i średniotygodniowe), wybranych (50%, 100%, świąteczne, pozostałe).",
+      "widocznyGdy": { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rowne": "Wybranych" } ] },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlus50": {
+      "etykieta": "Odchyłki plus – nadgodziny 50%",
+      "opis": "Odchyłki mające pokrycie w nadgodzinach 50%.",
+      "widocznyGdy": { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rowne": "Wybranych" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._OdchyłkiPlus", "rowne": "Wybranych" } ] },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlus100": {
+      "etykieta": "Odchyłki plus – nadgodziny 100%",
+      "opis": "Odchyłki mające pokrycie w nadgodzinach 100%.",
+      "widocznyGdy": { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rowne": "Wybranych" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._OdchyłkiPlus", "rowne": "Wybranych" } ] },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlusSW": {
+      "etykieta": "Odchyłki plus – nadgodziny świąteczne",
+      "opis": "Odchyłki mające pokrycie w nadgodzinach świątecznych.",
+      "widocznyGdy": { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rowne": "Wybranych" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._OdchyłkiPlus", "rowne": "Wybranych" } ] },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlusPozostale": {
+      "etykieta": "Odchyłki plus – pozostałe",
+      "opis": "Godziny ponad normę bez dopłat do nadgodzin, np. zbilansowane w okresie rozliczeniowym albo przepracowane przez osobę na części etatu poniżej progu nadgodzin.",
+      "widocznyGdy": { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rowne": "Wybranych" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._OdchyłkiPlus", "rowne": "Wybranych" } ] },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiMinus": {
+      "etykieta": "Odchyłki minus",
+      "opis": "Tak – element zmniejsza się, gdy pracownik przepracuje mniej godzin niż w normie (niedopracowanie).",
+      "widocznyGdy": { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rowne": "Wybranych" } ] },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiAkord": {
+      "etykieta": "Odchyłki akordowe",
+      "opis": "Tak – uwzględniaj odchyłki z pracy akordowej.",
+      "widocznyGdy": { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rowne": "Wybranych" } ] },
+      "zrodloOpisu": "instrukcja s. 1690"
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.Postojowe": {
+      "etykieta": "Odchyłki za czas przestoju",
+      "opis": "Czy uwzględniać odchyłki za czas przestoju. Pole dostępne, gdy element uwzględnia odchyłki czasu pracy. Instrukcja nie opisuje pola szczegółowo.",
+      "widocznyGdy": { "dowolny": [
+        { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rozne": "Nie" } ] },
+        { "wszystkie": [ { "nie": { "licencja": "zlota" } }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta.Odchylki", "rowne": true } ] }
+      ] },
+      "opisDoWeryfikacji": true,
+      "uwagiTechniczne": "KorektaDefElementu.IsVisiblePostojowe => Odchylki (bool, ustawiane przez _Odchyłki ≠ Nie)."
+    },
+    "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiRozliczaneUI": {
+      "etykieta": "Odchyłki indywidualnie rozliczane",
+      "opis": "Tak – element jest pomniejszany za czas ze stref z „indywidualnym rozliczeniem” (standardowo: przerwa na karmienie). Tak jest ustawione na standardowym wynagrodzeniu zasadniczym.",
+      "widocznyGdy": { "dowolny": [
+        { "wszystkie": [ { "licencja": "zlota" }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki", "rozne": "Nie" } ] },
+        { "wszystkie": [ { "nie": { "licencja": "zlota" } }, { "pole": "Algorytm.KreatorAlgorytmu.Korekta.Odchylki", "rowne": true } ] }
+      ] },
+      "zrodloOpisu": "instrukcja s. 1690–1691"
+    },
+    "Algorytm.PomniejszeniaIOdchylki.WybranaStrefa": {
+      "etykieta": "Strefa indywidualnie rozliczana",
+      "opis": "Dla elementów rodzaju Odchyłki z algorytmem „Pomniejszenia i odchyłki”: strefa czasu pracy rozliczana indywidualnie, za którą element jest liczony. Puste – pomniejszenia i odchyłki ustawia się jak w kreatorze. Instrukcja nie opisuje tej metody.",
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.KreatorAlgorytmu.PodstawaTyp": {
+      "etykieta": "Podstawa",
+      "opis": "Od czego liczony jest element: kwota (np. 300 zł), cecha pracownika, wynagrodzenia lub zasiłki z konfiguracji (np. najniższe), wskaźnik firmy, stawki godzinowe (najniższa, zaszeregowania), wynagrodzenie zasadnicze (nominalne, rzeczywiste), brutto, suma wybranych elementów, podstawa urlopu itd. Kod metody i wyrażenie wymagają programowania – opisz zasadę w uwagach.",
+      "podpowiedz": "Np. premia 10% od zasadniczego: Zasadnicze rzeczywiste + mnożnik Procent.",
+      "wymagane": true,
+      "domyslna": "Kwota",
+      "domyslnaDoWeryfikacji": true,
+      "dozwoloneWartosci": [
+        { "gdy": { "nie": { "licencja": "zlota" } }, "wartosci": [ "Kwota", "Wynagrodzenia", "Zasiłki", "Wskaźniki", "NajniższeWynagrodzenie1h", "NajniższeWynagrodzenieNormatywne1h", "StawkaZaszeregowania1h", "StawkaZaszeregowaniaNormatywna1h", "MaksStawkaNajniższe1h", "StawkaNorma1h", "PodstawaNadgodzin1h", "ZasadniczeNominalne", "ZasadniczeRzeczywiste", "ZasadniczeZNadgodzinami", "Brutto", "BruttoBezZasiłków", "BruttoBezZasiłkówBezWynChor", "NominalneWOkresieZatrudnienia", "SumaElementów" ] }
+      ],
+      "zrodloOpisu": "instrukcja s. 1685–1686; KreatorAlgorytmu.GetListPodstawaTyp (2610)",
+      "uwagiTechniczne": "Rekord ma 0 (brak wartości) – domyślną „Kwota” potwierdzić na nowym elemencie."
+    },
+    "Algorytm.KreatorAlgorytmu.Podstawa": {
+      "etykieta": "Kwota",
+      "opis": "Kwota podstawy, np. 100 zł premii uznaniowej. Może być potem zmieniana indywidualnie u pracownika, jeśli parametr ma nazwę.",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Kwota" },
+      "walidacje": { "min": 0 },
+      "zrodloOpisu": "instrukcja s. 1685"
+    },
+    "Algorytm.KreatorAlgorytmu.Cecha": {
+      "etykieta": "Cecha",
+      "opis": "Nazwa cechy (np. pracownika lub etatu), z której pobierana jest kwota podstawy. Cecha musi istnieć w bazie – podaj jej nazwę, wdrożeniowiec wskaże pełną ścieżkę.",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Cecha" },
+      "wymaganeGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Cecha" },
+      "zrodloOpisu": "instrukcja s. 1685",
+      "uwagiTechniczne": "W enova ścieżka właściwości (PathPropertyEdit, np. Pracownik.Features.X) – import sprawdza istnienie cechy."
+    },
+    "Algorytm.KreatorAlgorytmu.Wskaźniki": {
+      "etykieta": "Wskaźnik",
+      "opis": "Nazwa wskaźnika zdefiniowanego w konfiguracji płac (Płace/Wskaźniki), np. stawka dodatku za pracę w warunkach szkodliwych za godzinę.",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Wskaźniki" },
+      "wymaganeGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Wskaźniki" },
+      "zrodloOpisu": "instrukcja s. 1685",
+      "uwagiTechniczne": "Lista z Config.Wskaźniki bazy – import sprawdza istnienie."
+    },
+    "Algorytm.KreatorAlgorytmu.Wynagrodzenia": {
+      "etykieta": "Wynagrodzenie",
+      "opis": "Które wynagrodzenie z konfiguracji płac jest podstawą (np. najniższe wynagrodzenie, przeciętne miesięczne).",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Wynagrodzenia" },
+      "wymaganeGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Wynagrodzenia" },
+      "zrodloOpisu": "instrukcja s. 1685"
+    },
+    "Algorytm.KreatorAlgorytmu.Zasiłki": {
+      "etykieta": "Zasiłek",
+      "opis": "Który zasiłek z konfiguracji płac (rodzinne, pielęgnacyjne, wychowawcze…) jest podstawą.",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Zasiłki" },
+      "wymaganeGdy": { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "Zasiłki" },
+      "zrodloOpisu": "instrukcja s. 1685"
+    },
+    "Algorytm.KreatorAlgorytmu.SposobProporcjonalnosci": {
+      "etykieta": "Pomniejsz za okres niezatrudnienia",
+      "opis": "Jak zmniejszyć element, gdy pracownik nie był zatrudniony cały miesiąc: nie, proporcjonalnie, o 1/30 za każdy dzień kalendarzowy niezatrudnienia, wg dni kalendarzowych miesiąca.",
+      "podpowiedz": "Np. dodatek miesięczny: proporcjonalnie.",
+      "zrodloOpisu": "instrukcja s. 1686"
+    },
+    "Algorytm.KreatorAlgorytmu.PrzeliczNa1h": {
+      "etykieta": "Przelicz na wartość za 1 godzinę",
+      "opis": "Czy podstawę przeliczyć na stawkę godzinową: nie przeliczaj, wg planu (norma pracownika), wg normy kodeksowej (art. 130 KP), wg planu z uwzględnieniem art. 130 KP, wg wybranej strefy.",
+      "podpowiedz": "Zwykle: Nie przeliczaj.",
+      "zrodloOpisu": "instrukcja s. 1686–1687 (opcja „wg wybranej strefy” nieopisana)"
+    },
+    "Algorytm.KreatorAlgorytmu.Strefa": {
+      "etykieta": "Definicja strefy (przeliczenie na 1h)",
+      "opis": "Strefa czasu pracy, wg której przeliczana jest stawka za godzinę przy opcji „Wg wybranej strefy”. Instrukcja nie opisuje tej opcji.",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.PrzeliczNa1h", "rowne": "WgStrefy" },
+      "wymaganeGdy": { "pole": "Algorytm.KreatorAlgorytmu.PrzeliczNa1h", "rowne": "WgStrefy" },
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": {
+      "etykieta": "Typ mnożnika",
+      "opis": "Przez co mnożona jest podstawa: bez współczynnika (×1), procent (np. premia 10%), ułamek (np. 1/2), współczynnik (liczba), zależny od stażu pracy (progi na zakładce Staż pracy) lub od stażu liczonego zwyczajowo.",
+      "podpowiedz": "Premia procentowa: Procent; dodatek stażowy: zależny od stażu.",
+      "domyslna": "BezWspółczynnika",
+      "zrodloOpisu": "instrukcja s. 1687"
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik": {
+      "etykieta": "Mnożnik ze wskaźnika",
+      "opis": "Tak – wartość mnożnika (procent, ułamek, współczynnik) pobierana jest ze wskaźnika zdefiniowanego w konfiguracji płac zamiast wpisywać ją tutaj.",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "Procent", "Ułamek", "Współczynnik" ] },
+      "zrodloOpisu": "instrukcja s. 1687"
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.NazwaWskaznika": {
+      "etykieta": "Nazwa wskaźnika (mnożnik)",
+      "opis": "Wskaźnik z konfiguracji płac (Płace/Wskaźniki) o typie zgodnym z mnożnikiem (procent, ułamek albo liczba).",
+      "widocznyGdy": { "wszystkie": [ { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "Procent", "Ułamek", "Współczynnik" ] }, { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik", "rowne": true } ] },
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "Procent", "Ułamek", "Współczynnik" ] }, { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik", "rowne": true } ] },
+      "zrodloOpisu": "instrukcja s. 1687; WspolczynnikDefElementu.GetListNazwaWskaznika (2610)",
+      "uwagiTechniczne": "Lista z Config.Wskaźniki bazy filtrowana typem – import sprawdza istnienie."
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wspolczynnik": {
+      "etykieta": "Współczynnik",
+      "opis": "Liczba, przez którą mnożona jest podstawa, np. 1,5.",
+      "widocznyGdy": { "wszystkie": [ { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "rowne": "Współczynnik" }, { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik", "rowne": false } ] },
+      "zrodloOpisu": "instrukcja s. 1687"
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent": {
+      "etykieta": "Procent",
+      "opis": "Procent podstawy, np. 10% dla premii 10% od wynagrodzenia zasadniczego. Można go zmieniać indywidualnie u pracownika.",
+      "widocznyGdy": { "wszystkie": [ { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "rowne": "Procent" }, { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik", "rowne": false } ] },
+      "walidacje": { "min": 0, "max": 1000 },
+      "zrodloOpisu": "instrukcja s. 1687"
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Ulamek": {
+      "etykieta": "Ułamek",
+      "opis": "Ułamek w postaci licznik/mianownik, np. 1/2.",
+      "widocznyGdy": { "wszystkie": [ { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "rowne": "Ułamek" }, { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik", "rowne": false } ] },
+      "walidacje": { "wzorzec": "^\\s*\\d+([.,]\\d+)?\\s*(/\\s*\\d+([.,]\\d+)?)?\\s*$", "komunikat": "Wpisz ułamek, np. 1/2." },
+      "zrodloOpisu": "instrukcja s. 1687"
+    },
+    "Algorytm.KreatorAlgorytmu.Czas.Typ": {
+      "etykieta": "Czas pracy (podstawa)",
+      "opis": "Liczba godzin, przez którą mnożona jest stawka za godzinę: wpisany czas (wprowadzany ręcznie, np. z karty pracy), nominalny, rzeczywisty, w nocy, w niedziele i święta, nadgodziny 50%/100%/święta (miesięcznie lub za okres), wg wybranej strefy itd.",
+      "podpowiedz": "Np. dodatek nocny: czas pracy w nocy.",
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa", "rowne": "Godzinę" } ] },
+      "zrodloOpisu": "instrukcja s. 1691–1692; CzasDefElementu.GetListTyp (2610) pomija „Nie uwzględniaj” (ukryta w enumie)"
+    },
+    "Algorytm.KreatorAlgorytmu.Czas.Czas": {
+      "etykieta": "Czas (wpisany)",
+      "opis": "Domyślna liczba godzin (gg:mm) dla opcji „Wpisany czas pracy” – zwykle zmieniana co miesiąc na dodatku pracownika.",
+      "edytowalnyGdy": { "pole": "Algorytm.KreatorAlgorytmu.Czas.Typ", "rowne": "WpisanyCzasPracy" },
+      "walidacje": { "wzorzec": "^\\s*\\d{1,4}:[0-5]\\d\\s*$", "komunikat": "Wpisz czas w formacie gg:mm, np. 8:00." },
+      "zrodloOpisu": "instrukcja s. 1691"
+    },
+    "Algorytm.KreatorAlgorytmu.Czas.Strefa": {
+      "etykieta": "Definicja strefy (czas pracy)",
+      "opis": "Strefa czasu pracy, z której liczone są godziny przy opcji „Wg wybranej strefy”, np. Praca w godzinach nocnych, Nadgodziny 50%.",
+      "edytowalnyGdy": { "pole": "Algorytm.KreatorAlgorytmu.Czas.Typ", "rowne": "WgWybranejStrefy" },
+      "wymaganeGdy": { "pole": "Algorytm.KreatorAlgorytmu.Czas.Typ", "rowne": "WgWybranejStrefy" },
+      "zrodloOpisu": "instrukcja s. 1691"
+    },
+    "Algorytm.KreatorAlgorytmu.PomniejszDoZera": {
+      "etykieta": "Sposób pomniejszenia do zera",
+      "opis": "Czy element ma spaść do zera przy wystąpieniu nieobecności: nie zeruj, przy nieobecnościach nieusprawiedliwionych, niepłatnych, ZUS (powyżej podanej liczby dni) albo wg algorytmu. Instrukcja nie opisuje tego pola.",
+      "podpowiedz": "Zwykle: Nie zeruj.",
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.KreatorAlgorytmu.ProgZerowania": {
+      "etykieta": "Zeruj powyżej (dni)",
+      "opis": "Liczba dni nieobecności, po przekroczeniu której element jest zerowany. Instrukcja nie opisuje tego pola.",
+      "widocznyGdy": { "pole": "Algorytm.KreatorAlgorytmu.PomniejszDoZera", "wsrod": [ "PrzyNieobecnościachNieusprawiedliwionych", "PrzyNieobecnościachNiepłatnych", "PrzyNieobecnościachZUS" ] },
+      "walidacje": { "min": 0, "max": 31 },
+      "opisDoWeryfikacji": true
+    },
+    "Zaokraglenie.Precyzja": {
+      "etykieta": "Zaokrąglenie – precyzja",
+      "opis": "Dokładność zaokrąglenia wyniku: do grosza (standard), do 5 lub 10 groszy, do złotego, do 5, 10, 50 lub 100 zł.",
+      "podpowiedz": "Standardowo: do pełnego grosza.",
+      "domyslna": "DoPełnegoGrosza",
+      "domyslnaDoWeryfikacji": true,
+      "zrodloOpisu": "instrukcja s. 1700",
+      "uwagiTechniczne": "Instrukcja: standardowo do pełnego grosza; wartość początkowa rekordu = DoPełnegoZłotego (0) – sprawdzić na nowym elemencie."
+    },
+    "Zaokraglenie.Sposob": {
+      "etykieta": "Zaokrąglenie – sposób",
+      "opis": "Standardowe (matematyczne), zawsze w górę albo zawsze w dół.",
+      "zrodloOpisu": "instrukcja s. 1701"
+    },
+    "Zaokraglenie.Podstawa": {
+      "etykieta": "Podstawa zaokrąglana do pełnego grosza",
+      "opis": "Tak – także podstawa obliczeń (wynik pośredni) jest zaokrąglana do grosza.",
+      "zrodloOpisu": "instrukcja s. 1700–1701"
+    },
+
+    "PodstawyDefinicji": {
+      "etykieta": "Elementy sumowane w podstawie",
+      "opis": "Lista elementów, których suma stanowi podstawę (gdy podstawa = „Suma elementów”). Dla każdego wskaż definicję elementu i czy brać wartość wyliczoną, czy nominalną. Instrukcja nie opisuje tej zakładki.",
+      "wymaganeGdy": { "wszystkie": [ { "pole": "Algorytm.Typ", "rowne": "KreatorAlgorytmu" }, { "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp", "rowne": "SumaElementów" } ] },
+      "opisDoWeryfikacji": true,
+      "uwagiTechniczne": "Podlista PodstawaDefinicjiElementu (ElementPodstawy, RodzajPodstawy); weryfikator PriorytetSumyElementowVerifier – sumowane elementy muszą mieć niższy priorytet."
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie": {
+      "etykieta": "Praca w organizacji",
+      "opis": "Tak – do stażu wlicza się okres pracy w firmie (z historii kartoteki pracownika).",
+      "edytowalnyGdy": { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "ZależnyOdStażuPracy", "ZależnyOdStażuPracyZwyczajowego" ] },
+      "zrodloOpisu": "instrukcja s. 1703"
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaNaDzien": {
+      "etykieta": "Staż w organizacji liczony na",
+      "opis": "Na który dzień liczyć staż w firmie: ostatni dzień okresu, pierwszy dzień okresu, ostatni dzień poprzedniego okresu.",
+      "edytowalnyGdy": { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie", "rowne": true },
+      "zrodloOpisu": "instrukcja s. 1703"
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.PodstawaStazu": {
+      "etykieta": "Podstawa stażu",
+      "opis": "Okresy spoza firmy wliczane do stażu, np. „Zatrudnienie poza firmą” lub „Okres nauki” (albo podstawa zdefiniowana w konfiguracji Kadr).",
+      "edytowalnyGdy": { "dowolny": [ { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "ZależnyOdStażuPracy", "ZależnyOdStażuPracyZwyczajowego" ] }, { "pole": "Algorytm.Typ", "rowne": "EdytorAlgorytmu" } ] },
+      "zrodloOpisu": "instrukcja s. 1703"
+    },
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi": {
+      "etykieta": "Progi stażu pracy",
+      "opis": "Tabela: staż w latach i odpowiadający mu procent dodatku, np. 0 lat – 0%, 5 lat – 5%, 6 lat – 6%… Pierwszy wiersz powinien mieć 0 lat.",
+      "edytowalnyGdy": { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "ZależnyOdStażuPracy", "ZależnyOdStażuPracyZwyczajowego" ] },
+      "wymaganeGdy": { "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ", "wsrod": [ "ZależnyOdStażuPracy", "ZależnyOdStażuPracyZwyczajowego" ] },
+      "zrodloOpisu": "instrukcja s. 1703"
+    },
+    "Algorytm.RozliczenieCzasuUmowy.Podstawowa": {
+      "etykieta": "Element podstawowy",
+      "opis": "Dla elementów rozliczających czas umowy cywilnoprawnej: element umowy, którego dotyczy rozliczenie. Instrukcja nie opisuje tej zakładki.",
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.RozliczenieCzasuUmowy.WliczanyDoRozliczenia": {
+      "etykieta": "Wliczany do rozliczenia umowy",
+      "opis": "Czy element wlicza się do rozliczenia czasu umowy. Instrukcja nie opisuje tej zakładki.",
+      "opisDoWeryfikacji": true
+    },
+    "Algorytm.Umowa.RodzajRozliczenia": {
+      "etykieta": "Rozliczenie umowy",
+      "opis": "Co narzucić na formularzu umowy cywilnoprawnej: dowolny (wybór kwota do wypłaty / stawka za okres), kwota do wypłaty, stawka za okres, stawka za godzinę.",
+      "podpowiedz": "Zwykle: Dowolny.",
+      "zrodloOpisu": "instrukcja s. 1709 (opcja „stawka za godzinę” nieopisana)"
+    },
+    "Algorytm.Umowa.TypWartosci": {
+      "etykieta": "Typ wartości umowy",
+      "opis": "Czy umowa jest rozliczana od kwoty netto, brutto, czy dowolnie (wybór na umowie).",
+      "podpowiedz": "Zwykle: Dowolny.",
+      "zrodloOpisu": "instrukcja s. 1709"
+    },
+    "Algorytm.Umowa.MinimalnaStawkaGodz": {
+      "etykieta": "Minimalna stawka godzinowa",
+      "opis": "Czy umowa podlega kontroli minimalnej stawki godzinowej: nie dotyczy, opcjonalna (wybór na umowie), dotyczy (zawsze).",
+      "podpowiedz": "Umowy zlecenia: zwykle Dotyczy.",
+      "zrodloOpisu": "instrukcja s. 1709–1710"
+    }
+  },
+
+  "enumy": {
+    "RodzajŹródłaWypłaty": {
+      "Etat": { "etykieta": "Etat (wynagrodzenie zasadnicze)", "opis": "Wynagrodzenie zasadnicze pracownika – element etatu." },
+      "Nieobecność": { "opis": "Rozliczenie nieobecności: wynagrodzenie za urlop, chorobowe, zasiłek." },
+      "Umowa": { "etykieta": "Umowa cywilnoprawna", "opis": "Wypłata do umowy zlecenia, o dzieło, w organach stanowiących." },
+      "Akord": { "opis": "Wynagrodzenie akordowe." },
+      "Storno": { "ukryj": true },
+      "Dodatek": { "opis": "Dodatek lub potrącenie przypisywane pracownikowi (premia, dodatek funkcyjny, składka PZU…)." },
+      "NadgodzinyI": { "opis": "Dopłata do nadgodzin 50% (zwykle wystarcza definicja standardowa)." },
+      "NadgodzinyII": { "opis": "Dopłata do nadgodzin 100% (zwykle wystarcza definicja standardowa)." },
+      "NadgodzinyŚw": { "etykieta": "Nadgodziny świąteczne", "opis": "Dopłata do nadgodzin świątecznych (zwykle wystarcza definicja standardowa)." },
+      "Nocne": { "opis": "Dodatek za pracę w nocy (zwykle wystarcza definicja standardowa)." },
+      "Kurs": { "opis": "Różnice kursowe wypłat w walucie." },
+      "Świadczenie": { "opis": "Świadczenie (np. socjalne)." },
+      "Nagroda": { "opis": "Nagroda (powiązana z definicjami nagród i kar w kadrach)." },
+      "Kara": { "opis": "Kara porządkowa (powiązana z definicjami nagród i kar w kadrach)." },
+      "FundPożWpisowe": { "etykieta": "Fundusz pożyczkowy – wpisowe" },
+      "FundPożWycofanie": { "etykieta": "Fundusz pożyczkowy – wycofanie wkładu" },
+      "FundPożSkładka": { "etykieta": "Fundusz pożyczkowy – składka" },
+      "Pożyczka": { "etykieta": "Pożyczka (wypłata)" },
+      "PożyczkaSpłata": { "etykieta": "Pożyczka – spłata" },
+      "Zaliczka": { "etykieta": "Zaliczka (wypłata)" },
+      "SpłataZaliczki": { "etykieta": "Zaliczka – zwrot" },
+      "ZajęcieKomornicze": { "etykieta": "Zajęcie komornicze" },
+      "Odchyłki": { "opis": "Pomniejszenia i odchyłki czasu pracy (zwykle definicje standardowe)." },
+      "DodatekAutomatyczny": { "opis": "Dodatek naliczany automatycznie wszystkim, bez przypisywania go pracownikowi." },
+      "ZbiegPracyIRodzicielstwa": { "etykieta": "Zbieg pracy i rodzicielstwa", "ukryj": true },
+      "PIT40": { "ukryj": true },
+      "ZajęcieKomorniczeZwrotNadpłaty": { "ukryj": true },
+      "ZajęcieKomorniczeUznanieNadpłaty": { "ukryj": true },
+      "ZajęcieKomorniczeRozliczDepozytu": { "ukryj": true },
+      "UmowaRozliczenie": { "etykieta": "Umowa – rozliczenie czasu" },
+      "WyrównanieDoMinimalnej": { "ukryj": true },
+      "ZwrotNadpłatyPPK": { "ukryj": true },
+      "PrzychódOdSkładkiPracodawcyPPK": { "ukryj": true }
+    },
+    "TypNaliczenia": {
+      "PłatnaZGóry": { "opis": "Płacona przed przepracowaniem miesiąca; nieobecności rozliczane w kolejnej wypłacie." },
+      "PłatnaZDołu": { "etykieta": "Płatna z dołu", "opis": "Płacona po przepracowanym miesiącu (standard)." }
+    },
+    "TypOkresuNaliczania": {
+      "Jednorazowa": { "opis": "Wypłata jednorazowa." },
+      "Każda": { "opis": "Za każdy okres (miesiąc)." },
+      "KażdaWypłata": { "etykieta": "Każda wypłata", "opis": "Z każdą wypłatą w miesiącu." },
+      "CoNMiesięcy": { "etykieta": "Co n miesięcy" },
+      "CoNLat": { "etykieta": "Co n lat" },
+      "CoNTygodni": { "etykieta": "Co n tygodni", "opis": "Tygodnie liczone od dnia tygodnia, w którym wypada 1 stycznia." }
+    },
+    "DlaKażdejUmowy": {
+      "Domyślnie": { "opis": "Wg ustawienia w konfiguracji płac (Ogólne)." },
+      "Tak": { "opis": "Element zawsze dzielony na okresy umów o pracę." },
+      "Nie": { "opis": "Element nie jest dzielony na okresy umów." }
+    },
+    "TypZatrudnienia": {
+      "Etat": { "opis": "Pracownicy etatowi." },
+      "Umowa": { "opis": "Zleceniobiorcy (umowy cywilnoprawne)." },
+      "InnaWyplata": { "etykieta": "Inna wypłata", "opis": "Osoby niezatrudnione, np. byli pracownicy." },
+      "Warunkowy": { "opis": "Pracownicy i zleceniobiorcy (np. delegacje, zasiłek rodzinny)." },
+      "WarunkowyLubInna": { "etykieta": "Warunkowy lub inna" }
+    },
+    "TypZaliczkiPodatku": {
+      "NieNaliczać": { "opis": "Element nieopodatkowany." },
+      "NaliczaćWgSkaliPodatkowej": { "etykieta": "Naliczać wg skali podatkowej", "opis": "Składniki pracownicze – progi skali z danych podatkowych." },
+      "Procentowe": { "opis": "Stały procent wpisany na definicji (np. IFT-1, PIT-8AR)." },
+      "ProcentoweJakUmowy": { "etykieta": "Procentowe jak umowy", "opis": "Procent z konfiguracji płac (umowy na PIT-11)." }
+    },
+    "TypPomniejszeniaPodstawyFIS": {
+      "False": { "etykieta": "Nie", "opis": "Bez pomniejszenia (np. umowy ryczałtowe)." },
+      "True": { "etykieta": "Tak", "opis": "Podstawa pomniejszona o składki ZUS." },
+      "Warunkowo": { "opis": "Umowy do 200 zł jak ryczałtowe, powyżej – zwykle." }
+    },
+    "NaliczaniePit26": {
+      "Warunkowo": { "opis": "Dla pozycji PIT-4R 1, gdy pracownik spełnia warunki zwolnienia." },
+      "Tak": { "opis": "Zawsze, gdy pracownik/zleceniobiorca ma ustawione zwolnienie." },
+      "Nie": { "opis": "Nigdy (np. zasiłki, umowy o dzieło, ryczałt)." }
+    },
+    "TypKosztowUzyskaniaPrzychodu": {
+      "NieNaliczać": { "opis": "Bez kosztów uzyskania." },
+      "ZeStosunkuPracy": { "etykieta": "Ze stosunku pracy", "opis": "Standardowe koszty pracownicze." },
+      "ZeStosunkuPracy50": { "etykieta": "Ze stosunku pracy + 50%", "opis": "Z kosztami autorskimi wg procentu z danych podatkowych pracownika." },
+      "Procentowe": { "opis": "Procent wpisany na definicji (umowy cywilnoprawne)." },
+      "WWysokościStosunkuPracy": { "opis": "Kwota jak ze stosunku pracy (rady nadzorcze, kontrakty menedżerskie)." },
+      "Procentowe50": { "etykieta": "Procentowe 50", "opis": "Procentowe koszty autorskie dla pozycji PIT-4R." },
+      "ProcentoweWarunkowo": { "etykieta": "Procentowe warunkowo", "opis": "Umowy do 200 zł bez kosztów, wyższe – procentowe." },
+      "WWysokościStosunkuPracyWarunkowo": { "opis": "Jak stosunek pracy, ale bez kosztów dla umów do 200 zł." },
+      "KosztyAutorskie50": { "etykieta": "Koszty autorskie 50", "opis": "Tylko koszty autorskie, bez kosztów ze stosunku pracy." }
+    },
+    "TypUlgiPodatkowej": {
+      "NieNaliczać": { "etykieta": "Nie naliczać" },
+      "Naliczać": { "opis": "Ulga (kwota zmniejszająca podatek) odliczana od zaliczki." }
+    },
+    "TypUbezpieczeniaSpolecznego": {
+      "NieNaliczać": { "opis": "Element poza podstawą składek." },
+      "Naliczać": { "opis": "Element w podstawie składek społecznych." },
+      "NieMniejNiż": { "etykieta": "Nie mniej niż", "opis": "Tylko dochód deklarowany właściciela." }
+    },
+    "TypSkładkiFP": {
+      "Domyślna": { "opis": "Reguły wbudowane w enova." },
+      "BezPrzyrównania": { "etykieta": "Bez przyrównania", "opis": "Bez przeliczania na pełny miesiąc." },
+      "ZPrzyrównaniem": { "etykieta": "Z przyrównaniem", "opis": "Wartość przeliczana na pełny miesiąc." }
+    },
+    "TypSkładkiFGŚP": {
+      "Domyślna": { "opis": "Wg ustawienia w kartotece pracownika." },
+      "NieNaliczać": { "etykieta": "Nie naliczać", "opis": "Np. udział w organach stanowiących." }
+    },
+    "TypUbezpieczeniaZdrowotnego": {
+      "NieNaliczać": { "etykieta": "Nie naliczać" },
+      "Naliczać": { "opis": "Element w podstawie składki zdrowotnej." },
+      "NieMniejNiż": { "etykieta": "Nie mniej niż", "opis": "Tylko dochód deklarowany właściciela." },
+      "Warunkowo": { "opis": "Umowy ryczałtowe i zwykłe jednym elementem." }
+    },
+    "TypPomniejszeniaFIS": {
+      "NiePomniejsza": { "etykieta": "Nie pomniejsza", "opis": "Np. umowy na PIT-8AR." },
+      "Pomniejsza": { "opis": "Pomniejsza zaliczkę bez ograniczenia (np. kontrakty)." },
+      "PomniejszaDoFIS": { "opis": "Ograniczona do wysokości zaliczki – składniki ze stosunku pracy." },
+      "PomniejszaWarunkowo": { "opis": "Jak „do FIS”, ale nie dla umów ryczałtowych." },
+      "PomniejszaWarunkowoBezFis": { "opis": "Pomniejsza bez ograniczenia, ale nie dla umów ryczałtowych." }
+    },
+    "PozycjaRP7": {
+      "SkładnikiStałe": { "etykieta": "Składniki stałe", "opis": "Np. zasadnicze, stażowe, funkcyjne." },
+      "SkładnikiZmienne": { "etykieta": "Składniki zmienne", "opis": "Premie, nagrody, nadgodziny, trzynastka." },
+      "Inne": { "opis": "Np. rekompensaty, honoraria." },
+      "ŚwiadczeniaWNaturze": { "etykieta": "Świadczenia w naturze" },
+      "ŚwiadczeniaZUbezpieczenia": { "etykieta": "Świadczenia z ubezpieczenia", "opis": "Zasiłki i wynagrodzenie chorobowe." },
+      "SkłBezZUSwOkrNieob": { "opis": "Składniki wypłacane obok zasiłku, nieoskładkowane w tym okresie." }
+    },
+    "TypAlgorytmuElementu": {
+      "KreatorAlgorytmu": { "opis": "Podstawa × mnożnik × zależność od czasu – bez programowania." },
+      "EdytorAlgorytmu": { "etykieta": "Edytor algorytmu", "opis": "Indywidualny kod – napisze wdrożeniowiec; opisz zasadę w uwagach." },
+      "KlasaAlgorytmu": { "ukryj": true, "opis": "Opcja historyczna." },
+      "ZaOkresNieobecności": { "etykieta": "Za okres nieobecności", "opis": "Część elementu bazowego za wybrane nieobecności ZUS (kod RSA 220)." },
+      "PomniejszeniaIOdchyłki": { "etykieta": "Pomniejszenia i odchyłki", "opis": "Tylko dla rodzaju Odchyłki." },
+      "JakUrlopWypoczynkowy": { "etykieta": "Jak urlop wypoczynkowy" },
+      "JakUrlopOkolicznościowy": { "etykieta": "Jak urlop okolicznościowy" },
+      "JakEkwiwalentZaUrlop": { "etykieta": "Jak ekwiwalent za urlop", "opis": "Np. ekwiwalent, odprawa emerytalna." },
+      "JakChorobowe": { "etykieta": "Jak chorobowe", "opis": "Własny zasiłek." }
+    },
+    "TypLimituPotrącenia": {
+      "NieDotyczy": { "etykieta": "Nie dotyczy", "opis": "Cała kwota pomniejsza wypłatę, bez logu zajęć." },
+      "Uwzględniaj": { "opis": "Cała kwota pomniejsza wypłatę, widoczna w logu zajęć." },
+      "Standardowy": { "opis": "Do 50% wynagrodzenia netto, z kwotą wolną." },
+      "Alimenty": { "opis": "Do 40% wynagrodzenia netto." },
+      "Minimalne80": { "opis": "Pracownik zachowuje 80% minimalnego netto." },
+      "Minimalne100": { "opis": "Pracownik zachowuje 100% minimalnego netto." }
+    },
+    "TypPodstawyAlgorytmu": {
+      "Kwota": { "opis": "Stała kwota wpisana na definicji lub u pracownika." },
+      "Cecha": { "opis": "Kwota z cechy pracownika/etatu." },
+      "Wyrażenie": { "opis": "Wyrażenie C# – tylko wdrożeniowiec." },
+      "KodMetody": { "etykieta": "Kod metody", "opis": "Kod C# – tylko wdrożeniowiec; opisz zasadę w uwagach." },
+      "Wynagrodzenia": { "opis": "Wartość z konfiguracji (np. najniższe wynagrodzenie)." },
+      "Zasiłki": { "opis": "Kwota zasiłku z konfiguracji." },
+      "Wskaźniki": { "opis": "Wskaźnik z konfiguracji płac." },
+      "NajniższeWynagrodzenie1h": { "etykieta": "Najniższe wynagrodzenie 1h" },
+      "StawkaZaszeregowania1h": { "etykieta": "Stawka zaszeregowania 1h", "opis": "Zasadnicze miesięczne / norma z kalendarza pracownika." },
+      "MaksStawkaNajniższe1h": { "etykieta": "Maks(stawka, najniższe) 1h", "opis": "Większa z: najniższe 1h i stawka zaszeregowania 1h." },
+      "ZasadniczeNominalne": { "etykieta": "Zasadnicze nominalne", "opis": "Pełne zasadnicze bez pomniejszeń." },
+      "ZasadniczeRzeczywiste": { "etykieta": "Zasadnicze rzeczywiste", "opis": "Zasadnicze po pomniejszeniach za nieobecności." },
+      "ZasadniczeZNadgodzinami": { "etykieta": "Zasadnicze z nadgodzinami" },
+      "Brutto": { "opis": "Suma elementów opodatkowanych z zasiłkami." },
+      "BruttoBezZasiłków": { "etykieta": "Brutto bez zasiłków" },
+      "BruttoBezZasiłkówBezWynChor": { "etykieta": "Brutto bez zasiłków i wynagrodzenia chorobowego" },
+      "NominalneWOkresieZatrudnienia": { "etykieta": "Nominalne w okresie zatrudnienia" },
+      "StawkaNorma1h": { "etykieta": "Stawka norma 1h", "opis": "Zasadnicze / godziny pon.–pt. (ze świętami, bez sobót i niedziel)." },
+      "NajniższeWynagrodzenieNormatywne1h": { "etykieta": "Najniższe wynagrodzenie normatywne 1h" },
+      "StawkaZaszeregowaniaNormatywna1h": { "etykieta": "Stawka zaszeregowania normatywna 1h", "opis": "Zasadnicze / norma kodeksowa." },
+      "ZaOkresNieobecności": { "etykieta": "Za okres nieobecności", "opis": "Pomniejszenie z innego elementu (bazowa definicja)." },
+      "PodstawaUrlopuWypoczynkowego1h": { "etykieta": "Podstawa urlopu wypoczynkowego 1h" },
+      "PodstawaUrlopuOkolicznościowego1h": { "etykieta": "Podstawa urlopu okolicznościowego 1h" },
+      "PodstawaEkwiwalentu1h": { "etykieta": "Podstawa ekwiwalentu 1h" },
+      "PodstawaNadgodzin1h": { "etykieta": "Podstawa nadgodzin 1h", "opis": "Stawka zaszeregowania 1h albo 60% wynagrodzenia (wg kartoteki)." },
+      "SumaElementów": { "etykieta": "Suma elementów", "opis": "Suma wybranych elementów (zakładka Suma elementów)." }
+    },
+    "PodstawaAlgorytmuZa": {
+      "NieZależyOdCzasu": { "opis": "Wartość nie zależy od czasu pracy." },
+      "Godzinę": { "etykieta": "Za godzinę", "opis": "Stawka × liczba godzin." },
+      "Miesięcznie": { "opis": "Kwota miesięczna pomniejszana za nieobecności." },
+      "ZaWybraneNieobecności": { "ukryj": true, "opis": "Powiązane z zakładką Pomniejszenia nieobecności (platynowa) – do decyzji." }
+    },
+    "RodzajPomniejszenia": {
+      "NiePomniejsza": { "opis": "Nieobecność nie zmniejsza elementu." },
+      "Proporcjonalnie": { "opis": "Proporcjonalnie do godzin nieobecności." },
+      "JednaTrzydziesta": { "etykieta": "1/30 za dzień", "opis": "O 1/30 za każdy dzień kalendarzowy nieobecności." },
+      "JakZasadnicze": { "etykieta": "Jak zasadnicze", "opis": "Tak jak wynagrodzenie zasadnicze (godzinowe proporcjonalnie, miesięczne 1/30)." },
+      "ZaKażdyDzień": { "etykieta": "Za każdy dzień", "opis": "O 1/liczbę dni miesiąca za każdy dzień (np. dochód deklarowany)." },
+      "ProporcjonalnieZero": { "etykieta": "Proporcjonalnie zero", "opis": "Wynagrodzenie urlopowe zerowe, element niepomniejszony." },
+      "Algorytm": { "opis": "Wg kodu algorytmu (tylko edytor algorytmu)." }
+    },
+    "KorektaOdchyłek": {
+      "Nie": { "opis": "Odchyłki nie zmieniają elementu." },
+      "Wszystkich": { "opis": "Zmieniają: plus i minus." },
+      "Wybranych": { "opis": "Wskaż rodzaje odchyłek." }
+    },
+    "SposobyProporcjonalności": {
+      "NiePomniejszany": { "opis": "Bez pomniejszenia." },
+      "Proporcjonalnie": { "etykieta": "Proporcjonalnie", "opis": "Proporcjonalnie do okresu zatrudnienia." },
+      "JednaTrzydzista": { "opis": "1/30 za każdy dzień kalendarzowy niezatrudnienia." },
+      "DniKalendarzowe": { "etykieta": "Dni kalendarzowe", "opis": "Wartość / dni miesiąca × dni zatrudnienia." }
+    },
+    "SposobyPrzeliczeniaNa1h": {
+      "NiePrzeliczaj": { "etykieta": "Nie przeliczaj" },
+      "WgPlanu": { "etykieta": "Wg planu", "opis": "Wg normy z kalendarza pracownika." },
+      "WgArt130KP": { "opis": "Wg normy kodeksowej." },
+      "WgPlanuArt130KP": { "opis": "Pełne miesiące wg planu, niepełne wg ustawienia konfiguracji." },
+      "WgStrefy": { "opis": "Wg wskazanej strefy czasu pracy (do weryfikacji)." }
+    },
+    "TypWspolczynnikaAlgorytmu": {
+      "BezWspółczynnika": { "etykieta": "Bez współczynnika", "opis": "Mnożnik = 1." },
+      "ZależnyOdStażuPracy": { "etykieta": "Zależny od stażu pracy", "opis": "Procent z progów stażu (zakładka Staż pracy)." },
+      "Ułamek": { "opis": "Np. 1/2." },
+      "Procent": { "opis": "Np. 10%." },
+      "Współczynnik": { "opis": "Liczba, np. 1,5." },
+      "ZależnyOdStażuPracyZwyczajowego": { "opis": "Staż liczony jako kontynuacja zatrudnienia u poprzednich pracodawców." }
+    },
+    "TypCzasuPracy": {
+      "NieUwzględniaj": { "ukryj": true },
+      "WpisanyCzasPracy": { "etykieta": "Wpisany czas pracy", "opis": "Godziny wpisywane ręcznie (np. z karty pracy)." }
+    },
+    "TypPodstawyUrlopu": {
+      "NieWliczać": { "opis": "Np. nagrody jubileuszowe, odprawy, premie uznaniowe." },
+      "WliczaćAktualnąWartość": { "etykieta": "Wliczać aktualną wartość", "opis": "Stałe składniki miesięczne – wartość z miesiąca urlopu." },
+      "WliczaćPoPrzeliczeniu": { "etykieta": "Wliczać po przeliczeniu", "opis": "Przeliczenie przy zmianie stawek – wymaga współczynnika." },
+      "Wliczać": { "opis": "Składniki zmienne – z 3 (lub 12) miesięcy." },
+      "WliczaćJakZasadnicze": { "etykieta": "Wliczać jak zasadnicze", "opis": "Np. premia procentowa od zasadniczego." }
+    },
+    "TypWspolczynnikaUrlopu": {
+      "WZerowejWartości": { "opis": "Element w zerowej wartości." }
+    },
+    "TypPodstawyZasilku": {
+      "NieWliczać": { "etykieta": "Nie wliczać", "opis": "Składnik zachowany w okresie zasiłku." },
+      "WliczaćDla": { "etykieta": "Wliczać dla", "opis": "W kwocie faktycznie wypłaconej, bez uzupełnienia (np. nadgodziny)." },
+      "DopełniaćWedługGodzinDla": { "etykieta": "Dopełniać według godzin dla", "opis": "Uzupełnienie z dokładnością do minut." },
+      "DopełniaćWedługDniDla": { "etykieta": "Dopełniać według dni dla", "opis": "Uzupełnienie proporcjonalnie do dni pracy." },
+      "DopełniaćJakZasadniczeDla": { "etykieta": "Dopełniać jak zasadnicze dla", "opis": "Jak wynagrodzenie zasadnicze (np. premia procentowa)." },
+      "WliczaćWNominalnejWysokościDla": { "etykieta": "Wliczać w nominalnej wysokości dla" },
+      "DopełniaćWedług130Dla": { "opis": "Dla elementów pomniejszanych o 1/30 (np. służba zastępcza)." }
+    },
+    "SposobyWliczaniaDoPodstawyChorobowego": {
+      "Domyślnie": { "opis": "Wg reguł enova." },
+      "Zawsze": { "opis": "Także po zakończeniu wypłaty dodatku." },
+      "DoKońcaOkresuWypłaty": { "etykieta": "Do końca okresu wypłaty" },
+      "DoDatyZakończeniaWypłaty": { "etykieta": "Do daty zakończenia wypłaty", "opis": "Data z dodatku (wymaga ustawienia w konfiguracji zasiłków)." }
+    },
+    "PodstawyZajęciaKomorniczego": {
+      "Domyślnie": { "opis": "Limity i kwota wolna wg rodzaju elementu." },
+      "NiePodlegaZajęciu": { "etykieta": "Nie podlega zajęciu" },
+      "DoLimitu": { "etykieta": "Do limitu" },
+      "DoLimituZasiłki": { "etykieta": "Do limitu zasiłki" },
+      "WPełnejWysokości": { "opis": "Bez limitów i kwoty wolnej." },
+      "TylkoPodatkiISkładki": { "etykieta": "Tylko podatki i składki", "opis": "Element nie podlega zajęciu, ale jego podatek i składki tak." }
+    },
+    "ElementStanowiKUP": {
+      "Domyślnie": { "opis": "Opodatkowane, poza zasiłkami, świadczeniami socjalnymi i elementami niewpływającymi na wypłatę." },
+      "Wliczany": { "opis": "Zawsze koszt firmy." },
+      "NieWliczany": { "etykieta": "Nie wliczany", "opis": "Nigdy koszt firmy." },
+      "PPKPracodawcy": { "opis": "Koszt z tytułu PPK pracodawcy." }
+    },
+    "WliczajDoPodstawyWynagrodzeniaZaNadgodziny": {
+      "Nie": { "opis": "Nie wlicza się (domyślnie)." },
+      "WliczajZNominału": { "opis": "Składnik główny / czas nominalny." },
+      "WliczajWypłacone": { "opis": "Wartość wypłacona / czas przepracowany." }
+    },
+    "RodzajRefundacjiWynagrodzenia": {
+      "Domyślny": { "opis": "Wg reguł enova." },
+      "NiePodlega": { "etykieta": "Nie podlega" },
+      "PrzestójEkonomiczny": { "etykieta": "Przestój ekonomiczny" }
+    },
+    "UwzglednienieLukiPlacowe": {
+      "Domyslnie": { "opis": "Wg reguł enova (do weryfikacji)." },
+      "NieDotyczy": { "opis": "Pomijany w luce płacowej." },
+      "Stale": { "opis": "Składnik stały." },
+      "Zmienne": { "opis": "Składnik zmienny." }
+    },
+    "TypUmowyCywilnoPrawnej": {
+      "NieDotyczy": { "opis": "Tytuł ubezpieczenia wskazany w polu „Domyślny tytuł ubezpieczenia”." },
+      "UdziałWOrganach": { "opis": "Proponowany tytuł 2240." },
+      "UmowaODzieło": { "etykieta": "Umowa o dzieło", "opis": "Bez tytułu ubezpieczenia." },
+      "UmowaZlecenia": { "etykieta": "Umowa zlecenia", "opis": "Proponowany tytuł 0411." }
+    },
+    "RodzajPodstawyElementu": {
+      "Wartosc": { "opis": "Wartość wyliczona elementu." },
+      "WartoscNominalna": { "opis": "Wartość nominalna (przed pomniejszeniami)." }
+    }
+  },
+
+  "szablony": []
+}
