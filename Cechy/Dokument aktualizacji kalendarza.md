@@ -33,11 +33,18 @@ Wszystkie: algorytm „Wartość wyliczana algorytmem” (`Feature_X { get; }`),
 | `ZatwierdzilKiedy` | Tekst | Data i godzina zatwierdzenia w procesie. |
 | `ZatwierdzilRola` | Tekst | Kim jest zatwierdzający – jak `ZlozylRola`. |
 
-Cechy `Zlozyl*` / `Zatwierdzil*` czytają zadania standardowego procesu „Dokumenty aktualizacji kalendarza”
-(definicja `00000000-0005-0037-0001-…`, uruchamiany przy dodaniu dokumentu – ustawienie „Twórz proces”
-w definicji dokumentu). Sam dokument nie pamięta, kto zmienił stan. Zadania procesu zapisują
-wykonawcę (`Executor`) i czas (`ExecutionTime`) każdego kroku. Kroki rozpoznawane po Guid definicji zadania
-(Wypełniany `…0037-0010`, Do akceptacji `…0037-0013`, Poprawiany `…0037-0014`). Dokument bez procesu → kolumny puste.
+Cechy `Zlozyl*` / `Zatwierdzil*` czytają zadania procesu dokumentu (uruchamianego przy dodaniu – ustawienie
+„Twórz proces” w definicji dokumentu): standardowego „Dokumenty aktualizacji kalendarza” (`00000000-0005-0037-0001-…`)
+albo jego kopii, np. **A1_DokAkt** u klienta. Sam dokument nie pamięta, kto zmienił stan. Zadania procesu zapisują
+wykonawcę (`Executor`) i czas (`ExecutionTime`) każdego kroku. Kroki rozpoznawane **po nazwie definicji zadania**
+(„Wypełniany”, „Do akceptacji”, „Poprawiany”, także z dopiskiem – w A1_DokAkt „Wypełniany 2”, „Do akceptacji 2”,
+„Poprawiany 2”). Dokument bez procesu → kolumny puste.
+
+A1_DokAkt (eksport klienta 2026-10-22, kod silnika): Wypełniany 2 → przycisk **„Zatwierdź”** (nie „Wypełniony – do
+akceptacji”) → Do akceptacji 2 → „Zatwierdź” → Zatwierdzony 2; z Do akceptacji 2 też „Do poprawy” / „Anuluj”.
+Wykonawca „Do akceptacji 2”: dla definicji „Dokument dla = Składającego” kierownik pracownika
+(`KalkulatorPodwladnych.GetKierownik`), dla pozostałych rola „Kadry - zatwierdzanie czasu”.
+Na żywo w bazie Claude niesprawdzone – import procesu wymaga licencji modułu Workflow.
 
 Kod każdej cechy: pliki `Cechy/Dokument aktualizacji kalendarza - <Cecha>`.
 
