@@ -1,0 +1,7 @@
+public string Feature_ElementStruktury {
+    get {
+        // Element struktury organizacyjnej wskazany na dokumencie (definicja powiązana ze strukturą organizacyjną).
+        Soneta.Core.ElementStrukturyOrganizacyjnej element = Row.Powiazanie.ElementStrukturyOrganizacyjnej;
+        return element == null ? "" : element.Nazwa + " (" + element.Kod + ")";
+    }
+}
