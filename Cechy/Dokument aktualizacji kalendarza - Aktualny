@@ -10,10 +10,13 @@ public bool Feature_Aktualny {
 
         // Dokument zatwierdzony jest aktualny, jeżeli choć jeden jego dzień (pracownik + data)
         // nie został później nadpisany przez nowszy zatwierdzony dokument tego samego rodzaju.
+        // Dokument bez własnych dni (zatwierdzony plan bez zmian) niczego nie zastąpił - jest aktualny.
+        bool maDni = false;
         foreach (PozycjaAktualizacjiKalendarza pozycjaPlanu in dokument.PozycjePlan) {
             List<Date> dniNiezastapione = new List<Date>();
             foreach (DzienKalendarzaAktualizacja dzien in pozycjaPlanu.AktualizacjeKalendarza)
                 dniNiezastapione.Add(dzien.Data);
+            maDni = maDni || dniNiezastapione.Count > 0;
             foreach (PozycjaAktualizacjiKalendarza innaPozycja in Module.PozAktKalend.WgZrodloPlanu[pozycjaPlanu.ZrodloPlanu]) {
                 DokumentAktualizacjiKalendarza innyDokument = innaPozycja.Dokument;
                 if (innyDokument == dokument
@@ -31,6 +34,7 @@ public bool Feature_Aktualny {
             List<Date> dniNiezastapione = new List<Date>();
             foreach (DzienPracyAktualizacja dzien in pozycjaCzasu.AktualizacjeCzasu)
                 dniNiezastapione.Add(dzien.Data);
+            maDni = maDni || dniNiezastapione.Count > 0;
             foreach (PozycjaAktualizacjiCzasu innaPozycja in Module.PozAktCzasu.WgZrodloPlanu[pozycjaCzasu.ZrodloPlanu]) {
                 DokumentAktualizacjiKalendarza innyDokument = innaPozycja.Dokument;
                 if (innyDokument == dokument
@@ -43,6 +47,6 @@ public bool Feature_Aktualny {
             if (dniNiezastapione.Count > 0)
                 return true;
         }
-        return false;
+        return !maDni;
     }
 }
