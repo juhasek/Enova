@@ -29,10 +29,11 @@ Założenia (do potwierdzenia przy STOP po etapie 1):
 - [x] Uwagi dla wdrożeniowca, eksport/import JSON (wersja schematu, data, zastąp/dołącz), autozapis localStorage (try/catch)
 - [x] Testy: 9 testów silnika (node:test) + E2E w Edge headless (zrzuty, eksport, import, autozapis)
 
-## Etap 3 – dodatek enova: import
-- [ ] Projekt dodatku (Soneta.MsBuild.SDK / Soneta.Sdk, bez HintPath), schemat jako zasób
-- [ ] Worker na liście definicji elementów: „Importuj definicje z pliku”
-- [ ] Wczytanie + wersja schematu, walidacja (wymagane, enumy, słowniki w bazie), podgląd nowe/aktualizacje/błędy z różnicami
-- [ ] Zapis w jednej transakcji (tylko nowe / nowe i aktualizacja), ochrona definicji standardowych, raport eksportowalny
-- [ ] Testy jednostkowe mapowania JSON → DefinicjaElementu i walidacji
-- [ ] README: build, przekazanie formularza, import, aktualizacja schematu po upgradzie enova
+## Etap 3 – dodatek enova: import (GOTOWE, test na żywo w bazie Claude 22.10)
+- [x] Projekt dodatku net10 (Dodatek/), biblioteki z katalogu serwera; przełącznik SonetaNuGet dla paczek NuGet; schemat jako zasób Silnika
+- [x] Czynność „Importuj definicje z pliku” na liście definicji (Worker na DefinicjaElementu, menu Czynności) – widoczna w enova
+- [x] Wczytanie + wersja schematu, walidacja (port warunki.js), słowniki w bazie, podgląd nowe/aktualizacje (różnice)/błędy
+- [x] Zapis w jednej transakcji (tylko nowe / nowe i aktualizacja), ochrona definicji standardowych, raport HTML (pobranie + obok pliku)
+- [x] 18 testów xUnit (reguły – parzystość z formularzem, plik, analiza na atrapie bazy, mapowanie, konwersje typów Soneta)
+- [x] README: build, przekazanie formularza, import, aktualizacja schematu
+- [ ] Do sprawdzenia przez operatora: okno podglądu (MessageBox) w SonetaFrame – przez MCP nie jest zwracane
