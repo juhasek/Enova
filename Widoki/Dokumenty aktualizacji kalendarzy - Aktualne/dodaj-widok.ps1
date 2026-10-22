@@ -39,6 +39,7 @@ $kolumny = @(
     @('Kod działu', 'Features.DzialKod', '10'),
     @('Dział', 'Features.DzialNazwa', '22'),
     @('Przełożony', 'Features.Przelozony', '24'),
+    @('Element struktury', 'Features.ElementStruktury', '24'),
     @('Zatwierdzono', 'Features.ZatwierdzonoDataGodzina', '16')
 )
 $pola = ($kolumny | ForEach-Object { "    <Field CaptionHtml=""$($_[0])"" Width=""$($_[2])"" EditValue=""{$($_[1])}"" Footer=""None"" />" }) -join "`r`n"
@@ -84,7 +85,21 @@ try {
         $wezelFolderow = Skalar "insert into CfgNodes (Guid, Parent, Name, Type) values (newid(), @p, @n, 1); select cast(scope_identity() as int)" @{ '@p' = $foldery; '@n' = $plikFolderow }
         [xml]$doc = '<?xml version="1.0" encoding="utf-8"?><FoldersInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><Infos /></FoldersInfo>'
     }
-    if ($doc.FoldersInfo.Infos.Info | Where-Object { $_.Name -eq $nazwaWidoku }) { throw "Widok '$nazwaWidoku' już istnieje" }
+    # Widok już jest - podmiana samej treści viewform.xml (kolumny), foldery bez zmian.
+    $istniejacy = $doc.FoldersInfo.Infos.Info | Where-Object { $_.Name -eq $nazwaWidoku }
+    if ($istniejacy) {
+        $g = $istniejacy.ID.Substring($nazwaWidoku.Length + 1)
+        $wezelWidoku = Skalar "select ID from CfgNodes where Name = @n and Parent = @p" @{ '@n' = (NazwaWezla "$g.viewform.xml"); '@p' = $tableviews }
+        if (-not $wezelWidoku) { throw "Brak węzła viewform widoku '$nazwaWidoku'" }
+        $c.Parameters.Clear()
+        $c.CommandText = "update CfgAttributes set MemoValue = @m where Node = @node and isnull(Name,'') = ''"
+        $c.Parameters.AddWithValue('@node', $wezelWidoku) | Out-Null
+        $c.Parameters.Add('@m', [Data.SqlDbType]::NText).Value = (HexUtf8Bom $viewform)
+        if ($c.ExecuteNonQuery() -ne 1) { throw "Nie zaktualizowano treści widoku (węzeł $wezelWidoku)" }
+        $tr.Commit()
+        "Widok '$nazwaWidoku' zaktualizowany: tableviews $wezelWidoku"
+        return
+    }
 
     $g = [Guid]::NewGuid().ToString('N')
     $info = $doc.CreateElement('Info')

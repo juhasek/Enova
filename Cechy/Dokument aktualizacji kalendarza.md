@@ -24,6 +24,7 @@ Wszystkie: algorytm „Wartość wyliczana algorytmem” (`Feature_X { get; }`),
 | `DzialKod` | Tekst | Kody wydziałów pracowników z etatu na **ostatni dzień okresu** dokumentu. |
 | `DzialNazwa` | Tekst | Nazwy tych wydziałów. |
 | `Przelozony` | Tekst | Bezpośredni przełożony wg **domyślnej struktury podległości** (`pracownik.StrukturaOraganizacyjna.GetDomyślnyPrzełożony(data)` – literówka „Oraganizacyjna” jest w API enova) na ostatni dzień okresu. Pole „Odpowiedzialny” dokumentu nie nadaje się do tego – przy dokumencie składanym przez pracownika jest tam on sam. |
+| `ElementStruktury` | Tekst | Element struktury organizacyjnej wskazany na dokumencie: `Nazwa (Kod)`. Odczyt `Row.Powiazanie.ElementStrukturyOrganizacyjnej` – element podpięty do dokumentu przy zakładaniu (parametr „Element”), w strukturze wskazanej w definicji dokumentu. Pusty, gdy definicja nie jest powiązana ze strukturą organizacyjną. |
 | `ZatwierdzonoDataGodzina` | Tekst | Data i godzina zatwierdzenia `rrrr-MM-dd GG:mm` (enova zapisuje `DataZatwierdzenia = DateTime.Now` przy przejściu w stan Zatwierdzony); dla niezatwierdzonych pusta. |
 
 Kod każdej cechy: pliki `Cechy/Dokument aktualizacji kalendarza - <Cecha>`.
@@ -52,3 +53,5 @@ Podwidok „Aktualne dokumenty” – skrypt `Widoki/Dokumenty aktualizacji kale
   elementu kończy się błędem „Powiązania można dodawać tylko do wierszy typu Soneta.Kadry.Pracownik”.
   Do sprawdzenia ręcznie w GUI: dwa zatwierdzone plany tego samego pracownika na ten sam okres →
   starszy `Aktualny = Nie`.
+- Baza Claude (2026-10-22): dodana cecha `ElementStruktury` (import business XML + zapis formularza
+  definicji – kompiluje się bez błędów); kolumna „Element struktury” w widoku.
