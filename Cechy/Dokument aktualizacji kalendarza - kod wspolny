@@ -44,19 +44,30 @@ namespace A1.Runtime.Business.TblCodeFiles {
             return wydzialy;
         }
 
-        // Kroki standardowego procesu "Dokumenty aktualizacji kalendarza" (Guid definicji zadania).
-        static readonly Guid KrokWypelniany = new Guid("00000000-0005-0037-0010-000000000000");
-        static readonly Guid KrokDoAkceptacji = new Guid("00000000-0005-0037-0013-000000000000");
-        static readonly Guid KrokPoprawiany = new Guid("00000000-0005-0037-0014-000000000000");
+        // Kroki procesu rozpoznawane po nazwie definicji zadania - działa dla procesu standardowego
+        // "Dokumenty aktualizacji kalendarza" (Wypełniany, Do akceptacji, Poprawiany) i jego kopii,
+        // np. A1_DokAkt (Wypełniany 2, Do akceptacji 2, Poprawiany 2).
+        const string KrokWypelniany = "Wypełniany";
+        const string KrokDoAkceptacji = "Do akceptacji";
+        const string KrokPoprawiany = "Poprawiany";
+
+        static bool JestKrokiem(Soneta.Business.Db.Task zadanie, string[] kroki)
+        {
+            string nazwa = zadanie.Definition.Name ?? "";
+            foreach (string krok in kroki)
+                if (nazwa == krok || nazwa.StartsWith(krok + " "))
+                    return true;
+            return false;
+        }
 
         // Ostatnie wykonane zadanie procesu dokumentu z podanych kroków (null, gdy brak).
-        static Soneta.Business.Db.Task OstatnieWykonaneZadanie(DokumentAktualizacjiKalendarza dokument, params Guid[] kroki)
+        static Soneta.Business.Db.Task OstatnieWykonaneZadanie(DokumentAktualizacjiKalendarza dokument, params string[] kroki)
         {
             Soneta.Business.Db.Task ostatnie = null;
             Soneta.Business.Db.BusinessModule bm = Soneta.Business.Db.BusinessModule.GetInstance(dokument.Session);
             foreach (Soneta.Business.Db.TaskLinkedObj powiazanie in bm.TaskLinkedObjs.WgLinkedObject[dokument]) {
                 Soneta.Business.Db.Task zadanie = powiazanie.Task;
-                if (zadanie == null || zadanie.Definition == null || Array.IndexOf(kroki, zadanie.Definition.Guid) < 0)
+                if (zadanie == null || zadanie.Definition == null || !JestKrokiem(zadanie, kroki))
                     continue;
                 if (zadanie.ExecutionTime == DateTime.MinValue || zadanie.Executor == null)
                     continue;
