@@ -10,9 +10,10 @@ Odpowiednik dla drugiego rodzaju dokumentu: [Zatwierdzona aktualizacja planu pra
 
 ## 2. Jak liczy
 
-1. **Okres sprawdzania** – jeśli kontekst, w którym liczona jest cecha, zawiera okres (`FromTo`,
-   np. filtr okresu na liście), brany jest ten okres. W przeciwnym razie – **cały miesiąc daty
-   aktualności** (`ActualDate`, np. pole „Aktualność” na liście pracowników).
+1. **Okres sprawdzania** – okres wybrany w filtrze listy. Listy kadrowe (np. Kadry → Pracownicy)
+   trzymają go w obiekcie parametrów widoku dziedziczącym po `OkresContext` (cecha czyta go przez
+   `cx.Get<OkresContext>(out ...)`); inne widoki mogą wkładać do kontekstu sam okres (`FromTo`).
+   Gdy okresu nie ma – **cały miesiąc daty aktualności** (`ActualDate`).
 2. Przeglądane są wszystkie pozycje pracownika na dokumentach aktualizacji kalendarza
    (`PozAktCzasu.WgZrodloPlanu[pracownik]`).
 3. `Tak`, gdy którykolwiek dokument ma stan **Zatwierdzony** i jego okres **zachodzi** na okres
@@ -24,7 +25,7 @@ Odpowiednik dla drugiego rodzaju dokumentu: [Zatwierdzona aktualizacja planu pra
 | Pole | Wartość |
 |---|---|
 | Tabela | Pracownicy |
-| Nazwa | `CzasPracy` (od nazwy zależy nazwa metody `Get_Feature_CzasPracy` w kodzie) |
+| Nazwa | `CzasPracyZatwierdzony` (od nazwy zależy nazwa metody `Get_Feature_CzasPracyZatwierdzony` w kodzie) |
 | Typ | Tak/Nie (bool) |
 | Algorytm | Wartość wyliczana algorytmem z parametrami |
 
@@ -34,6 +35,10 @@ trzeba zmienić też nazwę metody w kodzie.
 ## 4. Status
 
 Kod skompilowany na bibliotekach enova 2512.5.6 – **niesprawdzony na żywych danych** (w bazie
-testowej brak dokumentów aktualizacji kalendarza). Do sprawdzenia: czy lista pracowników, na
-której będzie używana cecha, przekazuje okres w kontekście – jeśli nie, cecha liczy miesiąc daty
-aktualności.
+testowej brak dokumentów aktualizacji kalendarza). 2026-10-15: odczyt okresu przerobiony na `cx.Get<T>(out ...)` (bez zmiennych `object`) i rozszerzony
+o parametry listy (`OkresContext`) – wcześniej na liście Kadry → Pracownicy cecha nie widziała
+okresu z filtra i liczyła miesiąc daty aktualności. Ten sam odczyt sprawdzony na żywo w cesze
+[Okres z filtra listy](Okres%20z%20filtra%20listy.md) (baza Al). Baza Claude (2026-10-15): nowa wersja założona jako `CzasPracyZatwierdzony` (kategoria „Aktualizacja
+kalendarza”) **obok** starej roboczej cechy `CzasPracy`, której nie ruszano. Kompiluje się i liczy
+na liście Kadry → Pracownicy z filtrem okresu (wszędzie „Nie” – w bazie brak dokumentów
+aktualizacji kalendarza).
