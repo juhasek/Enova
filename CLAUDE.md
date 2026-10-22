@@ -91,6 +91,27 @@ poza enovą (korzystają tylko z bibliotek DevExpress z katalogu serwera), a nie
 Plik `.md` obok pliku bez rozszerzenia (o tej samej nazwie) to dokumentacja
 biznesowa danego artefaktu.
 
+## Opis sesji – zapisywany automatycznie
+
+Na koniec każdej sesji z istotnymi ustaleniami (zmiany w kodzie/bazie, decyzje,
+wyniki testów, otwarte punkty) zapisz opis sesji **bez czekania na prośbę**.
+Surowe transkrypty Claude Code są kasowane po 30 dniach, więc do ustaleń
+wracamy przez te pliki.
+
+- Plik: `Zadania/<temat> - sesja RRRR-MM-DD.md`. Jeśli temat ma własny folder
+  (np. `Addon/<projekt>/`, `Integracja/<nazwa>/`), plik trafia tam jako
+  `sesja-RRRR-MM-DD.md`.
+- Gdy tego dnia był już opis sesji na ten sam temat, dopisz do niego nową sekcję
+  zamiast tworzyć kolejny plik.
+- Treść: cel, co zrobiono (pliki w repo, zmiany w bazie), ustalenia i decyzje,
+  wyniki testów, otwarte punkty / następne kroki.
+- Bez nazw klientów i danych osobowych/płacowych (zgodnie z zasadami dla
+  `Klienci/` i `Pobrane/`).
+- Po zapisaniu: commit + push na `Testy`. Krótkie wpisy w pamięci projektu
+  aktualizuj jak dotąd, a opis sesji traktuj jako pełniejszy zapis.
+- Sesje czysto informacyjne (pojedyncze pytanie, odczyt danych bez ustaleń)
+  pomijaj.
+
 ## Analiza przedwdrożeniowa – „uzupełnij analizę”
 
 Gdy użytkownik po spotkaniu z klientem przekazuje notatki i pisze „uzupełnij analizę”
