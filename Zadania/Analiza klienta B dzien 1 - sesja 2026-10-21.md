@@ -29,7 +29,7 @@ Zadanie: zweryfikować całość i przygotować własną wersję kwestionariusza
 - Notatka PM pomyliła nazwy dwóch podmiotów i pominęła jeden podmiot wraz z jego danymi.
 - Rekrutacja i onboarding są w niej oznaczone jako „P2”. W rozmowie ustalono, że proces jest w zakresie
   analizy, a o starcie (od razu albo ok. miesiąc po starcie) zdecydujemy w trakcie analizy.
-- Notatka podaje jako decyzję „definicje stanowisk przed migracją”, a była to rekomendacja Alt One.
+- Notatka podaje jako decyzję „definicje stanowisk przed migracją”, a była to rekomendacja AltOne.
 - W notatce brakuje wielu wątków: zatrudnienie w kilku spółkach, ADR/FEP, pakiet mobilności, kierunek
   integracji z systemem transportowym, ryzyko wymiaru urlopu po migracji, służba wojskowa, akord
   i prowizja, PFRON/SODiR.
@@ -71,3 +71,10 @@ Zadanie: zweryfikować całość i przygotować własną wersję kwestionariusza
 - Spotkanie 23.10.2026, godz. 9:00: dokończenie Kadr, ponowne omówienie onboardingu i pozycji
   „do potwierdzenia”.
 - Po kolejnych dniach: założenie dokumentów analizy ze wzoru (procedura „uzupełnij analizę” w `CLAUDE.md`).
+
+## 6. Korekta konsultanta (22.10.2026)
+
+- Konsultant poprawił notatkę D1 – jego wersja jest obowiązująca i została wysłana do klienta. Plik treści
+  w `zrodla\` zsynchronizowano z nią, a wersję Claude przeniesiono do `Archiwum\` klienta.
+- Styl notatki dla klienta: bez uwag o transkrypcji i bez „(do potwierdzenia)”, bez niepewnych faktów i wewnętrznych
+  ograniczeń systemu, tylko istotne kwestie otwarte; nazwa wykonawcy zawsze „AltOne” (poprawione też we wzorze analizy).

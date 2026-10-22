@@ -33,7 +33,7 @@ systemu, definicje standardowe, wymagania licencyjne).
 | Z1 1.5 | rozszerzony zapis zmian (logowania, operator, zakres zmian) | funkcja platformy, poza instrukcją KP |
 | Z3 1.6.1 | trzy sposoby obsługi ujemnej podstawy ZUS | instrukcja potwierdza tylko, że Płatnik nie przyjmuje ujemnych podstaw (s.18, 572) |
 | AN 3.2.1, Z5 1.7 | licencja „Logowanie serwisowe”, konfiguracja SMTP | poza instrukcją KP |
-| Z2 1.6, Z5 1.1.1, 1.2.2, 1.3.1 | Weryfikatory czasu pracy, 2FA, Dashboard, Planowanie urlopów (Alt One) | rozwiązania wykonawcy – poza instrukcją producenta |
+| Z2 1.6, Z5 1.1.1, 1.2.2, 1.3.1 | Weryfikatory czasu pracy, 2FA, Dashboard, Planowanie urlopów (AltOne) | rozwiązania wykonawcy – poza instrukcją producenta |
 
 ## 3. Zgodne (wybrane potwierdzenia)
 

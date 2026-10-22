@@ -173,7 +173,7 @@ Na etapie analizy ustalono, że Klient [DO UZUPEŁNIENIA: będzie / nie będzie]
 Zakres ewidencjonowanych danych:
 - dane osoby: kod w bazie enova365, nazwisko, imię, spółka lub jednostka organizacyjna, [DO UZUPEŁNIENIA: inne dane];
 - dane umowy B2B: okres od–do, spółka lub jednostka organizacyjna, stawka, [DO UZUPEŁNIENIA: MPK lub projekt], uwagi do umowy.
-Do jednej osoby możliwe jest ewidencjonowanie wielu umów B2B. Dane zostaną zaimportowane w oparciu o formatki migracyjne przygotowane przez Alt One. [DO UZUPEŁNIENIA: dostęp osób B2B do pulpitów, limity płatnych nieobecności B2B – opis w załączniku nr 5]
+Do jednej osoby możliwe jest ewidencjonowanie wielu umów B2B. Dane zostaną zaimportowane w oparciu o formatki migracyjne przygotowane przez AltOne. [DO UZUPEŁNIENIA: dostęp osób B2B do pulpitów, limity płatnych nieobecności B2B – opis w załączniku nr 5]
 
 ## Pracownicy oddelegowani do pracy za granicę
 @opcjonalna
@@ -296,7 +296,7 @@ W systemie enova365 zostanie przygotowana ewidencja wypowiedzeń zmieniających 
 # Pytania otwarte – Kadry
 @kolumny 5,45,12,14,10,14
 | Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
-| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / Alt One] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
 @tabela Pytania otwarte – Kadry
 
 # Kryteria odbioru

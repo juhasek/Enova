@@ -24,7 +24,7 @@ Na potrzeby pulpitów pracowniczych skonfigurowane zostaną następujące role:
 @tabela Role w pulpitach
 
 ### Podwójna autentyfikacja
-@opcjonalna Rozwiązanie Alt One 2FA.
+@opcjonalna Rozwiązanie AltOne 2FA.
 Rozwiązanie pozwala na dwustopniową autoryzację dostępu do pulpitu z wykorzystaniem haseł jednorazowych: po standardowym logowaniu loginem i hasłem pracownik wprowadza zmienne hasło przesłane SMS-em, aktualne przez ograniczony czas. Rozwiązanie umożliwia oznaczenie kartotek, dla których będzie stosowana podwójna autentyfikacja, i wymaga wskazania numerów telefonów pracowników (numery mogą zostać zasilone arkuszem migracyjnym). W celu uruchomienia rozwiązania Klient musi wykupić dostęp do bramki SMS obsługiwanej przez mechanizm.
 [DO UZUPEŁNIENIA: bramka SMS, grupy pracowników objęte podwójną autentyfikacją]
 
@@ -51,8 +51,8 @@ W ramach dostępu do pulpitu kierownika przełożeni mają możliwość przeglą
 [DO UZUPEŁNIENIA: zakres edycji kierownika (plan / czas pracy / tylko odczyt), dodatkowe kolumny zestawień (np. norma kodeksowa, norma pracownika, norma okresu rozliczeniowego), serie dni, blokada wprowadzania danych po terminie – szczegóły w załączniku nr 2]
 
 ### Dashboard
-@opcjonalna Rozwiązanie Alt One Dashboard.
-W ramach wdrożenia uruchomiony zostanie produkt Alt One Dashboard (mechanizm [DO UZUPEŁNIENIA: nr]), pozwalający na skonfigurowanie kafelków zawierających listy najczęściej używanych wniosków oraz kafelka z linkami przekierowującymi do stron wskazanych przez Klienta.
+@opcjonalna Rozwiązanie AltOne Dashboard.
+W ramach wdrożenia uruchomiony zostanie produkt AltOne Dashboard (mechanizm [DO UZUPEŁNIENIA: nr]), pozwalający na skonfigurowanie kafelków zawierających listy najczęściej używanych wniosków oraz kafelka z linkami przekierowującymi do stron wskazanych przez Klienta.
 @rys pulpit_dashboard.png | Przykładowy widok kafelków dashboardu
 [DO UZUPEŁNIENIA: konfiguracja kafelków i linków]
 
@@ -83,7 +83,7 @@ Wnioski uruchamiane w pulpitach i ich obsługa:
 [DO UZUPEŁNIENIA: wnioski i procesy dedykowane (np. praca zdalna, polecenie pracy w nadgodzinach, świadczenia socjalne, wniosek Z-15 po imporcie z PUE, wniosek pracowniczy) – inicjator, ścieżka akceptacji, skutek; szczegóły w specyfikacji workflow]
 
 ### Planowanie urlopów
-@opcjonalna Rozwiązanie Alt One Planowane nieobecności.
+@opcjonalna Rozwiązanie AltOne Planowane nieobecności.
 W ramach wdrożenia uruchomiony zostanie produkt pozwalający na ewidencjonowanie planów urlopowych pracowników (mechanizm [DO UZUPEŁNIENIA: nr]). Pracownik planuje dni urlopu w danym roku kalendarzowym z uwzględnieniem urlopu bieżącego, zaległego i dodatkowego (z wyłączeniem urlopu na żądanie), a plan przekazywany jest do akceptacji bezpośredniego przełożonego. Przełożony może zaakceptować, odrzucić lub przekazać plan do poprawy oraz ma wgląd w grafik planowanych nieobecności podwładnych. Akceptacja planu nie jest jednoznaczna z udzieleniem urlopu – pracownik każdorazowo składa wniosek o urlop.
 [DO UZUPEŁNIENIA: termin składania planów, zasady dla umów terminowych]
 
@@ -113,7 +113,7 @@ Skrzynka może odkładać wysłane wiadomości bądź nie – szczegółowa konf
 # Pytania otwarte – Pulpity
 @kolumny 5,45,12,14,10,14
 | Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
-| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / Alt One] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
 @tabela Pytania otwarte – Pulpity
 
 # Kryteria odbioru

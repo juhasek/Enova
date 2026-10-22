@@ -118,7 +118,7 @@ ręczne zakreślanie inne niż pola `[DO UZUPEŁNIENIA]`.
 ## 8. Język i konwencje zapisu
 
 Piszemy po polsku, w trzeciej osobie, bezosobowo; „Klient” (wielka litera) dla zamawiającego,
-„Wykonawca” lub „Alt One” dla nas. Nazwa systemu zawsze **enova365** (na początku zdania „Enova365”).
+„Wykonawca” lub „AltOne” dla nas. Nazwa systemu zawsze **enova365** (na początku zdania „Enova365”).
 
 | Treść | Formuła |
 |---|---|

@@ -60,7 +60,7 @@ Zasady harmonogramowania ustalone z Klientem:
 @tabela Zasady harmonogramowania
 
 ## Weryfikatory planu i czasu pracy
-@opcjonalna Rozwiązanie Alt One „Weryfikatory czasu pracy” lub definicje weryfikatorów kalendarza.
+@opcjonalna Rozwiązanie AltOne „Weryfikatory czasu pracy” lub definicje weryfikatorów kalendarza.
 Do prawidłowego planowania czasu pracy przygotowane i włączone zostaną weryfikatory (mechanizm [DO UZUPEŁNIENIA: nr]). Podczas zmiany godzin pracy względem kalendarza wzorcowego wyświetlane będą komunikaty z weryfikatorów – błędy blokują zapis zmian, ostrzeżenia jedynie informują.
 @kolumny 6,52,18,24
 | Lp. | Weryfikator | Uruchomić | Błąd czy ostrzeżenie |
@@ -124,7 +124,7 @@ System zapewnia wygenerowanie wydruku kalendarza dla pojedynczego pracownika lub
 # Pytania otwarte – Czas pracy
 @kolumny 5,45,12,14,10,14
 | Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
-| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / Alt One] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
 @tabela Pytania otwarte – Czas pracy
 
 # Kryteria odbioru

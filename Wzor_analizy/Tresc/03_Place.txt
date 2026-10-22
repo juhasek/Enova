@@ -193,12 +193,12 @@ Decyzja Klienta: [DO UZUPEŁNIENIA: import ręczny / automatyczny (harmonogram),
 # Pytania otwarte – Płace
 @kolumny 5,45,12,14,10,14
 | Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
-| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / Alt One] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
 @tabela Pytania otwarte – Płace
 
 # Kryteria odbioru
 Kryterium odbioru poprawności konfiguracji modułu płacowego na etapie wdrożenia będzie przeprowadzenie testów przez Klienta z pozytywnym wynikiem.
-Testy zostaną przeprowadzone na podstawie przygotowanych przez Alt One scenariuszy testowych zawartych w pliku „Scenariusze testowe – Płace.xlsx” dołączonym do dokumentu niniejszej analizy.
+Testy zostaną przeprowadzone na podstawie przygotowanych przez AltOne scenariuszy testowych zawartych w pliku „Scenariusze testowe – Płace.xlsx” dołączonym do dokumentu niniejszej analizy.
 
 # Wykaz tabel i rysunków
 @spis-tab

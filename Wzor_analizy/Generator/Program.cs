@@ -165,8 +165,8 @@ class Dokument
             tresc.Append("</w:tr>");
         }
         tresc.Append("</w:tbl>");
-        Akapit("Klauzula", "Dokument został opracowany przez Alt One wyłącznie dla " + Klient +
-                           ". Nie może być reprodukowany, kopiowany lub publikowany w całości lub jakiejkolwiek jego części bez pisemnej zgody Alt One.");
+        Akapit("Klauzula", "Dokument został opracowany przez AltOne wyłącznie dla " + Klient +
+                           ". Nie może być reprodukowany, kopiowany lub publikowany w całości lub jakiejkolwiek jego części bez pisemnej zgody AltOne.");
         tresc.Append("<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>");
 
         Akapit("Nagwekspisutreci", "Historia zmian dokumentu");
@@ -329,7 +329,7 @@ class Dokument
             Akapit("Bezodstpw", "[DO UZUPEŁNIENIA: adres e-mail]");
             Akapit("Bezodstpw", "tel. kom.: [DO UZUPEŁNIENIA: numer telefonu]");
         }
-        Akapit("Bezodstpw", "Alt One, [DO UZUPEŁNIENIA: adres siedziby wykonawcy]", "<w:spacing w:before=\"240\"/>");
+        Akapit("Bezodstpw", "AltOne, [DO UZUPEŁNIENIA: adres siedziby wykonawcy]", "<w:spacing w:before=\"240\"/>");
         Akapit("Bezodstpw", "tel. [DO UZUPEŁNIENIA: telefon centrali], [DO UZUPEŁNIENIA: adres www i e-mail wykonawcy]");
         tresc.Append($"<w:p><w:pPr><w:spacing w:before=\"240\"/></w:pPr>{Obraz(Path.Combine(gen, "baza", "partner_enova365.png"), 1620000)}</w:p>");
     }
@@ -339,7 +339,7 @@ class Dokument
         var wiersze = new List<string[]>
         {
             new[] { "", "Zamawiający", "Wykonawca" },
-            new[] { "Nazwa", Klient, "Alt One" },
+            new[] { "Nazwa", Klient, "AltOne" },
             new[] { "Imię i nazwisko", "[DO UZUPEŁNIENIA: osoba akceptująca po stronie Klienta]", "[DO UZUPEŁNIENIA: osoba akceptująca po stronie Wykonawcy]" },
             new[] { "Stanowisko", "[DO UZUPEŁNIENIA: stanowisko]", "[DO UZUPEŁNIENIA: stanowisko]" },
             new[] { "Wersja dokumentu", "[DO UZUPEŁNIENIA: akceptowana wersja X.Y]", "[DO UZUPEŁNIENIA: akceptowana wersja X.Y]" },
@@ -399,7 +399,7 @@ static class Pakiet
             $"<dcterms:created xsi:type=\"dcterms:W3CDTF\">{teraz}</dcterms:created><dcterms:modified xsi:type=\"dcterms:W3CDTF\">{teraz}</dcterms:modified>" +
             "</cp:coreProperties>");
         Dodaj("docProps/app.xml", xml +
-            "<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\"><Application>Microsoft Office Word</Application><Company>Alt One</Company></Properties>");
+            "<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\"><Application>Microsoft Office Word</Application><Company>AltOne</Company></Properties>");
 
         var rels = new StringBuilder(xml + "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
         void Rel(string id, string typ, string cel_) => rels.Append($"<Relationship Id=\"{id}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/{typ}\" Target=\"{cel_}\"/>");

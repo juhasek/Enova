@@ -28,7 +28,7 @@ Dokument analizy został sporządzony na podstawie otrzymanych materiałów w fo
 
 ## Streszczenie dla zarządu i kierownictwa projektu
 Zagadnienia opisane w tej części dokumentu dotyczą kluczowych procesów, jakie realizowane są w zakresie kadr i płac w [DO UZUPEŁNIENIA: nazwa klienta].
-Analiza stanu obecnego oparta jest na informacjach, jakie zostały przekazane pracownikom firmy Alt One podczas organizowanych spotkań oraz drogą elektroniczną.
+Analiza stanu obecnego oparta jest na informacjach, jakie zostały przekazane pracownikom firmy AltOne podczas organizowanych spotkań oraz drogą elektroniczną.
 **Konkluzja:** [DO UZUPEŁNIENIA: konkluzja, np. „Omówione zagadnienia i procesy mogą zostać zrealizowane zgodnie z oczekiwaniami Klienta w oparciu o funkcjonalność systemu enova365.” – z ewentualnymi zastrzeżeniami z rozdziału Pytania otwarte i ryzyka]
 Celami, które zostały postawione do zrealizowania po wdrożeniu systemu enova365, są:
 - Skuteczna i kompleksowa obsługa procesów administracyjnych związanych z obsługą kadr, czasu pracy i naliczaniem wynagrodzeń oraz obsługą PPK, [DO UZUPEŁNIENIA: inne obszary, np. ZFŚS, PKZP, benefity];
@@ -44,7 +44,7 @@ Celami, które zostały postawione do zrealizowania po wdrożeniu systemu enova3
 - [DO UZUPEŁNIENIA: dodatkowe cele wskazane przez Klienta].
 
 ## Wymagania
-Poniżej zawarte zostały wymagania związane z wdrożeniem systemu enova365. Wszelkie dane oparte są o informacje, jakie zostały przekazane w zapytaniu ofertowym oraz przekazane konsultantom firmy Alt One podczas odbytych spotkań analitycznych.
+Poniżej zawarte zostały wymagania związane z wdrożeniem systemu enova365. Wszelkie dane oparte są o informacje, jakie zostały przekazane w zapytaniu ofertowym oraz przekazane konsultantom firmy AltOne podczas odbytych spotkań analitycznych.
 - Pełne administrowanie kadrami;
 - Dostosowanie modułu kadrowego do indywidualnych potrzeb Klienta;
 - Pełne administrowanie płacami, w tym także tworzenie tak zwanych rezerw;
@@ -99,7 +99,7 @@ Z modułu Kadry i Płace będą korzystać następujący operatorzy z przypisany
 | 2 |  |  |  |
 @tabela Operatorzy systemu
 Odpowiednie uprawnienia i operatorzy zostaną utworzeni na podstawie pliku „[DO UZUPEŁNIENIA: nazwa pliku z operatorami i uprawnieniami].xlsx” uzupełnionego przez Klienta na etapie analizy. [DO UZUPEŁNIENIA: ustalenia dotyczące dostępu do spółek i jednostek, np. jednostka Zarządu dostępna tylko dla wskazanych osób]
-Firma Alt One będzie posiadała uprawnienia o nazwie [DO UZUPEŁNIENIA: nazwy ról serwisowych wykonawcy]. Licencje pracowników Alt One będą licencjami serwisowymi, co oznacza, że podczas wykonywania prac serwisowych na systemie nie będą blokować dostępnej licencji dla Klienta.
+Firma AltOne będzie posiadała uprawnienia o nazwie [DO UZUPEŁNIENIA: nazwy ról serwisowych wykonawcy]. Licencje pracowników AltOne będą licencjami serwisowymi, co oznacza, że podczas wykonywania prac serwisowych na systemie nie będą blokować dostępnej licencji dla Klienta.
 Dostęp do pełnej wersji programu enova365, jak i do pulpitów pracownika i kierownika będzie realizowany indywidualnym loginem i opatrzony hasłem. Sposób logowania: [DO UZUPEŁNIENIA: login i hasło enova365 / logowanie domenowe Active Directory / dodatkowo podwójna autentyfikacja].
 
 ### Wymagania licencyjne
@@ -117,9 +117,9 @@ Klient musi posiadać następującą liczbę licencji. Wykaz licencji zostanie z
 | [DO UZUPEŁNIENIA: inne moduły] | [DO UZUPEŁNIENIA: liczba] |
 @tabela Licencje enova365
 @kolumny 75,25
-| Rozwiązanie Alt One | Liczba |
+| Rozwiązanie AltOne | Liczba |
 | [DO UZUPEŁNIENIA: np. Weryfikatory czasu pracy, Dashboard, podwójna autentyfikacja, Wniosek pracowniczy, Planowanie urlopów] | [DO UZUPEŁNIENIA: liczba] |
-@tabela Licencje rozwiązań Alt One
+@tabela Licencje rozwiązań AltOne
 **UWAGA:** Zgodnie z instrukcją producenta wyłącznie w wariancie platynowym licencji Kadry Płace dostępne są m.in.: dane z RCP i oryginalne dane z RCP, rozliczenie czasu pracy, dokumenty aktualizacji i wersjonowanie kalendarzy, weryfikatory kalendarza, magazyn nadgodzin, planowane nieobecności (plany urlopów), planowane listy płac (rezerwy), ZFŚS, pracownicy zewnętrzni (B2B, APT) oraz listy ewidencji (np. badania lekarskie, nagrody i kary). Od wariantu złotego dostępne są m.in. elektroniczna dokumentacja pracownicza, lista importu nieobecności z PUE, struktura organizacyjna, definiowanie dni pracy i ochrona danych osobowych. Wariant licencji należy potwierdzić względem wymagań opisanych w załącznikach.
 
 ## Struktura organizacyjna
@@ -205,10 +205,10 @@ Na etapie analizy zidentyfikowano następujące integracje systemu enova365 z sy
 Dla integracji dedykowanych zostanie przygotowana odrębna specyfikacja (mapowanie pól, obsługa błędów, harmonogram uruchomienia). [DO UZUPEŁNIENIA: system wiodący dla danych kadrowych i zasady edycji danych integrowanych w enova365]
 
 ## Migracja danych kadrowo-płacowych
-Migracja danych zostanie zrealizowana na podstawie arkuszy migracyjnych przygotowanych przez Alt One i uzupełnionych przez Klienta lub na podstawie eksportu z obecnego systemu [DO UZUPEŁNIENIA: nazwa systemu źródłowego]. Migracja zostanie przeprowadzona próbnie na bazie testowej, a następnie – po weryfikacji przez Klienta – produkcyjnie na dzień uruchomienia systemu.
+Migracja danych zostanie zrealizowana na podstawie arkuszy migracyjnych przygotowanych przez AltOne i uzupełnionych przez Klienta lub na podstawie eksportu z obecnego systemu [DO UZUPEŁNIENIA: nazwa systemu źródłowego]. Migracja zostanie przeprowadzona próbnie na bazie testowej, a następnie – po weryfikacji przez Klienta – produkcyjnie na dzień uruchomienia systemu.
 @kolumny 6,36,18,20,20
 | Lp. | Zakres danych | Okres lub stan na dzień | Źródło i format | Odpowiedzialny |
-| 1 | Kartoteki pracowników i zleceniobiorców (dane osobowe, adresy, dane podatkowe i ubezpieczeniowe, rachunki bankowe, rodzina) | [DO UZUPEŁNIENIA: stan na dzień] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: Klient / Alt One] |
+| 1 | Kartoteki pracowników i zleceniobiorców (dane osobowe, adresy, dane podatkowe i ubezpieczeniowe, rachunki bankowe, rodzina) | [DO UZUPEŁNIENIA: stan na dzień] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: Klient / AltOne] |
 | 2 | Historia zatrudnienia, umowy o pracę i aneksy, dodatki stałe, umowy cywilnoprawne | [DO UZUPEŁNIENIA: okres] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
 | 3 | Struktura organizacyjna i podległościowa | stan na dzień uruchomienia | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
 | 4 | Limity nieobecności, nieobecności do podstaw zasiłków, bilans otwarcia | [DO UZUPEŁNIENIA: okres] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
@@ -300,7 +300,7 @@ Po stronie Klienta w zakresie zarządzania środowiskiem testowym oraz produkcyj
 - wdrożenie polityki bezpieczeństwa, m.in. kopie zapasowe, redundancja, certyfikaty bezpieczeństwa.
 Dodatkowe wsparcie ze strony Wykonawcy może być realizowane w ramach godzin asysty lub rezerwy projektu. Sugerujemy, aby po etapie wdrożenia utworzone zostało środowisko testowe będące kopią środowiska produkcyjnego.
 
-### Dostępy dla konsultantów Alt One
+### Dostępy dla konsultantów AltOne
 Na potrzeby realizacji wdrożenia wymagane są:
 - co najmniej [DO UZUPEŁNIENIA: liczba] jednoczesnych dostępów dla zespołu wdrożeniowego i programistycznego;
 - dostęp zdalny do środowiska produkcyjnego oraz testowego;
@@ -314,7 +314,7 @@ Na potrzeby realizacji wdrożenia wymagane są:
 Poniżej zestawiono informacje, których nie udało się ustalić w trakcie spotkań analitycznych. Do czasu ich wyjaśnienia rozwiązania w powiązanych sekcjach mają charakter wstępny. Pytania dotyczące poszczególnych obszarów znajdują się również w załącznikach.
 @kolumny 5,37,12,16,12,18
 | Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
-| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / Alt One] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
 @tabela Pytania otwarte
 Statusy pytań: Otwarte, W trakcie, Wyjaśnione (z odesłaniem do sekcji, w której wpisano ustalenie), Poza zakresem.
 
@@ -329,14 +329,14 @@ Statusy pytań: Otwarte, W trakcie, Wyjaśnione (z odesłaniem do sekcji, w któ
 # Harmonogram i odpowiedzialności
 @kolumny 6,26,34,16,18
 | Lp. | Etap | Zakres lub produkt | Termin | Odpowiedzialny |
-| 1 | Analiza przedwdrożeniowa | Akceptacja niniejszego dokumentu i załączników | [DO UZUPEŁNIENIA: termin] | Klient, Alt One |
-| 2 | Konfiguracja systemu | Konfiguracja według analizy, rozwiązania dedykowane | [DO UZUPEŁNIENIA: termin] | Alt One |
-| 3 | Migracja danych | Migracja próbna, weryfikacja danych, migracja produkcyjna | [DO UZUPEŁNIENIA: termin] | Klient, Alt One |
-| 4 | Szkolenia | Szkolenia operatorów i użytkowników pulpitów | [DO UZUPEŁNIENIA: termin] | Alt One |
+| 1 | Analiza przedwdrożeniowa | Akceptacja niniejszego dokumentu i załączników | [DO UZUPEŁNIENIA: termin] | Klient, AltOne |
+| 2 | Konfiguracja systemu | Konfiguracja według analizy, rozwiązania dedykowane | [DO UZUPEŁNIENIA: termin] | AltOne |
+| 3 | Migracja danych | Migracja próbna, weryfikacja danych, migracja produkcyjna | [DO UZUPEŁNIENIA: termin] | Klient, AltOne |
+| 4 | Szkolenia | Szkolenia operatorów i użytkowników pulpitów | [DO UZUPEŁNIENIA: termin] | AltOne |
 | 5 | Testy i odbiór | Testy według scenariuszy testowych, protokoły odbioru | [DO UZUPEŁNIENIA: termin] | Klient |
-| 6 | Równoległe naliczanie wynagrodzeń | [DO UZUPEŁNIENIA: liczba miesięcy naliczeń równoległych] | [DO UZUPEŁNIENIA: termin] | Klient, Alt One |
-| 7 | Uruchomienie produkcyjne | Rozpoczęcie pracy w enova365 | [DO UZUPEŁNIENIA: data uruchomienia] | Klient, Alt One |
-| 8 | Asysta powdrożeniowa | Wsparcie zgodnie z umową | [DO UZUPEŁNIENIA: okres] | Alt One |
+| 6 | Równoległe naliczanie wynagrodzeń | [DO UZUPEŁNIENIA: liczba miesięcy naliczeń równoległych] | [DO UZUPEŁNIENIA: termin] | Klient, AltOne |
+| 7 | Uruchomienie produkcyjne | Rozpoczęcie pracy w enova365 | [DO UZUPEŁNIENIA: data uruchomienia] | Klient, AltOne |
+| 8 | Asysta powdrożeniowa | Wsparcie zgodnie z umową | [DO UZUPEŁNIENIA: okres] | AltOne |
 @tabela Harmonogram projektu
 Szczegółowy harmonogram prac zostanie uzgodniony przez Kierowników Projektu obu stron i będzie aktualizowany w trakcie projektu.
 
