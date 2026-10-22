@@ -1,0 +1,6 @@
+public string Feature_ZlozylRola {
+    get {
+        // Pracownik / Przełożony / Inny pracownik / Inny operator (np. administrator za pracownika).
+        return A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.RolaWykonawcy(Row, A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.ZadanieZlozenia(Row));
+    }
+}

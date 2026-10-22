@@ -43,5 +43,80 @@ namespace A1.Runtime.Business.TblCodeFiles {
             }
             return wydzialy;
         }
+
+        // Kroki procesu rozpoznawane po nazwie definicji zadania - działa dla procesu standardowego
+        // "Dokumenty aktualizacji kalendarza" (Wypełniany, Do akceptacji, Poprawiany) i jego kopii,
+        // np. A1_DokAkt (Wypełniany 2, Do akceptacji 2, Poprawiany 2).
+        const string KrokWypelniany = "Wypełniany";
+        const string KrokDoAkceptacji = "Do akceptacji";
+        const string KrokPoprawiany = "Poprawiany";
+
+        static bool JestKrokiem(Soneta.Business.Db.Task zadanie, string[] kroki)
+        {
+            string nazwa = zadanie.Definition.Name ?? "";
+            foreach (string krok in kroki)
+                if (nazwa == krok || nazwa.StartsWith(krok + " "))
+                    return true;
+            return false;
+        }
+
+        // Ostatnie wykonane zadanie procesu dokumentu z podanych kroków (null, gdy brak).
+        static Soneta.Business.Db.Task OstatnieWykonaneZadanie(DokumentAktualizacjiKalendarza dokument, params string[] kroki)
+        {
+            Soneta.Business.Db.Task ostatnie = null;
+            Soneta.Business.Db.BusinessModule bm = Soneta.Business.Db.BusinessModule.GetInstance(dokument.Session);
+            foreach (Soneta.Business.Db.TaskLinkedObj powiazanie in bm.TaskLinkedObjs.WgLinkedObject[dokument]) {
+                Soneta.Business.Db.Task zadanie = powiazanie.Task;
+                if (zadanie == null || zadanie.Definition == null || !JestKrokiem(zadanie, kroki))
+                    continue;
+                if (zadanie.ExecutionTime == DateTime.MinValue || zadanie.Executor == null)
+                    continue;
+                if (ostatnie == null || zadanie.ExecutionTime > ostatnie.ExecutionTime)
+                    ostatnie = zadanie;
+            }
+            return ostatnie;
+        }
+
+        // Złożenie dokumentu = przekazanie do akceptacji z kroku Wypełniany albo Poprawiany.
+        public static Soneta.Business.Db.Task ZadanieZlozenia(DokumentAktualizacjiKalendarza dokument)
+        {
+            return OstatnieWykonaneZadanie(dokument, KrokWypelniany, KrokPoprawiany);
+        }
+
+        // Zatwierdzenie = ostatnia decyzja w kroku Do akceptacji zatwierdzonego dokumentu.
+        public static Soneta.Business.Db.Task ZadanieZatwierdzenia(DokumentAktualizacjiKalendarza dokument)
+        {
+            if (dokument.Stan != StanyDokumentuAktulizacjiKalendarza.Zatwierdzony)
+                return null;
+            return OstatnieWykonaneZadanie(dokument, KrokDoAkceptacji);
+        }
+
+        public static string Wykonawca(Soneta.Business.Db.Task zadanie)
+        {
+            return zadanie == null ? "" : zadanie.Executor.ToString();
+        }
+
+        public static string DataWykonania(Soneta.Business.Db.Task zadanie)
+        {
+            return zadanie == null ? "" : zadanie.ExecutionTime.ToString("yyyy-MM-dd HH:mm");
+        }
+
+        // Kim jest wykonawca względem pracowników dokumentu: Pracownik, Przełożony albo Inny operator
+        // (np. administrator w programie). Pracownik z pulpitu jest wykonawcą jako Pracownik.
+        public static string RolaWykonawcy(DokumentAktualizacjiKalendarza dokument, Soneta.Business.Db.Task zadanie)
+        {
+            if (zadanie == null)
+                return "";
+            Pracownik wykonawca = zadanie.Executor as Pracownik;
+            if (wykonawca == null)
+                return "Inny operator";
+            List<Pracownik> pracownicy = PracownicyDokumentu(dokument);
+            if (pracownicy.Contains(wykonawca))
+                return "Pracownik";
+            foreach (Pracownik pracownik in pracownicy)
+                if (pracownik.StrukturaOraganizacyjna.GetDomyślnyPrzełożony(dokument.Okres.To) == wykonawca)
+                    return "Przełożony";
+            return "Inny pracownik";
+        }
     }
 }
