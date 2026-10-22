@@ -1,0 +1,5 @@
+public string Feature_ZatwierdzilKiedy {
+    get {
+        return A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.DataWykonania(A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.ZadanieZatwierdzenia(Row));
+    }
+}
