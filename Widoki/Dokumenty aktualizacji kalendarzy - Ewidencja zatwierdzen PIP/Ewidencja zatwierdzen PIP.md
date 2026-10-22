@@ -32,5 +32,5 @@ Wymaga cech `Zlozyl*` / `Zatwierdzil*` i kodu wspólnego. Program widzi widok po
 
 ## Status
 
-Baza Claude, 2026-10-22: skrypt gotowy, **niezainstalowany** – kopia bazy przed zmianą nie powstała
-(brak miejsca na dysku C:, 0,22 GB wolne).
+Baza Claude, 2026-10-22: zainstalowany skryptem (kopia `Claude_przed_widokiem_DAK_PIP_20261022_1046.bak`,
+tableviews 4251). W programie widoczny po restarcie procesu serwera.
