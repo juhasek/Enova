@@ -21,7 +21,8 @@ Dokumenty innych definicji mają w kolumnach wniosku puste wartości.
 | Od godziny | `WniosekElement.OdGodziny` | |
 | Do godziny | `DoGodziny` | |
 | Uwagi | `WniosekOpis` | opis wpisany przez pracownika |
-| Przełożony | `Kierownik` | akceptujący |
+| Przełożony 1 | `Przelozony1` | pole definicji klienckiego wniosku (zastępuje `Kierownik`) |
+| Przełożony 2 | `Przelozony2` | pole definicji klienckiego wniosku (zastępuje `Kierownik`) |
 | Data decyzji | `DataDecyzji` | |
 | Do przeniesienia | `DoPrzeniesienia` | odbiór (Tak) / zapłata (Nie) — **pole tylko w klienckim wniosku** |
 
@@ -30,7 +31,11 @@ Standardowy e-wniosek o nadgodziny ma „Do przeniesienia” wyłącznie jako pa
 w której pole `DoPrzeniesienia` jest właściwością wniosku. Jeśli tam to cecha, EditValue trzeba zmienić
 na `{Features.DoPrzeniesienia}`.
 
-## Zakładanie
+## Zakładanie i zmiany
+
+Kolumny są zdefiniowane w `widok-definicja.ps1` (wspólne dla obu skryptów). Zmiana kolumn istniejącego widoku:
+edytować `widok-definicja.ps1` i uruchomić `aktualizuj-widok.ps1` (kopia bazy + nadpisanie viewform), potem restart `server.dll`.
+
 
 `dodaj-widok.ps1` (PowerShell 5.1, plik z BOM) — kopia bazy, węzeł `foldery/…kadry.ewidencje.dokumenty dodatkowe.xml`
 (nazwa ucięta od lewej do 40 znaków) + `tableviews/<guid>.viewform.xml` w `CfgNodes`/`CfgAttributes`.
