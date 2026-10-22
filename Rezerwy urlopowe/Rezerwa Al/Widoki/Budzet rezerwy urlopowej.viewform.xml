@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd" xmlns="http://www.enova.pl/schema/form.xsd">
+  <Flow Name="FilterPanel">
+    <Field CaptionHtml="Jednostka organizacyjna" Width="30" EditValue="{KadryPracownicyViewInfo+PrParams.Wydział}" Important="true" />
+    <Field CaptionHtml="Z zależnymi" Width="7" EditValue="{KadryPracownicyViewInfo+PrParams.Pośrednio}" Important="true" />
+    <Field CaptionHtml="Okres" Width="22" EditValue="{KadryPracownicyViewInfo+PrParams.Okres}" Important="true" />
+    <Field CaptionHtml="Data" Width="15" EditValue="{KadryPracownicyViewInfo+PrParams.Aktualny}" Important="true" />
+  </Flow>
+  <Grid Name="List" OrderBy="Kod" AutoColumnWidthState="Off" PreviewControlLocation="0">
+    <Field CaptionHtml="Kod" Width="9" EditValue="{Kod}" Footer="None" />
+    <Field CaptionHtml="Nazwisko i imię" Width="30" EditValue="{NazwiskoImię}" Footer="None" />
+    <Field CaptionHtml="Wydział" Width="25" EditValue="{Workers.Info.Historia.Etat.Wydzial}" Footer="None" />
+    <Field CaptionHtml="MPK" Width="25" EditValue="{Features.Rezerwa MPK}" Footer="None" />
+    <Field CaptionHtml="Urlop zaległy na 01.01 (dni)" Width="12" EditValue="{Features.Budżet urlop zaległy}" Footer="Sum" />
+    <Field CaptionHtml="Urlop należny (dni)" Width="12" EditValue="{Features.Budżet urlop należny}" Footer="Sum" />
+    <Field CaptionHtml="Godziny budżetu" Width="12" EditValue="{Features.Budżet godziny}" Footer="Sum" />
+    <Field CaptionHtml="Podstawa 1" Width="14" EditValue="{Features.Budżet podstawa 1}" Footer="None" />
+    <Field CaptionHtml="Podstawa 2" Width="14" EditValue="{Features.Budżet podstawa 2}" Footer="None" />
+    <Field CaptionHtml="Kwota budżetu" Width="14" EditValue="{Features.Budżet kwota}" Footer="Sum" />
+    <Field CaptionHtml="Narzuty" Width="14" EditValue="{Features.Budżet narzuty}" Footer="Sum" />
+  </Grid>
+</DataForm>

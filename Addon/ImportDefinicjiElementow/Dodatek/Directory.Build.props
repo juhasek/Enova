@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    Wspólne ustawienia dodatku importu definicji elementów wynagrodzenia (enova 2610 = .NET 10).
+    Biblioteki enova: domyślnie z katalogu serwera (SonetaDir, Private=false - nie są kopiowane, są na serwerze).
+    Paczki NuGet Soneta 2610 (~1 GB zależności) nie mieszczą się na dysku tej maszyny; przy innym środowisku
+    build z NuGet: dotnet build -p:SonetaNuGet=true -p:SonetaPackageVersion=<wersja>.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <SonetaDir Condition="'$(SonetaDir)' == ''">C:\enovaServer\2610\Soneta.Products.Server.Standard</SonetaDir>
+    <SonetaNuGet Condition="'$(SonetaNuGet)' == ''">false</SonetaNuGet>
+    <SonetaPackageVersion Condition="'$(SonetaPackageVersion)' == ''">2610.0.0-beta.241094</SonetaPackageVersion>
+    <Version>2610.0.0.1</Version>
+  </PropertyGroup>
+</Project>

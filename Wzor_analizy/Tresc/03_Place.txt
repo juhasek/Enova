@@ -1,0 +1,208 @@
+@tytul ZAŁĄCZNIK NR 3 DO ANALIZY PRZEDWDROŻENIOWEJ
+@obszar Obszar: Płace
+@plik Wzor_ZAL_03_Place_KPCP.docx
+@opis Wzór załącznika nr 3 – Płace – analizy przedwdrożeniowej enova365
+
+# Konfiguracja płac, istotne zagadnienia
+
+## Zagadnienia ogólne
+Program enova365 umożliwia pełną obsługę w zakresie płac, w tym między innymi:
+- rejestrowanie dodatkowych elementów wynagrodzenia przypisanych na dany okres;
+- naliczanie kilku wypłat w ramach jednego miesiąca – kilku wypłat dla tego samego pracownika oraz kilku list płac dla różnych pracowników;
+- procesowanie podwyżki z datą obowiązywania wsteczną i przeliczenie wszystkich pochodnych oraz ich wyrównanie;
+- weryfikację okresu zasiłkowego oraz sposobu wyliczania podstaw nieobecności ZUS;
+- obsługę wypłat związanych z korektą ZUS oraz przypisanie ich do konkretnych miesięcy, a także uwzględnianie zmian w procencie składki przy ustalaniu podstawy wynagrodzenia chorobowego i zasiłków;
+- obsługę korekt – m.in. korekty nieobecności, korekty przekroczenia 30-krotności podstawy składki emerytalno-rentowej, korekty zmiany kwalifikacji świadczenia z wynagrodzenia chorobowego na zasiłek i odwrotnie, korekty składek PPK;
+- obsługę zbiegu pracy z rodzicielstwem (w tym wyliczanie świadczeń w okresie łączenia urlopu rodzicielskiego z pracą);
+- eksport deklaracji zgłoszeniowych oraz rozliczeniowych ZUS do programu Płatnik;
+- przygotowywanie deklaracji podatkowych PIT-4R, PIT-8AR, PIT-11, PIT-8C, PIT-R, IFT-1R oraz e-deklaracji;
+- pełną obsługę płatności zgodnie ze zdefiniowanym systemem bankowości elektronicznej – w tym przelewy do ZUS, US, PPK, PFRON;
+- pełną obsługę zajęć komorniczych oraz zajęć wynagrodzeń z innych tytułów wraz z generowaniem przelewów;
+- obsługę przelewów potrąceniowych spod list płac (np. kasa zapomogowo-pożyczkowa, związki zawodowe);
+- naliczanie rezerw urlopowych (zawiązanie i rozwiązanie);
+- naliczanie ryczałtów dotyczących ZFŚS i PFRON oraz składek na FP, FGŚP i FEP;
+- naliczanie list płac z funduszu bezosobowego, tj. dla umów cywilnoprawnych;
+- przygotowanie plików z danymi z list płac do księgowań w innym programie niż enova365, zgodnie z formatem podanym przez Klienta.
+Konfigurację ogólną płac przeprowadza się w opcjach systemowych w sekcji Kadry i płace/Płace. W tym miejscu można m.in. definiować własne elementy płacowe i wskaźniki, tworzyć nowe definicje list płac, konfigurować PPK oraz sprawdzać aktualne wartości wynagrodzenia przeciętnego i minimalnego czy procentów składek ZUS.
+@rys place_konfiguracja.png | Konfiguracja płacowa systemu
+Edycja konfiguracji podstawowych parametrów płacowych dostępna będzie dla [DO UZUPEŁNIENIA: Administratora kadr i płac], a podgląd – dla [DO UZUPEŁNIENIA: operatorów kadr i płac].
+
+## Listy płac
+Podstawą do wypłaty wynagrodzeń pracownikom oraz zleceniobiorcom i zaksięgowania kosztów jest przygotowanie listy płac. Standardowo w programie przygotowane zostały następujące definicje list płac:
+@rys place_definicje_list.png | Definicje list płac
+Najczęściej wykorzystywanymi definicjami są LPE – Lista płac etaty oraz LPU – Lista płac umowy. Istnieje również możliwość tworzenia własnych definicji list, a także przypisania poszczególnych elementów wynagrodzenia do tych definicji, np.:
+@kolumny 26,74
+| Definicja listy | Zakres |
+| LP podstawowa | Wszystkie składniki, jak np. wynagrodzenie zasadnicze, premie, zasiłki chorobowe, godziny nocne. |
+| LP nagrody | Nagrody roczne, miesięczne i inne o charakterze uznaniowym, niegwarantowane umową. |
+| LP nadgodziny | Wynagrodzenie za czas przepracowany w nadgodzinach, dodatki 50% i 100% oraz godziny nocne przepracowane w ramach zleconych nadgodzin. |
+@tabela Przykładowe definicje list płac
+W enova365 nie ma potrzeby ręcznego zakładania list płac. Podczas naliczania wynagrodzeń z poziomu Kadry/Pracownicy lub Kadry/Zleceniobiorcy automatycznie tworzone są odpowiednie listy płac według wcześniej ustalonego klucza.
+W przypadku naliczania kilku wypłat w jednym miesiącu koszty uzyskania przychodu i ulga podatkowa rozliczane są na pierwszej wypłacie, a w sytuacji, gdy wysokość wynagrodzenia nie pozwala na całkowite rozliczenie kosztów i ulgi, pozostała część rozliczana jest na kolejnych wypłatach w ramach tego samego okresu podatkowego.
+Charakterystyka płacowa Klienta:
+@kolumny 22,22,16,24,16
+| Lista płac | Grupa osób | Termin wypłaty | Podział i numeracja | Uwagi |
+| [DO UZUPEŁNIENIA: np. lista główna – umowy o pracę] | [DO UZUPEŁNIENIA: grupa] | [DO UZUPEŁNIENIA: np. do 10. dnia następnego miesiąca] | [DO UZUPEŁNIENIA: podział na wydziały, rodzaje pracowników] | [DO UZUPEŁNIENIA: uwagi] |
+| [DO UZUPEŁNIENIA: np. umowy cywilnoprawne] | [DO UZUPEŁNIENIA: grupa] | [DO UZUPEŁNIENIA: termin] | [DO UZUPEŁNIENIA: podział] | [DO UZUPEŁNIENIA: uwagi] |
+| [DO UZUPEŁNIENIA: np. listy dodatkowe – korekty, ZFŚS, nagrody] | [DO UZUPEŁNIENIA: grupa] | [DO UZUPEŁNIENIA: termin] | [DO UZUPEŁNIENIA: podział] | [DO UZUPEŁNIENIA: uwagi] |
+@tabela Charakterystyka list płac Klienta
+Nazwa (numeracja) listy płac: [DO UZUPEŁNIENIA: elementy nazwy listy, np. symbol definicji, jednostka, okres, kolejny numer, oznaczenie grupy pracowników].
+W tytule przelewu do pracowników standardowo zawarta jest informacja „Wynagrodzenie za miesiąc i rok”. Opis przelewu można modyfikować na etapie generowania przelewów lub po ich wygenerowaniu, przed przygotowaniem pliku do banku.
+
+## Obsługa PPK
+System enova365 w standardzie umożliwia kompleksową obsługę Pracowniczych Planów Kapitałowych. W ramach programu można zrealizować wszystkie procesy PPK:
+- automatyczne wyliczenie kwalifikacji osób i seryjne generowanie deklaracji zgłoszeniowych do PPK, również w sytuacji przerywanych umów zlecenia;
+- ewidencję i obsługę deklaracji (zgłoszenia, rezygnacje, zmiany danych, wznowienia wpłat);
+- seryjne generowanie zgłoszeń lub rezygnacji;
+- listy ewidencyjne pracowników zgłoszonych, niezdecydowanych i rezygnujących z PPK;
+- dwukierunkową wymianę danych z instytucją finansową – przesyłanie naliczonych składek oraz import nadanych identyfikatorów czy rozliczenia nadpłat;
+- obsługę miesięcznych rozliczeń składek i korekt składek na wypłacie pracownika.
+Ustalenia dotyczące PPK:
+@kolumny 40,60
+| Zagadnienie | Ustalenie |
+| Instytucja finansowa | [DO UZUPEŁNIENIA: nazwa instytucji] |
+| Naliczanie podatku od składki pracodawcy | [DO UZUPEŁNIENIA: według daty wypłaty / po rozliczeniu z instytucją na kolejnej liście] |
+| Wpłaty dodatkowe pracodawcy | [DO UZUPEŁNIENIA: tak / nie, wysokość] |
+| Plik do instytucji | [DO UZUPEŁNIENIA: składki i korekty w jednym pliku / odrębnie] |
+@tabela Ustalenia PPK
+
+## Elementy płacowe
+Producent systemu enova365 zapewnia podstawowe, przewidziane przepisami prawa elementy wynagrodzenia, takie jak wynagrodzenie zasadnicze, wynagrodzenie i dopłaty do nadgodzin oraz godzin nocnych, ekwiwalent i wynagrodzenie za urlop, wynagrodzenie chorobowe i zasiłki. Administrator systemu po stronie Klienta będzie miał możliwość dodania i skonfigurowania dodatkowych składników płacowych, w tym poprzez skopiowanie algorytmów już utworzonych składników.
+Wszystkie dodatkowe elementy, które mają być rozliczone wraz z wynagrodzeniem zasadniczym, należy przypisać w kartotece pracownika (Etat/Dodatki). enova365 przewiduje możliwość przypisywania elementów płacowych ręcznie dla pojedynczych pracowników, jak również jednoczesnego zaimportowania dodatków i potrąceń dla wielu pracowników – poprzez skopiowanie danych z pliku Excel wraz z nagłówkami kolumn i wklejenie ich na widok Dodatki i potrącenia.
+W programie nie ma potrzeby konfigurowania elementów służących do korygowania nieobecności, wynagrodzenia lub dodatków i potrąceń. Poprzez wybranie odpowiednich parametrów naliczania wypłat system sprawdzi, które elementy uległy zmianie względem pierwotnego naliczenia lub nie zostały rozliczone, i dokona stosownych korekt. Do sprawdzenia nierozliczonych elementów za wcześniejsze okresy służy raport Lista nierozliczonych elementów wywoływany z listy pracowników (Wydruki/Wynagrodzenia i zasiłki).
+W ramach wdrożenia zostaną skonfigurowane elementy płacowe przekazane przez Klienta na etapie analizy w pliku „[DO UZUPEŁNIENIA: nazwa pliku ze składnikami płacowymi].xlsx”. Elementy wynagrodzenia, których „ręczna” konfiguracja nie będzie możliwa, zostaną przygotowane przez programistów.
+Zasady ogólne ustalone z Klientem:
+@kolumny 36,64
+| Zagadnienie | Ustalenie |
+| Wynagrodzenie za urlop i inne nieobecności płatne | [DO UZUPEŁNIENIA: czy wynagrodzenie zasadnicze jest pomniejszane; średnia ze składników zmiennych – liczba miesięcy, według okresu czy daty wypłaty] |
+| Zatrudnienie lub zwolnienie w trakcie miesiąca | [DO UZUPEŁNIENIA: pomniejszenie według normy kodeksowej / inne] |
+| Podstawa wynagrodzenia i dodatków za nadgodziny | [DO UZUPEŁNIENIA: składniki wchodzące do stawki, norma kodeksowa] |
+| Koszty uzyskania przychodu 50% | [DO UZUPEŁNIENIA: tak / nie, zasady] |
+| Kody kosztowe, MPK, projekty na składnikach | [DO UZUPEŁNIENIA: zasady przypisania] |
+@tabela Zasady ogólne naliczania wynagrodzeń
+W trakcie spotkań analitycznych ustalono, że poniższe składniki dedykowane będą się wyliczały w następujący sposób:
+@kolumny 20,40,14,14,12
+| Element | Algorytm i zasady naliczania | Lista płac | Źródło danych | Mechanizm |
+| [DO UZUPEŁNIENIA: nazwa składnika] | [DO UZUPEŁNIENIA: algorytm, warunki, pomniejszenia za nieobecności, oskładkowanie i opodatkowanie] | [DO UZUPEŁNIENIA: lista] | [DO UZUPEŁNIENIA: kartoteka / kalendarz / import / wskaźnik] | [DO UZUPEŁNIENIA: nr] |
+@tabela Składniki płacowe dedykowane
+Wartości i procenty powyższych składników (np. stawki, wskaźniki) będą przechowywane w konfiguracji systemu z zachowaniem historii i będą mogły być aktualizowane przez Administratora kadr i płac.
+
+## Umowy cywilnoprawne – rozliczenia
+Wynagrodzenia z umów cywilnoprawnych naliczane są na odrębnych listach płac (fundusz bezosobowy). System obsługuje koszty uzyskania przychodu 20% i 50%, zbieg tytułów do ubezpieczeń, umowy z własnym pracownikiem oraz minimalną stawkę godzinową dla umów zlecenia.
+[DO UZUPEŁNIENIA: terminy wypłat, rachunki do umów, sposób ewidencji godzin przy stawce godzinowej, dedykowane wydruki – lub usuń]
+
+## Składki ZUS i deklaracje rozliczeniowe
+Deklaracje rozliczeniowe ZUS przygotowywane są w enova365 i eksportowane do programu Płatnik. System obsługuje korekty deklaracji oraz kontrolę rocznej podstawy składek emerytalno-rentowych.
+
+### Obsługa ujemnych podstaw ZUS
+Sytuację, gdy na naliczonej liście płac pojawi się u pracownika ujemna podstawa składek, można rozwiązać na jeden z poniższych sposobów:
+- naliczenie listy korygującej do poprzedniego miesiąca z edycją miesiąca ZUS (miesiąc przypisania do deklaracji DRA), a następnie naliczenie listy płac do bieżącego miesiąca;
+- wypłata zaliczki na wynagrodzenie, która skoryguje ujemną podstawę tak, aby w podstawie wykazana była kwota 0 – w momencie powrotu pracownika do pracy nastąpi automatyczne potrącenie zaliczki (parametr „W przypadku naliczenia ujemnej podstawy składek ZUS (…) wypłać zaliczkę w kwocie ujemnej podstawy składek” w Narzędzia/Opcje/Kadry i płace/Płace/Składki ZUS);
+- zapisanie naliczonej wypłaty z ujemną podstawą składek i ręczna korekta deklaracji w programie Płatnik – wymaga wyłączenia domyślnie zaznaczonego parametru „Nie dopuszczaj do zapisania wypłat z ujemnymi podstawami naliczania składek ZUS lub zaliczki podatku” (Narzędzia/Opcje/Kadry i płace/Płace/Ogólne).
+Na etapie analizy Klient wybrał wariant: [DO UZUPEŁNIENIA: wybrany wariant].
+
+## PFRON
+@opcjonalna
+[DO UZUPEŁNIENIA: zakres obsługi PFRON – deklaracje, ewidencja osób z niepełnosprawnością, ryczałt PFRON na listach technicznych – lub usuń]
+
+## ZFŚS
+W enova365 znajduje się specjalny moduł do rozliczania świadczeń z Zakładowego Funduszu Świadczeń Socjalnych. W module ewidencjonowane są wszystkie przyznane świadczenia socjalne i z tego poziomu można dodawać nowe świadczenia pracownikom. Składniki rozliczające świadczenia z ZFŚS zostaną skonfigurowane tak, aby automatycznie naliczały zaliczkę na podatek w momencie przekroczenia rocznego limitu zwolnienia.
+@rys zfss_modul.png | Moduł ZFŚS
+W enova365 [DO UZUPEŁNIENIA: zostanie / nie zostanie] przygotowany dostęp dla Administratora ZFŚS, który będzie mógł zarządzać świadczeniami socjalnymi bez dostępu do innych elementów wynagrodzenia.
+Zasady ZFŚS ustalone z Klientem:
+@kolumny 34,66
+| Zagadnienie | Ustalenie |
+| Odpis na ZFŚS | [DO UZUPEŁNIENIA: według zasad ustawowych / inne] |
+| Kryterium socjalne | [DO UZUPEŁNIENIA: oświadczenie o dochodzie – kwota / próg / grupa; zasady aktualizacji w roku] |
+| Uprawnieni | [DO UZUPEŁNIENIA: pracownicy, emeryci i renciści, członkowie rodzin] |
+| Składanie oświadczeń i wniosków | [DO UZUPEŁNIENIA: wniosek w pulpicie / papierowo – wprowadza administrator] |
+| Pożyczki z ZFŚS | [DO UZUPEŁNIENIA: tak / nie – obsługa w module pożyczek] |
+@tabela Zasady ZFŚS
+@kolumny 22,30,24,12,12
+| Świadczenie | Zasady przyznania i wysokość | Weryfikacje w systemie | Podatek / ZUS | Wniosek w pulpicie |
+| [DO UZUPEŁNIENIA: np. dofinansowanie do wypoczynku, świadczenie świąteczne, zapomoga] | [DO UZUPEŁNIENIA: zasady] | [DO UZUPEŁNIENIA: np. złożone oświadczenie, limit, wiek dziecka] | [DO UZUPEŁNIENIA: zasady] | [DO UZUPEŁNIENIA: tak / nie] |
+@tabela Świadczenia ZFŚS
+
+## PKZP
+@opcjonalna
+Kasa zapomogowo-pożyczkowa obsługiwana jest w standardowym module enova365 do zarządzania wkładami i pożyczkami. W module widoczni są pracownicy, którzy przystąpili do kasy i dokonują comiesięcznych wpłat, oraz pracownicy, którym udzielono pożyczki. Przy pożyczce można podać liczbę rat lub kwotę raty (system przeliczy liczbę rat), ręcznie zmienić kwotę raty oraz wskazać rachunek do wypłaty pożyczki. Spłata dokonywana jest automatycznie na liście płac.
+@rys pkzp_modul.png | Moduł KZP, ZFM i pożyczek
+Zasady PKZP: [DO UZUPEŁNIENIA: wpisowe, wysokość składki miesięcznej, oprocentowanie pożyczek, różnica w ratach, Administrator PKZP].
+
+## Rezerwy
+@opcjonalna
+
+### Rezerwa urlopowa
+W ramach wdrożenia systemu enova365 włączony zostanie mechanizm naliczania planowanych list płac (funkcjonalność dostępna w wersji platynowej; włączenie: Narzędzia/Opcje/Kadry i płace/Płace/Planowane listy płac, parametr Obsługa planowanych list płac = Tak). Elementy rezerwy mają ustawiony Rodzaj naliczania „Tylko planowane”, a listę nalicza się czynnością „Nalicz planowane listy płac…” z listy pracowników. Są to listy techniczne, które nie są brane pod uwagę podczas przygotowywania deklaracji ZUS, PIT czy PPK. Planowane listy płac wykorzystane zostaną do przygotowania rezerwy urlopowej. System umożliwia wygenerowanie raportu z kwotami rezerw zawiązanych i rozwiązanych. W celu naliczenia rezerw zostaną przygotowane automatyczne elementy wynagrodzenia przypisane tylko do list technicznych.
+Sposób wyliczenia rezerwy ustalony z Klientem: [DO UZUPEŁNIENIA: wybrany wariant – np. rezerwa proporcjonalna (1/12 rocznego wymiaru za każdy miesiąc), rezerwa faktyczna (urlop zaległy + bieżący proporcjonalny – wykorzystany) × stawka ekwiwalentu, współczynnik podwyższający; cykl naliczania].
+Od wartości rezerwy naliczane będą narzuty pracodawcy (ZUS oraz PPK dla uczestników PPK). Przy ustalaniu rezerwy sprawdzany będzie okres zatrudnienia pracownika, wymiar etatu oraz zmiana wymiaru urlopu w trakcie okresu zatrudnienia. [DO UZUPEŁNIENIA: rozwiązanie rezerwy, przypisanie MPK lub kodów kosztowych]
+
+### Rezerwa na nadgodziny
+@opcjonalna
+Mechanizm planowanych list płac może być również wykorzystany do przygotowania rezerwy na nadgodziny – zawiązywanej na wypracowane nadgodziny poprzedniego miesiąca i rozwiązywanej w momencie ich wypłaty lub odbioru. Na liście z rezerwą widoczne będą składniki rezerwy i rozwiązania rezerwy (ze znakiem ujemnym), wraz z narzutami pracodawcy.
+[DO UZUPEŁNIENIA: strefy czasu pracy służące do oznaczania nadgodzin, zasady księgowania]
+
+### Ryczałty i składniki techniczne
+@opcjonalna
+[DO UZUPEŁNIENIA: ryczałty naliczane na listach technicznych, np. ZFŚS, PFRON – miejsce przechowywania kwot z historią, przypisanie kosztów]
+
+## Benefity pracownicze
+@opcjonalna
+W enova365 zostanie przygotowany widok dla Administratora benefitów, który będzie mógł dodawać i zamykać abonamenty (np. opieka medyczna, karty sportowe, ubezpieczenia grupowe) oraz konfigurować benefity – wysokość dofinansowania, nazwy pakietów, podział kosztów między pracodawcę a pracownika. Koszty pakietów będą automatycznie naliczane na liście płac z uwzględnieniem oskładkowania i opodatkowania (również proporcjonalnie za okresy nieobecności).
+@kolumny 22,40,38
+| Benefit | Zasady (pakiety, dofinansowanie, członkowie rodziny) | Walidacje w systemie |
+| [DO UZUPEŁNIENIA: nazwa benefitu] | [DO UZUPEŁNIENIA: zasady] | [DO UZUPEŁNIENIA: np. automatyczne zamknięcie z końcem miesiąca ustania zatrudnienia, wiek członka rodziny, jeden aktywny pakiet] |
+@tabela Benefity pracownicze
+
+## Programy pracownicze i potrącenia dedykowane
+@opcjonalna
+[DO UZUPEŁNIENIA: programy akcji pracowniczych, składki związkowe, inne potrącenia dedykowane – podstawa naliczenia, okres uczestnictwa, walidacje, raporty dla instytucji – lub usuń]
+
+## Zajęcia wynagrodzeń
+System enova365 zapewnia pełną obsługę zajęć komorniczych oraz zajęć wynagrodzeń z innych tytułów, z uwzględnieniem kwot wolnych i kolejności zaspokajania, wraz z generowaniem przelewów do komorników.
+
+## Przelewy bankowe
+Generowanie przelewów do pracowników, zleceniobiorców, ZUS, US, instytucji PPK oraz komorników jest standardowym mechanizmem programu.
+@kolumny 36,64
+| Zagadnienie | Ustalenie |
+| Bank i sposób przekazania przelewów | [DO UZUPEŁNIENIA: plik w formacie banku / web service banku] |
+| Rachunki źródłowe | [DO UZUPEŁNIENIA: rachunki per spółka, odrębny rachunek ZFŚS] |
+| Przelewy do instytucji (ZUS, US, PPK, PFRON) | [DO UZUPEŁNIENIA: z modułu płacowego / realizuje księgowość] |
+| Przelewy potrąceniowe | [DO UZUPEŁNIENIA: np. związki zawodowe, PKZP, komornicy] |
+@tabela Przelewy bankowe
+
+## Import zwolnień lekarskich z PUE
+System enova365 w standardzie umożliwia import zwolnień lekarskich (e-ZLA) z PUE ZUS. Konfiguracja znajduje się w Narzędzia/Opcje/Kadry i płace/Kalendarze/Import z PUE (w konfiguracji wielooddziałowej – w ustawieniach oddziałów): login, hasło oraz hasło do plików ZIP zgodne z harmonogramem raportów cyklicznych ustawionym w PUE ZUS.
+E-zwolnienia pobiera się przyciskiem na liście Kadry/Czas pracy/Import nieobecności z PUE (lista dostępna od wersji złotej programu), bez konieczności logowania do portalu PUE ZUS. Lista prezentuje pobrane rekordy wraz ze stanem i wynikiem weryfikacji (poprawny, błędny, niezgodny, anulowany, zdublowany); nieobecności skorygowane przez import oznaczane są w polu „Edytowano nb”, a szczegóły zmian widoczne są w Zapisie działań.
+Import może być wykonywany automatycznie – parametr „Importuj automatycznie przy użyciu HZ” wymaga skonfigurowania dodatku Harmonogram Zadań i aktywowania zadania AutoImportNieobecnosciPUE z ustalonym harmonogramem (np. codziennie w nocy).
+Parametr „Edycja istniejących w systemie nieobecności, które pokrywają się z okresem importowanych nieobecności” określa, co zrobić w przypadku konfliktu z nieobecnością już wprowadzoną:
+- Nie edytuj – nieobecność z PUE nie zostanie wprowadzona w przypadku konfliktu;
+- Tylko nierozliczone – korekty zostaną wprowadzone tylko dla nierozliczonych nieobecności;
+- Koryguj rozliczone i nierozliczone – korekty zostaną wprowadzone dla wszystkich nieobecności.
+Parametr „Importuj opiekę ZUS na nieobecność” określa nieobecność generowaną dla zwolnienia z tytułu opieki:
+- Zwolnienie opieka (ZUS) – wartość domyślna, zasiłek opiekuńczy naliczany bez względu na dostarczenie druku ZUS Z-15;
+- Zwolnienie opieka (ZUS bez zasiłku 1/30) – pomniejszenie wynagrodzenia o 1/30 do czasu dostarczenia druku Z-15;
+- Zwolnienie opieka (ZUS bez zasiłku prop.) – pomniejszenie wynagrodzenia proporcjonalne.
+@rys pue_opieka.png | Wybór nieobecności dla zwolnienia z tytułu opieki
+Decyzja Klienta: [DO UZUPEŁNIENIA: import ręczny / automatyczny (harmonogram), wariant edycji istniejących nieobecności, nieobecność dla zwolnienia z tytułu opieki, uzupełnianie kodu A].
+
+## Szacunkowe listy płac
+@opcjonalna
+[DO UZUPEŁNIENIA: szacunkowe listy płac na potrzeby zarachowań (np. za grudzień przy zamknięciu roku) – zakres, wyłączenie z deklaracji i księgowań – lub usuń]
+
+# Pytania otwarte – Płace
+@kolumny 5,45,12,14,10,14
+| Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+@tabela Pytania otwarte – Płace
+
+# Kryteria odbioru
+Kryterium odbioru poprawności konfiguracji modułu płacowego na etapie wdrożenia będzie przeprowadzenie testów przez Klienta z pozytywnym wynikiem.
+Testy zostaną przeprowadzone na podstawie przygotowanych przez AltOne scenariuszy testowych zawartych w pliku „Scenariusze testowe – Płace.xlsx” dołączonym do dokumentu niniejszej analizy.
+
+# Wykaz tabel i rysunków
+@spis-tab
+@spis-rys
+
+# Kontakt
+@kontakt

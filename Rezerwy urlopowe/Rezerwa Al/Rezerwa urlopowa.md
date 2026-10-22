@@ -1,0 +1,142 @@
+# Rezerwa urlopowa i budżet rezerwy – dokumentacja
+
+## 1. Cel
+
+Miesięczna rezerwa urlopowa sprawdzana przez Zarząd oraz budżet rezerwy liczony w sierpniu
+na stan urlopu na 01.01 roku następnego. Rozwiązanie korzysta z wbudowanego w enova365
+modułu **planowanych list płac** (moduł rezerw, licencja **Płace Platynowe**), dzięki czemu
+narzuty pracodawcy liczy standardowy silnik płac, a rezerwa nie trafia na żadną listę płac.
+
+Instrukcja dla klienta: `Instrukcja_Rezerwa_Urlopowa.docx` (styl jak pozostałe instrukcje; tabele scenariuszy
+z tych samych danych co `Rezerwa urlopowa - scenariusze testowe.xlsx`).
+
+## 2. Założenia klienta → realizacja
+
+| # | Założenie | Realizacja |
+|---|---|---|
+| 1 | Rezerwa sprawdzana miesięcznie | Planowana lista płac „Rezerwa urlopowa” (REZURL) naliczana co miesiąc po zatwierdzeniu list płac. |
+| 2 | Urlop zaległy + bieżący proporcjonalny − wykorzystany do miesiąca | Z limitów urlopu wypoczynkowego i dodatkowego: zaległy = przeniesienie z poprzedniego roku; bieżący = limit roczny × liczba miesięcy do miesiąca rezerwy / liczba miesięcy okresu limitu, dla kolejnego urlopu zaokrąglony w górę do pełnego dnia (26/12 × 10 = 21,67 → 22), pierwszy urlop (znacznik limitu „Pierwszy urlop”) bez zaokrąglenia; wykorzystany = nieobecności pomniejszające limit od 01.01 do końca miesiąca. |
+| 3 | Podstawa 1 – zasadnicze + zmienne do ekwiwalentu, średnia z 3 miesięcy (luty → II, I, XII) | Zasadnicze nominalne z kartoteki za każdy miesiąc + elementy z flagą „wliczać do ekwiwalentu” wg okresu „za”; średnia tylko z miesięcy z naliczoną wypłatą (jak podstawa 2), max 3, do grosza; brak wypłat → zasadnicze nominalne z miesiąca rezerwy; miesiąc niepełnego zatrudnienia w wartościach nominalnych (zasadnicze z kartoteki, dodatki kwotowe z kartoteki, pozostałe zmienne przeliczone do pełnego miesiąca wg normy). |
+| 3 | Podstawa 2 – standard enova (podstawa ekwiwalentu) | Ten sam mechanizm co element „Ekwiwalent za czas urlopu” (`NaliczanieEkwiwalent`). |
+| 3 | Współczynnik do ekwiwalentu | Z konfiguracji (Nieobecności → średnia norma miesięczna) × wymiar etatu; zawsze z konfiguracji; brak (0) → rezerwa 0, element nie powstaje (UWAGA w Zapisie obliczeń). |
+| 4 | Widok: Kod, Imię, Nazwisko, MPK, zaległy, bieżący, wykorzystany, podstawa, kwota, narzuty | Lista **Pracownicy** + cechy z kategorii „Rezerwa urlopowa” (kolumny), miesiąc = data aktualności listy (`ActualDate.Today`). |
+| 5 | Budżet w sierpniu – symulacja limitu na 01.01 roku następnego, dwie podstawy | Planowana lista „Budżet rezerwy urlopowej” (BUDREZURL): symulacja „Limity nieobecności / Nalicz” na rok następny w sesji, która NIE jest zapisywana; zaległy na 01.01 + limit należny na rok następny; podstawy jak w pkt 3. |
+
+## 3. Elementy rozwiązania (w bazie Al)
+
+| Obiekt | Nazwa | Uwagi |
+|---|---|---|
+| Element wynagrodzenia (Dodatek automatyczny) | **Rezerwa urlopowa** | Edytor algorytmu – plik `Rezerwa urlopowa`. Priorytet 200, Rodzaj naliczania = **Tylko planowane**, Do wypłaty = Nie, PIT = nie naliczać, ZUS = naliczać (dla narzutów). |
+| Element wynagrodzenia (Dodatek automatyczny) | **Budżet rezerwy urlopowej** | Ten sam kod; tryb budżetu rozpoznawany po nazwie zaczynającej się od „Budżet”. |
+| Definicja planowanej listy płac | **REZURL – Rezerwa urlopowa** | Element = „Rezerwa urlopowa”, algorytm domyślny. |
+| Definicja planowanej listy płac | **BUDREZURL – Budżet rezerwy urlopowej** | Element = „Budżet rezerwy urlopowej”. |
+| Cechy (tabela Pracownicy, kategoria „Rezerwa urlopowa”) | Rezerwa MPK, Rezerwa urlop zaległy / bieżący / wykorzystany, Rezerwa godziny, Rezerwa podstawa 1 / 2, Rezerwa kwota, Rezerwa narzuty; Budżet urlop zaległy / należny, Budżet godziny, Budżet podstawa 1 / 2, Budżet kwota, Budżet narzuty | Każda cecha to jedno wywołanie metody klasy `RezerwaUrlopowa` (niżej). |
+| Dodatkowy kod kompilacji (System → Dodatkowy kod do kompilacji, `CodeFiles`) | **RezerwaUrlopowa** | Plik `RezerwaUrlopowa (Dodatkowy kod kompilacji)`: wspólne wyszukanie elementu planu za miesiąc daty aktualności + metody kolumn (UrlopZalegly, UrlopBiezacy, UrlopWykorzystany, Godziny, Podstawa1, Podstawa2, Kwota, Narzuty, CentrumKosztow). Projekt bazy „Business” (ten sam co cechy). |
+
+Pola elementu na planowanej wypłacie: Podstawa 1, Podstawa 2 (miesięcznie), Podstawa 3/4/5 =
+urlop zaległy / bieżący / wykorzystany w dniach (budżet: zaległy na 01.01 / limit roku
+następnego / 0), Czas = godziny rezerwy, Wartość = kwota, Narzuty = narzuty pracodawcy.
+Pełne wyliczenie jest w **Zapisie obliczeń** elementu, w stałym układzie sekcji:
+[1] stan urlopu (godz./dni), [2] współczynnik, [3] podstawa 1 (miesiące), [4] podstawa 2,
+[5] wynik. Wszystkie wpisy idą przez `Element.ZapisObliczen.Add` (od 2026-10-13; wcześniej klasa `Log`).
+W sekcji [4] jest przepisany linia po linii szczegółowy log standardowego ekwiwalentu
+(`NaliczanieEkwiwalent`, kategoria „Urlop”, przechwytywany `LogCatcher`): elementy wliczane z miesięcy,
+dopełnienie norma/praca, średnia norma miesięczna, podstawa za miesiąc / dzień / godzinę. Pole definicji
+Algorytm → Zapis obliczeń nie ma już wpływu na log rezerwy.
+
+Wzór: `kwota = godziny rezerwy × podstawa / (współczynnik × wymiar etatu) / godzin w dniu urlopu (8 h
+lub norma dobowa z kalendarza – wg konfiguracji ekwiwalentu)`.
+
+Przełączniki na początku kodu algorytmu:
+- `WARIANT_PODSTAWY` – 1 = podstawa 1 (domyślnie), 2 = podstawa 2, 3 = wyższa z obu;
+- `ZASADNICZE_NOMINALNE` – `true` = stawka z kartoteki (domyślnie), `false` = zasadnicze naliczone na listach (pomniejszone o nieobecności).
+
+## 4. Instalacja
+
+1. `bash generuj-xml.sh` – buduje `Rezerwa urlopowa.dbinit.xml` z plików kodu (nie edytować XML ręcznie).
+2. `dbmgr importxml <baza> "Rezerwa urlopowa.dbinit.xml" --standard` (import wg rekordów; GUID-y stałe,
+   ponowny import aktualizuje te same rekordy). Po imporcie zrestartować serwer enova / przelogować się.
+3. Uwaga: `dbmgr importxml` kończy się kodem 0 także przy błędzie w kodzie algorytmu – kod sprawdzono
+   osobną kompilacją kontrolną na bibliotekach enova 2512.5.6 (algorytm + 16 cech: bez błędów).
+4. Widoki (w bazie Al założone 2026-10-13): **Kadry i płace → Pracownicy → „Rezerwa urlopowa”** oraz
+   **„Budżet rezerwy urlopowej”** – dwa widoki globalne (dla wszystkich operatorów), z filtrami jak lista Pracownicy.
+   Kolumny: Kod, Nazwisko i imię, Wydział (z historii na datę aktualności), MPK (cecha „Rezerwa MPK” =
+   centrum kosztów wydziału lub najbliższego wydziału nadrzędnego), a dalej cechy rezerwy (urlop zaległy /
+   bieżący / wykorzystany, godziny, podstawa 1 i 2, kwota, narzuty) albo budżetu (urlop zaległy na 01.01,
+   należny, godziny, podstawa 1 i 2, kwota, narzuty). Dni, godziny, kwoty i narzuty mają sumę w stopce.
+   Definicje: `Widoki/*.viewform.xml`; zapis do bazy skryptem `Widoki/dodaj-widoki.ps1` (konfiguracja
+   `CfgNodes`/`CfgAttributes`: lista folderów `kadry i płace.kadry.pracownicy.xml` + węzeł `<guid>.viewform.xml`
+   pod `tableviews`, treść jako hex UTF-8 z BOM; numery węzłów 2096/2097 są z bazy Al – na innej bazie sprawdzić).
+   Kopia przed zmianą: `Al_przed_widoki_rezerwy_20261013.bak`. Widoki pojawiają się po restarcie serwera enova /
+   ponownym zalogowaniu. Wartości kolumn są puste, dopóki plan za miesiąc daty aktualności nie jest naliczony.
+
+## 5. Obsługa (miesięcznie)
+
+1. Zatwierdzić listy płac za miesiąc rezerwy (**ważne** – silnik planu USUWA niezatwierdzone wypłaty
+   etatowe pracownika przed naliczeniem planu; zachowanie standardowe enova).
+2. Kadry i płace → Pracownicy (zatrudnieni) → zaznaczyć wszystkich → Czynności → **Nalicz planowane listy płac**:
+   definicja „Rezerwa urlopowa”, okres = miesiąc rezerwy, typ wypłaty Etat.
+3. Pracownicy → Aktualność = ostatni dzień miesiąca → widok „Rezerwa urlopowa” → eksport do Excela dla Zarządu.
+4. Ponowne naliczenie za ten sam miesiąc jest bezpieczne – widok pokazuje ostatnie naliczenie
+   (stare planowane listy można usunąć w Płace → Planowane listy płac).
+
+**Budżet (sierpień):** jak wyżej, definicja „Budżet rezerwy urlopowej”, okres 08/RRRR; widok z cechami „Budżet …”.
+Symulacja limitu uwzględnia urlopy już wprowadzone na wrzesień–grudzień (jak standardowe naliczenie limitu);
+żadne limity nie są zapisywane do bazy.
+
+## 6. Do potwierdzenia z klientem
+
+1. Która podstawa decyduje o kwocie rezerwy (1, 2 czy wyższa)? Obecnie: podstawa 1.
+2. Zasadnicze w podstawie 1: nominalne z kartoteki (obecnie) czy faktycznie naliczone (pomniejszone o chorobowe itp.)?
+3. Ujemny stan urlopu (urlop wykorzystany „na zapas”): obecnie rezerwa = 0; czy dopuszczać wartości ujemne?
+4. Budżet: czy „stan urlopu na 01.01” to zaległy + pełny limit roku następnego (obecnie), czy tylko zaległy?
+5. „Urlop wykorzystany proporcjonalny” – przyjęto: wykorzystany od 01.01 do końca miesiąca rezerwy.
+6. Narzuty: składki ZUS pracodawcy + FP + FGŚP + FEP wg silnika płac. Wpłata pracodawcy PPK **nie** jest
+   doliczana (element PPK nie liczy się na planie zawężonym do rezerwy) – czy ma być?
+7. Urlop dodatkowy (niepełnosprawni) – wliczony razem z wypoczynkowym; czy to właściwe?
+8. Licencja Płace Platynowe – wymagana dla planowanych list płac (do sprawdzenia u klienta).
+
+## 7. Status
+
+**2026-10-13 – działa (potwierdzone przez użytkownika na bazie Al, enova 2610):**
+- widoki „Rezerwa urlopowa” i „Budżet rezerwy urlopowej” pod Kadry i płace → Pracownicy;
+- naliczenie planowanej listy REZURL za 10/2026 dla 56 pracowników (z opcją „Uwzględniaj niezatwierdzone
+  listy płac”, bo wypłaty w bazie testowej są niezatwierdzone – wypłaty pozostały nienaruszone);
+- zapis obliczeń z przepisanym logiem standardowego ekwiwalentu w sekcji [4] (podstawa 1 i 2 zgodne u próbki).
+
+Do decyzji: czy skracać log standardu (wiersze „w kwocie 0.00” z miesięcy elementów o znacznych wahaniach).
+
+### Historia (2026-10-09)
+
+- Zaimportowane do lokalnej bazy **Al** (elementy ID 268/269, DefPlanListPlac ID 1/2, cechy FeatureDefs 4–19),
+  kopia bazy przed zmianą: `Al_przed_rezerwa_20261009.bak` (domyślny katalog backupów SQL Server).
+- Kod skompilowany kontrolnie bez błędów. **NIESPRAWDZONE na żywych danych** – lokalna baza Al nie ma
+  wypłat ani limitów; test wg `Rezerwa urlopowa - scenariusze testowe.xlsx` (30 scenariuszy + kalkulator
+  kwot) do wykonania w GUI na bazie z danymi.
+- 1. test w GUI (2026-10-09): „Błędny typ naliczania wypłaty. Element: Rezerwa urlopowa” – brak pola
+  Naliczanie (płatna z góry/z dołu = 0). Poprawione: `OkresNaliczania.Naliczanie = PłatnaZDołu`, ponowny import.
+- Zapis planu (2026-10-09): „Istnieje już inny zapis w kluczu Numer.WgNumeruDokumentu: *, *” – import wg
+  rekordów zostawił pusty wzór numeracji i ewidencję definicji planowanej listy. Poprawione: wzór
+  `Definicja.Symbol/Data.Year:4/Data.Month:2/*` (domyślny enova), DefinicjaED = „Planowana lista płac-ewidencja” (RUEW).
+- Elementy krytyczne do pierwszego testu: (a) czy dodatek automatyczny pojawia się na planowanej liście
+  (RU-01), (b) zgodność podstawy 2 ze standardem (RU-11), (c) symulacja budżetu bez zapisu limitów (RU-16/17).
+
+## 8. Wycena (starszy konsultant enova, bez wsparcia AI)
+
+| Etap | Godziny |
+|---|---|
+| Doprecyzowanie założeń z klientem, decyzje z pkt 6 | 4 |
+| Rozpoznanie i konfiguracja modułu planowanych list płac (rezerwy), licencja | 4 |
+| Algorytm – stan urlopu (zaległy / bieżący proporcjonalny / wykorzystany, 2 limity) | 6 |
+| Podstawa 1 (średnia 3 mies.) + współczynnik do ekwiwalentu | 3 |
+| Podstawa 2 (standard ekwiwalentu) + narzuty (deklaracje ZUS, weryfikacja) | 5 |
+| Budżet – symulacja limitu na 01.01 w niezapisywanej sesji | 5 |
+| Widok – 16 cech + konfiguracja widoku listy | 5 |
+| Definicje planowanych list, import/instalacja na bazie testowej | 2 |
+| Testy (30 scenariuszy, dane testowe, ~2 rundy poprawek) | 12 |
+| Dokumentacja, instrukcja, szkolenie (kadry/płace, prezentacja dla Zarządu) | 4 |
+| Wdrożenie produkcyjne + asysta przy 1. zamknięciu miesiąca i 1. budżecie | 3 |
+| **Razem** | **53** |
+
+Rekomendacja do oferty: **ok. 55–60 h** (53 h + 10% bufor na ryzyka: mało używany moduł planowanych list
+płac, decyzje z pkt 6). Dolna granica przy konsultancie znającym już moduł rezerw: ok. 40 h.

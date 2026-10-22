@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Dodatek enova 2610: czynność „Importuj definicje z pliku” na liście definicji elementów wynagrodzenia. -->
+  <PropertyGroup>
+    <RootNamespace>ImportDefinicjiElementow</RootNamespace>
+    <AssemblyName>ImportDefinicjiElementow</AssemblyName>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Silnik\ImportDefinicjiElementow.Silnik.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(SonetaNuGet)' == 'true'">
+    <PackageReference Include="Soneta.KadryPlace" Version="$(SonetaPackageVersion)" />
+    <PackageReference Include="Soneta.CRM" Version="$(SonetaPackageVersion)" />
+    <PackageReference Include="Soneta.Kasa" Version="$(SonetaPackageVersion)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(SonetaNuGet)' != 'true'">
+    <Reference Include="Soneta.Business"><HintPath>$(SonetaDir)\Soneta.Business.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Soneta.Types"><HintPath>$(SonetaDir)\Soneta.Types.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Soneta.Core"><HintPath>$(SonetaDir)\Soneta.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Soneta.KadryPlace"><HintPath>$(SonetaDir)\Soneta.KadryPlace.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Soneta.CRM"><HintPath>$(SonetaDir)\Soneta.CRM.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Soneta.Kasa"><HintPath>$(SonetaDir)\Soneta.Kasa.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"><HintPath>$(SonetaDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

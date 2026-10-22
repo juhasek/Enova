@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "soneta_ui_al": {
+      "command": "C:\\Users\\admin.vpn\\AppData\\Local\\SonetaERP\\current\\buscall.exe",
+      "args": [
+        "--db",
+        "Al",
+        "--agent",
+        "00000000-00a1-0003-0001-000000000000",
+        "mcp"
+      ],
+      "type": "stdio"
+    },
+    "soneta_ui_claude": {
+      "command": "C:\\Users\\admin.vpn\\AppData\\Local\\SonetaERP\\current\\buscall.exe",
+      "args": [
+        "--db",
+        "Claude",
+        "--agent",
+        "00000000-00a1-0003-0001-000000000000",
+        "mcp"
+      ],
+      "type": "stdio"
+    }
+  }
+}

@@ -1,0 +1,65 @@
+//----------------------------------------------------------------------------------
+// Dodatkowy kod do kompilacji (System -> Dodatkowy kod do kompilacji)
+// Czas pracy z umowy cywilnoprawnej nie może zasilać magazynu nadgodzin. Wywoływany z definicji
+// weryfikatora kalendarza "A1_Magazyn nadgodzin - umowy cywilne" (rodzaj Dzień pracy), podpiętej jako Błąd.
+//
+// Metoda należy do klasy A1WeryfikatoryKalendarza, wspólnej dla weryfikatorów kalendarza
+// (są w niej też inne metody, np. A1OkresZatrudnienia, A1PracaWNormieWgPlanu).
+// Ten plik zawiera tylko tę metodę - wkleić ją do istniejącej klasy.
+//
+// Kod definicji weryfikatora:
+//
+// public override string Weryfikuj(Soneta.Kalend.DzienPracy dzien, WeryfikujEventArgs args) {
+//      return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1BlokadaMagazynuNadgodzinUmowy(dzien);
+// }
+//----------------------------------------------------------------------------------
+
+using System;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kadry;
+using Soneta.Kalend;
+using Soneta.Tools;
+
+namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
+	public class A1WeryfikatoryKalendarza
+	{
+		// Czas pracy z umowy cywilnoprawnej nie może zasilać magazynu nadgodzin. W dniu, w którym pracownik
+		// nie jest zatrudniony na etacie, a ma umowę cywilnoprawną, blokowana jest każda strefa przenoszona
+		// do magazynu (rozliczenie "W kolejnych miesiącach", np. Nadgodziny do przeniesienia).
+		public static string A1BlokadaMagazynuNadgodzinUmowy(DzienPracy dzien)
+		{
+			Pracownik pracownik = dzien.Pracownik;
+			if (pracownik == null)
+			{
+				return null;
+			}
+			Time doMagazynu = Time.Zero;
+			DefinicjaStrefy definicja = null;
+			foreach (StrefaPracy strefa in dzien.Strefy)
+			{
+				if (strefa.Definicja != null && strefa.Definicja.KierunekMagazynuNadgodzin == KierunekMagazynuNadgodzin.NadgodzinyDoRozliczenia
+					&& strefa.Czas != Time.Empty && strefa.Czas != Time.Zero)
+				{
+					doMagazynu += strefa.Czas;
+					if (definicja == null)
+						definicja = strefa.Definicja;
+				}
+			}
+			if (doMagazynu == Time.Zero)
+			{
+				return null;
+			}
+			FromTo okres = FromTo.Day(dzien.Data);
+			if (pracownik.OkresZatrudnieniaEtat(okres).Contains(dzien.Data))
+			{
+				return null;
+			}
+			if (!pracownik.OkresZatrudnieniaUmowa(okres).Contains(dzien.Data))
+			{
+				return null;
+			}
+			return "Dnia ({0}) pracownik pracuje na umowie cywilnoprawnej - czasu ({1}) nie można przenieść do magazynu nadgodzin (strefa {2}) - {3}".TranslateFormat(dzien.Data, doMagazynu, definicja, pracownik);
+		}
+	}
+}

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Logika importu niezależna od enova: schemat, reguły (port Formularz/src/warunki.js), analiza, raport. -->
+  <PropertyGroup>
+    <RootNamespace>ImportDefinicjiElementow.Silnik</RootNamespace>
+    <AssemblyName>ImportDefinicjiElementow.Silnik</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- jedno źródło prawdy: ten sam schemat, z którego budowany jest formularz klienta -->
+    <EmbeddedResource Include="..\..\schema\definicja-elementu.schema.json" LogicalName="definicja-elementu.schema.json" />
+  </ItemGroup>
+</Project>

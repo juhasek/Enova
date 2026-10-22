@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>ImportDefinicjiElementow.Testy</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Silnik\ImportDefinicjiElementow.Silnik.csproj" />
+    <ProjectReference Include="..\ImportDefinicjiElementow\ImportDefinicjiElementow.csproj" />
+    <!-- konwersje na typy Soneta testowane na prawdziwych bibliotekach serwera: Soneta.Types kopiowane (wymaga go wykrywanie
+         testów xUnit), pozostałe ładowane z katalogu serwera w czasie działania – BibliotekiSerwera.cs -->
+    <Reference Include="Soneta.Types"><HintPath>$(SonetaDir)\Soneta.Types.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Soneta.KadryPlace"><HintPath>$(SonetaDir)\Soneta.KadryPlace.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dane\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

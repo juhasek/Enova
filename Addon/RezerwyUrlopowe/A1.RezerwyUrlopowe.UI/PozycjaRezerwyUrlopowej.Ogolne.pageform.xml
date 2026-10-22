@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
+          Priority="10">
+  <Page CaptionHtml="Ogólne" DataContext="{DataSource}">
+    <Group CaptionHtml="Pracownik" LabelWidth="20">
+      <Field CaptionHtml="Rezerwa" Width="25" EditValue="{Rezerwa}" />
+      <Field CaptionHtml="Pracownik" Width="40" EditValue="{Pracownik}" />
+      <Row>
+        <Field CaptionHtml="Wydział" OuterWidth="42" EditValue="{Wydzial}" />
+        <Field CaptionHtml="MPK" OuterWidth="42" EditValue="{CentrumKosztow}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Wymiar etatu" OuterWidth="42" EditValue="{WymiarEtatu}" Format="N4" />
+        <Field CaptionHtml="Godzin w dniu urlopu" OuterWidth="42" EditValue="{GodzinNaDzien}" Format="N2" />
+      </Row>
+    </Group>
+    <Group CaptionHtml="Urlop (godziny)" LabelWidth="20">
+      <Row>
+        <Field CaptionHtml="Zaległy" OuterWidth="28" EditValue="{ZaleglyGodz}" Format="N2" />
+        <Field CaptionHtml="Bieżący" OuterWidth="28" EditValue="{BiezacyGodz}" Format="N2" />
+        <Field CaptionHtml="Wykorzystany" OuterWidth="28" EditValue="{WykorzystanyGodz}" Format="N2" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Do rezerwy (h)" OuterWidth="28" EditValue="{GodzinyRezerwy}" Format="N2" />
+        <Field CaptionHtml="Do rezerwy (dni)" OuterWidth="28" EditValue="{DniRezerwy}" Format="N2" />
+      </Row>
+    </Group>
+    <Group CaptionHtml="Podstawy i wynik" LabelWidth="20">
+      <Row>
+        <Field CaptionHtml="Podstawa 1" OuterWidth="42" EditValue="{Podstawa1}" />
+        <Field CaptionHtml="Miesięcy średniej" OuterWidth="42" EditValue="{MiesiecyPodstawy1}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Podstawa 2" OuterWidth="42" EditValue="{Podstawa2}" />
+        <Field CaptionHtml="Stawka 1 h" OuterWidth="42" EditValue="{StawkaGodzinowa}" Format="N4" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kwota rezerwy" OuterWidth="42" EditValue="{Kwota}" Class="BoldFont" />
+        <Field CaptionHtml="Narzuty" OuterWidth="42" EditValue="{Narzuty}" />
+      </Row>
+      <Row>
+        <Field CaptionHtml="Kwota poprzednia" OuterWidth="42" EditValue="{KwotaPoprzednia}" Format="N2" />
+        <Field CaptionHtml="Zmiana m/m" OuterWidth="42" EditValue="{Zmiana}" Format="N2" />
+      </Row>
+      <Field CaptionHtml="Ostrzeżenia" Width="*" EditValue="{Ostrzezenia}" />
+      <Field CaptionHtml="Planowany element" Width="40" EditValue="{PlanowanyElement}" />
+    </Group>
+  </Page>
+</DataForm>

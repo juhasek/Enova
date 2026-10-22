@@ -1,0 +1,379 @@
+@tytul ANALIZA PRZEDWDROŻENIOWA
+@obszar Obszar: Kadry, Płace i Czas pracy
+@plik Wzor_Analiza_przedwdrozeniowa_KPCP.docx
+@opis Wzór dokumentu głównego analizy przedwdrożeniowej enova365 – Kadry, Płace, Czas pracy
+
+# Wprowadzenie
+
+## Zakres projektu
+- Wdrożenie i eksploatacja systemu enova365 w zakresie modułu Kadry i Płace, ewidencji i rozliczania czasu pracy, a także pulpitów pracownika oraz kierownika wraz z dedykowanymi rozwiązaniami w [DO UZUPEŁNIENIA: nazwa spółki lub lista spółek objętych wdrożeniem].
+
+## Cel dokumentu
+- Celem niniejszego dokumentu jest analiza potrzeb i zaproponowanie rozwiązań w zakresie zastosowania modułu Kadry i Płace systemu informatycznego enova365 w obszarze funkcjonowania [DO UZUPEŁNIENIA: nazwa klienta lub grupy spółek].
+- Analiza ma dać odpowiedź, w jaki sposób za pomocą systemu enova365 obsłużyć procesy kadrowo-płacowe, a także realizować funkcje raportowe z tegoż systemu, w tym także integracje z innymi systemami oraz procesy realizowane z wykorzystaniem e-wniosków i e-procesów.
+- Analiza ma służyć również jako materiał wyjściowy przy późniejszym wdrożeniu systemu.
+
+## Zakres dokumentu
+Niniejszy dokument zawiera propozycje rozwiązań w zakresie systemu enova365 wspierającego procesy biznesowe zachodzące w obszarze kadr i płac [DO UZUPEŁNIENIA: nazwa klienta]. Ujęto w nim elementy funkcjonalne, jakie zostały ustalone w toku prac analitycznych.
+Analiza dotyczy następujących zagadnień ogólnych:
+- Administracja kadrami;
+- Administracja płacami;
+- Planowanie czasu pracy, ewidencja czasu pracy oraz nieobecności;
+- Administracja świadczeniami: PPK, ZFŚS, [DO UZUPEŁNIENIA: PKZP, benefity pracownicze – usuń, jeśli nie dotyczy];
+- Pulpit pracownika oraz kierownika oraz dedykowane rozwiązania w tym zakresie, w tym raporty i wnioski;
+- Raportowanie HR;
+- Integracja z zewnętrznymi systemami – PUE ZUS, Bramka MF, instytucja finansowa PPK, bank, [DO UZUPEŁNIENIA: inne systemy Klienta];
+- Migracja danych.
+Dokument analizy został sporządzony na podstawie otrzymanych materiałów w formie elektronicznej oraz na podstawie spotkań analitycznych przeprowadzonych w dniach [DO UZUPEŁNIENIA: daty spotkań analitycznych]. Szczegółowe założenia dla poszczególnych obszarów zostały opisane w załącznikach do niniejszego dokumentu (rozdział Wykaz załączników).
+
+## Streszczenie dla zarządu i kierownictwa projektu
+Zagadnienia opisane w tej części dokumentu dotyczą kluczowych procesów, jakie realizowane są w zakresie kadr i płac w [DO UZUPEŁNIENIA: nazwa klienta].
+Analiza stanu obecnego oparta jest na informacjach, jakie zostały przekazane pracownikom firmy AltOne podczas organizowanych spotkań oraz drogą elektroniczną.
+**Konkluzja:** [DO UZUPEŁNIENIA: konkluzja, np. „Omówione zagadnienia i procesy mogą zostać zrealizowane zgodnie z oczekiwaniami Klienta w oparciu o funkcjonalność systemu enova365.” – z ewentualnymi zastrzeżeniami z rozdziału Pytania otwarte i ryzyka]
+Celami, które zostały postawione do zrealizowania po wdrożeniu systemu enova365, są:
+- Skuteczna i kompleksowa obsługa procesów administracyjnych związanych z obsługą kadr, czasu pracy i naliczaniem wynagrodzeń oraz obsługą PPK, [DO UZUPEŁNIENIA: inne obszary, np. ZFŚS, PKZP, benefity];
+- Optymalizacja i automatyzacja obsługi procesów kadrowo-płacowych: tworzenie dowolnych, także algorytmicznych, składników płacowych, naliczanie list płac, korekt itp.;
+- Realizacja płatności elektronicznych;
+- Wdrożenie Pulpitów Pracownika i Kierownika wraz z dedykowanymi rozwiązaniami;
+- Elektroniczna obsługa PIT-11, IMIR, pasków płacowych, zaświadczeń przez pracowników i przełożonych;
+- Elektroniczna obsługa zobowiązań publicznoprawnych (Urząd Skarbowy, ZUS);
+- Elektroniczny obieg wniosków kadrowych;
+- Możliwość elastycznego eksportowania danych do pliku Excel w celu dalszej analizy;
+- Możliwość budowania własnych raportów i ich edycji w oparciu o widoki i listy;
+- Integracja z systemami zewnętrznymi;
+- [DO UZUPEŁNIENIA: dodatkowe cele wskazane przez Klienta].
+
+## Wymagania
+Poniżej zawarte zostały wymagania związane z wdrożeniem systemu enova365. Wszelkie dane oparte są o informacje, jakie zostały przekazane w zapytaniu ofertowym oraz przekazane konsultantom firmy AltOne podczas odbytych spotkań analitycznych.
+- Pełne administrowanie kadrami;
+- Dostosowanie modułu kadrowego do indywidualnych potrzeb Klienta;
+- Pełne administrowanie płacami, w tym także tworzenie tak zwanych rezerw;
+- Ewidencja i rozliczanie czasu pracy;
+- Dostosowanie raportów i wydruków;
+- Udostępnienie pracownikom i kierownikom Pulpitów Pracowniczych oraz Kierowniczych wraz z dodatkowymi funkcjonalnościami zgłoszonymi podczas analizy;
+- Integracja programu enova365 z systemami zewnętrznymi – [DO UZUPEŁNIENIA: lista systemów];
+- Przygotowanie mechanizmu umożliwiającego import przelewów płacowych do banku;
+- Możliwość przyporządkowania wynagrodzeń na różne MPK i projekty;
+- [DO UZUPEŁNIENIA: pozostałe wymagania z zapytania ofertowego lub umowy].
+
+# Ogólna charakterystyka
+
+## Otoczenie biznesowe
+Z systemu enova365 będą korzystały następujące spółki:
+- [DO UZUPEŁNIENIA: pełna nazwa spółki];
+- [DO UZUPEŁNIENIA: pełna nazwa kolejnej spółki – usuń, jeśli nie dotyczy].
+Łącznie zatrudnionych jest około [DO UZUPEŁNIENIA: liczba] pracowników na podstawie umowy o pracę i około [DO UZUPEŁNIENIA: liczba] osób na podstawie umów cywilnoprawnych.
+Klient obecnie pracuje na systemie kadrowo-płacowym [DO UZUPEŁNIENIA: obecny system kadrowo-płacowy] oraz [DO UZUPEŁNIENIA: inne używane systemy, np. HR, planowanie czasu pracy, RCP – lub „nie dotyczy”].
+Program enova365 będzie wykorzystywany w zakresie obsługi kadrowo-płacowej, jak również pulpitów pracowniczych umożliwiających samoobsługę pracowniczą poprzez m.in. składanie wniosków o nieobecności czy ewidencjonowanie planów pracy przez przełożonych.
+[DO UZUPEŁNIENIA: specyfika Klienta – branża, struktura zatrudnienia, lokalizacje, kluczowe potrzeby biznesowe, system wiodący dla danych kadrowych]
+
+## Wdrożenie w kilku bazach danych
+@opcjonalna Dotyczy wdrożeń, w których spółki lub grupy pracowników będą obsługiwane w odrębnych bazach.
+Podczas analizy ustalono uruchomienie [DO UZUPEŁNIENIA: liczba] baz danych, w których przechowywane będą dane następujących podmiotów:
+- baza 1: [DO UZUPEŁNIENIA: spółki lub grupy pracowników];
+- baza 2: [DO UZUPEŁNIENIA: spółki lub grupy pracowników oraz cel wydzielenia bazy].
+Warunki licencyjne pracy na kilku bazach: [DO UZUPEŁNIENIA: potwierdzić w kosztorysie – wszystkie bazy muszą znajdować się na jednym serwerze bazy danych].
+
+# Realizacja wymagań Zamawiającego
+
+## Dane konfiguracyjne spółki
+W pliku „[DO UZUPEŁNIENIA: nazwa pliku specyfikacji konfiguracyjnej].xlsx” załączonym do niniejszego dokumentu analizy znajdują się szczegółowe dane spółek, które zostaną wprowadzone do systemu enova365. Wskazane w pliku informacje będą się generować m.in. w raportach Klienta oraz plikach eksportowanych np. do programu Płatnik, instytucji finansowej PPK czy Urzędu Skarbowego.
+Na etapie spotkań analitycznych ustalono, że baza programu enova365 zostanie przygotowana w konfiguracji [DO UZUPEŁNIENIA: jednooddziałowej / wielooddziałowej – w ramach jednej bazy danych konfiguracja dla wskazanych spółek].
+
+## Konfiguracja dostępów, lista użytkowników
+W celu przypisania Operatorom odpowiednich uprawnień do zasobów oraz funkcjonalności systemu enova365 w pierwszej kolejności należy skonfigurować odpowiednie „Role”. Rola to grupa uprawnień – poprzez jej przygotowanie możemy zdecydować, do jakich informacji oraz do jakich czynności Operator będzie miał dostęp. Dodatkowo w konfiguracji Operatora nadajemy prawa obiektowe do konkretnego „rodzaju” danych, np. do wydziałów, definicji listy płac itp.
+Innym wymiarem uprawnień w systemie jest ograniczenie praw dostępu do konkretnych spółek lub jednostek organizacyjnych. Operator może mieć wgląd w ramach jednego uprawnienia do wybranych spółek, ale w ramach tych spółek nie mieć dostępu do wskazanej jednostki (np. do Zarządu).
+W programie enova365 w zakresie Kadr i Płac zostaną skonfigurowane następujące role:
+@kolumny 28,72
+| Rola | Opis |
+| Administrator | Pełen dostęp do funkcjonalności programu oraz możliwość zarządzania użytkownikami i podstawową konfiguracją systemu. |
+| Kadry i płace | Pełen dostęp do części kadrowej i płacowej, bez dostępu do opcji konfiguracyjnych systemu. |
+| HR (podgląd) | Dostęp tylko do danych kadrowych w trybie podglądu, bez możliwości edycji danych i bez dostępu do wynagrodzeń. Brak dostępu do opcji konfiguracyjnych. |
+| BHP | Dostęp ograniczony do podstawowych danych osobowych pracowników z możliwością dodawania szkoleń BHP i badań lekarskich oraz raportowania. |
+| [DO UZUPEŁNIENIA: rola dedykowana, np. Administrator ZFŚS, Administrator PKZP, Administrator benefitów] | [DO UZUPEŁNIENIA: zakres dostępu] |
+@tabela Wykaz ról
+Z modułu Kadry i Płace będą korzystać następujący operatorzy z przypisanymi rolami:
+@kolumny 6,32,26,36
+| Lp. | Operator | Login | Rola i zakres dostępu (spółki, jednostki) |
+| 1 | [DO UZUPEŁNIENIA: imię i nazwisko operatora] | [DO UZUPEŁNIENIA: zasada budowy loginu] | [DO UZUPEŁNIENIA: rola] |
+| 2 |  |  |  |
+@tabela Operatorzy systemu
+Odpowiednie uprawnienia i operatorzy zostaną utworzeni na podstawie pliku „[DO UZUPEŁNIENIA: nazwa pliku z operatorami i uprawnieniami].xlsx” uzupełnionego przez Klienta na etapie analizy. [DO UZUPEŁNIENIA: ustalenia dotyczące dostępu do spółek i jednostek, np. jednostka Zarządu dostępna tylko dla wskazanych osób]
+Firma AltOne będzie posiadała uprawnienia o nazwie [DO UZUPEŁNIENIA: nazwy ról serwisowych wykonawcy]. Licencje pracowników AltOne będą licencjami serwisowymi, co oznacza, że podczas wykonywania prac serwisowych na systemie nie będą blokować dostępnej licencji dla Klienta.
+Dostęp do pełnej wersji programu enova365, jak i do pulpitów pracownika i kierownika będzie realizowany indywidualnym loginem i opatrzony hasłem. Sposób logowania: [DO UZUPEŁNIENIA: login i hasło enova365 / logowanie domenowe Active Directory / dodatkowo podwójna autentyfikacja].
+
+### Wymagania licencyjne
+Klient musi posiadać następującą liczbę licencji. Wykaz licencji zostanie zawarty w kosztorysie do Umowy wdrożeniowej.
+@kolumny 75,25
+| Moduł enova365 | Liczba |
+| enova365 Kadry Płace [DO UZUPEŁNIENIA: wariant złoty / platynowy] (wersja okienkowa) | [DO UZUPEŁNIENIA: liczba] |
+| enova365 Pulpit Pracownika | [DO UZUPEŁNIENIA: liczba] |
+| enova365 Pulpit Kierownika | [DO UZUPEŁNIENIA: liczba] |
+| enova365 Czas Pracy | [DO UZUPEŁNIENIA: liczba] |
+| enova365 Workflow (wersja okienkowa, w pulpitach, konfigurator) | [DO UZUPEŁNIENIA: liczba] |
+| enova365 Harmonogram Zadań (wymagany m.in. do automatycznego importu zwolnień z PUE) | [DO UZUPEŁNIENIA: liczba] |
+| Pracownicy Eksportowi – dodatek do rozliczania pracowników oddelegowanych za granicę (opcjonalnie) | [DO UZUPEŁNIENIA: liczba lub „nie dotyczy”] |
+| enova365 Logowanie serwisowe | 1 |
+| [DO UZUPEŁNIENIA: inne moduły] | [DO UZUPEŁNIENIA: liczba] |
+@tabela Licencje enova365
+@kolumny 75,25
+| Rozwiązanie AltOne | Liczba |
+| [DO UZUPEŁNIENIA: np. Weryfikatory czasu pracy, Dashboard, podwójna autentyfikacja, Wniosek pracowniczy, Planowanie urlopów] | [DO UZUPEŁNIENIA: liczba] |
+@tabela Licencje rozwiązań AltOne
+**UWAGA:** Zgodnie z instrukcją producenta wyłącznie w wariancie platynowym licencji Kadry Płace dostępne są m.in.: dane z RCP i oryginalne dane z RCP, rozliczenie czasu pracy, dokumenty aktualizacji i wersjonowanie kalendarzy, weryfikatory kalendarza, magazyn nadgodzin, planowane nieobecności (plany urlopów), planowane listy płac (rezerwy), ZFŚS, pracownicy zewnętrzni (B2B, APT) oraz listy ewidencji (np. badania lekarskie, nagrody i kary). Od wariantu złotego dostępne są m.in. elektroniczna dokumentacja pracownicza, lista importu nieobecności z PUE, struktura organizacyjna, definiowanie dni pracy i ochrona danych osobowych. Wariant licencji należy potwierdzić względem wymagań opisanych w załącznikach.
+
+## Struktura organizacyjna
+W programie utworzone zostaną dwie struktury:
+- formalno-prawna (wydziałowa);
+- podległościowa (do wykorzystania w pulpitach pracowniczych).
+Obie struktury to dwie niezależne konfiguracje w systemie, co oznacza, że zmiana jednostki organizacyjnej w strukturze wydziałowej domyślnie nie wiąże się bezpośrednio ze zmianą jednostki w strukturze podległościowej i na odwrót.
+W każdej ze struktur zostanie włączona tak zwana historyczność, dzięki temu będzie można przechowywać historyczne informacje o powstałych elementach struktury, okresie ich obowiązywania oraz przypięciu pracowników do konkretnych elementów.
+Struktura wydziałowa zostanie zmigrowana na dzień uruchomienia systemu. Wydziały, które nie są już aktualne, zostaną zmigrowane jako archiwalne.
+
+### Struktura wydziałowa (formalno-prawna)
+Struktura ta odzwierciedla podział na jednostki organizacyjne zgodnie z faktycznym stanem w spółkach. Wyjściowa struktura organizacyjna na dzień uruchomienia systemu enova365 zostanie skonfigurowana zgodnie z danymi przekazanymi przez Klienta na etapie wdrożenia (tj. struktura aktualna na dzień wdrożenia).
+Kartoteki pracowników zatrudnionych na umowę o pracę będą przypisywane do struktury formalno-prawnej za pomocą zakładki Etat/Ogólne, natomiast osoby współpracujące na podstawie umowy cywilnoprawnej będą przyporządkowane do struktury poprzez przypisanie aktualnej umowy do właściwego wydziału.
+Po uruchomieniu systemu wszelkie zmiany w strukturze formalno-prawnej oraz przypisywanie kartotek do jednostek organizacyjnych będą możliwe do wykonywania przez operatorów systemu enova365. Dzięki historyczności będzie można zweryfikować jednostkę organizacyjną przypisaną do pracownika na dowolny dzień zatrudnienia.
+Zarządzanie strukturą formalno-prawną:
+- utworzenie nowej komórki organizacyjnej – odbywa się poprzez założenie w systemie nowej jednostki organizacyjnej z uzupełnieniem podstawowych informacji, takich jak: kod wydziału (wartość unikalna), nazwa wydziału (wartość unikalna), wydział nadrzędny w strukturze, nadanie praw dla wybranych operatorów;
+- zmiana nazwy komórki organizacyjnej – możliwa jest w dowolnym momencie pracy z systemem przy zastosowaniu się do zasad:
+  - nowa nazwa nie może być identyczna z nazwą innej, istniejącej już jednostki organizacyjnej,
+  - liczba znaków nazwy nie może przekroczyć 100 (kod wydziału – 20 znaków),
+  - zmiana nazwy jednostki organizacyjnej spowoduje jej zmianę we wszystkich historycznych zapisach, w których dana jednostka była używana.
+**UWAGA:** Z uwagi na zdarzające się przypadki problemów z wygenerowaniem raportów przy wprowadzeniu znaku „&”, zalecamy, aby, jeśli to możliwe, zamienić ten znak na wyrażenie „and”.
+Na etapie analizy ustalono, że w definicjach jednostek organizacyjnych powstaną dodatkowe pola: [DO UZUPEŁNIENIA: pola dodatkowe jednostek, np. przełożony, miejscowość, MPK, data uchwały – lub „nie dotyczy”].
+
+### Struktura podległościowa
+Struktura podległościowa wykorzystywana jest przede wszystkim do prawidłowego funkcjonowania pulpitów pracowniczych. Określa hierarchię w firmie, czyli przypisuje pracownikom ich bezpośrednich przełożonych. Przełożony jest odpowiedzialny za obsługę procesów związanych z wnioskami zgodnie z wytycznymi zawartymi w dokumencie analizy. Kierownik w pulpicie będzie widział wszystkie podpięte do niego kartoteki bez względu na formę współpracy.
+Struktura podległościowa zostanie skonfigurowana [DO UZUPEŁNIENIA: analogicznie do struktury wydziałowej / imiennie – nazwą elementu jest przełożony / według obecnego systemu Klienta]. W pliku „[DO UZUPEŁNIENIA: nazwa pliku struktury podległości].xlsx”, załączonym do niniejszego dokumentu, zawarty jest wycinek struktury podległościowej Klienta. Aktualny plik struktury zostanie przekazany przez Klienta na etapie wdrożenia.
+[DO UZUPEŁNIENIA: ustalenia dotyczące utrzymania struktury – np. automatyczne przepięcie pracownika przy zmianie wydziału lub przełożonego (mechanizm N) albo weryfikator ostrzegający o konieczności zmiany wpięcia; decyzja Klienta]
+
+## Konfiguracja kadr
+Założenia do konfiguracji kadr zostały opisane w załączniku nr 1 – Kadry do analizy przedwdrożeniowej.
+
+## Kalendarze i ewidencja czasu pracy
+Założenia do konfiguracji czasu pracy zostały opisane w załączniku nr 2 – Kalendarze i ewidencja czasu pracy do analizy przedwdrożeniowej.
+
+## Konfiguracja płac, istotne zagadnienia
+Założenia do konfiguracji płac zostały opisane w załączniku nr 3 – Płace do analizy przedwdrożeniowej.
+
+## Podzielnik kosztów i księgowanie list płac
+@opcjonalna Obszar realizowany poza zakresem Kadr i Płac – w dokumencie pozostaje wyłącznie odesłanie.
+Założenia do podzielnika kosztów oraz księgowania list płac zostały opisane w załączniku nr 4 – Podzielnik kosztów do analizy przedwdrożeniowej.
+
+## eDeklaracje PIT-11
+System enova365 posiada w standardzie moduł do wysyłki eDeklaracji. W pierwszym kroku system umożliwia wygenerowanie deklaracji PIT-11. Po ich zatwierdzeniu można wygenerować do nich e-deklaracje, podpisać podpisem elektronicznym i wysłać do Ministerstwa Finansów.
+Istnieje możliwość generowania deklaracji PIT dla wybranej grupy pracowników. Kilka osób może wygenerować deklaracje dla obsługiwanych przez siebie obszarów, a zbiorczo wysłać je może inna osoba. Przed wygenerowaniem deklaracji można również wybrać, kto pojawi się jako osoba podpisująca.
+@rys pit_edeklaracja.png | Generowanie e-Deklaracji
+Na podstawie wysłanych deklaracji za pośrednictwem programu zwracane jest UPO, które widnieje też na deklaracji PIT-11.
+@rys pit_wydruk.png | Wydruk PIT-11
+Deklarację można przekazać pracownikowi osobiście lub za pośrednictwem Pulpitu Pracownika. W Pulpicie Pracownika możliwe jest udostępnienie pracownikowi deklaracji podatkowej PIT oraz informacji ZUS IMIR w zakładce Elektroniczna dokumentacja pracownicza/Pozostała dokumentacja za potwierdzeniem odbioru. Deklaracje PIT oraz informacje IMIR mogą zostać również przekazane pracownikom za pośrednictwem wiadomości e-mail.
+Udostępnione dokumenty będą podpisane kwalifikowanym podpisem elektronicznym i dostępne w Pulpicie Pracownika. Pracownik przed wyświetleniem deklaracji lub informacji będzie musiał elektronicznie poświadczyć jej odbiór (polecenie: Potwierdź i wyświetl). Dokument ten zostanie automatycznie wpięty do elektronicznej teczki pracowniczej.
+Operatorzy HR w enova365 widzą zestawienie wysłanych deklaracji. Przy deklaracjach odebranych przez pulpit uzupełnia się data potwierdzenia odbioru, przy nieodebranych nie ma żadnej daty – w łatwy sposób można wyfiltrować osoby, które nie potwierdziły otrzymania PIT-11.
+Sposób przekazywania PIT-11 i IMIR ustalony z Klientem: [DO UZUPEŁNIENIA: pulpit pracownika za potwierdzeniem odbioru / e-mail / osobiście].
+
+## Pulpity Pracownika i Kierownika
+Założenia do konfiguracji pulpitów pracownika i kierownika zostały opisane w załączniku nr 5 – Pulpity do analizy przedwdrożeniowej.
+
+## Raportowanie HR
+
+### Informacje ogólne
+Raporty w systemie enova365 możemy podzielić na:
+- Wydruki – wszystkie wydruki do formatu tekstowego, najczęściej kadrowe;
+- Raporty – wydruki prezentujące dane płacowe i/lub wyliczane oraz inne zestawienia w formacie xls;
+- Widoki – alternatywa dla raportów. enova365 dzięki swojej budowie tabelarycznej umożliwia swobodne modyfikowanie widoku, czyli tzw. „wyciąganie na widok” odpowiednich kolumn (np. PESEL pracownika czy kwota składek z konkretnej wypłaty) i ich eksport do pliku xls.
+
+### Raporty i wydruki do przygotowania
+Podczas spotkań analitycznych po stronie Klienta wynikła potrzeba przygotowania lub zmodyfikowania następujących raportów i wydruków. Raporty oraz wydruki zostaną przygotowane zgodnie z przesłanymi i opisanymi wzorami.
+@kolumny 6,28,16,30,20
+| Lp. | Raport lub wydruk | Rodzaj | Opis, źródło danych, parametry | Wzór |
+| 1 | [DO UZUPEŁNIENIA: nazwa raportu] | [DO UZUPEŁNIENIA: standard / modyfikacja / nowy] | [DO UZUPEŁNIENIA: opis] | [DO UZUPEŁNIENIA: nazwa przekazanego pliku wzoru] |
+| 2 |  |  |  |  |
+@tabela Raporty i wydruki
+
+## Integracje
+@opcjonalna
+Na etapie analizy zidentyfikowano następujące integracje systemu enova365 z systemami zewnętrznymi:
+@kolumny 6,20,16,16,42
+| Lp. | System | Kierunek | Tryb | Zakres danych i sposób realizacji |
+| 1 | PUE ZUS | import | [DO UZUPEŁNIENIA: ręcznie / wg harmonogramu] | Import zwolnień lekarskich – standard enova365 (opis w załączniku nr 3). |
+| 2 | Bramka MF | eksport | wg potrzeb | Wysyłka e-Deklaracji – standard enova365. |
+| 3 | Instytucja finansowa PPK | eksport i import | miesięcznie | Wymiana plików zgłoszeń, składek i identyfikatorów – standard enova365. |
+| 4 | Bank | eksport | [DO UZUPEŁNIENIA: plik / web service] | [DO UZUPEŁNIENIA: format pliku przelewów, liczba rachunków] |
+| 5 | [DO UZUPEŁNIENIA: system HR, ERP, RCP lub FK] | [DO UZUPEŁNIENIA: kierunek] | [DO UZUPEŁNIENIA: tryb] | [DO UZUPEŁNIENIA: zakres danych, system wiodący, edytowalność danych w enova365] |
+@tabela Integracje
+Dla integracji dedykowanych zostanie przygotowana odrębna specyfikacja (mapowanie pól, obsługa błędów, harmonogram uruchomienia). [DO UZUPEŁNIENIA: system wiodący dla danych kadrowych i zasady edycji danych integrowanych w enova365]
+
+## Migracja danych kadrowo-płacowych
+Migracja danych zostanie zrealizowana na podstawie arkuszy migracyjnych przygotowanych przez AltOne i uzupełnionych przez Klienta lub na podstawie eksportu z obecnego systemu [DO UZUPEŁNIENIA: nazwa systemu źródłowego]. Migracja zostanie przeprowadzona próbnie na bazie testowej, a następnie – po weryfikacji przez Klienta – produkcyjnie na dzień uruchomienia systemu.
+@kolumny 6,36,18,20,20
+| Lp. | Zakres danych | Okres lub stan na dzień | Źródło i format | Odpowiedzialny |
+| 1 | Kartoteki pracowników i zleceniobiorców (dane osobowe, adresy, dane podatkowe i ubezpieczeniowe, rachunki bankowe, rodzina) | [DO UZUPEŁNIENIA: stan na dzień] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: Klient / AltOne] |
+| 2 | Historia zatrudnienia, umowy o pracę i aneksy, dodatki stałe, umowy cywilnoprawne | [DO UZUPEŁNIENIA: okres] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
+| 3 | Struktura organizacyjna i podległościowa | stan na dzień uruchomienia | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
+| 4 | Limity nieobecności, nieobecności do podstaw zasiłków, bilans otwarcia | [DO UZUPEŁNIENIA: okres] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
+| 5 | Wynagrodzenia historyczne do podstaw i deklaracji rocznych | [DO UZUPEŁNIENIA: okres] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
+| 6 | Szkolenia BHP, badania lekarskie, uprawnienia | [DO UZUPEŁNIENIA: okres] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
+| 7 | PPK, ZFŚS, PKZP, pożyczki, zajęcia komornicze | [DO UZUPEŁNIENIA: stan na dzień] | [DO UZUPEŁNIENIA: źródło] | [DO UZUPEŁNIENIA: odpowiedzialny] |
+@tabela Zakres migracji danych
+[DO UZUPEŁNIENIA: ustalenia dotyczące liczby migracji próbnych, równoległego naliczania wynagrodzeń i terminu migracji produkcyjnej]
+
+## Workflow – wnioski i procesy dedykowane
+@opcjonalna
+Założenia do procesów workflow i wniosków dedykowanych zostały opisane w [DO UZUPEŁNIENIA: załączniku nr 5 – Pulpity / odrębnym załączniku Workflow]. Procesy dedykowane objęte wdrożeniem:
+- [DO UZUPEŁNIENIA: nazwa procesu, inicjator, ścieżka akceptacji, skutek w kartotece pracownika].
+
+## Rozwiązania poza zakresem wdrożenia
+Podczas analizy wyodrębniono zagadnienia, które wykraczają poza zakres funkcjonalności objętych umową wdrożeniową. Rozwiązania te nie wchodzą w zakres wdrożenia – będą przedmiotem odrębnej wyceny i będą realizowane po akceptacji przez Klienta dodatkowych kosztów:
+- [DO UZUPEŁNIENIA: zagadnienie poza zakresem – lub „Nie zidentyfikowano”].
+Wymagania ocenione jako niemożliwe do realizacji w systemie enova365:
+- [DO UZUPEŁNIENIA: wymaganie, uzasadnienie, zaproponowane rozwiązanie alternatywne lub zgłoszenie do producenta – lub „Nie zidentyfikowano”].
+
+# Organizacja projektu
+@opcjonalna Rozdział stosowany, gdy umowa wdrożeniowa nie zawiera odrębnego opisu metodyki i organizacji projektu.
+
+## Metodyka prowadzenia projektu
+Metodyka prowadzenia projektów została stworzona tak, aby wykorzystać wieloletnie doświadczenie i wiedzę Wykonawcy, a przez to z sukcesem wdrażać system enova365 dostosowany do potrzeb i oczekiwań Klientów. Projekt realizowany jest na bazie technicznych i biznesowych doświadczeń Wykonawcy, co przekłada się na:
+- minimalizację ryzyka projektu;
+- terminowość wykonania projektu poprzez realizację prac zespołem specjalistów posiadających wieloletnie doświadczenie;
+- dostarczenie usług wysokiej jakości.
+Metodyka prowadzenia prac projektowych jest zgodna z praktykami zarządzania projektami informatycznymi.
+
+## Role i odpowiedzialność
+Do realizacji prac w projekcie konieczna jest czynna współpraca zespołów wdrożeniowych po obu stronach – Klienta oraz Wykonawcy. Poniżej przedstawiono proponowane role w projekcie.
+@kolumny 24,14,42,20
+| Rola | Strona | Zadania | Osoba |
+| Komitet Sterujący Projektu | Klient i Wykonawca | Najwyższy organ decyzyjny projektu; zadania określone w Umowie wdrożeniowej; wsparcie Kierowników Projektu. | [DO UZUPEŁNIENIA: skład] |
+| Kierownik Projektu Klienta | Klient | Zapewnienie dostępności osób merytorycznych i koordynatora technicznego; identyfikacja problemów i zagrożeń; koordynacja działań; udział w spotkaniach statusowych; podpisywanie protokołów odbioru. | [DO UZUPEŁNIENIA: osoba] |
+| Właściciel biznesowy | Klient | Definiowanie i przekazywanie wymagań w swoim obszarze; udział w spotkaniach merytorycznych; określanie priorytetów; testowanie i zgłoszenie odbioru. | [DO UZUPEŁNIENIA: osoba] |
+| Koordynator techniczny | Klient | Zapewnienie środowiska technicznego i dostępów; wsparcie w przypadku problemów technicznych. | [DO UZUPEŁNIENIA: osoba] |
+| Zespół wdrożeniowy Klienta | Klient | Przekazywanie danych i materiałów; współpraca przy scenariuszach testowych; testowanie wykonanych prac. | [DO UZUPEŁNIENIA: osoby] |
+| Kierownik Projektu Wykonawcy | Wykonawca | Planowanie projektu i harmonogram; organizacja dostępów; spotkania statusowe; prowadzenie rejestrów zmian i ryzyk; nadzór nad postępem prac; odbiór prac. | [DO UZUPEŁNIENIA: osoba] |
+| Lider wdrożeniowy obszaru | Wykonawca | Ekspert merytoryczny obszaru; weryfikacja poprawności analizy; podział na etapy; współudział w kosztorysie i harmonogramie. | [DO UZUPEŁNIENIA: osoba] |
+| Konsultanci wdrożeniowi, programiści, administrator IT | Wykonawca | Zebranie wymagań i przygotowanie analizy; konfiguracja; rozwiązania dedykowane; testy; szkolenia. | [DO UZUPEŁNIENIA: osoby] |
+@tabela Role w projekcie
+
+## Komunikacja w projekcie
+@kolumny 28,72
+| Element komunikacji | Opis |
+| Komunikacja mailowa | Rekomendujemy utworzenie grupy dystrybucyjnej po każdej ze stron, do której będą przypisane adresy osób zaangażowanych w projekt. |
+| Spotkania statusowe | Spotkania projektowe w formie telekonferencji (MS Teams) w cyklu [DO UZUPEŁNIENIA: tygodniowym / dwutygodniowym]. Uczestnicy: Kierownicy Projektu obu stron, Konsultant wdrożeniowy Wykonawcy, Właściciel biznesowy Klienta. Spotkania służą przedstawieniu statusu prac, nie omawianiu kwestii merytorycznych. |
+| Rejestr zadań, uwag, zmian i ryzyk | Wspólna lista zagadnień udostępniona online (Excel lub tablica Kanban na wybranej platformie). Obie strony monitorują i aktualizują statusy zadań; zadania zgłaszane poza tym trybem realizowane są z niższym priorytetem. |
+@tabela Komunikacja w projekcie
+
+## Zarządzanie zmianą
+W ramach zarządzania zmianą w projekcie prowadzony będzie rejestr zmian. Zmiany w stosunku do zakresu Umowy mogą dotyczyć zakresu, warunków realizacji prac, ram czasowych oraz budżetu. Zgłoszenie zmiany przysługuje wszystkim osobom zaangażowanym w realizację projektu, a decyzja o jej realizacji podejmowana jest przez Kierowników Projektu obu stron, a w razie braku porozumienia – przez Komitet Sterujący.
+Proces kontroli zmiany obejmuje:
+- zidentyfikowanie i zarejestrowanie zgłoszenia zmiany;
+- analizę wpływu zmiany na projekt i jej alternatyw;
+- decyzję o zatwierdzeniu, odłożeniu lub odrzuceniu zmiany oraz jej zakomunikowanie;
+- aktualizację dokumentów projektu (w tym niniejszej analizy) oraz zaplanowanie i wdrożenie zmiany.
+
+## Zarządzanie ryzykiem
+Zarządzanie ryzykiem obejmuje identyfikację, analizę i monitorowanie ryzyk z wykorzystaniem rejestru ryzyk (rozdział Pytania otwarte i ryzyka). Stopień wpływu ryzyka oznaczany jest jako:
+- wysoki – może spowodować opóźnienie terminu realizacji ścieżki krytycznej;
+- średni – może spowodować opóźnienie poszczególnych zadań poza ścieżką krytyczną;
+- niski – pozostałe.
+Aktualizacji rejestru ryzyk dokonuje Kierownik Projektu Wykonawcy na podstawie spotkań statusowych i innych posiadanych informacji.
+
+## Asysta wdrożeniowa
+@opcjonalna
+Jednym z etapów projektu wdrożenia systemu enova365 jest asysta wdrożeniowa w wymiarze zgodnym z zapisami umowy. Jej celem jest bieżące wsparcie użytkowników Klienta w zakresie obsługi systemu enova365. Prace z budżetu asysty realizowane są na podstawie zgłoszeń mailowych, telefonicznych lub za pomocą rejestru zgłoszeń; przystąpienie do prac poprzedzone jest uzgodnieniem ich zakresu.
+W ramach asysty wdrożeniowej realizowane mogą być m.in.:
+- obsługa bieżących zgłoszeń dotyczących pracy w systemie (naliczanie list płac, ewidencja kartotek, generowanie raportów, budowanie widoków itp.);
+- wsparcie przy równoległym naliczaniu wynagrodzeń;
+- weryfikacja i korekta nieprawidłowości we wprowadzonych danych;
+- zakładanie kont dla nowych operatorów oraz modyfikacja uprawnień;
+- modyfikacja elementów konfiguracji nieujętych w analizie oraz dodatkowe migracje danych;
+- wsparcie przy testach oraz dodatkowe szkolenia i instrukcje;
+- obsługa zgłoszeń przekazanych do producenta systemu;
+- prace związane z aktualizacją systemu.
+
+## Wymagania techniczne i dostępy
+@opcjonalna
+
+### Środowisko po stronie Klienta
+Parametry serwerów (SQL, serwer aplikacji, serwer web dla pulpitów) zostaną dobrane zgodnie z aktualnymi wymaganiami producenta dla liczby użytkowników: [DO UZUPEŁNIENIA: parametry środowiska uzgodnione z działem IT Klienta].
+Po stronie Klienta w zakresie zarządzania środowiskiem testowym oraz produkcyjnym leżą:
+- instalacja aktualizacji systemu operacyjnego;
+- instalacja SQL i wgrywanie aktualizacji;
+- wdrożenie polityki bezpieczeństwa, m.in. kopie zapasowe, redundancja, certyfikaty bezpieczeństwa.
+Dodatkowe wsparcie ze strony Wykonawcy może być realizowane w ramach godzin asysty lub rezerwy projektu. Sugerujemy, aby po etapie wdrożenia utworzone zostało środowisko testowe będące kopią środowiska produkcyjnego.
+
+### Dostępy dla konsultantów AltOne
+Na potrzeby realizacji wdrożenia wymagane są:
+- co najmniej [DO UZUPEŁNIENIA: liczba] jednoczesnych dostępów dla zespołu wdrożeniowego i programistycznego;
+- dostęp zdalny do środowiska produkcyjnego oraz testowego;
+- uprawnienia administracyjne do instalacji i konfiguracji enova365;
+- uprawnienia na serwerze SQL: [DO UZUPEŁNIENIA: db_owner dla baz enova365 / sysadmin];
+- pakiet MS Office (minimum w wersji 2016) na serwerze dostępowym – wykorzystywany m.in. do migracji danych z arkuszy Excel i weryfikacji raportów.
+
+# Pytania otwarte i ryzyka
+
+## Pytania otwarte
+Poniżej zestawiono informacje, których nie udało się ustalić w trakcie spotkań analitycznych. Do czasu ich wyjaśnienia rozwiązania w powiązanych sekcjach mają charakter wstępny. Pytania dotyczące poszczególnych obszarów znajdują się również w załącznikach.
+@kolumny 5,37,12,16,12,18
+| Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+@tabela Pytania otwarte
+Statusy pytań: Otwarte, W trakcie, Wyjaśnione (z odesłaniem do sekcji, w której wpisano ustalenie), Poza zakresem.
+
+## Ryzyka
+@kolumny 5,35,12,30,18
+| Lp. | Ryzyko | Wpływ | Działanie zapobiegawcze | Właściciel |
+| 1 | Opóźnienie w przekazaniu danych do migracji lub wzorów raportów | średni | Ustalenie terminów w harmonogramie, wczesne przekazanie arkuszy migracyjnych | Klient |
+| 2 | Ograniczona dostępność osób merytorycznych po stronie Klienta | wysoki | Wyznaczenie Właścicieli biznesowych i ich zastępców | Klient |
+| 3 | [DO UZUPEŁNIENIA: ryzyko specyficzne dla projektu, np. zależność od integracji, rozwiązania dedykowane, zmiany przepisów] | [DO UZUPEŁNIENIA: wysoki / średni / niski] | [DO UZUPEŁNIENIA: działanie] | [DO UZUPEŁNIENIA: właściciel] |
+@tabela Rejestr ryzyk
+
+# Harmonogram i odpowiedzialności
+@kolumny 6,26,34,16,18
+| Lp. | Etap | Zakres lub produkt | Termin | Odpowiedzialny |
+| 1 | Analiza przedwdrożeniowa | Akceptacja niniejszego dokumentu i załączników | [DO UZUPEŁNIENIA: termin] | Klient, AltOne |
+| 2 | Konfiguracja systemu | Konfiguracja według analizy, rozwiązania dedykowane | [DO UZUPEŁNIENIA: termin] | AltOne |
+| 3 | Migracja danych | Migracja próbna, weryfikacja danych, migracja produkcyjna | [DO UZUPEŁNIENIA: termin] | Klient, AltOne |
+| 4 | Szkolenia | Szkolenia operatorów i użytkowników pulpitów | [DO UZUPEŁNIENIA: termin] | AltOne |
+| 5 | Testy i odbiór | Testy według scenariuszy testowych, protokoły odbioru | [DO UZUPEŁNIENIA: termin] | Klient |
+| 6 | Równoległe naliczanie wynagrodzeń | [DO UZUPEŁNIENIA: liczba miesięcy naliczeń równoległych] | [DO UZUPEŁNIENIA: termin] | Klient, AltOne |
+| 7 | Uruchomienie produkcyjne | Rozpoczęcie pracy w enova365 | [DO UZUPEŁNIENIA: data uruchomienia] | Klient, AltOne |
+| 8 | Asysta powdrożeniowa | Wsparcie zgodnie z umową | [DO UZUPEŁNIENIA: okres] | AltOne |
+@tabela Harmonogram projektu
+Szczegółowy harmonogram prac zostanie uzgodniony przez Kierowników Projektu obu stron i będzie aktualizowany w trakcie projektu.
+
+# Dokumentacja systemu
+Dokumentacja systemu dla dedykowanych rozwiązań zostanie dostarczona Klientowi do dnia wskazanego w harmonogramie prac. Dokumentacja systemu dla standardowych rozwiązań znajduje się pod poniższym linkiem:
+- https://dok.enova.pl/
+
+# Pozostałe wymagania
+Na potrzeby realizacji projektu zdefiniowane zostały następujące wymagania, których spełnienie jest niezbędne do właściwej realizacji projektu:
+- zaangażowanie pracowników merytorycznych po stronie Klienta;
+- udostępnienie dotychczasowych danych w celu ich zmigrowania do systemu enova365;
+- udostępnienie szablonów dokumentów dla wszystkich wydruków i raportów, które miałyby być zmodyfikowane w stosunku do standardowych raportów systemowych;
+- [DO UZUPEŁNIENIA: inne wymagania wobec Klienta – lub usuń].
+
+# Postanowienia końcowe
+- Wymagania, które nie zostały zgłoszone przez Klienta podczas omawiania i sporządzania niniejszej analizy i nie zostały zawarte w niniejszym dokumencie, nie będą realizowane w ramach wdrożenia.
+- Zidentyfikowane kwestie niezawarte w niniejszej analizie będą uzgadniane pomiędzy stronami odrębnie w zakresie terminu wdrożenia i wyceny.
+- W ramach umowy wdrożeniowej zostaną dostarczone scenariusze testowe opisane w niniejszej analizie. Rozszerzenie zakresu i przygotowanie większej liczby scenariuszy testowych będzie wymagało oddzielnej wyceny i zamówienia.
+
+# Wykaz załączników
+@kolumny 8,40,52
+| Nr | Załącznik | Plik |
+| 1 | Kadry | Analiza_[DO UZUPEŁNIENIA: nazwa klienta]_ZAL_01_Kadry_vX.Y.docx |
+| 2 | Kalendarze i ewidencja czasu pracy | Analiza_[DO UZUPEŁNIENIA: nazwa klienta]_ZAL_02_Czas_pracy_vX.Y.docx |
+| 3 | Płace | Analiza_[DO UZUPEŁNIENIA: nazwa klienta]_ZAL_03_Place_vX.Y.docx |
+| 4 | Podzielnik kosztów i księgowanie (poza zakresem Kadr i Płac) | [DO UZUPEŁNIENIA: nazwa pliku – lub usuń wiersz] |
+| 5 | Pulpity Pracownika i Kierownika | Analiza_[DO UZUPEŁNIENIA: nazwa klienta]_ZAL_05_Pulpity_vX.Y.docx |
+| – | Pliki uzupełniane przez Klienta | [DO UZUPEŁNIENIA: specyfikacja konfiguracyjna, operatorzy i uprawnienia, struktura podległości, wnioski w pulpitach, składniki płacowe, scenariusze testowe] |
+@tabela Wykaz załączników
+
+# Wykaz tabel i rysunków
+@spis-tab
+@spis-rys
+
+# Akceptacja dokumentu
+Akceptacja dokumentu oznacza potwierdzenie przez strony zakresu i sposobu realizacji wymagań opisanych w niniejszej analizie wraz z załącznikami.
+@akceptacja
+
+# Kontakt
+@kontakt

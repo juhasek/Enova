@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zestawienie dla kilku zaznaczonych pracowników (czynność z listy pracowników). -->
+<DataForm Priority="50"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd">
+  <Page Name="Zestawienie" CaptionHtml="Zaznaczeni pracownicy" DataContext="{DataSource}" Visibility="{JestWielu}">
+    <Group CaptionHtml="Podstawa dla wszystkich zaznaczonych (parametry z zakładki Kalkulator)">
+      <Row>
+        <Command CaptionHtml="Przelicz zaznaczonych" Width="22" MethodName="PrzeliczZaznaczonych" />
+      </Row>
+      <Grid Width="*" Height="*" EditValue="{Zestawienie}" IsToolbarVisible="false">
+        <Field CaptionHtml="Kod" Width="10" EditValue="{Kod}" />
+        <Field CaptionHtml="Pracownik" Width="28" EditValue="{Pracownik}" />
+        <Field CaptionHtml="Podstawa" Width="12" EditValue="{PodstawaNaElemencie}" />
+        <Field CaptionHtml="Z rozbicia" Width="12" EditValue="{Podstawa}" />
+        <Field CaptionHtml="W bazie" Width="12" EditValue="{PodstawaWBazie}" />
+        <Field CaptionHtml="Różnica" Width="10" EditValue="{Roznica}" />
+        <Field CaptionHtml="Okres podstawy" Width="20" EditValue="{OkresPodstawy}" />
+        <Field CaptionHtml="Tryb" Width="40" EditValue="{Tryb}" />
+        <Field CaptionHtml="Komunikat" Width="50" EditValue="{Komunikat}" />
+      </Grid>
+    </Group>
+  </Page>
+</DataForm>

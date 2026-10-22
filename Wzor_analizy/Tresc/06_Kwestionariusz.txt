@@ -1,0 +1,258 @@
+@tytul KWESTIONARIUSZ SPOTKAŃ ANALITYCZNYCH
+@obszar Kadry, Płace i Czas pracy
+@plik Kwestionariusz_spotkan_KPCP.docx
+@opis Kwestionariusz pytań do Klienta na spotkania analityczne – mapowany na sekcje wzoru analizy przedwdrożeniowej KPCP
+
+# Sposób korzystania z kwestionariusza
+Kwestionariusz służy do prowadzenia spotkań analitycznych i zbierania informacji potrzebnych do uzupełnienia analizy przedwdrożeniowej. Pytania pogrupowano według dokumentów i sekcji wzoru analizy.
+- Kolumna „Odpowiedź klienta” – odpowiedź zapisana w trakcie lub po spotkaniu, możliwie słowami Klienta (decyzje, wartości, nazwy plików).
+- Kolumna „Sekcja w analizie” – miejsce, do którego trafia odpowiedź: AN – dokument główny, Z1 – Kadry, Z2 – Czas pracy, Z3 – Płace, Z5 – Pulpity, z numerem sekcji we wzorze.
+- Kolumna „Status” – Otwarte, Wyjaśnione (odpowiedź przeniesiona do analizy), Do potwierdzenia (wymaga decyzji lub dokumentu), Nie dotyczy (sekcję opcjonalną można usunąć z analizy).
+Pytania bez odpowiedzi po spotkaniu trafiają do tabeli „Pytania otwarte” w odpowiednim dokumencie analizy.
+
+## Dokumenty do zebrania przed spotkaniem
+@kolumny 46,30,13,11
+| Dokument | Odpowiedź klienta | Sekcja w analizie | Status |
+| Regulamin pracy (rozkłady, okresy rozliczeniowe, pora nocna, dyżury) |  | Z2 1.1 | Otwarte |
+| Regulamin wynagradzania, układ zbiorowy, porozumienia, regulamin premiowania |  | Z3 1.4 | Otwarte |
+| Regulamin ZFŚS wraz z tabelą progów dochodowych |  | Z3 1.8 | Otwarte |
+| 2–3 przykładowe listy płac z obecnego systemu (najlepiej „trudny” miesiąc) |  | Z3 1.2, 1.4 | Otwarte |
+| Przykładowy grafik, ewidencja czasu pracy, surowy eksport z RCP |  | Z2 1.5, 1.11 | Otwarte |
+| Schemat organizacyjny, struktura podległości, lista stanowisk |  | AN 3.3, Z1 1.11 | Otwarte |
+| Specyfikacja konfiguracyjna spółek (dane do Płatnika, US, PPK) |  | AN 3.1 | Otwarte |
+| Lista operatorów i ról |  | AN 3.2 | Otwarte |
+| Lista składników płacowych (aktualnych i archiwalnych) |  | Z3 1.4 | Otwarte |
+| Wzory raportów i wydruków faktycznie używanych |  | AN 3.10 | Otwarte |
+| Wykaz systemów do integracji wraz z przykładowymi plikami |  | AN 3.11 | Otwarte |
+| Informacja o licencji enova365 (moduły, wariant złoty / platynowy) |  | AN 3.2.1 | Otwarte |
+@tabela Dokumenty do zebrania
+
+# Dokument główny (AN)
+
+## Kontekst i zakres wdrożenia
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Ile spółek (podmiotów, baz) obejmuje wdrożenie? Pełne nazwy spółek. |  | AN 1.1, 2.1 | Otwarte |
+| Ilu pracowników na umowę o pracę, ilu zleceniobiorców, ilu emerytów i byłych pracowników nadal obsługiwanych (ZFŚS, PIT, renty)? |  | AN 2.1 | Otwarte |
+| Na jakim systemie kadrowo-płacowym Klient pracuje obecnie? Jakie inne systemy są używane (HR, grafiki, RCP)? |  | AN 2.1 | Otwarte |
+| Jaka jest planowana data startu produkcyjnego i od którego miesiąca pierwsza wypłata z enova365? |  | AN 6 | Otwarte |
+| Czy przewidziane jest równoległe naliczanie wynagrodzeń w obu systemach? Przez ile miesięcy? |  | AN 3.12, 6 | Otwarte |
+| Kto jest właścicielem procesu kadrowego, płacowego i czasu pracy? Kto podpisuje odbiór? |  | AN 4.2 | Otwarte |
+| Czy kadry i płace prowadzi ten sam zespół? Czy płace są outsourcowane? |  | AN 2.1 | Otwarte |
+| Jaka jest największa oczekiwana zmiana na plus (kryterium sukcesu wdrożenia – zapisać słowami Klienta)? |  | AN 1.4 | Otwarte |
+| Jakie wymagania zawiera zapytanie ofertowe lub umowa, a nie zostały jeszcze omówione? |  | AN 1.5 | Otwarte |
+| Czy spółki mają być w jednej bazie (konfiguracja wielooddziałowa), czy w odrębnych bazach? Dlaczego? |  | AN 2.2, 3.1 | Otwarte |
+
+## Dostępy, role i licencje
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jakie role operatorów są potrzebne (kadry i płace, HR podgląd, BHP, ZFŚS, PKZP, benefity, administrator)? |  | AN 3.2 | Otwarte |
+| Kto będzie operatorem programu (lista osób, rola, zakres spółek i jednostek)? Jaka zasada budowy loginu? |  | AN 3.2 | Otwarte |
+| Czy dostęp do wybranych jednostek (np. Zarząd) ma być ograniczony do wskazanych osób? |  | AN 3.2 | Otwarte |
+| Jaki sposób logowania: hasło enova365, domena (Active Directory), podwójna autentyfikacja? |  | AN 3.2, Z5 1.1 | Otwarte |
+| Jaki wariant licencji Kadry Płace (złoty / platynowy) i jakie moduły dodatkowe Klient posiada lub planuje? |  | AN 3.2.1 | Otwarte |
+| Ile licencji pulpitów pracownika i kierownika jest potrzebnych? |  | AN 3.2.1 | Otwarte |
+
+## Struktura organizacyjna
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jak wygląda struktura: oddziały, wydziały, działy, projekty, MPK? Czy służy tylko do raportowania, czy też do rozdziału kosztów? |  | AN 3.3.1 | Otwarte |
+| Czy jednostki organizacyjne mają mieć pola dodatkowe (przełożony, miejscowość, MPK)? |  | AN 3.3.1 | Otwarte |
+| Czy pracownik może być przypisany do więcej niż jednej jednostki jednocześnie (podział kosztów procentowy)? |  | AN 3.3.1, Z3 1.4 | Otwarte |
+| Jak zbudowana jest struktura podległości (imiennie, według wydziałów)? Czy ma sterować akceptacją wniosków? |  | AN 3.3.2 | Otwarte |
+| Jak często struktura się zmienia? Czy przy zmianie wydziału lub przełożonego pracownik ma być przepinany automatycznie? |  | AN 3.3.2 | Otwarte |
+
+## Raporty, integracje, migracja
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Które raporty i wydruki Klient faktycznie wykorzystuje co miesiąc? Które wymagają własnego layoutu? (prosić o wzory) |  | AN 3.10.2 | Otwarte |
+| W jakim formacie mają być raporty (PDF, XLSX do dalszej obróbki)? Kto ma do nich dostęp? |  | AN 3.10.2 | Otwarte |
+| Czy wymagane są sprawozdania GUS, raporty do grupy lub centrali, raporty jawności wynagrodzeń? |  | AN 3.10.2 | Otwarte |
+| Z jakimi systemami enova365 ma się wymieniać danymi (HR, RCP, bank, FK, AD, BI)? Kierunek, format, częstotliwość? |  | AN 3.11 | Otwarte |
+| Który system jest wiodący dla danych kadrowych? Czy dane z integracji mają być edytowalne w enova365? |  | AN 3.11, Z1 1.4 | Otwarte |
+| Kto jest osobą techniczną po stronie systemu zewnętrznego? Czy można otrzymać przykładowy plik lub dostęp do API? |  | AN 3.11 | Otwarte |
+| Jaki zakres danych migrujemy (kartoteki, historia, limity, podstawy, wypłaty historyczne, zwolnieni)? Ile lat wstecz? |  | AN 3.12 | Otwarte |
+| Kto przygotowuje dane do migracji i w jakim terminie? Ile migracji próbnych zakładamy? |  | AN 3.12 | Otwarte |
+| Jakie procesy workflow lub wnioski dedykowane mają być zrealizowane (inicjator, akceptacja, skutek)? |  | AN 3.13 | Otwarte |
+
+## Organizacja projektu
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Kto jest Kierownikiem Projektu po stronie Klienta, kto Właścicielem biznesowym kadr, płac i czasu pracy, kto koordynatorem technicznym? |  | AN 4.2 | Otwarte |
+| Ile czasu kluczowi użytkownicy realnie przeznaczą na testy? |  | AN 4.2, 6 | Otwarte |
+| W jakim cyklu odbywają się spotkania statusowe i gdzie prowadzony jest rejestr zadań i uwag? |  | AN 4.3 | Otwarte |
+| Ilu użytkowników i w jakich grupach trzeba przeszkolić? |  | AN 6 | Otwarte |
+| Jakie są parametry środowiska (serwery, SQL, dostęp zdalny)? Ile jednoczesnych dostępów dla konsultantów? |  | AN 4.7 | Otwarte |
+| Czy po wdrożeniu ma powstać środowisko testowe (kopia produkcji, anonimizacja danych)? |  | AN 4.7.1 | Otwarte |
+| Co świadomie zostaje na etap 2 (po starcie)? |  | AN 3.14 | Otwarte |
+
+# Załącznik 1 – Kadry (Z1)
+
+## Kartoteka pracownika i zatrudnienie
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jakie dane poza standardem muszą być w kartotece (np. numer karty RCP, identyfikator z innego systemu, dane do ubezpieczenia grupowego)? |  | Z1 1.1, 1.3 | Otwarte |
+| Jakie grupy osób są ewidencjonowane w kartotekach (praktykanci, przełożeni zewnętrzni, emeryci do ZFŚS, renty wyrównawcze)? |  | Z1 1.1 | Otwarte |
+| Jak zakładane są kartoteki przy zatrudnieniu tej samej osoby w kilku spółkach? |  | Z1 1.1 | Otwarte |
+| Jakie dodatkowe pola mają być na zakładce Etat/Ogólne (słowniki, wartości, kto edytuje, czy historyczne)? |  | Z1 1.2.10 | Otwarte |
+| Jakie dodatkowe dane o niepełnosprawności (data dostarczenia orzeczenia, zgody na nadgodziny i porę nocną)? |  | Z1 1.2.4 | Otwarte |
+| Czy staż u poprzedników prawnych lub w innych spółkach grupy ma być wliczany? |  | Z1 1.2.5 | Otwarte |
+| Ile rachunków bankowych może mieć pracownik? Skąd pochodzą dane rachunków? |  | Z1 1.2.6 | Otwarte |
+| Jakie definicje kar i nagród są stosowane? |  | Z1 1.2.9 | Otwarte |
+| Jakie dodatkowe informacje rejestrowane są przy rozwiązaniu umowy (rodzaj i przyczyna odejścia, strona inicjująca)? |  | Z1 1.2.11 | Otwarte |
+| Jak wygląda proces zakończenia zatrudnienia (kto wystawia świadectwo, liczy ekwiwalent)? |  | Z1 1.2.11 | Otwarte |
+| Czy występuje zatrudnienie na kilku etatach u tego samego pracodawcy (wieloetatowość)? |  | Z1 1.5 | Otwarte |
+| Czy potrzebne są własne wydruki kadrowe (umowa, aneks, zaświadczenie) w layoucie Klienta? |  | Z1 1.1, AN 3.10.2 | Otwarte |
+| Jaki jest format kodu pracownika? Czy kody z obecnego systemu mają zostać zachowane? Jak nadawane są nowe kody? |  | Z1 1.6 | Otwarte |
+
+## Terminy, BHP, badania, uprawnienia, powiadomienia
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jakie definicje szkoleń BHP i z jakim okresem ważności? Czy dane historyczne będą migrowane? Kto je ewidencjonuje? |  | Z1 1.7 | Otwarte |
+| Jakie definicje badań lekarskich i czynniki zagrożenia mają być ewidencjonowane? |  | Z1 1.8 | Otwarte |
+| Czy w kolumnach listy pracowników mają być widoczne ostatnie szkolenie BHP i badanie wraz z terminem ważności? |  | Z1 1.7, 1.8 | Otwarte |
+| Czy ewidencjonowane są uprawnienia zawodowe (kategorie, definicje, terminy ważności)? |  | Z1 1.9 | Otwarte |
+| Które powiadomienia uruchomić, z jakim wyprzedzeniem i dla kogo? Czy wymagane są powiadomienia mailowe do pracowników i przełożonych? |  | Z1 1.10 | Otwarte |
+
+## Stanowiska, umowy, grupy szczególne
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Czy stosowany będzie słownik definicji stanowisk? Jakie dane przypisać do stanowiska (kod zawodu, grupa zaszeregowania, kalendarz, pola dodatkowe)? |  | Z1 1.11 | Otwarte |
+| Jakie rodzaje umów cywilnoprawnych występują? Czy potrzebne są dodatkowe pola lub dedykowane wydruki umów i rachunków? |  | Z1 1.12 | Otwarte |
+| Czy ewidencjonowane są osoby współpracujące na podstawie B2B? Jaki zakres danych, czy z dostępem do pulpitów? |  | Z1 1.13 | Otwarte |
+| Czy występują pracownicy oddelegowani za granicę (dodatek licencjonowany Pracownicy Eksportowi) lub cudzoziemcy z zezwoleniami na pracę? Kraje, liczba osób, waluta? |  | Z1 1.14 | Otwarte |
+| Czy ewidencjonowane są umowy o zakazie konkurencji (status, rodzaj)? |  | Z1 1.15 | Otwarte |
+| Czy ewidencjonowane są upoważnienia do przetwarzania danych osobowych? Jakie rodzaje? |  | Z1 1.16 | Otwarte |
+| Jakie formy pracy zdalnej występują i jakie są limity (regulaminowa, okazjonalna, na wniosek)? |  | Z1 1.17 | Otwarte |
+| Czy występują prace w szczególnych warunkach lub o szczególnym charakterze (słownik, raporty ZSWA)? |  | Z1 1.21 | Otwarte |
+| Czy ewidencjonowane są szkolenia (pozostałe) i wypowiedzenia zmieniające? |  | Z1 1.22, 1.23 | Otwarte |
+
+## Nieobecności, e-akta, Płatnik
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jakie nieobecności poza standardem występują (urlopy dodatkowe, wolne okolicznościowe, benefity)? Limity, zasady, czy wniosek w pulpicie? |  | Z1 1.18 | Otwarte |
+| Czy wymiar urlopu liczony jest w dniach czy w godzinach? Czy są urlopy dodatkowe (niepełnosprawność, staż, układ zbiorowy)? |  | Z1 1.18 | Otwarte |
+| Jak zasilić limit opieki z art. 188 KP na start (dni / godziny, import)? |  | Z1 1.18 | Otwarte |
+| Czy potrzebne są dodatkowe pola na nieobecnościach (np. dostarczenie dokumentu, dni pozostałe do końca okresu zasiłkowego)? |  | Z1 1.18 | Otwarte |
+| Czy prowadzona będzie elektroniczna dokumentacja pracownicza w pełnym zakresie, czy tylko do udostępniania PIT-11 i IMIR? |  | Z1 1.19 | Otwarte |
+| Kto wysyła deklaracje ZUS – eksport do Płatnika czy inny sposób? |  | Z1 1.20 | Otwarte |
+
+# Załącznik 2 – Czas pracy (Z2)
+
+## Systemy czasu pracy i kalendarze
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jakie systemy czasu pracy występują i u jakich grup pracowników? |  | Z2 1.1 | Otwarte |
+| Jakie okresy rozliczeniowe (długość, miesiąc rozpoczęcia) i dla jakich grup? |  | Z2 1.1 | Otwarte |
+| Jakie są domyślne godziny pracy i godziny pory nocnej? |  | Z2 1.1, 1.2 | Otwarte |
+| Od czego zależy system czasu pracy pracownika – od stanowiska czy przypisywany indywidualnie? |  | Z2 1.1, 1.4 | Otwarte |
+| Czy występują grupy szczególne (kierowcy, osoby z niepełnosprawnością, ochrona, praca zmianowa przez północ)? |  | Z2 1.1 | Otwarte |
+| Jaki jest roczny limit godzin nadliczbowych? |  | Z2 1.2 | Otwarte |
+| Jakie definicje dni i kalendarzy wzorcowych trzeba przygotować? Czy potrzebne są serie dni? |  | Z2 1.3 | Otwarte |
+| Jak traktowane są święta w dniu wolnym pracownika i dni wolne ustalone przez pracodawcę? |  | Z2 1.3 | Otwarte |
+
+## Harmonogramy i weryfikatory
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Kto tworzy harmonogramy i w jakim narzędziu (Excel, system)? Na ile do przodu? |  | Z2 1.5 | Otwarte |
+| Czy harmonogram jest zatwierdzany? Przez kogo? Czy kalendarz wzorcowy zatwierdza się automatycznie? |  | Z2 1.5 | Otwarte |
+| Kto i w jakim terminie może zmieniać harmonogram w trakcie miesiąca? Czy wstecz? Z jakiego powodu (wniosek pracownika, pracodawcy)? |  | Z2 1.5 | Otwarte |
+| Które weryfikatory uruchomić i czy mają blokować zapis (błąd), czy tylko ostrzegać? |  | Z2 1.6 | Otwarte |
+| Czy przełożeni planują i uzupełniają czas pracy w pulpicie (dokumenty aktualizacji planu i czasu pracy)? Jaka ścieżka akceptacji? |  | Z2 1.7 | Otwarte |
+
+## Ewidencja czasu, nadgodziny, RCP
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Kto ewidencjonuje czas faktycznie przepracowany i w jakim terminie zamykany jest miesiąc? |  | Z2 1.8 | Otwarte |
+| Czy czas pracy jest dzielony na projekty, MPK lub kody kosztowe? Skąd słownik i wartość domyślna? |  | Z2 1.8 | Otwarte |
+| Czy na dniu pracy oznaczane są dodatkowe informacje (dodatki, akord, pełnienie funkcji)? |  | Z2 1.8 | Otwarte |
+| Kto zatwierdza czas pracy i czy po zatwierdzeniu obowiązuje blokada edycji? |  | Z2 1.9 | Otwarte |
+| Kto i na jakim etapie akceptuje nadgodziny? Czy bez akceptacji nie są płatne? |  | Z2 1.10 | Otwarte |
+| Jak rozliczane są nadgodziny dobowe i średniotygodniowe? Czy Klient stosuje zasady korzystniejsze niż kodeksowe? |  | Z2 1.10 | Otwarte |
+| Czy pracownik może odebrać nadgodziny czasem wolnym? Na czyj wniosek i w jakim terminie? |  | Z2 1.10 | Otwarte |
+| Jak rozliczane są nadgodziny osób w niepełnym wymiarze czasu pracy? |  | Z2 1.10 | Otwarte |
+| Czy występują dyżury, przestoje, praca w dniu wolnym? Jak są płatne? |  | Z2 1.10, Z3 1.4 | Otwarte |
+| Czy jest system lub czytnik RCP? Format eksportu, tryb importu, tolerancje, zaokrąglenia, obsługa braku odbicia? |  | Z2 1.11 | Otwarte |
+| Kto poprawia błędne odbicia? Czy odbicia mają być widoczne dla pracownika? |  | Z2 1.11 | Otwarte |
+| Jakie wydruki i raporty czasu pracy są potrzebne (karta ewidencji, zestawienie pracownik × dni)? |  | Z2 1.12 | Otwarte |
+
+# Załącznik 3 – Płace (Z3)
+
+## Listy płac i proces miesięczny
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Ile list płac jest w miesiącu i jakich rodzajów (etatowa, umowy, premiowa, korygująca, ZFŚS, nagrody)? |  | Z3 1.2 | Otwarte |
+| Jakie są terminy wypłat i zamknięcia danych do płac? Wynagrodzenie w miesiącu przepracowanym czy do 10. następnego? |  | Z3 1.2 | Otwarte |
+| Według jakiego klucza dzielone są listy (spółki, wydziały, rodzaj pracownika)? Jak mają być nazywane? |  | Z3 1.2 | Otwarte |
+| Kto dostarcza dane zmienne (premie, godziny, potrącenia) i w jakiej formie? |  | Z3 1.4 | Otwarte |
+| Jak wygląda akceptacja listy płac przed przelewem? |  | Z3 1.2 | Otwarte |
+| Kto edytuje konfigurację płacową, a kto ma tylko podgląd? |  | Z3 1.1 | Otwarte |
+
+## Składniki wynagrodzenia
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jakie formy wynagrodzenia zasadniczego występują (miesięczne, godzinowe, akordowe, prowizyjne)? |  | Z3 1.4 | Otwarte |
+| Jakie premie i dodatki występują? Dla każdego: podstawa, okres, źródło danych, pomniejszanie za nieobecności, wpływ na podstawy urlopu i chorobowego. |  | Z3 1.4 | Otwarte |
+| Czy wynagrodzenie zasadnicze jest pomniejszane za urlop? Ile miesięcy do średniej ze składników zmiennych i według okresu czy daty wypłaty? |  | Z3 1.4 | Otwarte |
+| Jakie składniki wchodzą do stawki za nadgodziny i dodatków za nadgodziny? |  | Z3 1.4 | Otwarte |
+| Czy występują nagrody jubileuszowe, odprawy (emerytalno-rentowa, zwolnienia grupowe)? Tabele i sposób liczenia stażu? |  | Z3 1.4 | Otwarte |
+| Czy są świadczenia rzeczowe i benefity doliczane do przychodu? Kto dostarcza dane? |  | Z3 1.4, 1.11 | Otwarte |
+| Czy występują 50% koszty uzyskania przychodu? Dla kogo i od jakiej części wynagrodzenia? |  | Z3 1.4 | Otwarte |
+| Czy do składników przypisywane są MPK, projekty lub kody kosztowe? Według jakich zasad? |  | Z3 1.4 | Otwarte |
+| Które składniki działają dziś automatycznie, a które są wpisywane ręcznie? |  | Z3 1.4 | Otwarte |
+| Jak rozliczane są umowy cywilnoprawne (terminy, rachunki, stawka godzinowa, ewidencja godzin)? |  | Z3 1.5 | Otwarte |
+
+## ZUS, PIT, PPK, PFRON
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jak obsługiwać ujemną podstawę składek ZUS (lista korygująca, zaliczka, korekta w Płatniku)? |  | Z3 1.6.1 | Otwarte |
+| Jaka jest instytucja finansowa PPK? Kiedy naliczany jest podatek od składki pracodawcy? Czy są wpłaty dodatkowe? |  | Z3 1.3 | Otwarte |
+| Czy firma rozlicza PFRON? Czy potrzebne są dane o stopniu niepełnosprawności i ryczałt PFRON? |  | Z3 1.7 | Otwarte |
+| Jak przekazywać pracownikom PIT-11 i IMIR (pulpit, e-mail, osobiście)? |  | AN 3.8 | Otwarte |
+
+## Fundusze, potrącenia, rezerwy, benefity
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jakie świadczenia wypłacane są z ZFŚS? Jakie kryterium socjalne (kwota dochodu, próg, grupa)? Czy obsługiwani są emeryci? |  | Z3 1.8 | Otwarte |
+| Kto zatwierdza wnioski socjalne? Czy potrzebny jest raport dla komisji socjalnej? Czy wnioski składane są w pulpicie? |  | Z3 1.8 | Otwarte |
+| Czy funkcjonuje PKZP lub pożyczki z ZFŚS? Wpisowe, składka, zasady spłat? |  | Z3 1.9 | Otwarte |
+| Czy naliczana jest rezerwa urlopowa? Jaki wariant wyliczenia, cykl, narzuty, przypisanie kosztów? |  | Z3 1.10.1 | Otwarte |
+| Czy naliczana jest rezerwa na nadgodziny lub ryczałty techniczne (ZFŚS, PFRON)? |  | Z3 1.10.2, 1.10.3 | Otwarte |
+| Jakie benefity są obsługiwane (opieka medyczna, karty sportowe, ubezpieczenia)? Pakiety, dofinansowanie, walidacje? |  | Z3 1.11 | Otwarte |
+| Jakie potrącenia dobrowolne i dedykowane występują (związki zawodowe, programy pracownicze, ubezpieczenia)? |  | Z3 1.12 | Otwarte |
+| Ile jest zajęć komorniczych? Czy potrzebna jest korespondencja z komornikiem? |  | Z3 1.13 | Otwarte |
+
+## Przelewy, PUE, zamknięcie roku
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Jaki bank i jaki sposób przekazania przelewów (plik, web service)? Ile rachunków źródłowych? |  | Z3 1.14 | Otwarte |
+| Czy przelewy do ZUS, US, PPK i PFRON wychodzą z modułu płacowego? Jakie przelewy potrąceniowe? |  | Z3 1.14 | Otwarte |
+| Import zwolnień z PUE: ręcznie czy automatycznie (wymaga Harmonogramu Zadań)? Jaki wariant edycji istniejących nieobecności (Nie edytuj / Tylko nierozliczone / Koryguj rozliczone i nierozliczone)? Jaka nieobecność dla zwolnienia z tytułu opieki? |  | Z3 1.15 | Otwarte |
+| Czy potrzebne są szacunkowe listy płac na potrzeby zarachowań przy zamknięciu roku? |  | Z3 1.16 | Otwarte |
+
+# Załącznik 5 – Pulpity (Z5)
+
+## Dostęp i widoczność
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Kto otrzyma dostęp do pulpitów (wszyscy pracownicy, tylko umysłowi)? Czy pracownicy produkcyjni mają komputery lub telefony? |  | Z5 1.1 | Otwarte |
+| Jaki sposób logowania i czy pulpity mają być dostępne spoza sieci firmowej? Czy potrzebna jest podwójna autentyfikacja? |  | Z5 1.1, 1.1.1 | Otwarte |
+| Jakie role pulpitowe są potrzebne (pracownik, kierownik, zastępca, osoba do obsługi czasu pracy, kierownik wyższego poziomu)? |  | Z5 1.1 | Otwarte |
+| Co pracownik ma widzieć: paski, limity, czas pracy, dane osobowe, dodatki, zaświadczenia, PIT-11, e-teczkę? |  | Z5 1.2 | Otwarte |
+| Czy kierownicy mają widzieć wynagrodzenia i wypłaty podwładnych? Od którego poziomu? |  | Z5 1.2 | Otwarte |
+| Jakie kolumny i podwidoki ma mieć lista podległych pracowników? |  | Z5 1.2 | Otwarte |
+| Czy kierownik ma planować grafik i edytować czas pracy w pulpicie? Do kiedy (blokada)? |  | Z5 1.2.1, Z2 1.9 | Otwarte |
+| Czy uruchamiamy dashboard i powiadomienia w pulpitach? Jaka konfiguracja? |  | Z5 1.2.2, 1.2.3 | Otwarte |
+
+## Wnioski i zastępstwa
+@kolumny 46,30,13,11
+| Pytanie | Odpowiedź klienta | Sekcja w analizie | Status |
+| Które wnioski mają być elektroniczne (urlop, opieka, nadgodziny, zmiana danych, praca zdalna, ZFŚS, PPK)? |  | Z5 1.3 | Otwarte |
+| Jaka jest ścieżka akceptacji każdego wniosku (jednoetapowa, dwuetapowa, przełożony wskazany)? |  | Z5 1.3 | Otwarte |
+| Czy wnioski o zmianę danych mają zapisywać się w kartotece, czy dane są przenoszone ręcznie lub integracją? |  | Z5 1.3 | Otwarte |
+| Czy dla wybranych osób ma działać automatyczna akceptacja wniosków urlopowych? |  | Z5 1.3 | Otwarte |
+| Czy uruchamiamy planowanie urlopów? Termin składania planów? |  | Z5 1.3.1 | Otwarte |
+| Kto ustawia zastępstwa i czy wybór zastępcy ma być ograniczony? |  | Z5 1.4 | Otwarte |
+| Czy uruchamiamy zasobnik dokumentów? Jakie dokumenty będą udostępniane? |  | Z5 1.5 | Otwarte |
+| Czy osoby B2B i przełożeni zewnętrzni mają mieć dostęp do pulpitów? |  | Z5 1.6 | Otwarte |
+| Jakie dane konta SMTP (adres, serwer, port, szyfrowanie) zostaną przekazane i przez kogo? |  | Z5 1.7 | Otwarte |

@@ -1,0 +1,81 @@
+//----------------------------------------------------------------------------------
+// Dodatkowy kod do kompilacji (System -> Dodatkowy kod do kompilacji)
+// Kontrola do Taska "Nadgodziny 100% w niedziele" (Taski/NadgodzinyNiedziela100): zgłasza niedzielę,
+// w której strefa "Nadgodziny 100%" nie zgadza się z pracą ponad normę dobową (np. dzień zapisany
+// przed założeniem Taska, zapis bez operatora, zmiana normy/etatu po zapisie dnia).
+// Wywoływany z definicji weryfikatora kalendarza "A1_Nadgodziny 100% w niedziele" (rodzaj Dzień pracy),
+// podpiętej jako OSTRZEŻENIE - nie Błąd: enova uruchamia weryfikatory przy zapisie także PRZED
+// Taskami, więc Błąd zablokowałby zapis, zanim Task dopisze strefę.
+//
+// Metoda należy do klasy A1WeryfikatoryKalendarza, wspólnej dla weryfikatorów kalendarza.
+// Ten plik zawiera tylko tę metodę - wkleić ją do istniejącej klasy.
+//
+// Kod definicji weryfikatora:
+//
+// public override string Weryfikuj(Soneta.Kalend.DzienPracy dzien, WeryfikujEventArgs args) {
+//      return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1NadgodzinyNiedziela100(dzien);
+// }
+//----------------------------------------------------------------------------------
+
+using System;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kadry;
+using Soneta.Kalend;
+using Soneta.Tools;
+
+namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
+	public class A1WeryfikatoryKalendarza
+	{
+		// Te same warunki co w Tasku: dzień typu Świąteczny bez "Nadgodziny świąteczne", dni ze strefami
+		// przeniesień / niewliczanymi / innymi strefami nadgodzin pomijane (rozliczane ręcznie).
+		public static string A1NadgodzinyNiedziela100(DzienPracy dzien)
+		{
+			Pracownik pracownik = dzien.Pracownik;
+			if (pracownik == null)
+				return null;
+			Dzien plan = new KalkulatorPlanu(pracownik)[dzien.Data];
+			if (plan == null || plan.Definicja == null)
+				return null;
+			if (plan.Definicja.Typ != TypDnia.Świąteczny || plan.Definicja.NadgodzinySW)
+				return null;
+			PracHistoria ph = pracownik[dzien.Data];
+			if (ph == null)
+				return null;
+			Time norma = ph.Etat.NormaDobowa;
+
+			FromTimes praca = FromTimes.Empty;
+			Time bezGodzin = Time.Zero;
+			Time n100 = Time.Zero;
+			foreach (StrefaPracy s in dzien.Strefy)
+			{
+				if (s.Definicja == null || s.Praca.Czas <= Time.Zero)
+					continue;
+				Guid g = s.Definicja.Guid;
+				if (g == DefinicjaStrefy.N100)
+				{
+					n100 += s.Praca.Czas;
+					continue;
+				}
+				if (g == DefinicjaStrefy.N50 || g == DefinicjaStrefy.N100Okr || g == DefinicjaStrefy.NSW)
+					return null;
+				TypRozliczenia rozl = s.Definicja.Rozliczenie;
+				if (rozl == TypRozliczenia.WKolejnychMiesiącach || rozl == TypRozliczenia.ZPoprzednichMiesięcy || rozl == TypRozliczenia.WypłataNadgodzin)
+					return null;
+				if (s.Definicja.PodstawaNadgodzin != TypPodstawyNadgodzin.Domyślnie)
+					return null;
+				if (!s.Definicja.Wchodzi || s.Definicja.Typ != TypStrefy.Zwieksza)
+					continue;
+				if (s.Praca.OdGodziny != Time.Empty)
+					praca = praca.Add(new FromTime(s.Praca.OdGodziny, s.Praca.Czas));
+				else
+					bezGodzin += s.Praca.Czas;
+			}
+			Time czas = praca.Time + bezGodzin;
+			Time nadwyzka = czas > norma ? czas - norma : Time.Zero;
+			if (n100 == nadwyzka)
+				return null;
+			return "Dla dnia ({0}) praca ponad normę dobową wynosi ({1}), a strefa Nadgodziny 100% ma ({2}). Zapisz dzień ponownie, żeby Task przeliczył strefę - {3}".TranslateFormat(dzien.Data, nadwyzka, n100, pracownik);
+		}
+	}
+}

@@ -1,0 +1,134 @@
+{
+  // Konfiguracja generatora schematu (Generator/). Utrzymywana ręcznie.
+  "wersjaSchematu": "1.0",
+  "typObiektu": "Soneta.Place.DefinicjaElementu",
+  "typRekordu": "Soneta.Place.PlaceModule+DefinicjaElementuRecord",
+  "bibliotekaLogiki": "Soneta.KadryPlace",
+  "bibliotekaUI": "Soneta.KadryPlace.UI",
+
+  // Zakładki w kolejności okna enova (Priority). Warianty "Pro" (licencja PLXL) są nadzbiorem wariantów podstawowych.
+  // Zakładki techniczne są tu po to, żeby trafiły do listy pominiętych w PRZEGLAD.md (pomijanie: opisy.json → zakladki.<id>.pomin).
+  "zakladki": [
+    { "id": "Ogolne", "zasob": "DefinicjaElementuPro" },
+    { "id": "Prawa", "zasob": "DefinicjaElementuPrawa" },
+    { "id": "Deklaracje", "zasob": "DefinicjaElementuDeklaracje" },
+    { "id": "DeklaracjeCd", "zasob": "DefinicjaElementuDeklaracjeCd" },
+    { "id": "Nieobecnosci", "zasob": "DefinicjaElementuNieobecnosciPro" },
+    { "id": "Rozliczenie", "zasob": "DefinicjaElementuRozliczenie" },
+    { "id": "DaneStatystyczne", "zasob": "DefinicjaElementuGUS" },
+    { "id": "Dodatkowe", "zasob": "DefinicjaElementuDodatkowe" },
+    { "id": "Algorytm", "zasob": "DefinicjaElementuAlgorytm" },
+    { "id": "SumaElementow", "zasob": "DefinicjaElementuAlgorytmDefElementów" },
+    { "id": "StazPracy", "zasob": "DefinicjaElementuStaz" },
+    { "id": "RozliczenieCzasuUmowy", "zasob": "DefinicjaElementuAlgorytmRozliczenieCzasuUmowy" },
+    { "id": "Umowy", "zasob": "DefinicjaElementuAlgorytmUmowy" },
+    { "id": "Edytor", "zasob": "DefinicjaElementuEdytor" },
+    { "id": "NazwyParametrow", "zasob": "DefinicjaElementuParametry" },
+    { "id": "Podglad", "zasob": "DefinicjaElementuPodglad" },
+    { "id": "Historia", "zasob": "DefinicjaElementuHistoria" },
+    { "id": "PomniejszeniaNieobecnosci", "zasob": "DefinicjaElementuAlgorytmPomniejszeniaNieobecnosci" }
+  ],
+
+  // Rodzaj elementu wybiera się w enova przy dodawaniu (Nowy → rodzaj), nie ma go na zakładkach.
+  "polaDodatkowe": [
+    { "sciezka": "RodzajZrodla", "zakladka": "Ogolne", "etykieta": "Rodzaj elementu" }
+  ],
+
+  // Listy, których właściwość nie jest generyczna (SubTable) – typ wiersza do odczytu kolumn.
+  "typyList": {
+    "Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi": "Soneta.Place.ProgStazuPracy"
+  },
+
+  "wyrazenia": {
+    "new DefinicjaElementuStazExtender.GetKreatorAlgorytmu()": "Algorytm.KreatorAlgorytmu"
+  },
+
+  // Właściwości-nakładki zwracające ten sam obiekt (sprawdzone w kodzie 2610: EdytorAlgorytmu.Korekta i EdytorAlgorytmu.PodstawaZa,
+  // PomniejszeniaIOdchyłki.Korekta => Algorytm.KreatorAlgorytmu.Korekta; KreatorAlgorytmu.ZaNieobecnosc => Algorytm.ZaNieobecnosc; RozliczenieElementu.ZawszeGotowka => DefinicjaElementu.ZawszeGotowka).
+  "aliasy": {
+    "Algorytm.Edytor.Korekta": "Algorytm.KreatorAlgorytmu.Korekta",
+    "Algorytm.PomniejszeniaIOdchylki.Korekta": "Algorytm.KreatorAlgorytmu.Korekta",
+    "Algorytm.KreatorAlgorytmu.ZaNieobecnosc": "Algorytm.ZaNieobecnosc",
+    "Algorytm.Edytor.PodstawaZa": "Algorytm.KreatorAlgorytmu.PodstawaZa",
+    "Rozliczenie.ZawszeGotowka": "ZawszeGotowka"
+  },
+
+  "pominiete": {
+    "IsStandard": "informacja systemowa (definicja standardowa enova) – nie ustawia się",
+    "Algorytm.Klasa.*": "klasa algorytmu z własnej biblioteki DLL – konfiguruje wdrożeniowiec",
+    "Algorytm.ZapisObliczen.*": "nazwa logu obliczeń – ustawienie techniczne",
+    "RuntimeInfo.*": "informacje dla kompilatora – techniczne",
+    "Nieobecnosci.Urlop.Dopelnienie": "w enova pole „po dopełnieniu” jest aktywne tylko dla ekwiwalentu (NieobecnosciDefElementu włącza je wyłącznie dla Ekwiwalent)",
+    "Algorytm.KreatorAlgorytmu.Wyrażenie": "wyrażenie w języku C# – instrukcja: „wyłącznie dla autoryzowanego serwisu”; klient opisuje zasadę w uwagach"
+  },
+
+  "slowniki": {
+    "PozycjaPIT": {
+      "etykieta": "Pozycja na deklaracji PIT",
+      "zasoby": [ "PozycjaPIT4R.dbinit.xml", "PozycjaPIT8AR.dbinit.xml", "PozycjaPIT8C.dbinit.xml" ],
+      "element": "PozycjaPIT",
+      "poleKlucza": "Kod",
+      "poleOpisu": "Opis"
+    },
+    "KodRSA": {
+      "etykieta": "Kod świadczenia/przerwy (RSA)",
+      "zasoby": [ "KodRSA.dbinit.xml" ],
+      "element": "KodRSA",
+      "poleKlucza": "Kod",
+      "poleOpisu": "Opis",
+      "poleOkresu": "Okres"
+    },
+    "TytulUbezpieczenia4": {
+      "etykieta": "Tytuł ubezpieczenia",
+      "zasoby": [ "Tyub4.dbinit.xml", "Tyub4_25040203.dbinit.xml", "Tyub4_v25.dbinit.xml" ],
+      "element": "TytulUbezpieczenia4",
+      "poleKlucza": "Kod",
+      "poleOpisu": "Opis1",
+      "poleOkresu": "Okres"
+    },
+    "DefinicjaLimitu": {
+      "etykieta": "Limit nieobecności",
+      "zasoby": [ "Kalend.Kalend.dbinit.xml", "Kalend.Kalend_26040000.dbinit.xml", "Kalend.Kalend_26060000.dbinit.xml" ],
+      "element": "DefinicjaLimitu",
+      "poleKlucza": "Nazwa"
+    },
+    "DefinicjaStrefy": {
+      "etykieta": "Strefa czasu pracy",
+      "zasoby": [ "Kalend.Kalend.dbinit.xml" ],
+      "element": "DefinicjaStrefy",
+      "poleKlucza": "Nazwa"
+    },
+    "DefPodstawyStazu": {
+      "etykieta": "Podstawa stażu pracy",
+      "zasoby": [ "Kadry.Kadry.dbinit.xml" ],
+      "element": "DefPodstawyStazu",
+      "poleKlucza": "Nazwa"
+    },
+    "DefinicjaListyPlac": {
+      "etykieta": "Definicja listy płac",
+      "zasoby": [ "Place.Place.dbinit.xml" ],
+      "element": "DefinicjaListyPlac",
+      "poleKlucza": "Symbol",
+      "poleOpisu": "Nazwa"
+    },
+    "Wydzial": { "etykieta": "Jednostka organizacyjna (wydział)", "poleKlucza": "Kod" },
+    "EwidencjaSP": { "etykieta": "Ewidencja środków pieniężnych", "poleKlucza": "Symbol" },
+    "IPodmiotKasowy": { "etykieta": "Odbiorca (kontrahent, bank, urząd, ZUS…)", "poleKlucza": "Kod" },
+    "RachunekBankowyPodmiotu": { "etykieta": "Rachunek bankowy odbiorcy", "poleKlucza": "Numer" },
+    "IZakresDefinicji": { "etykieta": "Fundusz pożyczkowy (PKZP, ZFM…)", "poleKlucza": "Nazwa" },
+    "DefinicjaElementu": { "etykieta": "Definicja elementu wynagrodzenia", "poleKlucza": "Nazwa" }
+  },
+
+  // Zasoby (regex po nazwie) z definicjami standardowymi enova – import ich nie nadpisuje.
+  "definicjeStandardowe": [ "\\.Place\\.DefinicjaElementu.*\\.dbinit\\.xml$", "\\.Place\\.b2b-definicje-elementów.*\\.dbinit\\.xml$" ],
+
+  // Szablony startowe formularza – wartości z definicji standardowych enova (dbinit), nazwa/skrót do uzupełnienia przez klienta.
+  "szablony": [
+    { "id": "zasadnicze", "etykieta": "Wynagrodzenie zasadnicze (miesięczne)", "opis": "Własne wynagrodzenie zasadnicze w stawce miesięcznej – ustawienia jak standardowe „Wynagrodzenie zasadnicze mies.”.", "zrodloGuid": "00000000-0007-0002-0002-000000000000", "uwagi": "Szablon: Wynagrodzenie zasadnicze (miesięczne). Podstawa „Wyrażenie” – skopiować wyrażenie ze standardowej definicji „Wynagrodzenie zasadnicze mies.”.", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "premiaUznaniowa", "etykieta": "Premia uznaniowa (kwota)", "opis": "Premia w kwocie wpisywanej u pracownika – ustawienia jak standardowa „Premia”.", "zrodloGuid": "c9c3dc52-be71-4b8f-b89b-728d83cd4a9a", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "premiaProcentowa", "etykieta": "Premia procentowa", "opis": "Procent od wynagrodzenia zasadniczego – ustawienia jak standardowa „Premia procentowa”.", "zrodloGuid": "35c29464-e2c4-4182-8944-1ddf87dff9ab", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "dodatekStazowy", "etykieta": "Dodatek stażowy", "opis": "Procent zależny od stażu pracy – ustawienia jak standardowy „Dodatek stażowy”; progi stażu uzupełnij wg regulaminu.", "zrodloGuid": "71a2fac0-4f66-43a5-9e25-13c97f8e4a00", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "dodatekFunkcyjny", "etykieta": "Dodatek funkcyjny", "opis": "Stały dodatek kwotowy – ustawienia jak standardowy „Dodatek funkcyjny”.", "zrodloGuid": "df97dc0b-2cb9-47b3-b8f0-81ce39934a06", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "potracenie", "etykieta": "Potrącenie (np. składka ubezpieczenia)", "opis": "Nieopodatkowane potrącenie kwotowe z wypłaty netto – ustawienia jak standardowa „Składka PZU”.", "zrodloGuid": "2b04aaba-22ec-4613-8fbc-a80e544c7245", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } }
+  ]
+}

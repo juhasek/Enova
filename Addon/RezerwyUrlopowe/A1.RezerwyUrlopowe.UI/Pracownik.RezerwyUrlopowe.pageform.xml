@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zakładka kartoteki pracownika: historia rezerw urlopowych (dodatek A1.RezerwyUrlopowe). -->
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
+          Priority="900">
+  <Page CaptionHtml="Rezerwy urlopowe" DataContext="{new RezerwyPracownikaExtender}">
+    <Grid Width="*" Height="*" EditValue="{Pozycje}" IsToolbarVisible="true" NewButton="None" RemoveButton="None">
+      <Field CaptionHtml="Okres" Width="14" EditValue="{Rezerwa}" />
+      <Field CaptionHtml="MPK" Width="16" EditValue="{CentrumKosztow}" />
+      <Field CaptionHtml="Godziny" Width="9" EditValue="{GodzinyRezerwy}" Format="N2" />
+      <Field CaptionHtml="Dni" Width="8" EditValue="{DniRezerwy}" Format="N2" />
+      <Field CaptionHtml="Podstawa 1" Width="11" EditValue="{Podstawa1}" />
+      <Field CaptionHtml="Podstawa 2" Width="11" EditValue="{Podstawa2}" />
+      <Field CaptionHtml="Kwota" Width="12" EditValue="{Kwota}" />
+      <Field CaptionHtml="Narzuty" Width="11" EditValue="{Narzuty}" />
+      <Field CaptionHtml="Zmiana m/m" Width="11" EditValue="{Zmiana}" Format="N2" />
+      <Field CaptionHtml="Ostrzeżenia" Width="25" EditValue="{Ostrzezenia}" />
+    </Grid>
+  </Page>
+</DataForm>

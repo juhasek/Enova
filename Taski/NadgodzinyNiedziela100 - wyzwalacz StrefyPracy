@@ -1,0 +1,5 @@
+public override GuidedRow[] GetGuidedRows() {
+    if (StrefaPracy.Dzien == null || StrefaPracy.Dzien.Pracownik == null)
+        return new GuidedRow[0];
+    return new GuidedRow[] { StrefaPracy.Dzien.Pracownik };
+}

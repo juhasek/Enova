@@ -1,0 +1,74 @@
+using System.Text;
+using System.Text.Json.Nodes;
+
+namespace ImportDefinicjiElementow.Silnik;
+
+/// <summary>Plik elementy-wynagrodzenia.json zapisany formularzem klienta.</summary>
+public sealed class PlikImportu
+{
+    public const string Format = "enova-definicje-elementow-wynagrodzenia";
+
+    public string WersjaSchematu;
+    public string WersjaEnova;
+    public string DataEksportu;
+    public string Licencja;
+    public List<DefinicjaZPliku> Definicje = new();
+
+    public sealed class DefinicjaZPliku
+    {
+        public string Id;
+        public string Szablon;
+        public string Uwagi;
+        public JsonObject Wartosci;
+        public List<string> BledyFormularza = new();
+    }
+
+    /// <summary>Wczytanie i sprawdzenie formatu oraz zgodności wersji schematu (ta sama wersja główna).</summary>
+    public static PlikImportu Wczytaj(byte[] dane, Schemat schemat)
+    {
+        JsonNode json;
+        try
+        {
+            var tekst = Encoding.UTF8.GetString(dane).TrimStart('﻿');
+            json = JsonNode.Parse(tekst);
+        }
+        catch (Exception e)
+        {
+            throw new BladPliku("Plik nie jest poprawnym plikiem JSON: " + e.Message);
+        }
+        if (json is not JsonObject o || o["format"]?.GetValue<string>() != Format || o["definicje"] is not JsonArray defs)
+            throw new BladPliku("To nie jest plik z formularza definicji elementów wynagrodzenia (brak pola format = " + Format + ").");
+        var plik = new PlikImportu
+        {
+            WersjaSchematu = o["wersjaSchematu"]?.GetValue<string>(),
+            WersjaEnova = o["wersjaEnova"]?.GetValue<string>(),
+            DataEksportu = o["dataEksportu"]?.GetValue<string>(),
+            Licencja = o["ustawienia"]?["licencja"]?.GetValue<string>(),
+        };
+        if (Glowna(plik.WersjaSchematu) != Glowna(schemat.WersjaSchematu))
+            throw new BladPliku($"Plik zapisano formularzem w wersji {plik.WersjaSchematu}, a dodatek obsługuje wersję {schemat.WersjaSchematu}. Przekaż klientowi aktualny formularz.");
+        foreach (var d in defs)
+        {
+            if (d is not JsonObject dobj)
+                continue;
+            plik.Definicje.Add(new DefinicjaZPliku
+            {
+                Id = dobj["id"]?.GetValue<string>(),
+                Szablon = dobj["szablon"]?.GetValue<string>(),
+                Uwagi = dobj["uwagi"]?.GetValue<string>() ?? "",
+                Wartosci = (dobj["wartosci"] as JsonObject)?.DeepClone().AsObject() ?? new JsonObject(),
+                BledyFormularza = (dobj["bledy"] as JsonArray)?.Select(b => b!.GetValue<string>()).ToList() ?? new(),
+            });
+        }
+        if (plik.Definicje.Count == 0)
+            throw new BladPliku("Plik nie zawiera definicji.");
+        return plik;
+    }
+
+    static string Glowna(string w) => (w ?? "").Split('.')[0];
+}
+
+public sealed class BladPliku : Exception
+{
+    public BladPliku(string komunikat) : base(komunikat) { }
+}

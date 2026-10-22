@@ -2,3 +2,13 @@
 # Wersjonowany jest wylacznie opis katalogu.
 Pobrane/*
 !Pobrane/README.md
+
+# Analizy i notatki konkretnych klientow - tylko lokalnie (nazwy, dane osobowe/placowe).
+Klienci/
+# Kopie robocze dokumentow zrodlowych przy budowie wzoru analizy.
+Wzor_analizy/_robocze/
+# Artefakty kompilacji generatora wzorów analizy.
+Wzor_analizy/Generator/bin/
+Wzor_analizy/Generator/obj/
+# Kopie dokumentow analiz klientow (dane klientow) - szablony w Analiza/ to .md i .xlsx.
+Analiza/*.docx

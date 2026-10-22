@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<session fromto="(wszystko)">
+  <Pracownik where="Kod=DIET-01">
+    <ZestDietPakietMobil addnew="true">
+      <ZestDietPakietMobil>
+        <KrajOddelegowania>00000000-0019-0001-0072-000000000000</KrajOddelegowania>
+        <Czas>120:30</Czas>
+        <DzienMiesiaca>2026-09-30</DzienMiesiaca>
+        <Diety>15.5</Diety>
+        <DietyKorekta>0</DietyKorekta>
+        <WartoscDiet>0.00 EUR</WartoscDiet>
+        <KorektaReczna>False</KorektaReczna>
+        <WartoscDietPIT>0.00 PLN</WartoscDietPIT>
+      </ZestDietPakietMobil>
+      <ZestDietPakietMobil>
+        <KrajOddelegowania>00000000-0019-0001-0071-000000000000</KrajOddelegowania>
+        <Czas>40:00</Czas>
+        <DzienMiesiaca>2026-09-30</DzienMiesiaca>
+        <Diety>5</Diety>
+        <DietyKorekta>0</DietyKorekta>
+        <WartoscDiet>0.00 EUR</WartoscDiet>
+        <KorektaReczna>False</KorektaReczna>
+        <WartoscDietPIT>0.00 PLN</WartoscDietPIT>
+      </ZestDietPakietMobil>
+      <ZestDietPakietMobil>
+        <KrajOddelegowania>00000000-0019-0001-0072-000000000000</KrajOddelegowania>
+        <Czas>96:00</Czas>
+        <DzienMiesiaca>2026-10-31</DzienMiesiaca>
+        <Diety>12</Diety>
+        <DietyKorekta>1</DietyKorekta>
+        <WartoscDiet>539.00 EUR</WartoscDiet>
+        <KorektaReczna>True</KorektaReczna>
+        <WartoscDietPIT>2290.75 PLN</WartoscDietPIT>
+      </ZestDietPakietMobil>
+    </ZestDietPakietMobil>
+  </Pracownik>
+</session>

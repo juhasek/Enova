@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Generator wzorów analizy przedwdrożeniowej KPCP (.docx) z plików treści Wzor_analizy/Tresc/*.txt.
+       Czyste OpenXML (System.IO.Compression + System.Xml.Linq) – bez DevExpress i bez Worda.
+       Uruchomienie: dotnet build -c Release -o bin, potem dotnet bin/GenWzor.dll "katalog Wzor_analizy" -->
+  <!-- bin/ i obj/ są poza gitem (.gitignore) -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>GenWzor</AssemblyName>
+    <RootNamespace>GenWzor</RootNamespace>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
+          Priority="20">
+  <Page CaptionHtml="Pozycje" DataContext="{DataSource}">
+    <Grid Width="*" Height="*" EditValue="{Pozycje}" IsToolbarVisible="true" NewButton="None" RemoveButton="None">
+      <Field CaptionHtml="Kod" Width="10" EditValue="{Pracownik.Kod}" />
+      <Field CaptionHtml="Nazwisko" Width="18" EditValue="{Pracownik.Nazwisko}" />
+      <Field CaptionHtml="Imię" Width="14" EditValue="{Pracownik.Imie}" />
+      <Field CaptionHtml="Wydział" Width="16" EditValue="{Wydzial}" />
+      <Field CaptionHtml="MPK" Width="16" EditValue="{CentrumKosztow}" />
+      <Field CaptionHtml="Godziny" Width="9" EditValue="{GodzinyRezerwy}" Format="N2" Footer="Sum" />
+      <Field CaptionHtml="Dni" Width="8" EditValue="{DniRezerwy}" Format="N2" Footer="Sum" />
+      <Field CaptionHtml="Podstawa 1" Width="11" EditValue="{Podstawa1}" />
+      <Field CaptionHtml="Podstawa 2" Width="11" EditValue="{Podstawa2}" />
+      <Field CaptionHtml="Stawka 1 h" Width="9" EditValue="{StawkaGodzinowa}" Format="N4" />
+      <Field CaptionHtml="Kwota" Width="12" EditValue="{Kwota}" Footer="Sum" />
+      <Field CaptionHtml="Narzuty" Width="11" EditValue="{Narzuty}" Footer="Sum" />
+      <Field CaptionHtml="Kwota poprz." Width="11" EditValue="{KwotaPoprzednia}" Format="N2" Footer="Sum" />
+      <Field CaptionHtml="Zmiana" Width="11" EditValue="{Zmiana}" Format="N2" Footer="Sum" />
+      <Field CaptionHtml="Ostrzeżenia" Width="25" EditValue="{Ostrzezenia}" />
+    </Grid>
+  </Page>
+</DataForm>

@@ -1,0 +1,57 @@
+//----------------------------------------------------------------------------------
+// Dodatkowy kod do kompilacji (System -> Dodatkowy kod do kompilacji)
+// Przy ręcznym uzupełnianiu czasu pracy strefa "Praca w normie" nie może mieć więcej
+// godzin niż plan dnia. Wywoływany z definicji weryfikatora kalendarza
+// "A1_Praca w normie nie ponad plan" (rodzaj Dzień pracy), podpiętej jako Błąd.
+//
+// Metoda należy do klasy A1WeryfikatoryKalendarza, wspólnej dla weryfikatorów kalendarza
+// (są w niej też inne metody, np. A1OkresZatrudnienia, A1NormaDobowa).
+// Ten plik zawiera tylko tę metodę - wkleić ją do istniejącej klasy.
+//
+// Kod definicji weryfikatora:
+//
+// public override string Weryfikuj(Soneta.Kalend.DzienPracy dzien, WeryfikujEventArgs args) {
+//      return A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles.A1WeryfikatoryKalendarza.A1PracaWNormieWgPlanu(dzien);
+// }
+//----------------------------------------------------------------------------------
+
+using System;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kadry;
+using Soneta.Kalend;
+using Soneta.Tools;
+
+namespace A1.Runtime.KadryPlace.WeryfikatoryKalendarza.TblCodeFiles {
+	public class A1WeryfikatoryKalendarza
+	{
+		// Nadwyżkę trzeba wpisać jako "Praca poza normą" i "Nadgodziny do przeniesienia".
+		// Strefa rozpoznawana po stałym Guid definicji (DefinicjaStrefy.Pracy), plan z KalkulatorPlanu.
+		public static string A1PracaWNormieWgPlanu(DzienPracy dzien)
+		{
+			Pracownik pracownik = dzien.Pracownik;
+			if (pracownik == null)
+			{
+				return null;
+			}
+			Time wNormie = Time.Zero;
+			foreach (StrefaPracy strefa in dzien.Strefy)
+			{
+				if (strefa.Definicja != null && strefa.Definicja.Guid == DefinicjaStrefy.Pracy && strefa.Czas != Time.Empty)
+					wNormie += strefa.Czas;
+			}
+			if (wNormie == Time.Zero)
+			{
+				return null;
+			}
+			Time plan = new KalkulatorPlanu(pracownik)[dzien.Data].Czas;
+			if (plan == Time.Empty)
+				plan = Time.Zero;
+			if (wNormie > plan)
+			{
+				return "Dla dnia ({0}) w strefie Praca w normie wpisano ({1}), a plan przewiduje ({2}). Nadwyżkę ({3}) wpisz jako Praca poza normą i Nadgodziny do przeniesienia - {4}".TranslateFormat(dzien.Data, wNormie, plan, wNormie - plan, pracownik);
+			}
+			return null;
+		}
+	}
+}

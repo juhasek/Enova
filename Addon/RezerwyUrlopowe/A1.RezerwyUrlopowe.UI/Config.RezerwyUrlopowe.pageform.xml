@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Strona okna Narzędzia → Opcje. Zasób musi kończyć się na "Config.<Nazwa>.pageform.xml"
+  (człon "Config" wiąże stronę z Session i umieszcza ją w drzewie Ustawień).
+  Wartości: UstawieniaRezerwUrlopowych (drzewo konfiguracji enova, węzeł A1 / Rezerwy urlopowe).
+-->
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+
+  <Page Name="RezerwyUrlopowePage"
+        CaptionHtml="Kadry i płace/Rezerwy urlopowe"
+        DataContext="{New RezerwyUrlopoweConfigExtender}">
+
+    <Group CaptionHtml="Podstawa rezerwy" LabelWidth="45">
+      <Field CaptionHtml="Podstawa decydująca o kwocie" Width="35" EditValue="{Ustawienia.WariantPodstawy}" />
+      <Field CaptionHtml="Zasadnicze nominalne z kartoteki (zamiast naliczonego)" Width="8" EditValue="{Ustawienia.ZasadniczeNominalne}" />
+      <Field CaptionHtml="Liczba miesięcy średniej (podstawa 1)" Width="8" EditValue="{Ustawienia.MiesiecyPodstawy}" />
+      <Field CaptionHtml="Pomijaj miesiące bez naliczonej wypłaty" Width="8" EditValue="{Ustawienia.PomijajMiesiaceBezWyplaty}" />
+    </Group>
+
+    <Group CaptionHtml="Stan urlopu" LabelWidth="45">
+      <Field CaptionHtml="Uwzględniaj urlop dodatkowy (niepełnosprawni)" Width="8" EditValue="{Ustawienia.UwzgledniajUrlopDodatkowy}" />
+      <Field CaptionHtml="Kolejny urlop: bieżący proporcjonalny w górę do pełnego dnia" Width="8" EditValue="{Ustawienia.ZaokraglajKolejnyUrlop}" />
+      <Field CaptionHtml="Dopuszczaj ujemną rezerwę" Width="8" EditValue="{Ustawienia.DopuszczajUjemna}" />
+    </Group>
+
+    <Group CaptionHtml="Narzuty i budżet" LabelWidth="45">
+      <Field CaptionHtml="Doliczaj wpłatę pracodawcy PPK do narzutów" Width="8" EditValue="{Ustawienia.PpkWNarzutach}" />
+      <Field CaptionHtml="Budżet: zaległy na 01.01 + pełny limit roku następnego" Width="8" EditValue="{Ustawienia.BudzetZPelnymLimitem}" />
+    </Group>
+
+    <Group CaptionHtml="Kontrole przed naliczeniem" LabelWidth="45">
+      <Field CaptionHtml="Niezatwierdzone listy płac w miesiącu rezerwy" Width="25" EditValue="{Ustawienia.NiezatwierdzoneListyPlac}" />
+    </Group>
+
+    <Group CaptionHtml="Powiązania z definicjami" LabelWidth="45">
+      <Field CaptionHtml="Element wynagrodzenia — rezerwa" Width="35" EditValue="{Ustawienia.ElementRezerwy}" />
+      <Field CaptionHtml="Element wynagrodzenia — budżet" Width="35" EditValue="{Ustawienia.ElementBudzetu}" />
+      <Field CaptionHtml="Planowana lista płac — rezerwa" Width="35" EditValue="{Ustawienia.PlanowanaListaRezerwy}" />
+      <Field CaptionHtml="Planowana lista płac — budżet" Width="35" EditValue="{Ustawienia.PlanowanaListaBudzetu}" />
+    </Group>
+
+  </Page>
+</DataForm>

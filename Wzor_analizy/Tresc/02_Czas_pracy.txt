@@ -1,0 +1,139 @@
+@tytul ZAŁĄCZNIK NR 2 DO ANALIZY PRZEDWDROŻENIOWEJ
+@obszar Obszar: Kalendarze i ewidencja czasu pracy
+@plik Wzor_ZAL_02_Czas_pracy_KPCP.docx
+@opis Wzór załącznika nr 2 – Kalendarze i ewidencja czasu pracy – analizy przedwdrożeniowej enova365
+
+# Kalendarze i ewidencja czasu pracy
+
+## Charakterystyka czasu pracy u Klienta
+U Klienta występują następujące systemy czasu pracy i okresy rozliczeniowe:
+@kolumny 18,16,20,16,14,16
+| Spółka lub grupa pracowników | System czasu pracy | Okres rozliczeniowy (długość, początek) | Godziny pracy | Pora nocna | Uwagi |
+| [DO UZUPEŁNIENIA: grupa] | [DO UZUPEŁNIENIA: podstawowy / równoważny / zadaniowy / ruchomy / zmianowy] | [DO UZUPEŁNIENIA: np. 3 miesiące od stycznia] | [DO UZUPEŁNIENIA: np. 7:00–15:00] | [DO UZUPEŁNIENIA: np. 22:00–6:00] | [DO UZUPEŁNIENIA: uwagi] |
+@tabela Systemy czasu pracy i okresy rozliczeniowe
+Przypisanie pracownikom odpowiedniego systemu czasu pracy oraz okresu rozliczeniowego [DO UZUPEŁNIENIA: uzależnione jest od zajmowanego stanowiska (wykorzystanie definicji stanowisk) / następuje indywidualnie w kartotece].
+Zmiana systemu czasu pracy lub okresu rozliczeniowego możliwa jest wraz z rozpoczęciem nowego okresu rozliczeniowego i wykonywana jest poprzez aktualizację kartoteki pracownika i zmianę kalendarza w zakładce Etat/Ogólne. Jeżeli w trakcie okresu rozliczeniowego pracownik zmieni stanowisko, a co za tym idzie okres rozliczeniowy, w systemie należy wykonać dwie aktualizacje: pierwszą ze zmianą stanowiska, ale bez zmiany kalendarza, drugą – z początkiem nowego okresu rozliczeniowego – ze zmianą kalendarza.
+[DO UZUPEŁNIENIA: grupy szczególne, np. kierowcy, osoby z niepełnosprawnością, pracownicy ochrony – zasady czasu pracy i odrębne kalendarze – lub usuń]
+
+## Konfiguracja ogólna czasu pracy
+W systemie enova365 ogólna konfiguracja czasu pracy znajduje się w opcjach systemowych w sekcji Kadry i płace/Kalendarze/Czas pracy. W tej części konfiguruje się m.in.:
+- godziny pory nocnej;
+- normy dobowe i tygodniowe;
+- kontrolę zgodności planu pracy i czasu przepracowanego z wymaganiami kodeksu pracy;
+- magazyn nadgodzin (obsługa wniosków o nadgodziny i odbioru nadgodzin);
+- roczny limit nadgodzin – [DO UZUPEŁNIENIA: limit godzin nadliczbowych w roku kalendarzowym].
+@rys cp_konfiguracja_ogolna.png | Przykładowa ogólna konfiguracja czasu pracy
+
+## Definicje dni i kalendarzy
+Konfiguracja systemów czasu pracy i okresów rozliczeniowych odbywa się poprzez przygotowanie wzorcowych kalendarzy (definicji kalendarzy) oraz definicji dni. Dni pracy definiuje się w opcjach systemowych w sekcji Kadry i płace/Kalendarze/Definicje dni. Operator Klienta będzie miał możliwość dodania dowolnej definicji dnia, np. dodatkowego dnia wolnego ustalonego wewnętrznie.
+@rys cp_definicje_dni.png | Przykładowe definicje dni
+Definicje kalendarzy wzorcowych znajdują się w sekcji Kadry i płace/Kalendarze/Kalendarze. Podczas konfiguracji kalendarza oprócz okresu rozliczeniowego i systemu czasu pracy wskazuje się również sposób rozliczania nadgodzin, normy dobową i tygodniową, godziny pory nocnej, święta oraz dni wolne ustalone przez pracodawcę. Domyślnie podpowiadają się wartości z konfiguracji ogólnej – jeżeli się różnią, wyższy priorytet mają wartości ustawione bezpośrednio na definicji kalendarza.
+@rys cp_definicje_kalendarzy.png | Przykładowe definicje kalendarzy
+@rys cp_konfiguracja_kalendarza.png | Przykładowa konfiguracja kalendarza
+Zgodnie z ustaleniami zdefiniowane zostaną:
+@kolumny 40,60
+| Definicja | Opis |
+| [DO UZUPEŁNIENIA: definicja dnia, np. Dzień pracy 7:00–15:00] | [DO UZUPEŁNIENIA: godzina rozpoczęcia, liczba godzin] |
+| [DO UZUPEŁNIENIA: kalendarz wzorcowy, np. Równoważny – 3 miesiące] | [DO UZUPEŁNIENIA: system czasu pracy, okres rozliczeniowy, początek okresu, rozliczanie nadgodzin] |
+@tabela Definicje dni i kalendarzy do przygotowania
+W celu usprawnienia planowania [DO UZUPEŁNIENIA: zostaną / nie zostaną] przygotowane serie dni, za pomocą których można zaplanować pracę jednocześnie dla większej liczby dni według ustalonych schematów.
+
+## Przypisanie kalendarza pracownikowi
+W celu prawidłowego rozliczania czasu pracy przygotowane definicje kalendarzy należy przypiąć w kartotece pracownika w zakładce Etat/Ogólne. Przy zatrudnieniu domyślnie przypinany jest kalendarz [DO UZUPEŁNIENIA: nazwa kalendarza domyślnego, np. Standard]. Kalendarz można zmienić ręcznie lub zmieni się on automatycznie po uzupełnieniu definicji stanowiska, do której przypisano kalendarz. Kalendarze można przypisać pojedynczemu pracownikowi lub grupie pracowników za pomocą operacji seryjnych.
+@rys etat_ogolne.png | Kartoteka pracownika – pole Kalendarz
+
+## Rodzaje kalendarzy i harmonogramowanie
+W systemie enova365 wyróżniamy:
+- definicje kalendarzy (kalendarze wzorcowe) tworzone przez Administratora kadr i płac;
+- kalendarz Norma czasu pracy (kalendarz indywidualny, plan pracy) – odzwierciedlenie planu pracy pracownika wynikającego z przypiętej definicji kalendarza, modyfikowane przez osoby uprawnione;
+- kalendarz Czas pracy – informacje o rzeczywistym czasie pracy, uwzględniające nieobecności, nadgodziny i niedopracowania.
+System daje możliwość przypisywania planowanych godzin pracy oraz dni wolnych zbiorczo na wskazane dni, w całym okresie rozliczeniowym lub w bieżącym miesiącu. System umożliwia wydrukowanie kalendarzy lub zapisanie ich do plików pdf i xls w różnych konfiguracjach (dla jednego pracownika lub zbiorczo).
+Zasady harmonogramowania ustalone z Klientem:
+@kolumny 34,66
+| Zagadnienie | Ustalenie |
+| Kto tworzy harmonogramy | [DO UZUPEŁNIENIA: Dział Kadr / przełożeni w pulpicie / osoby wyznaczone] |
+| Termin przygotowania harmonogramu | [DO UZUPEŁNIENIA: np. 7 dni przed rozpoczęciem miesiąca] |
+| Zatwierdzanie harmonogramu | [DO UZUPEŁNIENIA: kto zatwierdza, automatyczne zatwierdzanie kalendarza wzorcowego] |
+| Zmiany harmonogramu w trakcie miesiąca | [DO UZUPEŁNIENIA: kto, w jakim terminie, z jakiego powodu, czy wstecz] |
+| Blokada edycji | [DO UZUPEŁNIENIA: blokada po zatwierdzeniu / po rozliczeniu miesiąca] |
+| Pracownicy bez indywidualnego harmonogramu | [DO UZUPEŁNIENIA: pracują wg kalendarza wzorcowego / inne] |
+@tabela Zasady harmonogramowania
+
+## Weryfikatory planu i czasu pracy
+@opcjonalna Rozwiązanie AltOne „Weryfikatory czasu pracy” lub definicje weryfikatorów kalendarza.
+Do prawidłowego planowania czasu pracy przygotowane i włączone zostaną weryfikatory (mechanizm [DO UZUPEŁNIENIA: nr]). Podczas zmiany godzin pracy względem kalendarza wzorcowego wyświetlane będą komunikaty z weryfikatorów – błędy blokują zapis zmian, ostrzeżenia jedynie informują.
+@kolumny 6,52,18,24
+| Lp. | Weryfikator | Uruchomić | Błąd czy ostrzeżenie |
+| 1 | Norma czasu pracy okresu rozliczeniowego | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 2 | Liczba dni wolnych w okresie rozliczeniowym | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 3 | Odpoczynek dobowy (11 godzin) i tygodniowy (35 godzin) | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 4 | Praca ponownie w tej samej dobie | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 5 | Maksymalna liczba godzin w dniu (np. 12 h w systemie równoważnym) | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 6 | Praca w niedziele i święta oraz oddanie dnia wolnego | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 7 | Normy czasu pracy osób z niepełnosprawnością | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 8 | Zmiana harmonogramu w dniu z nadgodzinami lub nieobecnością | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+| 9 | [DO UZUPEŁNIENIA: weryfikator dedykowany] | [DO UZUPEŁNIENIA: tak / nie] | [DO UZUPEŁNIENIA] |
+@tabela Weryfikatory planu i czasu pracy
+
+## Dokumenty aktualizacji planu i czasu pracy
+@opcjonalna Dotyczy planowania i ewidencji czasu pracy przez przełożonych w pulpitach.
+Planowanie oraz uzupełnianie czasu faktycznie przepracowanego przez przełożonych lub osoby wyznaczone odbywa się z poziomu pulpitu kierownika za pomocą dokumentów Aktualizacja planu pracy oraz Aktualizacja czasu pracy. Na dokumencie widoczni są wszyscy pracownicy, którym można utworzyć plan pracy. Po zatwierdzeniu dokumentu zmiany zapisywane są odpowiednio w kalendarzu Norma czasu pracy lub Czas pracy w kartotece pracownika. Dokument zawiera również sekcję Błędy i ostrzeżenia z komunikatami weryfikatorów.
+Do planowania oraz uzupełniania czasu faktycznie przepracowanego wykorzystywany będzie mechanizm wersjonowania kalendarzy, który przechowuje historię zmian dokonywanych na kalendarzach pracowników. Dokumenty aktualizacyjne widoczne są w kartotece pracownika, a po wejściu w wybrany dzień w zakładce Wersje widoczne są zmiany dokonane przez dokumenty.
+@rys cp_dokumenty_aktualizacji.png | Dokumenty aktualizujące kalendarze
+@rys cp_dzien_pracy.png | Przykładowy dzień pracy
+[DO UZUPEŁNIENIA: ścieżka akceptacji dokumentów aktualizacji (np. do operatora kadr i płac), modyfikacje procesu (mechanizm N) – lub usuń]
+
+## Ewidencja czasu przepracowanego
+Ustalenia dotyczące ewidencji czasu faktycznie przepracowanego:
+@kolumny 34,66
+| Zagadnienie | Ustalenie |
+| Kto ewidencjonuje czas przepracowany | [DO UZUPEŁNIENIA: Dział Kadr / przełożeni / osoby wyznaczone / pracownik / import z RCP] |
+| Podział czasu na projekty, MPK lub kody kosztowe | [DO UZUPEŁNIENIA: tak / nie – zasady, słownik, wartość domyślna] |
+| Dodatkowe oznaczenia na dniu pracy | [DO UZUPEŁNIENIA: np. dodatki, praca akordowa, pełnienie dodatkowej funkcji – lub „brak”] |
+| Nieobecności | [DO UZUPEŁNIENIA: z e-wniosków w pulpicie / wprowadzane przez operatora] |
+| Nadgodziny | [DO UZUPEŁNIENIA: na podstawie wniosku o pracę w nadgodzinach / wprowadzane przez operatora] |
+| Termin uzupełnienia czasu za miesiąc | [DO UZUPEŁNIENIA: termin i blokada edycji] |
+@tabela Zasady ewidencji czasu przepracowanego
+
+## Zatwierdzanie czasu pracy i blokada okresu
+@opcjonalna
+[DO UZUPEŁNIENIA: zasady zatwierdzania czasu pracy – kto zatwierdza (dzień, miesiąc, grupa pracowników), oznaczanie nadgodzin do wypłaty lub do odbioru, raport pracowników z niezatwierdzonymi dniami]
+Uruchomiony zostanie również mechanizm blokujący możliwość wprowadzania danych dotyczących czasu pracy przez kierowników w pulpitach po określonym terminie. Operatorzy programu będą mogli wskazać okres, do którego dane mogą być wprowadzane. Mechanizm uniemożliwi także akceptację wniosków związanych z nadgodzinami za okres objęty blokadą.
+
+## Nadgodziny
+Wynagrodzenie oraz dodatki za nadgodziny dobowe wypłacane są w cyklu miesięcznym. Wynagrodzenie za nadgodziny średniotygodniowe wypłacane jest na liście płac za miesiąc, w którym wystąpiły, natomiast dodatek 100% za te nadgodziny wypłacany jest po zakończeniu okresu rozliczeniowego. W tym celu naliczając listę po zakończonym okresie rozliczeniowym należy w polu Miesięcy wstecz podać liczbę miesięcy, które enova365 przeszuka w celu rozliczenia nadgodzin okresowych (np. dla okresu 04–09 licząc listę za 09 należy wpisać 5) albo naliczyć listę ze wskazaniem pełnego okresu rozliczeniowego.
+Ustalenia dotyczące nadgodzin:
+@kolumny 34,66
+| Zagadnienie | Ustalenie |
+| Rozliczanie nadgodzin dobowych i średniotygodniowych | [DO UZUPEŁNIENIA: miesięcznie / po zakończeniu okresu rozliczeniowego] |
+| Zlecanie nadgodzin | [DO UZUPEŁNIENIA: wniosek przełożonego w pulpicie / polecenie ewidencjonowane przez operatora] |
+| Odbiór nadgodzin (czas wolny) | [DO UZUPEŁNIENIA: na wniosek pracownika / pracodawcy, w ramach okresu rozliczeniowego] |
+| Nadgodziny osób w niepełnym wymiarze czasu pracy | [DO UZUPEŁNIENIA: zasady wypłaty wynagrodzenia i dodatków] |
+| Limit nadgodzin | [DO UZUPEŁNIENIA: roczny, w okresie rozliczeniowym, indywidualny] |
+@tabela Zasady rozliczania nadgodzin
+
+## Rejestracja czasu pracy (RCP) i import czasu pracy
+@opcjonalna
+[DO UZUPEŁNIENIA: system lub urządzenia RCP, sposób pozyskania odbić (import pliku / integracja), częstotliwość, algorytm przeliczenia odbić na strefy czasu pracy, tolerancje, obsługa braków odbić, osoby odpowiedzialne za korekty]
+Alternatywnie dane o czasie pracy mogą być importowane z arkusza Excel według ustalonego formatu: [DO UZUPEŁNIENIA: format pliku i zakres danych – lub usuń].
+
+## Wydruki i raporty czasu pracy
+System zapewnia wygenerowanie wydruku kalendarza dla pojedynczego pracownika lub dla grupy pracowników, a także standardowego raportu Karta ewidencji czasu pracy.
+[DO UZUPEŁNIENIA: raporty i wydruki dedykowane z obszaru czasu pracy – wpisane również do tabeli raportów w dokumencie głównym]
+
+# Pytania otwarte – Czas pracy
+@kolumny 5,45,12,14,10,14
+| Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+@tabela Pytania otwarte – Czas pracy
+
+# Kryteria odbioru
+Kryterium odbioru poprawności konfiguracji obszaru czasu pracy na etapie wdrożenia będzie przeprowadzenie testów przez Klienta z pozytywnym wynikiem.
+Testy zostaną przeprowadzone na podstawie przygotowanych scenariuszy testowych zawartych w pliku „Scenariusze testowe – Czas pracy.xlsx” dołączonym do dokumentu niniejszej analizy i uzgodnionych z Klientem.
+
+# Wykaz tabel i rysunków
+@spis-tab
+@spis-rys
+
+# Kontakt
+@kontakt

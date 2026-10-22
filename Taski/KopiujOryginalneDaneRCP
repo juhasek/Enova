@@ -1,0 +1,52 @@
+//** begin enable condition **
+// Task "Kopiuj oryginalne dane RCP" - definicja zadania na tabeli Pracownicy, typ definicji "Brak",
+// wyzwalacz na tabeli WejsciaWyjsciaO (Oryginalne dane RCP, zwraca pracownika zapisu).
+//
+// Zastepuje reczne uruchamianie czynnosci "Kopiuj oryginalne dane": kazdy zapis z Oryginalnych
+// danych RCP jest kopiowany do Danych RCP (WejsciaWyjsciaI) dokladnie raz - tak samo jak robi to
+// worker enova (data/godzina edytowana, jesli jest, stan Nieoznaczony, powiazanie WeWyO z oryginalem).
+//
+// Kopia powstaje przy zapisie oryginalnych danych w sesji z operatorem (enova uruchamia wyzwalacze
+// tylko wtedy). Zapisy wpisane bez operatora dogania osobne zadanie na tabeli CfgNodes
+// "Kopiuj oryginalne dane RCP harmonogram" (akcja harmonogramu). Kopiowanie jednego zapisu - wspolny
+// dodatkowy kod A1KopiowanieRCP (projekt Business).
+//
+// Cala praca dzieje sie tutaj, a metoda zwraca false - dzieki temu enova nie tworzy
+// rekordow zadan (Tasks) przy kazdym zapisie.
+public override bool IsEnable() {
+    try {
+        Soneta.Kalend.KalendModule kalend = Soneta.Kalend.KalendModule.GetInstance(Row);
+        foreach (object o in kalend.WejsciaWyjsciaO.Rows.Changed) {
+            Soneta.Kalend.WejscieWyjscieO oryginal = o as Soneta.Kalend.WejscieWyjscieO;
+            if (oryginal == null || oryginal.State == Soneta.Business.RowState.Deleted || oryginal.State == Soneta.Business.RowState.Detached)
+                continue;
+            if (oryginal.Pracownik == Row)
+                A1.Runtime.Business.TblCodeFiles.A1KopiowanieRCP.KopiujZapis(kalend, oryginal);
+        }
+    }
+    catch {
+        // Blad kopiowania nie moze blokowac zapisu oryginalnych danych - zapis dogoni harmonogram.
+    }
+    return false;
+}
+//** end enable condition **
+
+//** begin active condition **
+public override bool IsActive() {
+    return false;
+}
+//** end active condition **
+
+//** begin realised condition **
+public override bool IsRealised() {
+    return false;
+}
+//** end realised condition **
+
+//** begin action **
+public override void Action() {
+}
+//** end action **
+
+//** begin other methods **
+//** end other methods **

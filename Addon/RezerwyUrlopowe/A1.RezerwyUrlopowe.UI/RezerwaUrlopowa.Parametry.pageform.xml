@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
+          Priority="30">
+  <Page CaptionHtml="Parametry naliczenia" DataContext="{DataSource}">
+    <Group CaptionHtml="Konfiguracja z chwili naliczenia" LabelWidth="45" DataContext="{Parametry}">
+      <Field CaptionHtml="Podstawa decydująca o kwocie" Width="30" EditValue="{WariantPodstawy}" IsReadOnly="true" />
+      <Field CaptionHtml="Współczynnik do ekwiwalentu" Width="10" EditValue="{WspolczynnikEkwiwalentu}" IsReadOnly="true" />
+      <Field CaptionHtml="Zasadnicze nominalne z kartoteki" Width="8" EditValue="{ZasadniczeNominalne}" IsReadOnly="true" />
+      <Field CaptionHtml="Liczba miesięcy średniej (podstawa 1)" Width="8" EditValue="{MiesiecyPodstawy}" IsReadOnly="true" />
+      <Field CaptionHtml="Pomijaj miesiące bez wypłaty" Width="8" EditValue="{PomijajMiesiaceBezWyplaty}" IsReadOnly="true" />
+      <Field CaptionHtml="Kolejny urlop zaokrąglany w górę do dnia" Width="8" EditValue="{ZaokraglajKolejnyUrlop}" IsReadOnly="true" />
+      <Field CaptionHtml="Dopuszczaj ujemną rezerwę" Width="8" EditValue="{DopuszczajUjemna}" IsReadOnly="true" />
+      <Field CaptionHtml="PPK pracodawcy w narzutach" Width="8" EditValue="{PpkWNarzutach}" IsReadOnly="true" />
+      <Field CaptionHtml="Budżet z pełnym limitem roku następnego" Width="8" EditValue="{BudzetZPelnymLimitem}" IsReadOnly="true" />
+    </Group>
+  </Page>
+</DataForm>

@@ -2,6 +2,21 @@
 
 Dokumentacja biznesowa dla użytkownika.
 
+**Stan (2026-10-15, baza Al):** w klasie `A1WeryfikatoryKalendarza` (CodeFiles ID 13) jest **jedna**
+metoda `A1WeryfikujNormeWOkresieRozliczeniowym` — dawna wersja „v2” przejęła nazwę starej metody,
+stara została usunięta (kopia w historii gita, plik `Weryfikator normy okresu rozliczeniowego v2` sprzed
+commita scalającego). Woła ją definicja **37 „A1_Norma w okresie rozliczeniowym”** (Plan pracy,
+podpięta do kalendarzy 3 miesięczny / Podstawowy system_1_8:16 / Standard). Definicja 2052 („v2”)
+usunięta. Nowa logika nie była jeszcze sprawdzona na żywo.
+
+Zmiany względem pierwszej wersji:
+
+| | dawniej | teraz |
+|---|---|---|
+| Zakres | cały okres rozliczeniowy | okres rozliczeniowy **przycięty do zatrudnienia na etacie** (`GetPlanOkresZatrudnienia`) |
+| Miesiące minione | dni bez wpisu liczone jako rezerwa | dni przed bieżącym miesiącem (`Date.Today`) liczą się wg planu jako stałe — **nie są rezerwą** |
+| Komunikat | tylko suma | wskazuje **dni do poprawy** (maks. 10 + „i N kolejnych”) |
+
 ## 1. Do czego służy weryfikator
 
 Weryfikator sprawdza, przy zapisie kalendarza (planu pracy) pracownika, czy zaplanowane godziny
@@ -59,21 +74,27 @@ który komunikat pochodzi z którego mechanizmu.
 
 ### Przekroczenie
 
-> Przekroczono limit godzin (norma kodeksowa) o (nadwyżka) w okresie rozliczeniowym (okres) - (pracownik)
+> Przekroczono limit godzin (norma kodeksowa) o (nadwyżka) w okresie rozliczeniowym (okres) - (pracownik). Skróć plan dni: 14.10 (12:00), 15.10 (10:00), …
 
 Pojawia się, gdy suma godzin z dni jawnie wpisanych do planu sama w sobie przekracza normę
 kodeksową całego okresu — bez względu na to, co jeszcze zostanie zaplanowane w pozostałych dniach.
+Lista dni: dni z wpisem od bieżącego miesiąca, od najdłuższego. Gdy takich nie ma: „brak - nadmiar
+pochodzi z miesięcy minionych”.
 
 ### Niedobór
 
-> Nie da się już osiągnąć normy godzin (norma kodeksowa) w okresie rozliczeniowym (okres), brakuje (brakująca liczba godzin) - (pracownik). W pozostałych dniach można maksymalnie zaplanować: (liczba dni roboczych) x (dobowe maksimum) = (suma)
+> Nie da się już osiągnąć normy godzin (norma kodeksowa) w okresie rozliczeniowym (okres), brakuje (brakująca liczba godzin) - (pracownik). Dni bez wpisu od bieżącego miesiąca: N (maks. Z). Wydłuż plan dni: 14.10 (+4:00), …
 
 Pojawia się, gdy nawet zaplanowanie maksymalnych, dopuszczalnych zmian we wszystkich pozostałych
-dniach roboczych okresu nie wystarczy do osiągnięcia normy kodeksowej. Komunikat dodatkowo pokazuje,
-ile dni roboczych zostało jeszcze do zaplanowania i jaki jest ich dobowy limit — żeby wynik dało
-się łatwo zweryfikować „ręcznie”, bez zaglądania w kod. Jeśli w obrębie okresu dobowy limit różni
-się w zależności od dnia (np. przez zmianę systemu czasu pracy w trakcie okresu — patrz pkt 5),
-komunikat pokazuje tylko łączną sumę, bez mnożenia „dni x limit”.
+dniach roboczych okresu nie wystarczy do osiągnięcia normy kodeksowej. Lista dni: dni robocze
+(pn–pt bez świąt) z wpisem od bieżącego miesiąca, którym brakuje do maksimum dobowego (12:00
+w równoważnym, `Nadgodziny.WartoscDobowa` w pozostałych). Gdy takich nie ma: „brak - trzeba
+zamienić dzień wolny na roboczy”.
+
+Ocena przy zapisie: enova tworzy jeden weryfikator na parę pracownik + miesiąc i ocenia go przy
+**zapisie** (`KontrolaPlanuVerifier`, klucz `YearMonth`) — zmiany wielu dni w jednym oknie sprawdzane
+są razem. Przy zapisie dzień po dniu (np. pulpit) okres „niemożliwy” blokuje częściowe poprawki —
+trzeba je zrobić w jednym zapisie.
 
 Brak błędu (wartość `null`) oznacza, że osiągnięcie normy kodeksowej jest wciąż matematycznie
 możliwe — niezależnie od tego, czy aktualny plan wygląda na razie na „za dużo”, czy „za mało”.
@@ -99,11 +120,10 @@ arkusz **Norma okresu rozliczeniowego**. Poniższa tabela jest kopią poglądow�
 
 ## 5. Znane ograniczenia
 
-- Weryfikator nie sprawdza, czy dla każdego dnia okresu rozliczeniowego pracownik ma w ogóle
-  przypisany etat (`Historia[data].Etat`). Jeśli okres rozliczeniowy wyliczony przez
-  `WyliczOkresRoliczeniowyNadgodzin` obejmowałby dzień bez etatu (np. poza faktycznym okresem
-  zatrudnienia), odwołanie do `Historia[data].Etat.Kalendarz` rzuciłoby wyjątek zamiast zwrócić
-  komunikat weryfikacyjny. Świadomie zrezygnowano z dodatkowego zabezpieczenia tego przypadku.
+- Okres rozliczeniowy jest przycinany do okresu zatrudnienia na etacie — dni sprzed zatrudnienia
+  i po zwolnieniu nie dają rezerwy ani błędu braku kalendarza.
+- „Bieżący miesiąc” to miesiąc daty systemowej — przy planowaniu wstecz (np. korekta poprzedniego
+  miesiąca) jego dni są traktowane jako stałe, nie jako rezerwa.
 - Jeśli w systemie działa równolegle inny weryfikator sprawdzający normę okresu rozliczeniowego
   (patrz pkt 2), użytkownik może zobaczyć dwa niezależne, różniące się treścią komunikaty dla tej
   samej sytuacji.

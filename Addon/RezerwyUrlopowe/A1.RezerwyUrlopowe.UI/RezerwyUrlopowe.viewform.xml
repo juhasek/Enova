@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lista Kadry i płace / Płace / Rezerwy urlopowe (RezerwyUrlopoweViewInfo) - nagłówki miesięcy. -->
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd">
+  <Flow Name="FilterPanel">
+    <Field CaptionHtml="Rodzaj" Width="12" EditValue="{ViewInfo+Params.Rodzaj}" Important="true" />
+    <Field CaptionHtml="Rok" Width="8" EditValue="{ViewInfo+Params.Rok}" Important="true" />
+  </Flow>
+  <Grid Name="List" OrderBy="Rok desc, Miesiac desc" IsToolbarVisible="true">
+    <Appearance Condition="{?[StanRezerwy] = 'Zamknieta'}" ForeColor="#606060" />
+    <Field CaptionHtml="Rodzaj" Width="10" EditValue="{Rodzaj}" />
+    <Field CaptionHtml="Rok" Width="6" EditValue="{Rok}" />
+    <Field CaptionHtml="Miesiąc" Width="7" EditValue="{Miesiac}" />
+    <Field CaptionHtml="Stan" Width="11" EditValue="{StanRezerwy}" />
+    <Field CaptionHtml="Pracowników" Width="10" EditValue="{LiczbaPozycji}" />
+    <Field CaptionHtml="Godziny" Width="10" EditValue="{GodzinyRazem}" Format="N2" />
+    <Field CaptionHtml="Kwota" Width="13" EditValue="{KwotaRazem}" />
+    <Field CaptionHtml="Narzuty" Width="13" EditValue="{NarzutyRazem}" />
+    <Field CaptionHtml="Naliczono" Width="16" EditValue="{DataNaliczenia}" />
+    <Field CaptionHtml="Naliczył" Width="14" EditValue="{NaliczylOperator}" />
+  </Grid>
+</DataForm>

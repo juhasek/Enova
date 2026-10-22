@@ -1,0 +1,128 @@
+@tytul ZAŁĄCZNIK NR 5 DO ANALIZY PRZEDWDROŻENIOWEJ
+@obszar Obszar: Pulpity Pracownika i Kierownika
+@plik Wzor_ZAL_05_Pulpity_KPCP.docx
+@opis Wzór załącznika nr 5 – Pulpity Pracownika i Kierownika – analizy przedwdrożeniowej enova365
+
+# Pulpity Pracownika i Kierownika
+
+## Pulpity – informacje i konfiguracja ogólna
+Wdrożenie systemu enova365 obejmuje również skonfigurowanie i uruchomienie pulpitów pracownika oraz kierownika.
+Na etapie analizy zaprezentowano Klientowi możliwości logowania do pulpitów pracowniczych. Logowanie może odbywać się domenowo poprzez konto Active Directory lub poprzez uwierzytelnienie loginem i hasłem. Logowanie do pulpitów jest możliwe również z telefonów (aplikacja mobilna).
+@kolumny 40,60
+| Zagadnienie | Ustalenie |
+| Sposób logowania | [DO UZUPEŁNIENIA: Active Directory / login i hasło / podwójna autentyfikacja] |
+| Dostęp spoza sieci firmowej | [DO UZUPEŁNIENIA: tak / nie] |
+| Grupy pracowników z dostępem do pulpitów | [DO UZUPEŁNIENIA: np. pracownicy umysłowi; pracownicy bez dostępu – obsługa przez operatorów] |
+@tabela Ustalenia dotyczące dostępu do pulpitów
+Na potrzeby pulpitów pracowniczych skonfigurowane zostaną następujące role:
+@kolumny 30,30,40
+| Rola | Kto otrzymuje rolę | Zakres |
+| Pulpit Pracownika | [DO UZUPEŁNIENIA: np. każdy pracownik zatrudniony na umowę o pracę] | Dane własne, wnioski pracownika. |
+| Pulpit Kierownika | [DO UZUPEŁNIENIA: przełożeni, w tym przełożeni zewnętrzni] | Dane podległych pracowników, akceptacja wniosków, plan i czas pracy. |
+| Pulpit Zastępca | Osoby wskazane jako zastępcy kierowników | Uprawnienia kierownika na czas zastępstwa. |
+| [DO UZUPEŁNIENIA: rola dedykowana, np. osoba wyznaczona do obsługi czasu pracy, kierownik wyższego poziomu] | [DO UZUPEŁNIENIA: kto] | [DO UZUPEŁNIENIA: zakres] |
+@tabela Role w pulpitach
+
+### Podwójna autentyfikacja
+@opcjonalna Rozwiązanie AltOne 2FA.
+Rozwiązanie pozwala na dwustopniową autoryzację dostępu do pulpitu z wykorzystaniem haseł jednorazowych: po standardowym logowaniu loginem i hasłem pracownik wprowadza zmienne hasło przesłane SMS-em, aktualne przez ograniczony czas. Rozwiązanie umożliwia oznaczenie kartotek, dla których będzie stosowana podwójna autentyfikacja, i wymaga wskazania numerów telefonów pracowników (numery mogą zostać zasilone arkuszem migracyjnym). W celu uruchomienia rozwiązania Klient musi wykupić dostęp do bramki SMS obsługiwanej przez mechanizm.
+[DO UZUPEŁNIENIA: bramka SMS, grupy pracowników objęte podwójną autentyfikacją]
+
+## Pulpit Pracownika i pulpit Kierownika
+- Pulpit pracownika – co pracownik widzi o sobie; pulpit kierownika – co kierownik widzi o podległych pracownikach.
+- W trakcie spotkań analitycznych zaprezentowano zakładki i widoki dostępne z poziomu pulpitu pracownika i kierownika. Widoczność zakładek dla poszczególnych ról została zamieszczona w pliku „[DO UZUPEŁNIENIA: nazwa pliku z rolami w pulpitach]” będącym załącznikiem do dokumentu analizy.
+- W panelu pracownika widoczna będzie pełna ścieżka struktury, do której przynależy dany pracownik.
+- Wypłaty będą widoczne w Pulpicie pracownika (zakładka Dane finansowe/Wypłaty) dopiero po zatwierdzeniu i opublikowaniu listy płac. W konfiguracji Pulpity/Pulpity HR parametr Publikacja w pulpitach zostanie ustawiony na „Po publikacji w pulpitach”, a operator kadrowo-płacowy udostępnia wypłaty czynnością „Publikuj w pulpitach” na zatwierdzonej liście płac (wycofanie: „Wycofaj publikację w pulpitach”).
+- Wypłaty będą widoczne dla pracowników z poziomu pulpitu pracownika. Widoczność wypłat podwładnych dla przełożonych: [DO UZUPEŁNIENIA: brak / dla wskazanych ról]. Przejście do szczegółów wynagrodzenia: [DO UZUPEŁNIENIA: dostępne / zablokowane].
+- Podstawowym widokiem listy podległych osób jest widok pracowników zatrudnionych na umowę o pracę. Kierownik może wybrać, jaką listę widzi (pracowników, zleceniobiorców lub wszystkich), oraz filtrować listę według jednostek organizacyjnych.
+- Widok listy pracowników może zawierać dodatkowe kolumny z polami dostępnymi w organizatorze widoku oraz podwidoki w innym układzie kolumn: [DO UZUPEŁNIENIA: wymagane kolumny i podwidoki – lub „Klient nie przedstawił potrzeby”].
+- Warunkiem widoczności pracowników i zleceniobiorców w pulpicie kierownika jest ich przypisanie w odpowiednim elemencie struktury podległościowej oraz utworzenie im dostępu do pulpitów. Za nadanie uprawnień i dostępów odpowiada [DO UZUPEŁNIENIA: Dział Kadr / administrator].
+- Z poziomu pulpitu pracownika dostępna jest zakładka Dodatki z elementami płacowymi przypisanymi do pracownika – lista dodatków widocznych w pulpicie: [DO UZUPEŁNIENIA: lista lub „nie dotyczy”].
+- Wydruki dostępne w pulpitach: [DO UZUPEŁNIENIA: np. zaświadczenie o zatrudnieniu, pasek wynagrodzenia, PIT-11].
+Widoczność wynagrodzeń w pulpitach kierowników:
+@kolumny 28,72
+| Grupa osób | Widoczność wynagrodzenia dla przełożonych |
+| Pracownicy (umowa o pracę) | [DO UZUPEŁNIENIA: np. widoczne od wskazanego poziomu kierownika / niewidoczne] |
+| Zleceniobiorcy | [DO UZUPEŁNIENIA: zakres danych umowy widoczny dla kierownika, widoczność wynagrodzenia] |
+@tabela Widoczność wynagrodzeń w pulpitach
+
+### Plan i czas pracy w pulpicie kierownika
+W ramach dostępu do pulpitu kierownika przełożeni mają możliwość przeglądania i edytowania zestawień czasu pracy podległych pracowników w podziale na plan pracy i rzeczywisty czas pracy.
+[DO UZUPEŁNIENIA: zakres edycji kierownika (plan / czas pracy / tylko odczyt), dodatkowe kolumny zestawień (np. norma kodeksowa, norma pracownika, norma okresu rozliczeniowego), serie dni, blokada wprowadzania danych po terminie – szczegóły w załączniku nr 2]
+
+### Dashboard
+@opcjonalna Rozwiązanie AltOne Dashboard.
+W ramach wdrożenia uruchomiony zostanie produkt AltOne Dashboard (mechanizm [DO UZUPEŁNIENIA: nr]), pozwalający na skonfigurowanie kafelków zawierających listy najczęściej używanych wniosków oraz kafelka z linkami przekierowującymi do stron wskazanych przez Klienta.
+@rys pulpit_dashboard.png | Przykładowy widok kafelków dashboardu
+[DO UZUPEŁNIENIA: konfiguracja kafelków i linków]
+
+### Powiadomienia w pulpitach
+@opcjonalna
+W ramach wdrożenia włączone zostaną powiadomienia w pulpitach dla kierowników, wyświetlane w oknie powiadomień po zalogowaniu do pulpitu (mechanizm [DO UZUPEŁNIENIA: nr]):
+@kolumny 6,50,44
+| Lp. | Definicja powiadomienia | Termin |
+| 1 | [DO UZUPEŁNIENIA: np. termin wykonania badania lekarskiego] | [DO UZUPEŁNIENIA: termin] |
+@tabela Powiadomienia w pulpitach
+
+## Pulpity pracownicze – wnioski
+- Na etapie spotkań analitycznych omówiono i przekazano listę wszystkich dostępnych wniosków z poziomu pulpitów pracowniczych w podziale na wnioski akceptowane przez przełożonego oraz przez dział kadr. Klient wskazał listę wniosków, które zostaną uruchomione na etapie wdrożenia – lista została zamieszczona w pliku „[DO UZUPEŁNIENIA: nazwa pliku z wnioskami].xlsx” dołączonym do dokumentu analizy.
+- Standardowo wszystkie nowe wnioski są domyślnie zablokowane i należy je świadomie włączyć. Jeżeli do momentu uruchomienia systemu producent udostępni nowe wnioski, Klient zdecyduje, które z nich należy uruchomić.
+- Wnioski o nieobecność mają standardowo jednostopniową akceptację: pracownik wnioskuje do kierownika, który może zaakceptować lub odrzucić wniosek – odrzucenie zamyka proces. Po akceptacji nieobecność rejestrowana jest w programie enova365 i widoczna w kalendarzu pracownika. W systemie istnieje możliwość włączenia akceptacji dwuetapowej (przełożony, a następnie dział kadr).
+- Na podstawie wprowadzonego wniosku do kierownika wysyłany jest e-mail z informacją o wniosku oczekującym na decyzję, a po przeprocesowaniu wniosku pracownik otrzymuje powiadomienie o podjętej decyzji.
+- Dla wskazanych osób (zazwyczaj najwyżej w strukturze) możliwe jest włączenie automatycznej akceptacji wniosków urlopowych: [DO UZUPEŁNIENIA: osoby lub „nie dotyczy”].
+Wnioski uruchamiane w pulpitach i ich obsługa:
+@kolumny 30,22,22,26
+| Wniosek | Akceptacja | Skutek w kartotece | Modyfikacja (mechanizm) |
+| e-wniosek o urlop wypoczynkowy (w tym na żądanie) | [DO UZUPEŁNIENIA: przełożony / przełożony i kadry] | Rejestracja nieobecności | [DO UZUPEŁNIENIA: standard / opis modyfikacji] |
+| e-wniosek o opiekę (art. 188 KP – dni, godziny) | [DO UZUPEŁNIENIA: akceptacja] | Rejestracja nieobecności | [DO UZUPEŁNIENIA: modyfikacja] |
+| Wniosek o anulowanie nieobecności | [DO UZUPEŁNIENIA: akceptacja] | Usunięcie nieobecności | [DO UZUPEŁNIENIA: modyfikacja] |
+| e-wniosek o odbiór nadgodzin | [DO UZUPEŁNIENIA: akceptacja] | Rejestracja odbioru | [DO UZUPEŁNIENIA: modyfikacja] |
+| e-zmiana danych osobowych, adresu, rachunku, danych podatkowych | Dział kadr | [DO UZUPEŁNIENIA: zapis w kartotece / bez zapisu – dane przenoszone ręcznie] | [DO UZUPEŁNIENIA: modyfikacja] |
+| [DO UZUPEŁNIENIA: wniosek] | [DO UZUPEŁNIENIA: akceptacja] | [DO UZUPEŁNIENIA: skutek] | [DO UZUPEŁNIENIA: modyfikacja] |
+@tabela Wnioski w pulpitach
+[DO UZUPEŁNIENIA: wnioski i procesy dedykowane (np. praca zdalna, polecenie pracy w nadgodzinach, świadczenia socjalne, wniosek Z-15 po imporcie z PUE, wniosek pracowniczy) – inicjator, ścieżka akceptacji, skutek; szczegóły w specyfikacji workflow]
+
+### Planowanie urlopów
+@opcjonalna Rozwiązanie AltOne Planowane nieobecności.
+W ramach wdrożenia uruchomiony zostanie produkt pozwalający na ewidencjonowanie planów urlopowych pracowników (mechanizm [DO UZUPEŁNIENIA: nr]). Pracownik planuje dni urlopu w danym roku kalendarzowym z uwzględnieniem urlopu bieżącego, zaległego i dodatkowego (z wyłączeniem urlopu na żądanie), a plan przekazywany jest do akceptacji bezpośredniego przełożonego. Przełożony może zaakceptować, odrzucić lub przekazać plan do poprawy oraz ma wgląd w grafik planowanych nieobecności podwładnych. Akceptacja planu nie jest jednoznaczna z udzieleniem urlopu – pracownik każdorazowo składa wniosek o urlop.
+[DO UZUPEŁNIENIA: termin składania planów, zasady dla umów terminowych]
+
+## Zastępstwa w pulpitach
+enova365 w standardzie oferuje funkcjonalność zastępstw w pulpitach. Na potrzeby uruchomienia zastępstw skonfigurowana zostanie rola „Zastępca”. Osoba zastępująca będzie miała wgląd w czas pracy, nieobecności oraz limity nieobecności podległych pracowników wraz z możliwością zatwierdzania wniosków.
+Samo włączenie zastępstw nie ma konsekwencji licencyjnych. Przypisanie zastępstwa konkretnej osobie wymaga tymczasowego zablokowania dodatkowej licencji tylko wtedy, gdy zastępującym jest pracownik bez pulpitu kierownika – jeśli zastępującym jest kierownik, korzysta on ze swojej licencji.
+Zastępującym może zostać wyłącznie osoba z założonym kontem www (kartoteka pracownika, zakładka Kadry/Dostęp www). Zastępstwo w pulpicie dodaje się na liście Ogólne/Moje zastępstwa, wskazując zastępującego i okres. Zastępstwa będą mogły być ustawiane zarówno przez kierowników z poziomu pulpitu, jak i przez operatorów okienkowej wersji programu. [DO UZUPEŁNIENIA: ograniczenia wyboru zastępcy (mechanizm N) – lub usuń]
+
+## Zasobnik dokumentów
+Na etapie spotkań analitycznych zaprezentowano możliwość ewidencji zeskanowanych dokumentów pracownika i udostępniania ich w pulpitach pracowniczych (bez potwierdzeń odbioru). Operatorzy programu na etapie szkoleń zostaną poinformowani o sposobie dodawania dokumentów do zasobnika. Dokumenty mogą być dodawane według ustalonych wewnętrznie zasad nazewnictwa plików.
+[DO UZUPEŁNIENIA: decyzja o uruchomieniu zasobnika i rodzaje udostępnianych dokumentów]
+
+## Osoby spoza zatrudnienia w pulpitach
+@opcjonalna Dotyczy współpracowników B2B i przełożonych zewnętrznych.
+[DO UZUPEŁNIENIA: role pulpitowe dla osób B2B i przełożonych zewnętrznych, wnioski o nieobecność dla B2B i ich limity, sposób zakładania kartotek]
+
+## Serwer poczty wychodzącej SMTP
+Na potrzeby obsługi obiegu wniosków w pulpitach potrzebne jest konto poczty wychodzącej po stronie Klienta oraz skonfigurowanie danych tego konta w enova365. W celu poprawnej konfiguracji enova365 potrzebuje:
+- nazwy użytkownika (adresu e-mail);
+- loginu;
+- hasła;
+- serwera poczty wychodzącej (SMTP);
+- portu;
+- informacji, czy połączenie jest szyfrowane (SSL/TLS).
+Skrzynka może odkładać wysłane wiadomości bądź nie – szczegółowa konfiguracja poczty leży po stronie Klienta. Dane konta pocztowego zostaną uzupełnione na etapie konfiguracji systemu.
+
+# Pytania otwarte – Pulpity
+@kolumny 5,45,12,14,10,14
+| Lp. | Pytanie lub brakująca informacja | Sekcja | Odpowiedzialny | Termin | Status |
+| 1 | [DO UZUPEŁNIENIA: treść pytania] | [DO UZUPEŁNIENIA: nr sekcji] | [DO UZUPEŁNIENIA: Klient / AltOne] | [DO UZUPEŁNIENIA: termin] | Otwarte |
+@tabela Pytania otwarte – Pulpity
+
+# Kryteria odbioru
+Kryterium odbioru poprawności konfiguracji pulpitów na etapie wdrożenia będzie przeprowadzenie testów przez Klienta z pozytywnym wynikiem.
+Testy zostaną przeprowadzone na podstawie przygotowanych scenariuszy testowych zawartych w pliku „Scenariusze testowe – Pulpity.xlsx” dołączonym do dokumentu niniejszej analizy i uzgodnionych z Klientem.
+
+# Wykaz tabel i rysunków
+@spis-tab
+@spis-rys
+
+# Kontakt
+@kontakt

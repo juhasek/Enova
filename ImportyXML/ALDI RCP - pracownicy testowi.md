@@ -78,3 +78,64 @@ kroki robi tester ręcznie w GUI:
 - „Magazyn nadgodzin rozliczany od" — **puste** (do włączenia, patrz wyżej).
 
 Backup bazy przed importem: `C:\enovaServer\Projekty\Al_przed_pracownikami_RCP.bac`.
+
+## Scenariusz DOBA1 — odbicia przed zmianą po dniu wolnym (dodane 2026-10-07)
+
+Odtworzenie przypadku klienta: pracownik przyszedł rano w dniu, w którym plan zaczyna się
+po południu, a poprzedni dzień jest wolny. Import RCP przenosi takie odbicia na poprzednią dobę.
+
+- Pracownik **DOBA1** (`TEST-DOBA1 Doba`, guid `a1d10000-…-000000000015`), etat 1/1 od 2026-01-01,
+  kalendarz Standard + własny kalendarz pracownika z wyjątkami planu:
+  26.01 12:00–22:15, 27–28.01 14:15–22:15, **29.01 Wolny**, **30.01 14:00–20:00**, 31.01 14:15–22:30.
+  Plik: `ALDI RCP - scenariusz DOBA1 - pracownik i plan.xml` (idempotentny).
+- Odbicia: **30.01.2026 Wejście 5:45, Wyjście 11:45**, stan Nieoznaczony.
+  Plik: `ALDI RCP - scenariusz DOBA1 - odbicia.xml` (jednorazowy, tabela nieguidowana).
+- Oczekiwany wynik przy konfiguracji RCP → Ogólne jak u klienta (Początek doby = Zawsze wg
+  kalendarza, tolerancja doby minus 2:00, plus 3:00): po „Importuj dane z RCP” czas pracy na
+  **29.01 jako +5:45..+11:45**, na 30.01 brak pracy (log: „przesunięcie początku na dzień 29.01”).
+
+Backup bazy przed importem: `C:\enovaServer\Projekty\Al_przed_DOBA1.bac`.
+
+### Wynik testu DOBA1 (2026-10-07)
+
+| Tolerancja doby minus | Wynik importu |
+|---|---|
+| 2:00 (jak u klienta) | DP **29.01** +5:45..+11:45 → podział ALDI: Praca poza normą 6:00 + Nadgodziny do przeniesienia 6:00 (wpis w magazynie nadgodzin); 30.01 pusty |
+| **10:00** | DP **30.01** 5:45–11:45; 29.01 pusty — **zgodnie z oczekiwaniem** |
+
+Reguła importu (Początek doby = Zawsze wg kalendarza): wejście przechodzi na dzień poprzedni,
+gdy jest wcześniej niż *start planu dnia − tolerancja minus*; wyjście — gdy wcześniej niż
+*start + tolerancja plus* i nie poprzedza go odbicie przypisane do tego samego dnia.
+
+Słabe strony tolerancji 10:00 (do przetestowania):
+1. Dzień ze startem planu ≤ 10:00 — wejście po północy (powrót z przerwy przy pracy przeciągniętej
+   po północy) zostaje na nowej dobie, para rozbija się między dni.
+2. Ponowny import tych samych odbić na inny dzień (po zmianie planu/tolerancji, import zaznaczonych)
+   → praca na dwóch dniach; duplikaty i „Nadpisz dane” działają tylko na dniu docelowym.
+3. Doba ustalana wg planu z chwili importu — późniejsza zmiana planu nie przelicza zapisów.
+4. Samotne wyjście (brak wejścia) i typ „Niezdefiniowany” (import traktuje jak wyjście) przed
+   start + 3:00 → dzień poprzedni.
+5. Import okresami z „Nadpisz dane”: wyjście po północy z pierwszego dnia nowego okresu kasuje
+   wcześniejsze zapisy ostatniego dnia poprzedniego okresu.
+6. Dzień wolny bierze start z ostatniego dnia z planem (do 14 dni wstecz) — po rannej zmianie
+   wyjście przed ok. 9:00 w dniu wolnym idzie na dzień wcześniej.
+7. Algorytm weryfikacji ALDI (okno −2 h / +17 h od startu planu) nie korzysta z tolerancji —
+   może uznać dzień za kompletny, a import rozbije parę.
+
+## Scenariusz ODB14 — pierwsze odbicie dopiero o końcu planu (dodane 2026-10-07)
+
+Zgłoszenie klienta: plan 6:00–14:00, pierwsze odbicie dopiero o 14:00, zakończenie po długości
+planu; dane nie trafiają na kalendarz.
+
+- Pracownik **ODB14** (`TEST-ODB14 Popoludnie`, guid `a1d10000-…-000000000016`), etat 1/1 od
+  2026-01-01, plan 02–06.02.2026 (pn–pt) 6:00–14:00 jako wyjątki w kalendarzu pracownika.
+  Plik: `ALDI RCP - scenariusz ODB14 - pracownik i plan.xml` (idempotentny).
+- Odbicia: **03.02.2026 Wejście 14:00, Wyjście 22:00**, stan Nieoznaczony.
+  Plik: `ALDI RCP - scenariusz ODB14 - odbicia.xml` (jednorazowy).
+- Oczekiwanie z analizy kodu (do potwierdzenia importem): weryfikator ALDI — okno dnia 4:00–23:00,
+  para kompletna → Aktywne; import zostawia na 03.02 (14:00 ≥ 6:00 − 10:00), wygładzanie ±0:10
+  nie dotyczy → dzień 03.02 14:00–22:00, 8:00, Praca w normie (= plan).
+  Jeśli wynik jest inny, przyczyna leży poza analizowanym kodem (np. podział ALDI lub inne
+  ustawienia „Etat” u klienta).
+
+Backup bazy przed importem: `C:\enovaServer\Projekty\Al_przed_ODB14.bac`.

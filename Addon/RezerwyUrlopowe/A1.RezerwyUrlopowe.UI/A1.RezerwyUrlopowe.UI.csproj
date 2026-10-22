@@ -1,0 +1,11 @@
+<Project Sdk="Soneta.Sdk">
+  <!-- Interfejs dodatku "Rezerwy urlopowe": foldery menu, listy, formularze, strona Opcji. -->
+  <PropertyGroup>
+    <TargetFramework>$(SonetaTargetFramework)</TargetFramework>
+    <RootNamespace>A1.Rezerwy.UI</RootNamespace>
+    <AssemblyName>A1.RezerwyUrlopowe.UI</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\A1.RezerwyUrlopowe\A1.RezerwyUrlopowe.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Dane inicjujące dodatku A1.RezerwyUrlopowe (wczytywane raz, przy instalacji / konwersji bazy do wersji 1
+  ścieżki wersji A1Rezerwy). Import wg rekordów.
+
+  Własne GUID-y, nazwy z dopiskiem "(dodatek)" i symbole AREZURL / ABUDREZURL — dodatek NIE nadpisuje
+  rozwiązania skryptowego (elementy "Rezerwa urlopowa" / "Budżet rezerwy urlopowej", planowane listy
+  REZURL / BUDREZURL, cechy, Dodatkowy kod). Obie wersje działają równolegle.
+
+  Pola ustalone przy rozwiązaniu skryptowym (bez nich naliczenie planu nie działa):
+    - OkresNaliczania.Naliczanie = PłatnaZDołu (inaczej "Błędny typ naliczania wypłaty"),
+    - Algorytm.Priorytet = 200 (element widzi elementy wypłat o niższym priorytecie),
+    - RodzajNaliczania = TylkoPlanowane, DoWyplaty = False (nigdy na zwykłej liście płac),
+    - ZUS naliczać (narzuty pracodawcy liczy silnik), PIT nie naliczać,
+    - etykiety ElPodstawa1..5 / ElCzas (bez nich wartości nie kopiują się na planowaną listę),
+    - Zapis obliczeń = "Rezerwa urlopowa" (kategoria logu kalkulatora),
+    - planowana lista: Element = własny element, numeracja i ewidencja RUEW (inaczej "Numer.WgNumeruDokumentu: *, *").
+-->
+<session xmlns="http://www.soneta.pl/schema/business" versionName="A1Rezerwy" priority="200">
+
+  <DefinicjaElementu guid="8e6a7f2c-c06f-4917-9d81-7bf6b1c9aa66" dbversion="1">
+    <Nazwa>Rezerwa urlopowa (dodatek)</Nazwa>
+    <Skrot>Rez.url.(d)</Skrot>
+    <Blokada>False</Blokada>
+    <Zatrudnienie>Etat</Zatrudnienie>
+    <RodzajZrodla>DodatekAutomatyczny</RodzajZrodla>
+    <Kolejnosc>200</Kolejnosc>
+    <GenerujZerowy>False</GenerujZerowy>
+    <Korygowany>False</Korygowany>
+    <DoWyplaty>False</DoWyplaty>
+    <RodzajNaliczania>TylkoPlanowane</RodzajNaliczania>
+    <OkresNaliczania>
+      <Typ>Każda</Typ>
+      <Naliczanie>PłatnaZDołu</Naliczanie>
+    </OkresNaliczania>
+    <Algorytm>
+      <Priorytet>200</Priorytet>
+      <ZapisObliczen>
+        <Nazwa>Rezerwa urlopowa</Nazwa>
+      </ZapisObliczen>
+      <Typ>KlasaAlgorytmu</Typ>
+      <Klasa>
+        <Nazwa>A1.Rezerwy.AlgorytmRezerwy</Nazwa>
+      </Klasa>
+      <ElPodstawa1>Podstawa 1 (śr. mies.)</ElPodstawa1>
+      <ElPodstawa2>Podstawa 2 (standard)</ElPodstawa2>
+      <ElPodstawa3>Urlop zaległy (dni)</ElPodstawa3>
+      <ElPodstawa4>Urlop bieżący prop. (dni)</ElPodstawa4>
+      <ElPodstawa5>Urlop wykorzystany (dni)</ElPodstawa5>
+      <ElCzas>Godziny rezerwy</ElCzas>
+    </Algorytm>
+    <Deklaracje>
+      <Spoleczne><Typ>Naliczać</Typ></Spoleczne>
+      <Zdrowotne><Typ>Naliczać</Typ></Zdrowotne>
+      <Zaliczka><Typ>NieNaliczać</Typ></Zaliczka>
+    </Deklaracje>
+    <Nieobecnosci>
+      <Urlop><Typ>NieWliczać</Typ></Urlop>
+      <Ekwiwalent><Typ>NieWliczać</Typ></Ekwiwalent>
+    </Nieobecnosci>
+  </DefinicjaElementu>
+
+  <DefinicjaElementu guid="8edae287-6afb-4890-abc0-791b83bbb58c" dbversion="1">
+    <Nazwa>Budżet rezerwy urlopowej (dodatek)</Nazwa>
+    <Skrot>Bud.rez.(d)</Skrot>
+    <Blokada>False</Blokada>
+    <Zatrudnienie>Etat</Zatrudnienie>
+    <RodzajZrodla>DodatekAutomatyczny</RodzajZrodla>
+    <Kolejnosc>200</Kolejnosc>
+    <GenerujZerowy>False</GenerujZerowy>
+    <Korygowany>False</Korygowany>
+    <DoWyplaty>False</DoWyplaty>
+    <RodzajNaliczania>TylkoPlanowane</RodzajNaliczania>
+    <OkresNaliczania>
+      <Typ>Każda</Typ>
+      <Naliczanie>PłatnaZDołu</Naliczanie>
+    </OkresNaliczania>
+    <Algorytm>
+      <Priorytet>200</Priorytet>
+      <ZapisObliczen>
+        <Nazwa>Rezerwa urlopowa</Nazwa>
+      </ZapisObliczen>
+      <Typ>KlasaAlgorytmu</Typ>
+      <Klasa>
+        <Nazwa>A1.Rezerwy.AlgorytmRezerwy</Nazwa>
+      </Klasa>
+      <ElPodstawa1>Podstawa 1 (śr. mies.)</ElPodstawa1>
+      <ElPodstawa2>Podstawa 2 (standard)</ElPodstawa2>
+      <ElPodstawa3>Zaległy na 01.01 (dni)</ElPodstawa3>
+      <ElPodstawa4>Limit roku nast. (dni)</ElPodstawa4>
+      <ElPodstawa5>Wykorzystany (dni)</ElPodstawa5>
+      <ElCzas>Godziny budżetu</ElCzas>
+    </Algorytm>
+    <Deklaracje>
+      <Spoleczne><Typ>Naliczać</Typ></Spoleczne>
+      <Zdrowotne><Typ>Naliczać</Typ></Zdrowotne>
+      <Zaliczka><Typ>NieNaliczać</Typ></Zaliczka>
+    </Deklaracje>
+    <Nieobecnosci>
+      <Urlop><Typ>NieWliczać</Typ></Urlop>
+      <Ekwiwalent><Typ>NieWliczać</Typ></Ekwiwalent>
+    </Nieobecnosci>
+  </DefinicjaElementu>
+
+  <DefinicjaPlanowanejListyPłac guid="c9dc5833-031f-4ed4-a90e-e16276948922" dbversion="1">
+    <Symbol>AREZURL</Symbol>
+    <Nazwa>Rezerwa urlopowa (dodatek)</Nazwa>
+    <Blokada>False</Blokada>
+    <Numeracja>
+      <Wzor>Definicja.Symbol/Data.Year:4/Data.Month:2/*</Wzor>
+    </Numeracja>
+    <DefinicjaED>00000000-0007-0005-0004-000000000000</DefinicjaED>
+    <Element>8e6a7f2c-c06f-4917-9d81-7bf6b1c9aa66</Element>
+    <Algorytm><![CDATA[
+public override SourceFilterDelegate FiltrNaliczania {
+    get { return new SourceFilterDelegate(SourceFilter); }
+}
+
+bool SourceFilter(object sender, SourceFilterArgs args) {
+    WypElement element = args.Element;
+    FromTo okres = args.Okres;
+    return true;
+}
+]]></Algorytm>
+  </DefinicjaPlanowanejListyPłac>
+
+  <DefinicjaPlanowanejListyPłac guid="b1fb2739-d4bf-41e0-9784-b4bac9075546" dbversion="1">
+    <Symbol>ABUDREZURL</Symbol>
+    <Nazwa>Budżet rez. urlop. (dodatek)</Nazwa>
+    <Blokada>False</Blokada>
+    <Numeracja>
+      <Wzor>Definicja.Symbol/Data.Year:4/Data.Month:2/*</Wzor>
+    </Numeracja>
+    <DefinicjaED>00000000-0007-0005-0004-000000000000</DefinicjaED>
+    <Element>8edae287-6afb-4890-abc0-791b83bbb58c</Element>
+    <Algorytm><![CDATA[
+public override SourceFilterDelegate FiltrNaliczania {
+    get { return new SourceFilterDelegate(SourceFilter); }
+}
+
+bool SourceFilter(object sender, SourceFilterArgs args) {
+    WypElement element = args.Element;
+    FromTo okres = args.Okres;
+    return true;
+}
+]]></Algorytm>
+  </DefinicjaPlanowanejListyPłac>
+
+</session>
