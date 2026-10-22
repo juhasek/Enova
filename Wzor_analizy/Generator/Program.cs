@@ -569,7 +569,9 @@ static class Kontrola
 
             Console.WriteLine($"- {Path.GetFileName(plik)}: nagłówki {spis.Count}, pola {pola}, sekcje opcjonalne {opcjonalne}, " +
                               (bledy.Count == 0 ? "OK" : "BŁĘDY:\n    " + string.Join("\n    ", bledy)));
-            File.WriteAllLines(Path.Combine(Path.GetDirectoryName(plik)!, "_robocze", Path.GetFileNameWithoutExtension(plik) + ".spis.txt"), spis, Encoding.UTF8);
+            // _robocze jest poza gitem – na nowym środowisku katalogu może nie być
+            var robocze = Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(plik)!, "_robocze")).FullName;
+            File.WriteAllLines(Path.Combine(robocze, Path.GetFileNameWithoutExtension(plik) + ".spis.txt"), spis, Encoding.UTF8);
             ok &= bledy.Count == 0;
         }
         return ok;

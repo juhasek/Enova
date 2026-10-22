@@ -11,6 +11,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>GenWzor</AssemblyName>
     <RootNamespace>GenWzor</RootNamespace>
+    <!-- na innym środowisku wystarczy dowolny nowszy runtime .NET (np. tylko 10) -->
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
 </Project>
