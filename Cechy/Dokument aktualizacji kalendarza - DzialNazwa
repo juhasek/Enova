@@ -1,0 +1,8 @@
+public string Feature_DzialNazwa {
+    get {
+        List<string> nazwy = new List<string>();
+        foreach (Wydzial wydzial in A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.WydzialyDokumentu(Row))
+            nazwy.Add(wydzial.Nazwa);
+        return string.Join(", ", nazwy);
+    }
+}

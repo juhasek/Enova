@@ -1,0 +1,47 @@
+using System;
+using System.Collections.Generic;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kadry;
+using Soneta.Kalend;
+
+namespace A1.Runtime.Business.TblCodeFiles {
+
+    // Wspólny kod cech tabeli DokAktKalendarzy (dokumenty aktualizacji kalendarza).
+    public static class A1DokumentyAktualizacjiKalendarza
+    {
+        // Pracownicy z pozycji planu i czasu pracy dokumentu (umowa -> jej pracownik), bez powtórzeń.
+        public static List<Pracownik> PracownicyDokumentu(DokumentAktualizacjiKalendarza dokument)
+        {
+            List<IZrodloPlanu> zrodla = new List<IZrodloPlanu>();
+            foreach (PozycjaAktualizacjiKalendarza pozycjaPlanu in dokument.PozycjePlan)
+                zrodla.Add(pozycjaPlanu.ZrodloPlanu);
+            foreach (PozycjaAktualizacjiCzasu pozycjaCzasu in dokument.PozycjeCzas)
+                zrodla.Add(pozycjaCzasu.ZrodloPlanu);
+
+            List<Pracownik> pracownicy = new List<Pracownik>();
+            foreach (IZrodloPlanu zrodlo in zrodla) {
+                Pracownik pracownik = zrodlo as Pracownik;
+                Umowa umowa = zrodlo as Umowa;
+                if (pracownik == null && umowa != null)
+                    pracownik = umowa.Pracownik;
+                if (pracownik != null && !pracownicy.Contains(pracownik))
+                    pracownicy.Add(pracownik);
+            }
+            return pracownicy;
+        }
+
+        // Wydziały pracowników dokumentu z etatu na ostatni dzień okresu dokumentu, bez powtórzeń.
+        public static List<Wydzial> WydzialyDokumentu(DokumentAktualizacjiKalendarza dokument)
+        {
+            List<Wydzial> wydzialy = new List<Wydzial>();
+            foreach (Pracownik pracownik in PracownicyDokumentu(dokument)) {
+                PracHistoria historia = pracownik[dokument.Okres.To];
+                Wydzial wydzial = historia == null ? null : historia.Etat.Wydzial;
+                if (wydzial != null && !wydzialy.Contains(wydzial))
+                    wydzialy.Add(wydzial);
+            }
+            return wydzialy;
+        }
+    }
+}

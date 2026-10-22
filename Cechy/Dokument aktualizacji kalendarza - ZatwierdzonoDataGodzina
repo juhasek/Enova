@@ -1,0 +1,7 @@
+public string Feature_ZatwierdzonoDataGodzina {
+    get {
+        if (Row.Stan != StanyDokumentuAktulizacjiKalendarza.Zatwierdzony || Row.DataZatwierdzenia == DateTime.MinValue)
+            return "";
+        return Row.DataZatwierdzenia.ToString("yyyy-MM-dd HH:mm");
+    }
+}

@@ -1,0 +1,48 @@
+public bool Feature_Aktualny {
+    get {
+        DokumentAktualizacjiKalendarza dokument = Row;
+        if (dokument.Stan == StanyDokumentuAktulizacjiKalendarza.Anulowany)
+            return false;
+        // Dokument w trakcie (wypełniany / do akceptacji) jeszcze niczego nie zastąpił
+        // ani nie został zastąpiony - pokazujemy go jako aktualny.
+        if (dokument.Stan != StanyDokumentuAktulizacjiKalendarza.Zatwierdzony)
+            return true;
+
+        // Dokument zatwierdzony jest aktualny, jeżeli choć jeden jego dzień (pracownik + data)
+        // nie został później nadpisany przez nowszy zatwierdzony dokument tego samego rodzaju.
+        foreach (PozycjaAktualizacjiKalendarza pozycjaPlanu in dokument.PozycjePlan) {
+            List<Date> dniNiezastapione = new List<Date>();
+            foreach (DzienKalendarzaAktualizacja dzien in pozycjaPlanu.AktualizacjeKalendarza)
+                dniNiezastapione.Add(dzien.Data);
+            foreach (PozycjaAktualizacjiKalendarza innaPozycja in Module.PozAktKalend.WgZrodloPlanu[pozycjaPlanu.ZrodloPlanu]) {
+                DokumentAktualizacjiKalendarza innyDokument = innaPozycja.Dokument;
+                if (innyDokument == dokument
+                    || innyDokument.Stan != StanyDokumentuAktulizacjiKalendarza.Zatwierdzony
+                    || innyDokument.DataZatwierdzenia <= dokument.DataZatwierdzenia)
+                    continue;
+                foreach (DzienKalendarzaAktualizacja dzienNowszy in innaPozycja.AktualizacjeKalendarza)
+                    dniNiezastapione.Remove(dzienNowszy.Data);
+            }
+            if (dniNiezastapione.Count > 0)
+                return true;
+        }
+
+        foreach (PozycjaAktualizacjiCzasu pozycjaCzasu in dokument.PozycjeCzas) {
+            List<Date> dniNiezastapione = new List<Date>();
+            foreach (DzienPracyAktualizacja dzien in pozycjaCzasu.AktualizacjeCzasu)
+                dniNiezastapione.Add(dzien.Data);
+            foreach (PozycjaAktualizacjiCzasu innaPozycja in Module.PozAktCzasu.WgZrodloPlanu[pozycjaCzasu.ZrodloPlanu]) {
+                DokumentAktualizacjiKalendarza innyDokument = innaPozycja.Dokument;
+                if (innyDokument == dokument
+                    || innyDokument.Stan != StanyDokumentuAktulizacjiKalendarza.Zatwierdzony
+                    || innyDokument.DataZatwierdzenia <= dokument.DataZatwierdzenia)
+                    continue;
+                foreach (DzienPracyAktualizacja dzienNowszy in innaPozycja.AktualizacjeCzasu)
+                    dniNiezastapione.Remove(dzienNowszy.Data);
+            }
+            if (dniNiezastapione.Count > 0)
+                return true;
+        }
+        return false;
+    }
+}
