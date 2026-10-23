@@ -10,6 +10,7 @@ $kolumny = @(
     @('Przełożony 1', 'Przelozony1', '25'),
     @('Przełożony 2', 'Przelozony2', '25'),
     @('Data decyzji', 'DataDecyzji', '10'),
+    @('Decyzja', 'WniosekDokument.Stan', '14'),
     @('Do przeniesienia', 'DoPrzeniesienia', '10')
 )
 $pola = ($kolumny | ForEach-Object { "    <Field CaptionHtml=""$($_[0])"" Width=""$($_[2])"" EditValue=""{$($_[1])}"" Footer=""None"" />" }) -join "`r`n"
