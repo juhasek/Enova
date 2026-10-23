@@ -24,6 +24,7 @@ Dokumenty innych definicji mają w kolumnach wniosku puste wartości.
 | Przełożony 1 | `Przelozony1` | pole definicji klienckiego wniosku (zastępuje `Kierownik`) |
 | Przełożony 2 | `Przelozony2` | pole definicji klienckiego wniosku (zastępuje `Kierownik`) |
 | Data decyzji | `DataDecyzji` | |
+| Decyzja | `WniosekDokument.Stan` | stan wniosku: oczekujący / zaakceptowany / odrzucony (pole „Stan wniosku” z formularza) |
 | Do przeniesienia | `DoPrzeniesienia` | odbiór (Tak) / zapłata (Nie) — **pole tylko w klienckim wniosku** |
 
 Standardowy e-wniosek o nadgodziny ma „Do przeniesienia” wyłącznie jako parametr całej definicji
