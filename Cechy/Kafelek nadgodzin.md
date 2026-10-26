@@ -14,6 +14,8 @@ Cechy to jednolinijkowe wywołania tej klasy.
 | NadgodzinyDoWyplaty | Time | nadgodziny okresu do wypłaty, jeszcze nienaliczone na liście płac |
 | OkresRozliczeniowy | FromTo | okres rozliczeniowy nadgodzin na dziś (bez zmian) |
 
+Scenariusze testowe: `Kafelek nadgodzin - scenariusze testowe.xlsx` (arkusze: Scenariusze, Zasady liczenia, Jak testować).
+
 ## Zasady liczenia
 
 **Magazyn (DniDoOdbioru, NadgodzinyDoOdbioru)** – liczone z zasobów (`ZasobRN`, nierozliczona reszta
