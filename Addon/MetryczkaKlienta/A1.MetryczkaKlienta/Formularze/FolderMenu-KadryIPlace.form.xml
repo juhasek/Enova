@@ -12,18 +12,12 @@
 
   <Stack Name="FolderMenuList" Class="MainPage">
 
-    <!-- Wszystko w jednym Row, którego pierwszym elementem jest MainGroup: tylko taki wiersz dostaje w kliencie web
-         wysokość "unset" (Row/Stack.prepareStyle) i rysuje zwykłe grupy pod kafelkami. Pod kafelkami karta metryczki
-         jako HTML (KartaMetryczki) - poprzedni wariant z polami-paskami: commit 0eb9129. -->
+    <!-- Ekran modułu rysuje tylko kafelki (Html, Grid, lista aktualności - nie), więc karta metryczki otwiera się
+         z kafelka w osobnym oknie. Poprzednie warianty: pola-paski 0eb9129, kafelki per informacja 845ebe8. -->
     <Row DataContext="{new MetryczkaAktualnosciExtender}">
       <Group Name="MetryczkaAktualnosci" Class="MainGroup" CaptionHtml="Metryczka klienta">
-        <Command Name="MetryczkaPokazUkryj" Class="MainCommand" CaptionHtml="{TekstPrzycisku}"
-                 DescriptionHtml="Zwija lub rozwija kartę metryczki nad sekcją Kadry" MethodName="PrzelaczWidocznosc" />
         <Command Name="MetryczkaOtworz" Class="MainCommand" CaptionHtml="Metryczka klienta"
                  DescriptionHtml="{Podsumowanie}" MethodName="OtworzMetryczke" />
-      </Group>
-      <Group Name="MetryczkaKarta" Visibility="{Widoczna}">
-        <Html Name="MetryczkaKartaHtml" EditValue="{KartaHtml}" Width="*" Height="45" ScrollBarsEnabled="true" />
       </Group>
     </Row>
 
