@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Soneta.Business;
 
 namespace A1.Metryczka;
@@ -75,4 +77,56 @@ static class DefinicjeCech
         new(42, "TST_USUPL1", Bool, Instytucje, "US UPL-1"),
         new(43, "TST_Platnik", Bool, Instytucje, "Dostęp PŁATNIK"),
     };
+
+    // Kolumna A arkusza ("Zakres danych") wg numeru wiersza - etykieta cechy na widokach (kolumna C "Opis" pomijana).
+    static readonly Dictionary<int, string> ZakresDanych = new()
+    {
+        [2] = "Nazwa bazy w SQL",
+        [3] = "Nr klienta",
+        [4] = "Nazwa klienta",
+        [5] = "JG SAP",
+        [6] = "FTE",
+        [7] = "Liczba kartotek - nr SAP",
+        [8] = "miesiąc i rok pierwszych danych z list płac w tym danych migracyjnych",
+        [9] = "Specjalista obsługujący",
+        [10] = "Płace",
+        [11] = "Lista główna - termin naliczenia",
+        [12] = "Czy jest lista doddatkowa",
+        [13] = "Jeśli tak to kiedy liczona?",
+        [14] = "Kadry",
+        [15] = "Umowy zlecenia",
+        [16] = "Integracja z WorkTime",
+        [17] = "Dedykowane interfejsy poza WorkTime",
+        [18] = "Dedykowane wydruki",
+        [19] = "Dedykowane raporty",
+        [20] = "PIT-8C dodatkowe z SAP PIT-11",
+        [21] = "Dostęp on-line do systemu dla klientów",
+        [22] = "Ile dostępów do systemu dla klientów",
+        [23] = "PPK",
+        [24] = "ING RPS",
+        [25] = "Bank klienta",
+        [26] = "Czy jest generowany PK z systemu?",
+        [27] = "Czy przelewy w innych walutach? W jakich?",
+        [28] = "Waluta",
+        [29] = "E-teczka",
+        [30] = "Czy baza danych jest na więcej niż 1 JG ? Jeśi tak wpisz obie JG",
+        [31] = "Konto pocztowe wychodzące do powiadomień mailowych",
+        [32] = "główna osoba kontaktowa po strodnie klienta Imie Nazwisko Klienta",
+        [33] = "Kontakt mail Klienta",
+        [34] = "Kontakt numer telefonu Klienta",
+        [35] = "PPE platforma klienta",
+        [36] = "Praca.gov",
+        [37] = "GUS rodzaj współpracy",
+        [38] = "E-PFRON rodzaj współpracy",
+        [39] = "Bank klienta rodzaj współpracy",
+        [40] = "PPK rodzaj współpracy",
+        [41] = "Dostęp ZUS PUE",
+        [42] = "US UPL-1",
+        [43] = "Dostęp PŁATNIK",
+
+    };
+
+    /// <summary>"Zakres danych" z metryczki dla cechy; cecha spoza arkusza (dodana ręcznie) - null.</summary>
+    public static string Etykieta(string nazwa) =>
+        Wszystkie.FirstOrDefault(d => d.Nazwa == nazwa) is { } d && ZakresDanych.TryGetValue(d.Wiersz, out string e) ? e : null;
 }

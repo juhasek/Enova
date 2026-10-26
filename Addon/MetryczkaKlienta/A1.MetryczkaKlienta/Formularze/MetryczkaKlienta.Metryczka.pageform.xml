@@ -12,9 +12,8 @@
       <Grid Name="CechyAktywne" Width="*" Height="15" EditValue="{Aktywne}" OrderBy="Kategoria"
             NewButton="None" EditButton="None" RemoveButton="None">
         <Appearance Condition="{?Aktywna}" FontBold="true" />
-        <Field CaptionHtml="Cecha" Width="30" EditValue="{Nazwa}" />
-        <Field CaptionHtml="Wartość" Width="40" EditValue="{Wartosc}" />
-        <Field CaptionHtml="Opis" Width="60" EditValue="{Opis}" />
+        <Field CaptionHtml="Zakres danych" Width="60" EditValue="{ZakresDanych}" />
+        <Field CaptionHtml="Dane" Width="40" EditValue="{Wartosc}" />
         <GroupBy EditValue="{Kategoria}" IsDescending="false" />
       </Grid>
     </Group>
@@ -24,9 +23,8 @@
     <Group Name="Nieaktywne" CaptionHtml="Nieaktywne" Visibility="{NieaktywneWidoczne}">
       <Grid Name="CechyNieaktywne" Width="*" Height="15" EditValue="{Nieaktywne}" OrderBy="Kategoria"
             NewButton="None" EditButton="None" RemoveButton="None">
-        <Field CaptionHtml="Cecha" Width="30" EditValue="{Nazwa}" />
-        <Field CaptionHtml="Wartość" Width="40" EditValue="{Wartosc}" />
-        <Field CaptionHtml="Opis" Width="60" EditValue="{Opis}" />
+        <Field CaptionHtml="Zakres danych" Width="60" EditValue="{ZakresDanych}" />
+        <Field CaptionHtml="Dane" Width="40" EditValue="{Wartosc}" />
         <GroupBy EditValue="{Kategoria}" IsDescending="false" />
       </Grid>
     </Group>

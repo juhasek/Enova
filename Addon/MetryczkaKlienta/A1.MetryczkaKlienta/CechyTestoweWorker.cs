@@ -108,9 +108,9 @@ public class CechyTestoweWorker
                 {
                     var aktualnosc = new Aktualnosc();
                     sesja.AddRow(aktualnosc);
-                    aktualnosc.Temat = $"Metryczka klienta – {kategoria.Key}";
+                    aktualnosc.Temat = MetryczkaAktualnosciExtender.PrefiksTematu + kategoria.Key;
                     aktualnosc.Opis = "<ul>" + string.Concat(kategoria.Select(c =>
-                        $"<li><b>{WebUtility.HtmlEncode(c.Opis)}</b>: {WebUtility.HtmlEncode(c.Wartosc)}</li>")) + "</ul>";
+                        $"<li><b>{WebUtility.HtmlEncode(c.ZakresDanych)}</b>: {WebUtility.HtmlEncode(c.Wartosc)}</li>")) + "</ul>";
                     // Autor dyskusji bywa już uczestnikiem - bez duplikatów.
                     var obecni = aktualnosc.Users.Select(u => u.Guid).ToHashSet();
                     foreach (Operator op in operatorzy.Where(o => !obecni.Contains(o.Guid)))

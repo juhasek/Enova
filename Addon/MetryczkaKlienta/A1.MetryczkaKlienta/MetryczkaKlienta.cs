@@ -21,6 +21,8 @@ public class CechaMetryczki
     public string Kategoria { get; init; }
     public string Nazwa { get; init; }
     public string Opis { get; init; }
+    /// <summary>Kolumna "Zakres danych" metryczki (na widokach zamiast opisu).</summary>
+    public string ZakresDanych { get; init; }
     public string Wartosc { get; init; }
     public bool Aktywna { get; init; }
 }
@@ -49,6 +51,7 @@ public class MetryczkaKlienta
                 Kategoria = string.IsNullOrEmpty(fd.Category) ? "Inne" : fd.Category,
                 Nazwa = fd.Name,
                 Opis = fd.Description,
+                ZakresDanych = DefinicjeCech.Etykieta(fd.Name) ?? fd.Description,
                 Wartosc = v is bool b ? (b ? "Tak" : "Nie") : v?.ToString(),
                 Aktywna = JestAktywna(v),
             };

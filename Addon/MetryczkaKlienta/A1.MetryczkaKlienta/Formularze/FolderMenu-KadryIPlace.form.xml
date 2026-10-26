@@ -22,10 +22,18 @@
       </Group>
     </Row>
 
-    <!-- Ten sam widget co "Aktualności" na pulpicie / Moje aktualności (Soneta.Core.UI). -->
+    <!-- Aktualności metryczki jako kafelki: standardowy widget (Dashboard.Aktualnosci.form.xml) na ekranie modułu
+         rysuje same filtry bez listy. Liczba kafelków stała = liczba kategorii metryczki (8); puste sloty ukryte. -->
     <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
-      <Group Name="MetryczkaAktualnosciWidget" Width="*" Height="25">
-        <Include DataContext="{new MojeAktualnosciViewInfo}" Source="Dashboard.Aktualnosci.form.xml" />
+      <Group Name="MetryczkaAktualnosciKafelki" Class="MainGroup" CaptionHtml="Metryczka klienta">
+        <Command Name="MetryczkaKafelek0" Class="MainCommand" DataContext="{Kafelek0}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+        <Command Name="MetryczkaKafelek1" Class="MainCommand" DataContext="{Kafelek1}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+        <Command Name="MetryczkaKafelek2" Class="MainCommand" DataContext="{Kafelek2}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+        <Command Name="MetryczkaKafelek3" Class="MainCommand" DataContext="{Kafelek3}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+        <Command Name="MetryczkaKafelek4" Class="MainCommand" DataContext="{Kafelek4}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+        <Command Name="MetryczkaKafelek5" Class="MainCommand" DataContext="{Kafelek5}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+        <Command Name="MetryczkaKafelek6" Class="MainCommand" DataContext="{Kafelek6}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+        <Command Name="MetryczkaKafelek7" Class="MainCommand" DataContext="{Kafelek7}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
       </Group>
     </Row>
 
