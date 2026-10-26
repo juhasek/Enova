@@ -58,6 +58,37 @@ public class MetryczkaAktualnosciExtender
     public SekcjaMetryczki Sekcja6 => Sekcja(6);
     public SekcjaMetryczki Sekcja7 => Sekcja(7);
 
+    SekcjaMetryczki[] kategorie;
+
+    /// <summary>
+    /// Wariant "tabelka jak w pliku metryczki": wszystkie cechy TST_ (także Nie i puste) w kolejności wierszy arkusza,
+    /// sekcja na kategorię. Czytane prosto z cech, nie z aktualności. Ukryte razem z przyciskiem "Ukryj aktualności".
+    /// </summary>
+    SekcjaMetryczki[] Kategorie => kategorie ??= CzytajKategorie();
+
+    SekcjaMetryczki[] CzytajKategorie()
+    {
+        var kolejnosc = DefinicjeCech.Wszystkie.Select((d, i) => (d.Nazwa, i)).ToDictionary(x => x.Nazwa, x => x.i);
+        bool widoczna = Widoczna;
+        using (Session sesja = Session.Login.CreateSession(true, false, "Metryczka - tabelka"))
+            return MetryczkaKlienta.Cechy(sesja)
+                .OrderBy(c => kolejnosc.TryGetValue(c.Nazwa, out int i) ? i : int.MaxValue)
+                .GroupBy(c => c.Kategoria)
+                .Take(LiczbaSekcji)
+                .Select(g => new SekcjaMetryczki(g.Key,
+                    g.Take(LiczbaPozycji).Select(c => new PozycjaMetryczki(c.Wartosc ?? "", c.ZakresDanych)).ToArray(), widoczna))
+                .ToArray();
+    }
+
+    SekcjaMetryczki Kategoria(int i) => i < Kategorie.Length ? Kategorie[i] : SekcjaMetryczki.Pusta;
+    public SekcjaMetryczki Kategoria0 => Kategoria(0);
+    public SekcjaMetryczki Kategoria1 => Kategoria(1);
+    public SekcjaMetryczki Kategoria2 => Kategoria(2);
+    public SekcjaMetryczki Kategoria3 => Kategoria(3);
+    public SekcjaMetryczki Kategoria4 => Kategoria(4);
+    public SekcjaMetryczki Kategoria5 => Kategoria(5);
+    public SekcjaMetryczki Kategoria6 => Kategoria(6);
+    public SekcjaMetryczki Kategoria7 => Kategoria(7);
 
     public string Podsumowanie
     {
@@ -116,13 +147,16 @@ public class SekcjaMetryczki
 
     readonly PozycjaMetryczki[] pozycje;
 
-    public SekcjaMetryczki(string tytul, PozycjaMetryczki[] pozycje)
+    readonly bool widoczna;
+
+    public SekcjaMetryczki(string tytul, PozycjaMetryczki[] pozycje, bool widoczna = true)
     {
         Tytul = tytul;
         this.pozycje = pozycje;
+        this.widoczna = widoczna;
     }
 
-    public bool Jest => Tytul != null;
+    public bool Jest => Tytul != null && widoczna;
 
     public string Tytul { get; }
 
@@ -159,6 +193,9 @@ public class PozycjaMetryczki
     public string Dane { get; }
 
     public string ZakresDanych { get; }
+
+    /// <summary>Wiersz tabelki na ekranie modułu: pole rysuje się tam jako sama etykieta (bez wartości), więc wartość w etykiecie.</summary>
+    public string Tekst => string.IsNullOrEmpty(Dane) ? ZakresDanych + ":" : ZakresDanych + ": " + Dane;
 
     /// <summary>Kliknięcie kafelka: pełne aktualności (komentarze, polubienia) w Komunikacja → Moje aktualności.</summary>
     public object Otworz() => new NavigationResult("Komunikacja/Moje aktualności");
