@@ -394,10 +394,12 @@ namespace Soneta.KadryPlace.Reports
  
             // --- nagłówek / dane stałe (reprezentant) ---
 
-            var adresKorespondencyjny = ph?.AdresDoKorespondencji;
-            var adresDoRaportu = string.IsNullOrWhiteSpace(adresKorespondencyjny?.Miejscowosc)
-                ? ph?.AdresZameldowania
-                : adresKorespondencyjny;
+            // kolejność: adres do korespondencji -> zameldowania -> zamieszkania (pusty = brak miejscowości)
+            var adresDoRaportu = ph?.AdresDoKorespondencji;
+            if (string.IsNullOrWhiteSpace(adresDoRaportu?.Miejscowosc))
+                adresDoRaportu = ph?.AdresZameldowania;
+            if (string.IsNullOrWhiteSpace(adresDoRaportu?.Miejscowosc))
+                adresDoRaportu = ph?.Adres;
 					
             dto.PracownikAdres = ph != null
                 //? ph.Pracownik.ImięNazwisko + Environment.NewLine + ph.Adres.Linia1 + Environment.NewLine + ph.Adres.Linia2
