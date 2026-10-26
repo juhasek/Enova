@@ -1,0 +1,12 @@
+public Time Feature_NadgodzinyDoWyplaty {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1KafelkiNadgodzin"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.KafelkiNadgodzin.DoWyplaty(Row);
+    }
+}
+
+// W kodzie możesz używać następujacych zmiennych:
+// Row: Pracownik - Wiersz przeliczanej cechy
+// Table: Pracownicy - Tabela wiersza przeliczanej cechy
+// Module: KadryModule - Moduł, w którym znajduje się tabela
+// Session: Session - Obiekt sesji dający dostęp do wszystkich danych programu
