@@ -1,8 +1,8 @@
 using A1.Metryczka;
 using Soneta.Business;
 
-// {new MetryczkaAktualnosciExtender} w FolderMenu-KadryIPlace.form.xml - jak FolderMenuExtension standardu.
-[assembly: Worker(typeof(MetryczkaAktualnosciExtender))]
+// {new MetryczkaKafelekExtender} w FolderMenu-KadryIPlace.form.xml - jak FolderMenuExtension standardu.
+[assembly: Worker(typeof(MetryczkaKafelekExtender))]
 
 namespace A1.Metryczka;
 
@@ -10,7 +10,7 @@ namespace A1.Metryczka;
 /// Kafelek "Metryczka klienta" nad sekcjami ekranu modułu Kadry i płace: stan uzupełnienia, kliknięcie otwiera kartę.
 /// Samej karty (Html) ekran modułu nie rysuje - tylko kafelki (sprawdzone 27.10, jak Grid i ThreadComments).
 /// </summary>
-public class MetryczkaAktualnosciExtender
+public class MetryczkaKafelekExtender
 {
     [Context]
     public Session Session { get; set; }

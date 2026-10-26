@@ -23,10 +23,15 @@ Cechy globalne z metryczki klienta (`Pobrane/metryczka.xlsx`, 42 pozycje) z pref
   ze stanem „Uzupełniono X z Y pozycji”, który otwiera okno z kartą.
 - **Karta metryczki** (`KartaMetryczki.cs`) to HTML w elemencie `<Html>` okna: pasek z danymi klienta (nazwa, nr,
   baza SQL, JG SAP, FTE, kartoteki, specjalista) i pasek uzupełnienia, pod nim karta na kategorię w kolejności wierszy
-  arkusza, z plakietkami ✓ Tak / Nie / brak. Budowana przy każdym odczycie z definicji `TST_*`, więc nowa cecha
+  arkusza, z plakietkami ✓ Tak / brak. Budowana przy każdym odczycie z definicji `TST_*`, więc nowa cecha
   dodana w Opcjach pojawia się sama. Przeglądarka enova nie obsługuje zmiennych CSS ani atrybutu `style` –
   kolory tylko w klasach `<style>`.
-- „Brak” = pusty tekst lub pusta data/miesiąc. Bool jest zawsze Tak/Nie (nieustawiony = Nie), liczba 0 wyświetla się jako 0.
+- „Brak” = Tak/Nie bez zaznaczenia, liczba 0, pusty tekst lub pusta data/miesiąc (decyzja 27.10). enova zapisuje w `Features`
+  tylko Bool = Tak, więc świadomego „Nie” nie da się odróżnić od nieuzupełnionego. Warunek w jednym miejscu: `CechaMetryczki.Uzupelniona`.
+- Kafelek i karta czytają cechy w świeżej sesji (`MetryczkaKlienta.CechyAktualne`) – sesja ekranu modułu/okna nie widzi
+  zmian z Opcji ani skutków czynności Utwórz/Usuń.
+- „Usuń cechy testowe” sprząta też pozostałości po usuniętych funkcjach: aktualności „Metryczka klienta – …” i węzeł
+  konfiguracji `A1MetryczkaKlienta` (Ukryj/Pokaż).
 
 ## Okno „Metryczka klienta” (Ogólne → Metryczka klienta (TST_))
 
@@ -53,7 +58,7 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 
 | Krok | Wynik |
 |---|---|
-| Kafelek „Metryczka klienta” nad „KADRY” ze stanem uzupełnienia | OK 27.10 (zrzut) |
+| Kafelek „Metryczka klienta” nad „KADRY” ze stanem uzupełnienia | OK 27.10 (zrzut, „27 z 42”) |
 | Okno z kartą: kolory, plakietki, pełne etykiety, pasek 30/42 | OK 27.10 (zrzut) |
 | Utworzenie 42 cech, 8 kategorii, zestaw `TST_Metryczka` w Opcjach, bez duplikatów | OK 26.10 |
 | Usuwanie cech TST_ | NIE SPRAWDZONE |

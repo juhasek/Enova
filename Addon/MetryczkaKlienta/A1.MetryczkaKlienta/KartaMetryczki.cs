@@ -15,7 +15,7 @@ static class KartaMetryczki
     static readonly string[] WNaglowku =
         { "TST_NazwaKlienta", "TST_NrKlienta", "TST_NazwaBazySQL", "TST_JGSAP", "TST_FTE", "TST_LiczbaKartotek", "TST_Specjalista" };
 
-    // Kolory kart w kolejności kategorii arkusza; kategorie spoza listy dostają kolor enova.
+    // Kolory kart w kolejności kategorii arkusza; od 9. kategorii kolory powtarzają się od początku listy.
     static readonly string[] Kolory = { "#00704a", "#1565c0", "#6a1b9a", "#c2185b", "#ef6c00", "#00838f", "#5d4037", "#455a64" };
 
     const string Styl = @"<style>
@@ -39,14 +39,11 @@ static class KartaMetryczki
 .row:first-of-type{border-top:0}
 .k{color:#6b7780}
 .v{font-weight:600;text-align:right}
-.tak,.nie,.brak{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.tak,.brak{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:600;white-space:nowrap}
 .tak{background:#e6f4ee;color:#00704a}
-.nie{background:#eef1f3;color:#6b7780}
 .brak{background:#fff4e0;color:#b26a00}
 .legend{margin-top:12px;font-size:12px;color:#6b7780;display:flex;gap:14px;flex-wrap:wrap}
 ";
-
-    static bool Uzupelniona(CechaMetryczki c) => !string.IsNullOrWhiteSpace(c.Wartosc);
 
     public static string Html(IList<CechaMetryczki> cechy)
     {
@@ -54,13 +51,12 @@ static class KartaMetryczki
             return "<p>Brak cech globalnych z prefiksem TST_ – Ogólne → Metryczka klienta (TST_) → Czynności → Utwórz cechy testowe.</p>";
 
         // Kolejność wierszy arkusza metryczki; cechy dodane ręcznie na końcu.
-        var kolejnosc = DefinicjeCech.Wszystkie.Select((d, i) => (d.Nazwa, i)).ToDictionary(x => x.Nazwa, x => x.i);
-        var wgArkusza = cechy.OrderBy(c => kolejnosc.TryGetValue(c.Nazwa, out int i) ? i : int.MaxValue).ToList();
+        var wgArkusza = cechy.OrderBy(c => DefinicjeCech.Kolejnosc(c.Nazwa)).ToList();
         var wartosci = cechy.ToDictionary(c => c.Nazwa, c => c.Wartosc);
-        string W(string nazwa) => wartosci.TryGetValue(nazwa, out string v) && !string.IsNullOrWhiteSpace(v) ? HtmlEncode(v) : null;
+        string W(string nazwa) => wartosci.TryGetValue(nazwa, out string v) && v != null ? HtmlEncode(v) : null;
 
         var kategorie = wgArkusza.Where(c => !WNaglowku.Contains(c.Nazwa)).GroupBy(c => c.Kategoria).ToList();
-        int uzupelnione = cechy.Count(Uzupelniona);
+        int uzupelnione = cechy.Count(c => c.Uzupelniona);
         int procent = 100 * uzupelnione / cechy.Count;
 
         var sb = new StringBuilder(Styl);
@@ -78,22 +74,21 @@ static class KartaMetryczki
         for (int i = 0; i < kategorie.Count; i++)
         {
             var k = kategorie[i];
-            sb.Append($"<div class=\"card c{i}\"><h2>{HtmlEncode(k.Key)} <small>{k.Count(Uzupelniona)}/{k.Count()}</small></h2>");
+            sb.Append($"<div class=\"card c{i}\"><h2>{HtmlEncode(k.Key)} <small>{k.Count(c => c.Uzupelniona)}/{k.Count()}</small></h2>");
             foreach (CechaMetryczki c in k)
                 sb.Append($"<div class=\"row\"><span class=\"k\">{HtmlEncode(c.ZakresDanych)}</span><span class=\"v\">{Wartosc(c.Wartosc)}</span></div>");
             sb.Append("</div>");
         }
         sb.Append("</div><div class=\"legend\"><span><span class=\"tak\">✓ Tak</span> jest</span>")
-          .Append("<span><span class=\"nie\">Nie</span> nie dotyczy</span><span><span class=\"brak\">brak</span> nieuzupełnione w metryczce</span></div></div>");
+          .Append("<span><span class=\"brak\">brak</span> nieuzupełnione w metryczce (także Tak/Nie bez zaznaczenia)</span></div></div>");
         return sb.ToString();
     }
 
     static string Kpi(string wartosc, string opis) => $"<div class=\"kpi\"><b>{wartosc ?? "–"}</b><span>{opis}</span></div>";
 
     static string Wartosc(string v) => v switch {
+        null => "<span class=\"brak\">brak</span>",
         "Tak" => "<span class=\"tak\">✓ Tak</span>",
-        "Nie" => "<span class=\"nie\">Nie</span>",
-        _ when string.IsNullOrWhiteSpace(v) => "<span class=\"brak\">brak</span>",
         _ => HtmlEncode(v),
     };
 }

@@ -14,8 +14,8 @@
 
     <!-- Ekran modułu rysuje tylko kafelki (Html, Grid, lista aktualności - nie), więc karta metryczki otwiera się
          z kafelka w osobnym oknie. Poprzednie warianty: pola-paski 0eb9129, kafelki per informacja 845ebe8. -->
-    <Row DataContext="{new MetryczkaAktualnosciExtender}">
-      <Group Name="MetryczkaAktualnosci" Class="MainGroup" CaptionHtml="Metryczka klienta">
+    <Row DataContext="{new MetryczkaKafelekExtender}">
+      <Group Name="MetryczkaKafelek" Class="MainGroup" CaptionHtml="Metryczka klienta">
         <Command Name="MetryczkaOtworz" Class="MainCommand" CaptionHtml="Metryczka klienta"
                  DescriptionHtml="{Podsumowanie}" MethodName="OtworzMetryczke" />
       </Group>

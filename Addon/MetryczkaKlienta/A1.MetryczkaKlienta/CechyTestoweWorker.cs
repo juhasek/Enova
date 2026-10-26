@@ -3,6 +3,8 @@ using A1.Metryczka;
 using Soneta.Business;
 using Soneta.Business.Db;
 using Soneta.Business.UI;
+using Soneta.Config;
+using Soneta.Core;
 
 [assembly: Worker(typeof(CechyTestoweWorker), typeof(MetryczkaKlienta))]
 
@@ -122,10 +124,28 @@ public class CechyTestoweWorker
                     fd.Delete();
                     usuniete++;
                 }
+                UsunPozostalosci(sesja);
                 t.Commit();
             }
             sesja.Save();
         }
         return usuniete;
+    }
+
+    /// <summary>
+    /// Dane po usuniętych 27.10 funkcjach (żaden kod ich już nie czyta): aktualności z generatora metryczki
+    /// i węzeł konfiguracji A1MetryczkaKlienta (stan Ukryj/Pokaż per operator).
+    /// </summary>
+    static void UsunPozostalosci(Session sesja)
+    {
+        foreach (Aktualnosc a in CoreModule.GetInstance(sesja).Aktualnosci.Cast<Aktualnosc>()
+                     .Where(a => a.Temat != null && a.Temat.StartsWith("Metryczka klienta – ")).ToList())
+            a.Delete();
+        CfgNode wezel = new CfgManager(sesja).Root?.FindSubNode("A1MetryczkaKlienta", false);
+        if (wezel != null)
+        {
+            wezel.FindSubNode("Widocznosc", false)?.Delete();
+            wezel.Delete();
+        }
     }
 }

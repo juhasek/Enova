@@ -126,7 +126,13 @@ static class DefinicjeCech
 
     };
 
+    // Nazwa cechy → pozycja w Wszystkie; budowane raz (pola statyczne inicjalizują się w kolejności w pliku, po Wszystkie).
+    static readonly Dictionary<string, int> Indeks = Wszystkie.Select((d, i) => (d.Nazwa, i)).ToDictionary(x => x.Nazwa, x => x.i);
+
+    /// <summary>Pozycja cechy w arkuszu metryczki; cecha spoza arkusza (dodana ręcznie) - na końcu.</summary>
+    public static int Kolejnosc(string nazwa) => Indeks.TryGetValue(nazwa, out int i) ? i : int.MaxValue;
+
     /// <summary>"Zakres danych" z metryczki dla cechy; cecha spoza arkusza (dodana ręcznie) - null.</summary>
     public static string Etykieta(string nazwa) =>
-        Wszystkie.FirstOrDefault(d => d.Nazwa == nazwa) is { } d && ZakresDanych.TryGetValue(d.Wiersz, out string e) ? e : null;
+        Indeks.TryGetValue(nazwa, out int i) && ZakresDanych.TryGetValue(Wszystkie[i].Wiersz, out string e) ? e : null;
 }
