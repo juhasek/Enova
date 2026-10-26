@@ -22,18 +22,111 @@
       </Group>
     </Row>
 
-    <!-- Aktualności metryczki jako kafelki: standardowy widget (Dashboard.Aktualnosci.form.xml) na ekranie modułu
-         rysuje same filtry bez listy. Liczba kafelków stała = liczba kategorii metryczki (8); puste sloty ukryte. -->
+    <!-- Aktualności metryczki: sekcja na kategorię, kafelek na każdą informację (tytuł = Dane, opis = Zakres danych).
+         Opis kafelka zlewa nowe linie i ucina się do 2 linii, więc jedna informacja = jeden kafelek.
+         Standardowy widget aktualności (Dashboard.Aktualnosci.form.xml) na ekranie modułu rysuje same filtry bez listy.
+         Stałe sloty: 8 sekcji x 8 kafelków (MetryczkaAktualnosciExtender.LiczbaSekcji/LiczbaPozycji); puste ukryte. -->
     <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
-      <Group Name="MetryczkaAktualnosciKafelki" Class="MainGroup" CaptionHtml="Metryczka klienta">
-        <Command Name="MetryczkaKafelek0" Class="MainCommand" DataContext="{Kafelek0}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
-        <Command Name="MetryczkaKafelek1" Class="MainCommand" DataContext="{Kafelek1}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
-        <Command Name="MetryczkaKafelek2" Class="MainCommand" DataContext="{Kafelek2}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
-        <Command Name="MetryczkaKafelek3" Class="MainCommand" DataContext="{Kafelek3}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
-        <Command Name="MetryczkaKafelek4" Class="MainCommand" DataContext="{Kafelek4}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
-        <Command Name="MetryczkaKafelek5" Class="MainCommand" DataContext="{Kafelek5}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
-        <Command Name="MetryczkaKafelek6" Class="MainCommand" DataContext="{Kafelek6}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
-        <Command Name="MetryczkaKafelek7" Class="MainCommand" DataContext="{Kafelek7}" Visibility="{Jest}" CaptionHtml="{Tytul}" DescriptionHtml="{Opis}" MethodName="Otworz" />
+      <Group Name="MetryczkaSekcja0" Class="MainGroup" DataContext="{Sekcja0}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS0P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS0P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS0P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS0P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS0P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS0P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS0P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS0P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+      </Group>
+    </Row>
+
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaSekcja1" Class="MainGroup" DataContext="{Sekcja1}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS1P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS1P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS1P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS1P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS1P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS1P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS1P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS1P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+      </Group>
+    </Row>
+
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaSekcja2" Class="MainGroup" DataContext="{Sekcja2}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS2P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS2P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS2P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS2P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS2P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS2P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS2P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS2P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+      </Group>
+    </Row>
+
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaSekcja3" Class="MainGroup" DataContext="{Sekcja3}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS3P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS3P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS3P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS3P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS3P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS3P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS3P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS3P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+      </Group>
+    </Row>
+
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaSekcja4" Class="MainGroup" DataContext="{Sekcja4}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS4P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS4P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS4P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS4P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS4P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS4P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS4P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS4P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+      </Group>
+    </Row>
+
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaSekcja5" Class="MainGroup" DataContext="{Sekcja5}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS5P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS5P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS5P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS5P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS5P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS5P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS5P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS5P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+      </Group>
+    </Row>
+
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaSekcja6" Class="MainGroup" DataContext="{Sekcja6}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS6P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS6P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS6P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS6P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS6P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS6P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS6P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS6P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+      </Group>
+    </Row>
+
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaSekcja7" Class="MainGroup" DataContext="{Sekcja7}" Visibility="{Jest}" CaptionHtml="{Tytul}">
+        <Command Name="MetryczkaS7P0" Class="MainCommand" DataContext="{Pozycja0}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS7P1" Class="MainCommand" DataContext="{Pozycja1}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS7P2" Class="MainCommand" DataContext="{Pozycja2}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS7P3" Class="MainCommand" DataContext="{Pozycja3}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS7P4" Class="MainCommand" DataContext="{Pozycja4}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS7P5" Class="MainCommand" DataContext="{Pozycja5}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS7P6" Class="MainCommand" DataContext="{Pozycja6}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
+        <Command Name="MetryczkaS7P7" Class="MainCommand" DataContext="{Pozycja7}" Visibility="{Jest}" CaptionHtml="{Dane}" DescriptionHtml="{ZakresDanych}" MethodName="Otworz" />
       </Group>
     </Row>
 
