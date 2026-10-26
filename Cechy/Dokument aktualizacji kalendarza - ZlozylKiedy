@@ -1,5 +1,0 @@
-public string Feature_ZlozylKiedy {
-    get {
-        return A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.DataWykonania(A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.ZadanieZlozenia(Row));
-    }
-}

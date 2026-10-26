@@ -1,8 +1,0 @@
-public string Feature_PracownikKod {
-    get {
-        List<string> kody = new List<string>();
-        foreach (Pracownik pracownik in A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.PracownicyDokumentu(Row))
-            kody.Add(pracownik.Kod);
-        return string.Join(", ", kody);
-    }
-}

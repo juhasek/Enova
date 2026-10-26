@@ -1,6 +1,0 @@
-public string Feature_ZatwierdzilKto {
-    get {
-        // Kto zatwierdził dokument (wykonawca kroku Do akceptacji procesu).
-        return A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.Wykonawca(A1.Runtime.Business.TblCodeFiles.A1DokumentyAktualizacjiKalendarza.ZadanieZatwierdzenia(Row));
-    }
-}

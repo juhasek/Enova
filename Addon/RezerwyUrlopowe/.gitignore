@@ -1,6 +1,0 @@
-bin/
-obj/
-.vs/
-*.user
-# generowane przy kazdym buildzie z *.business.xml (Soneta.Sdk)
-*.business.cs
