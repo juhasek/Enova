@@ -39,8 +39,9 @@ static class KartaMetryczki
 .row:first-of-type{border-top:0}
 .k{color:#6b7780}
 .v{font-weight:600;text-align:right}
-.tak,.brak{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.tak,.nie,.brak{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:600;white-space:nowrap}
 .tak{background:#e6f4ee;color:#00704a}
+.nie{background:#eef1f3;color:#6b7780}
 .brak{background:#fff4e0;color:#b26a00}
 .legend{margin-top:12px;font-size:12px;color:#6b7780;display:flex;gap:14px;flex-wrap:wrap}
 ";
@@ -80,7 +81,7 @@ static class KartaMetryczki
             sb.Append("</div>");
         }
         sb.Append("</div><div class=\"legend\"><span><span class=\"tak\">✓ Tak</span> jest</span>")
-          .Append("<span><span class=\"brak\">brak</span> nieuzupełnione w metryczce (także Tak/Nie bez zaznaczenia)</span></div></div>");
+          .Append("<span><span class=\"nie\">Nie</span> nie dotyczy</span><span><span class=\"brak\">brak</span> nieuzupełnione w metryczce</span></div></div>");
         return sb.ToString();
     }
 
@@ -89,6 +90,7 @@ static class KartaMetryczki
     static string Wartosc(string v) => v switch {
         null => "<span class=\"brak\">brak</span>",
         "Tak" => "<span class=\"tak\">✓ Tak</span>",
+        "Nie" => "<span class=\"nie\">Nie</span>",
         _ => HtmlEncode(v),
     };
 }

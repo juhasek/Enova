@@ -23,7 +23,7 @@ public class CechaMetryczki
     public string Opis { get; init; }
     /// <summary>Kolumna "Zakres danych" metryczki (na widokach zamiast opisu).</summary>
     public string ZakresDanych { get; init; }
-    /// <summary>Tekst wartości; null = nieuzupełniona (Bool bez zaznaczenia, 0, pusty tekst, pusta data/miesiąc).</summary>
+    /// <summary>Tekst wartości; null = nieuzupełniona (cecha nieustawiona, liczba 0, pusty tekst, pusta data/miesiąc); Bool: Tak/Nie.</summary>
     public string Wartosc { get; init; }
     /// <summary>Jedyny warunek "uzupełniona" - używa go karta i podsumowanie kafelka.</summary>
     public bool Uzupelniona => Wartosc != null;
@@ -51,20 +51,20 @@ public class MetryczkaKlienta
             Nazwa = fd.Name,
             Opis = fd.Description,
             ZakresDanych = DefinicjeCech.Etykieta(fd.Name) ?? fd.Description,
-            Wartosc = Tekst(session.Global.Features[fd.Name]),
+            Wartosc = Tekst(session.Global.Features, fd.Name),
         })
         .ToList();
 
-    // enova zapisuje w Features tylko Bool = Tak (Nie/nieustawiony = brak wiersza), więc "Nie" nie da się odróżnić
-    // od nieuzupełnionego - decyzja 27.10: oba jako brak. Liczba 0 = domyślna, też brak.
-    static string Tekst(object v) => v switch {
-        bool b => b ? "Tak" : null,
+    // Nieustawiona cecha nie ma wiersza w Features (Exists = false) - brak; odznaczony Bool zostaje zapisany jako 0 - Nie.
+    // Liczba 0 to też brak (decyzja 27.10).
+    static string Tekst(FeatureCollection cechy, string nazwa) => !cechy.Exists(nazwa) ? null : cechy[nazwa] switch {
+        bool b => b ? "Tak" : "Nie",
         int i when i == 0 => null,
         double d when d == 0 => null,
         decimal m when m == 0 => null,
         Date d when d == Date.Empty => null,
         YearMonth ym when ym == YearMonth.Empty => null,
-        _ => string.IsNullOrWhiteSpace(v?.ToString()) ? null : v.ToString(),
+        var v => string.IsNullOrWhiteSpace(v?.ToString()) ? null : v.ToString(),
     };
 
     /// <summary>

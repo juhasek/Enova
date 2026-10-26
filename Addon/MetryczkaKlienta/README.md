@@ -23,11 +23,12 @@ Cechy globalne z metryczki klienta (`Pobrane/metryczka.xlsx`, 42 pozycje) z pref
   ze stanem „Uzupełniono X z Y pozycji”, który otwiera okno z kartą.
 - **Karta metryczki** (`KartaMetryczki.cs`) to HTML w elemencie `<Html>` okna: pasek z danymi klienta (nazwa, nr,
   baza SQL, JG SAP, FTE, kartoteki, specjalista) i pasek uzupełnienia, pod nim karta na kategorię w kolejności wierszy
-  arkusza, z plakietkami ✓ Tak / brak. Budowana przy każdym odczycie z definicji `TST_*`, więc nowa cecha
+  arkusza, z plakietkami ✓ Tak / Nie / brak. Budowana przy każdym odczycie z definicji `TST_*`, więc nowa cecha
   dodana w Opcjach pojawia się sama. Przeglądarka enova nie obsługuje zmiennych CSS ani atrybutu `style` –
   kolory tylko w klasach `<style>`.
-- „Brak” = Tak/Nie bez zaznaczenia, liczba 0, pusty tekst lub pusta data/miesiąc (decyzja 27.10). enova zapisuje w `Features`
-  tylko Bool = Tak, więc świadomego „Nie” nie da się odróżnić od nieuzupełnionego. Warunek w jednym miejscu: `CechaMetryczki.Uzupelniona`.
+- „Brak” = cecha nieustawiona (brak wiersza w `Features`, `FeatureCollection.Exists` = false), liczba 0, pusty tekst lub pusta
+  data/miesiąc. Odznaczony Tak/Nie zostaje zapisany jako 0 → „Nie” (liczy się jako uzupełnione). Warunek w jednym miejscu:
+  `CechaMetryczki.Uzupelniona`.
 - Kafelek i karta czytają cechy w świeżej sesji (`MetryczkaKlienta.CechyAktualne`) – sesja ekranu modułu/okna nie widzi
   zmian z Opcji ani skutków czynności Utwórz/Usuń.
 - „Usuń cechy testowe” sprząta też pozostałości po usuniętych funkcjach: aktualności „Metryczka klienta – …” i węzeł
