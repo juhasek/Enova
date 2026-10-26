@@ -22,13 +22,17 @@ do okresu** – nieodebrane godziny przechodzą na kolejne okresy, a odbiór zap
 (wnioski z terminem odbioru) od razu zmniejsza bilans.
 - **Niezależnie od parowania zasobów.** enova paruje odbiór/wypłatę z nadgodzinami dopiero czynnością
   „Rozlicz nadgodziny” (lub dokumentem rozliczenia czasu pracy) – wpisana strefa odbioru zwykle wisi
-  jako osobny zasób „minus”. Dlatego suma odbiorów i wypłat zdejmowana jest z nadgodzin od najstarszych.
+  jako osobny zasób „minus”. Rozliczenie sparowane (obrót) zdejmuje swoją strefę; niesparowane – od
+  najstarszych: odbiór co najmniej dniówki zdejmuje najpierw najstarszy pasujący dzień wolny (odbiór dnia
+  za święto/sobotę), mniejszy – najpierw godziny; gdy godzin brak, dzień jest rozbijany, reszta idzie do godzin.
 - Odbiór pracownika/firmy i wypłata nadgodzin („przekwalifikowanie”) zmniejszają bilans,
   więc te same godziny nie występują jednocześnie w „do odbioru” i „do wypłaty”.
 - Strefy wyjść prywatnych (nazwa zawiera „prywatn”: wyjście, rozliczenie, potrącenie) są pomijane:
   enova paruje wyjście prywatne z nadgodzinami w magazynie, a nie powinno to zmniejszać nadgodzin.
 - Dzień wolny do odbioru: strefa nadgodzin w dniu wolnym/świątecznym **wg planu** (KalkPlanu).
-  Część „dniówkowa” = min(godziny strefy, `Etat.NormaDobowa`) – jak w enova przy odbiorze dnia wolnego.
+  Część „dniówkowa” = min(godziny strefy, norma dobowa etatu **z wymiarem** – `Etat.WymNormaDobowa`,
+  ½ etatu = 4 h). Gdy w kalendarzu „Wartość dobowa” jest niewypełniona (etat zwraca 0) – 8 h,
+  inaczej cały dzień wolny szedł do godzin (objaw u klienta przy 2–3.05.2025, odtworzony w Al).
   Dzień jest liczony, dopóki ta część jest nieodebrana; po częściowym odbiorze dzień znika,
   a reszta przechodzi do godzin.
 - Odbiór bez pokrycia w nadgodzinach („na zapas”) daje **ujemne** godziny (np. −8:00).
@@ -39,7 +43,8 @@ do okresu** – nieodebrane godziny przechodzą na kolejne okresy, a odbiór zap
 dzień po dniu i po zmianie etatu nadpisywała sumę). Godziny ponadwymiarowe mają własną strefę
 i nie są wliczane.
 
-**NadgodzinyDoWyplaty** – w bieżącym okresie rozliczeniowym: praca poza normą − rozliczenie wyjścia
+**NadgodzinyDoWyplaty** – w bieżącym **miesiącu** (decyzja 26.10: nadgodziny tylko w swoim miesiącu, bez
+miesięcy wcześniejszych i przyszłych): praca poza normą − rozliczenie wyjścia
 prywatnego − strefy odłożone do magazynu („W kolejnych miesiącach”) + strefy „Wypłata nadgodzin”
 − czas elementów wypłat Nadgodziny I/II/Św z okresem w tym okresie. Wynik nie mniejszy niż 0.
 
@@ -77,3 +82,20 @@ Wynik: dni / godz. do odbioru / NadgRazem / do wypłaty / WP.
 Pierwsza wersja (parowanie zasobów) dawała przy odbiorach dzień nadal widoczny i ujemne godziny,
 a samo odpracowanie WP zmniejszało NadgRazem – poprawione, wszystkie przypadki OK.
 Niesprawdzone: odjęcie elementów z listy płac w „do wypłaty”.
+
+### Runda 3 (uwagi klientki: święto > 8 h, ½ etatu, wolny za święto), 26.10.2026
+
+| # | Pracownik | Przypadek | Wynik |
+|---|---|---|---|
+| K12 | S5 (6 h otwarte z sierpnia) | święto 11.11 10 h → odbiór 8 h 12.11 | **0 dni / 8:00** (FIFO dawało 1 dzień / 0:00 – objaw klientki) |
+| K13 | T1 (¾, norma 6 h) | niedziela 22.11 7 h | dzień + 1 h (dniówka 6 h z wymiaru) |
+| K14 | T3 (¾) | niedziela 20.12 9 h | +1 dzień, +3:00, NadgRazem +9 (14:00) |
+| K15 | DW2 / NP7 | 14.08 „Wolny za święto” + 15.08 święto, 8+9 h / 7+8 h | 2 dni / 1:00 |
+| K16 | NP4, kalendarz z „Wartością dobową” 0 (na czas testu) | 14.08 8 h + 15.08 9 h | stary kod 0 / 17:00, nowy **2 / 1:00** |
+| K17 | S7 | 3 h do wypłaty we wrześniu | „do wypłaty” = tylko październik (2:00) |
+
+Przykład 2 klientki (9 h → +10, 10 h → +12 w bilansie wszystkich) i „do wypłaty” bez odjęcia listy płac
+to zachowanie **starego** kodu cech – u klientki nowa wersja (CodeFiles A1KafelkiNadgodzin) nie była wgrana.
+
+Kompilacja w Al: po SQL-update kodu serwer nie przekompilował sam – zadziałała czynność
+**„Wymuś rekompilację”** na formularzu wpisu „Dodatkowy kod do kompilacji” (Ustawienia/Systemowe).
