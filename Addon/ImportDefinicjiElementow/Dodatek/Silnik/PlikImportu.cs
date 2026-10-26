@@ -19,6 +19,9 @@ public sealed class PlikImportu
         public string Id;
         public string Szablon;
         public string Uwagi;
+        /// <summary>Akceptacja klienta: kto i kiedy (null = niezaakceptowana).</summary>
+        public string AkceptacjaOsoba;
+        public string AkceptacjaData;
         public JsonObject Wartosci;
         public List<string> BledyFormularza = new();
     }
@@ -56,6 +59,8 @@ public sealed class PlikImportu
                 Id = dobj["id"]?.GetValue<string>(),
                 Szablon = dobj["szablon"]?.GetValue<string>(),
                 Uwagi = dobj["uwagi"]?.GetValue<string>() ?? "",
+                AkceptacjaOsoba = dobj["akceptacja"]?["osoba"]?.GetValue<string>(),
+                AkceptacjaData = dobj["akceptacja"]?["data"]?.GetValue<string>(),
                 Wartosci = (dobj["wartosci"] as JsonObject)?.DeepClone().AsObject() ?? new JsonObject(),
                 BledyFormularza = (dobj["bledy"] as JsonArray)?.Select(b => b!.GetValue<string>()).ToList() ?? new(),
             });

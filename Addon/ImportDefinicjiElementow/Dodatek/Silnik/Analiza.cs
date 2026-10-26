@@ -44,6 +44,8 @@ public sealed class AnalizaDefinicji
     public string Skrot;
     public string Rodzaj;
     public string Uwagi;
+    /// <summary>„osoba, data” akceptacji klienta albo null.</summary>
+    public string Akceptacja;
     public StatusDefinicji Status;
     public IIstniejacaDefinicja Istniejaca;
     public List<(string Sciezka, JsonNode Wartosc)> Przypisania = new();
@@ -90,8 +92,11 @@ public static class Analizator
                 Nazwa = Tekst(d.Wartosci["Nazwa"]),
                 Skrot = Tekst(d.Wartosci["Skrot"]),
                 Rodzaj = Tekst(d.Wartosci["RodzajZrodla"]),
+                Akceptacja = string.IsNullOrWhiteSpace(d.AkceptacjaOsoba) ? null : $"{d.AkceptacjaOsoba.Trim()}, {Raport.Data(d.AkceptacjaData)}",
             };
             wynik.Definicje.Add(a);
+            if (a.Akceptacja == null)
+                a.Komunikaty.Add(new("Akceptacja", "ostrzezenie", "Klient nie zaakceptował tej definicji w formularzu."));
             a.Komunikaty.AddRange(Walidacja.Waliduj(schemat, d.Wartosci, wszystkie.Where(w => !ReferenceEquals(w, d.Wartosci)), baza.Licencja)
                 .Where(k => k.Poziom != "informacja"));
             a.Przypisania = Walidacja.DoZapisu(schemat, d.Wartosci, baza.Licencja);

@@ -35,7 +35,7 @@ Czynność **„Importuj definicje z pliku”** w menu *Czynności* listy defini
 ```bash
 export DOTNET_ROOT=~/.dotnet10
 ~/.dotnet10/dotnet.exe build Dodatek/ImportDefinicjiElementow/ImportDefinicjiElementow.csproj -c Release
-~/.dotnet10/dotnet.exe test Dodatek/Testy/ImportDefinicjiElementow.Testy.csproj -c Release   # 18 testów
+~/.dotnet10/dotnet.exe test Dodatek/Testy/ImportDefinicjiElementow.Testy.csproj -c Release   # 19 testów
 ```
 
 Biblioteki enova brane są z katalogu serwera (`SonetaDir`, domyślnie `C:\enovaServer\2610\...`, `Private=false`).
@@ -77,12 +77,21 @@ Klient dostaje **okrojony formularz**, który wdrożeniowiec generuje z pełnego
    wartości wszystkich aktywnych pól (także ukrytych – ustawionych przez wdrożeniowca), `bledy` z pełnej walidacji.
    Import w dodatku bez zmian; plik klienta można też wczytać do pełnego formularza.
 
+**Informacje dla klienta:** ogólna (widok „Formularz dla klienta” → pasek na górze formularza klienta) i do każdej
+definicji (zakładka „Uwagi i akceptacja” → ramka na górze strony definicji u klienta).
+
+**Akceptacja klienta:** na dole strony definicji klient wpisuje imię i nazwisko i klika „Akceptuję definicję”
+(niedostępne, gdy definicja ma błędy). Akceptacja zapamiętuje odcisk eksportowanych wartości i uwag – każda późniejsza
+zmiana ją unieważnia („akceptacja nieaktualna”). W pliku: `definicje[].akceptacja = { osoba, data }` albo `null`,
+na liście znaczek „✓ zaakc.”. Import w enova **tylko ostrzega** o niezaakceptowanych (komunikat „Akceptacja”, licznik
+w podglądzie, kolumna w raporcie HTML) – nie pomija ich.
+
 Pole ukryte nadal podlega regułom schematu: jeśli wybór klienta je aktywuje, obowiązuje wartość wdrożeniowca albo domyślna.
 Szkic klienta w `localStorage` ma osobny klucz (id konfiguracji), więc nie miesza się z pracą wdrożeniowca.
 
 Plik JSON można wczytać z powrotem do formularza („Wczytaj plik…” – zastąp lub dołącz), np. po uwagach wdrożeniowca.
 Format pliku: `format`, `wersjaSchematu`, `wersjaEnova`, `dataEksportu`, `ustawienia.licencja`,
-`definicje[]` z `id`, `szablon`, `uwagi`, `wartosci` (tylko pola aktywne, w kolejności schematu) i `bledy`
+`definicje[]` z `id`, `szablon`, `uwagi`, `informacja`, `akceptacja`, `wartosci` (tylko pola aktywne, w kolejności schematu) i `bledy`
 (komunikaty walidacji w chwili zapisu). Import odrzuca plik o innej głównej wersji schematu.
 
 **Szablony startowe** budowane są z definicji standardowych enova (`zrodla.json` → `szablony`, wartości z zasobów

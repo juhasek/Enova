@@ -38,8 +38,11 @@ Założenia (do potwierdzenia przy STOP po etapie 1):
 - [x] README: build, przekazanie formularza, import, aktualizacja schematu
 - [ ] Do sprawdzenia przez operatora: okno podglądu (MessageBox) w SonetaFrame – przez MCP nie jest zwracane
 
-## Etap 4 – formularz dla klienta konfigurowany przez wdrożeniowca (26.10, czeka na akceptację)
+## Etap 4 – formularz dla klienta konfigurowany przez wdrożeniowca (26.10, układ zaakceptowany)
 - [x] Widok „Formularz dla klienta”: stan pola (ukryte / do wglądu / może zmienić / musi uzupełnić), sekcje, wyszukiwarka
 - [x] Pobranie HTML klienta z wbudowaną konfiguracją i wstępnie wypełnionymi definicjami
 - [x] Widok klienta: jedna strona, tylko wskazane pola, walidacja „musi uzupełnić”, format pliku bez zmian
 - [x] E2E rozszerzony
+- [x] Informacja wdrożeniowca dla klienta (ogólna i do definicji), akceptacja definicji przez klienta (odcisk wartości)
+- [x] Import: ostrzeżenie przy definicjach niezaakceptowanych, akceptacja w podglądzie i raporcie
+- [ ] Instalacja nowej wersji dodatku w bazie Claude i test podglądu na żywo

@@ -151,6 +151,7 @@ try {
   // uwagi dla wdrożeniowca
   await zakladka('__uwagi');
   await js(`(() => { const t = document.querySelector('[data-klucz="__uwagi"]'); t.value = 'Procent ustala kierownik co miesiąc.'; t.dispatchEvent(new Event('input')); })()`);
+  await js(`(() => { const t = document.querySelector('[data-klucz="__informacja"]'); t.value = 'Sprawdźcie wysokość procentu.'; t.dispatchEvent(new Event('input')); })()`);
 
   // eksport pliku
   await klik('#btnEksport');
@@ -201,7 +202,8 @@ try {
   const konf = (sciezka, v) => js(`(() => { const s = document.querySelector('[data-konf="${sciezka}"] select'); s.value = '${v}'; s.dispatchEvent(new Event('change')); return true; })()`);
   await konf('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', 'edycja');
   await konf('Blokada', 'wymagane');
-  await czekaj(200);
+  await js(`(() => { const t = document.getElementById('wiadomoscKonf'); t.value = 'Prosimy o uzupełnienie do piątku.'; t.dispatchEvent(new Event('input')); })()`);
+  await czekaj(400);
   assert.ok(await js(`document.querySelector('.konf-liczniki').textContent.includes('Klient musi uzupełnić: 3')`), 'liczniki konfiguracji');
   await js(`window.scrollTo(0, 0)`);
   await zrzut('10-konfiguracja-klienta');
@@ -227,6 +229,29 @@ try {
   await ustaw('Blokada', 'tak');
   await ustaw('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', '12');
   await czekaj(200);
+  assert.ok(await js(`document.getElementById('wiadomosc').textContent.includes('do piątku')`), 'wiadomość wdrożeniowca');
+
+  // akceptacja: zablokowana przy błędach (zdublowana nazwa), cofana przy zmianie
+  const akceptuj = async () => {
+    await js(`(() => { const t = document.querySelector('[data-klucz="__akceptujacy"]'); t.value = 'Kierownik kadr'; t.dispatchEvent(new Event('input')); })()`);
+    await klik('#btnAkceptuj');
+    await czekaj(200);
+  };
+  await js(`(() => { const t = document.querySelector('[data-klucz="__akceptujacy"]'); t.value = 'Kierownik kadr'; t.dispatchEvent(new Event('input')); })()`);
+  assert.equal(await js(`document.getElementById('btnAkceptuj').disabled`), true, 'akceptacja zablokowana przy błędach');
+  await ustaw('Nazwa', 'Premia działu A');
+  await czekaj(200);
+  await akceptuj();
+  assert.ok(await js(`document.querySelector('#definicje li.wybrana .znaczek.zaakc') !== null`), 'znaczek akceptacji');
+  await ustaw('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', '13');
+  await czekaj(200);
+  assert.ok(await js(`document.querySelector('#btnAkceptuj') !== null && document.body.textContent.includes('akceptacja nieaktualna')`), 'zmiana cofa akceptację');
+  await akceptuj();
+  await js(`window.scrollTo(0, document.body.scrollHeight)`);
+  await zrzut('12-klient-akceptacja');
+  await js(`document.querySelectorAll('#definicje li')[1].click()`);
+  await czekaj(200);
+  assert.ok(await js(`document.querySelector('.tresc .wiadomosc').textContent.includes('wysokość procentu')`), 'informacja do definicji');
   rmSync(path.join(pobrane, plikJson)); // przeglądarka zapisze plik klienta pod tą samą nazwą
   await klik('#btnEksport');
   await czekaj(300);
@@ -234,7 +259,9 @@ try {
   for (let i = 0; i < 30 && !existsSync(path.join(pobrane, plikJson)); i++) await czekaj(200);
   const odKlienta = JSON.parse(readFileSync(path.join(pobrane, plikJson), 'utf8'));
   const d0 = odKlienta.definicje[0].wartosci;
-  assert.equal(d0['Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent'], 12, 'wartość klienta');
+  assert.equal(d0['Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent'], 13, 'wartość klienta');
+  assert.equal(odKlienta.definicje[0].akceptacja.osoba, 'Kierownik kadr', 'akceptacja w pliku');
+  assert.equal(odKlienta.definicje[1].akceptacja, null, 'bez akceptacji');
   assert.equal(d0.Blokada, true, 'wybór klienta Tak/Nie');
   assert.equal(d0['Deklaracje.PozycjaPIT'], 'PIT-11 1/PIT-4R 1', 'ukryte pola wdrożeniowca w pliku importu');
   console.log('E2E OK – zrzuty i plik w ' + wyniki);

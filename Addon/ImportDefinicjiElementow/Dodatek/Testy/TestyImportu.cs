@@ -228,6 +228,21 @@ public class TestyAnalizy
         Assert.Contains("Zapisano 2 definicji", html);
         Assert.Contains("Procent ustala kierownik co miesiąc.", html);
     }
+
+    [Fact]
+    public void Brak_akceptacji_klienta_to_tylko_ostrzezenie()
+    {
+        var json = JsonNode.Parse(Przyklad())!.AsObject();
+        json["definicje"]![0]!["akceptacja"] = new JsonObject { ["osoba"] = "Kierownik kadr", ["data"] = "2026-10-26T10:00:00Z" };
+        var plik = PlikImportu.Wczytaj(Encoding.UTF8.GetBytes(json.ToJsonString()), S);
+        var a = Analizator.Analizuj(S, plik, new Baza(), TrybImportu.NoweIAktualizacja);
+        Assert.StartsWith("Kierownik kadr, 2026-10-26", a.Definicje[0].Akceptacja);
+        Assert.DoesNotContain(a.Definicje[0].Komunikaty, k => k.Sciezka == "Akceptacja");
+        Assert.Null(a.Definicje[1].Akceptacja);
+        Assert.Contains(a.Definicje[1].Komunikaty, k => k.Sciezka == "Akceptacja" && k.Poziom == "ostrzezenie");
+        Assert.All(a.Definicje, d => Assert.Equal(StatusDefinicji.Nowa, d.Status));
+        Assert.Contains("zaakceptowane przez klienta: **1 z 2**", Raport.Podglad(a, S));
+    }
 }
 
 /// <summary>Mapowanie wartości z pliku na właściwości obiektów i typy Soneta.</summary>

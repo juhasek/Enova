@@ -35,7 +35,7 @@ public static class Raport
         var sb = new StringBuilder();
         sb.AppendLine($"**Plik:** {w.Plik.Definicje.Count} definicji, zapisany {Data(w.Plik.DataEksportu)}, tryb: **{(w.Tryb == TrybImportu.TylkoNowe ? "tylko nowe" : "nowe i aktualizacja")}**, licencja programu: {w.Licencja}.");
         sb.AppendLine();
-        sb.AppendLine($"Nowe: **{w.Liczba(StatusDefinicji.Nowa)}** · do aktualizacji: **{w.Liczba(StatusDefinicji.Aktualizacja)}** · bez zmian: {w.Liczba(StatusDefinicji.BezZmian)} · pominięte: {w.Liczba(StatusDefinicji.Pominieta)} · z błędami: **{w.Liczba(StatusDefinicji.Blad)}**");
+        sb.AppendLine($"Nowe: **{w.Liczba(StatusDefinicji.Nowa)}** · do aktualizacji: **{w.Liczba(StatusDefinicji.Aktualizacja)}** · bez zmian: {w.Liczba(StatusDefinicji.BezZmian)} · pominięte: {w.Liczba(StatusDefinicji.Pominieta)} · z błędami: **{w.Liczba(StatusDefinicji.Blad)}** · zaakceptowane przez klienta: **{w.Definicje.Count(d => d.Akceptacja != null)} z {w.Definicje.Count}**");
         foreach (var o in w.Ostrzezenia)
             sb.AppendLine().AppendLine("⚠ " + o);
         foreach (var d in w.Definicje)
@@ -74,12 +74,12 @@ public static class Raport
         foreach (var o in w.Ostrzezenia)
             sb.Append($"<p class=\"ostrz\">⚠ {H(o)}</p>");
 
-        sb.Append("<table><tr><th>#</th><th>Nazwa</th><th>Skrót</th><th>Rodzaj</th><th>Status</th><th>Wynik</th></tr>");
+        sb.Append("<table><tr><th>#</th><th>Nazwa</th><th>Skrót</th><th>Rodzaj</th><th>Akceptacja klienta</th><th>Status</th><th>Wynik</th></tr>");
         foreach (var d in w.Definicje)
         {
             var wz = z.Definicje.FirstOrDefault(x => x.Definicja == d);
             var wynik = wz == null ? "" : wz.Zapisana ? $"<span class=\"ok\">zapisana (zmienione pola: {wz.ZmienionychPol})</span>" : $"<span class=\"blad\">{H(wz.Blad)}</span>";
-            sb.Append($"<tr><td>{d.Numer}</td><td>{H(d.Nazwa)}</td><td>{H(d.Skrot)}</td><td>{H(s.EtykietaWartosci("RodzajZrodla", System.Text.Json.Nodes.JsonValue.Create(d.Rodzaj)))}</td><td>{Status(d.Status)}</td><td>{wynik}</td></tr>");
+            sb.Append($"<tr><td>{d.Numer}</td><td>{H(d.Nazwa)}</td><td>{H(d.Skrot)}</td><td>{H(s.EtykietaWartosci("RodzajZrodla", System.Text.Json.Nodes.JsonValue.Create(d.Rodzaj)))}</td><td>{(d.Akceptacja == null ? "<span class=\"ostrz\">brak</span>" : H(d.Akceptacja))}</td><td>{Status(d.Status)}</td><td>{wynik}</td></tr>");
         }
         sb.Append("</table>");
 
@@ -107,7 +107,7 @@ public static class Raport
         return sb.ToString();
     }
 
-    static string Data(string iso) => DateTime.TryParse(iso, out var d) ? d.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : iso ?? "";
+    public static string Data(string iso) => DateTime.TryParse(iso, out var d) ? d.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : iso ?? "";
 
     static string H(string t) => WebUtility.HtmlEncode(t ?? "");
 

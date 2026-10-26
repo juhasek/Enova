@@ -75,6 +75,19 @@
     return (d.wartosci && d.wartosci.Nazwa) || '(bez nazwy)';
   }
 
+  function dataTekst(iso) {
+    return new Date(iso).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
+  }
+
+  /** Akceptacja klienta obowiązuje, dopóki eksportowane wartości i uwagi są takie jak w chwili akceptacji. */
+  function odcisk(d) {
+    return JSON.stringify([W.doEksportu(SCHEMAT, d, stan.ustawienia), d.uwagi || '']);
+  }
+
+  function zaakceptowana(d) {
+    return !!(d.akceptacja && d.akceptacja.odcisk === odcisk(d));
+  }
+
   function liczbaNaTekst(v) {
     return (v === undefined || v === null) ? '' : String(v).replace('.', ',');
   }
@@ -169,6 +182,7 @@
       },
         el('div', { klasa: 'nazwa' }, el('div', { tekst: nazwaDefinicji(d) }), el('div', { klasa: 'rodzaj', tekst: rodzaj })),
         nb ? el('span', { klasa: 'znaczek blad', tekst: nb + ' bł.', title: 'Liczba błędów' })
+          : zaakceptowana(d) ? el('span', { klasa: 'znaczek zaakc', tekst: '✓ zaakc.', title: 'Zaakceptowana przez ' + d.akceptacja.osoba + ', ' + dataTekst(d.akceptacja.data) })
           : no ? el('span', { klasa: 'znaczek ostrz', tekst: no + ' ostrz.' })
             : el('span', { klasa: 'znaczek ok', tekst: '✓', title: 'Bez błędów' })
       ));
@@ -270,14 +284,61 @@
       el('p', { klasa: 'opis-zakladki', tekst: 'Opisz wszystko, czego nie da się ustawić polami: zasady regulaminu, wyjątki, sposób liczenia (np. „premia 10% od zasadniczego, nie przysługuje przy nieobecności nieusprawiedliwionej”), wątpliwości.' }),
       el('div', { klasa: 'kontrolka' }, el('textarea', {
         'data-klucz': '__uwagi', value: d.uwagi || '', 'aria-label': 'Uwagi dla wdrożeniowca',
-        oninput: function (e) { d.uwagi = e.target.value; zapiszSzkic(); }
+        oninput: function (e) { d.uwagi = e.target.value; zapiszSzkic(); },
+        onchange: function () { zmieniono(true); } // zmiana uwag cofa akceptację
       }))
     ];
+  }
+
+  function opisAkceptacji(d) {
+    if (zaakceptowana(d)) return 'Zaakceptowana przez ' + d.akceptacja.osoba + ' – ' + dataTekst(d.akceptacja.data) + '.';
+    if (d.akceptacja) return 'Definicję zmieniono po akceptacji (' + d.akceptacja.osoba + ', ' + dataTekst(d.akceptacja.data) + ') – akceptacja nieaktualna.';
+    return 'Niezaakceptowana.';
+  }
+
+  /** Wdrożeniowiec: informacja dla klienta, uwagi klienta, stan akceptacji. */
+  function trescUwagWdrozeniowca(d) {
+    return [
+      el('h3', { tekst: 'Informacja dla klienta' }),
+      el('p', { klasa: 'opis-zakladki', tekst: 'Klient zobaczy ją na górze tej definicji (np. co ustaliliście, co ma sprawdzić).' }),
+      el('div', { klasa: 'kontrolka' }, el('textarea', {
+        'data-klucz': '__informacja', value: d.informacja || '', 'aria-label': 'Informacja dla klienta',
+        oninput: function (e) { d.informacja = e.target.value; zapiszSzkic(); }
+      })),
+      el('h3', { tekst: 'Uwagi klienta dla wdrożeniowca' })
+    ].concat(trescUwag(d), [
+      el('h3', { tekst: 'Akceptacja klienta' }),
+      el('p', { klasa: zaakceptowana(d) ? 'akceptacja-ok' : 'opis-zakladki', tekst: opisAkceptacji(d) + ' Import w enova ostrzega przy definicjach niezaakceptowanych.' })
+    ]);
+  }
+
+  function sekcjaAkceptacji(d) {
+    var sec = el('section', { klasa: 'grupa-klienta' }, el('h3', { tekst: 'Akceptacja definicji' }));
+    if (zaakceptowana(d)) {
+      sec.appendChild(el('p', { klasa: 'akceptacja-ok' }, opisAkceptacji(d) + ' Każda zmiana definicji cofa akceptację. ',
+        el('button', { type: 'button', klasa: 'link', tekst: 'Cofnij akceptację', onclick: function () { delete d.akceptacja; zmieniono(true); } })));
+      return sec;
+    }
+    if (d.akceptacja) sec.appendChild(el('p', { klasa: 'komunikat ostrzezenie', tekst: opisAkceptacji(d) + ' Zaakceptuj ją ponownie.' }));
+    var bl = liczBledy(bledy()[d.id] || [], 'blad');
+    sec.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'Zaakceptuj definicję, gdy jest ostatecznie omówiona z wdrożeniowcem – wdrożeniowiec zobaczy, kto i kiedy ją zaakceptował.' }));
+    var btn = el('button', {
+      type: 'button', klasa: 'glowny', id: 'btnAkceptuj', tekst: 'Akceptuję definicję', disabled: !!bl || !(stan.akceptujacy || '').trim(),
+      onclick: function () { d.akceptacja = { osoba: stan.akceptujacy.trim(), data: new Date().toISOString(), odcisk: odcisk(d) }; zmieniono(true); }
+    });
+    sec.appendChild(el('div', { klasa: 'akceptacja-wiersz kontrolka' },
+      el('input', {
+        type: 'text', 'data-klucz': '__akceptujacy', value: stan.akceptujacy || '', placeholder: 'Imię i nazwisko akceptującego', 'aria-label': 'Imię i nazwisko akceptującego',
+        oninput: function (e) { stan.akceptujacy = e.target.value; btn.disabled = !!bl || !e.target.value.trim(); zapiszSzkic(); }
+      }), btn));
+    if (bl) sec.appendChild(el('div', { klasa: 'komunikat blad', tekst: 'Najpierw popraw błędy w definicji.' }));
+    return sec;
   }
 
   /** Klient: jedna strona – tylko pola wskazane przez wdrożeniowca, pogrupowane jak zakładki enova (bez klikania zakładek). */
   function trescKlienta(d, k) {
     var tresc = el('div', { klasa: 'tresc' });
+    if (d.informacja) tresc.appendChild(el('div', { klasa: 'wiadomosc' }, el('strong', { tekst: 'Informacja od wdrożeniowca: ' }), d.informacja));
     var byly = {};
     zakladkiWidoczne(k).forEach(function (z) {
       var sekcje = [];
@@ -295,15 +356,16 @@
       });
       if (sekcje.length) tresc.appendChild(el('section', { klasa: 'grupa-klienta' }, el('h3', { tekst: z.etykieta }), sekcje));
     });
-    if (!tresc.childNodes.length)
+    if (!tresc.querySelector('fieldset'))
       tresc.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'W tej definicji nie ma pól do uzupełnienia – ewentualne uwagi wpisz poniżej.' }));
     tresc.appendChild(el('section', { klasa: 'grupa-klienta' }, el('h3', { tekst: 'Uwagi dla wdrożeniowca' }), trescUwag(d)));
+    tresc.appendChild(sekcjaAkceptacji(d));
     return tresc;
   }
 
   function renderZakladki(kont, d, k, zakladki) {
     var nav = el('nav', { klasa: 'zakladki', role: 'tablist' });
-    zakladki.concat([{ id: ZAKLADKA_UWAGI, etykieta: 'Uwagi dla wdrożeniowca' }]).forEach(function (z) {
+    zakladki.concat([{ id: ZAKLADKA_UWAGI, etykieta: 'Uwagi i akceptacja' }]).forEach(function (z) {
       nav.appendChild(el('button', {
         type: 'button', role: 'tab', klasa: z.id === stan.zakladka ? 'aktywna' : '', 'data-zakladka': z.id,
         'aria-selected': z.id === stan.zakladka ? 'true' : 'false',
@@ -314,7 +376,7 @@
 
     var tresc = el('div', { klasa: 'tresc', role: 'tabpanel' });
     if (stan.zakladka === ZAKLADKA_UWAGI) {
-      trescUwag(d).forEach(function (x) { tresc.appendChild(x); });
+      trescUwagWdrozeniowca(d).forEach(function (x) { tresc.appendChild(x); });
     } else {
       var z = SCHEMAT.zakladki.filter(function (x) { return x.id === stan.zakladka; })[0];
       if (z.opis) tresc.appendChild(el('p', { klasa: 'opis-zakladki', tekst: z.opis }));
@@ -594,6 +656,7 @@
     if (KLIENT) return zapytaj('Jak wypełnić formularz', [
       'Każda pozycja na liście po lewej to jedna definicja elementu wynagrodzenia (dodatek, premia, potrącenie…). Wdrożeniowiec przygotował je wstępnie – uzupełnij pola na stronie każdej definicji.',
       'Pole z gwiazdką trzeba uzupełnić. Przycisk „?” pokazuje pełny opis pola i znaczenie każdej opcji. Pola szare są tylko do wglądu – jeśli u Was jest inaczej, napisz o tym w „Uwagach dla wdrożeniowca” na dole strony.',
+      'Gdy definicja jest ostatecznie omówiona z wdrożeniowcem, wpisz na dole strony imię i nazwisko i kliknij „Akceptuję definicję”. Każda późniejsza zmiana definicji cofa akceptację.',
       'Formularz zapisuje szkic w tej przeglądarce. Gotowy plik zapisz przyciskiem „Zapisz plik dla wdrożeniowca” i prześlij go mailem; zapisany plik można wczytać ponownie przyciskiem „Wczytaj plik…”.'
     ]);
     zapytaj('Jak wypełnić formularz', [
@@ -630,6 +693,8 @@
             id: d.id,
             szablon: d.szablon || null,
             uwagi: d.uwagi || '',
+            informacja: d.informacja || '',
+            akceptacja: zaakceptowana(d) ? { osoba: d.akceptacja.osoba, data: d.akceptacja.data } : null,
             wartosci: W.doEksportu(SCHEMAT, d, stan.ustawienia),
             // pełna walidacja (także pól wdrożeniowca) – tak samo sprawdzi import
             bledy: W.waliduj(SCHEMAT, d, stan.definicje, stan.ustawienia).filter(function (x) { return x.poziom === 'blad'; })
@@ -690,6 +755,12 @@
       }),
       el('button', { type: 'button', tekst: 'Ukryj wszystkie', onclick: function () { kl.pola = {}; odswiez(); } }),
       el('button', { type: 'button', klasa: 'glowny', id: 'btnPobierzKlienta', tekst: 'Pobierz formularz dla klienta', onclick: pobierzFormularzKlienta })));
+    tresc.appendChild(el('div', { klasa: 'kontrolka konf-wiadomosc' },
+      el('label', { htmlFor: 'wiadomoscKonf', tekst: 'Informacja dla klienta (na górze formularza, np. termin, kontakt, co uzupełnić):' }),
+      el('textarea', {
+        id: 'wiadomoscKonf', value: kl.wiadomosc || '',
+        oninput: function (e) { kl.wiadomosc = e.target.value; zapiszSzkic(); }
+      })));
     var byly = {};
     SCHEMAT.zakladki.forEach(function (z) {
       var sekcje = [];
@@ -731,9 +802,9 @@
       utworzono: new Date().toISOString(),
       licencja: stan.ustawienia.licencja,
       mozeDodawac: !!kl.mozeDodawac,
+      wiadomosc: kl.wiadomosc || '',
       pola: kopia(kl.pola),
-      // własne uwagi wdrożeniowca zostają u niego
-      definicje: stan.definicje.map(function (d) { return { id: d.id, szablon: d.szablon || null, uwagi: '', wartosci: kopia(d.wartosci || {}) }; })
+      definicje: kopia(stan.definicje)
     };
     var BS = String.fromCharCode(92);
     var json = JSON.stringify(konf).replace(/</g, BS + 'u003c').replace(new RegExp(String.fromCharCode(0x2028), 'g'), BS + 'u2028').replace(new RegExp(String.fromCharCode(0x2029), 'g'), BS + 'u2029');
@@ -753,7 +824,10 @@
         zapytaj('Inna wersja formularza', 'Plik zapisano formularzem w wersji ' + dane.wersjaSchematu + ', a ten formularz ma wersję ' + SCHEMAT.wersjaSchematu + '. Poproś wdrożeniowca o aktualny formularz.'); return;
       }
       var nowe = dane.definicje.map(function (d) {
-        return { id: d.id || noweId(), szablon: d.szablon || null, uwagi: d.uwagi || '', wartosci: d.wartosci || {} };
+        return {
+          id: d.id || noweId(), szablon: d.szablon || null, uwagi: d.uwagi || '', informacja: d.informacja || '', wartosci: d.wartosci || {},
+          akceptacja: d.akceptacja && d.akceptacja.osoba ? { osoba: d.akceptacja.osoba, data: d.akceptacja.data } : undefined
+        };
       });
       var wybor = stan.definicje.length
         ? zapytaj('Wczytywanie pliku', 'Plik zawiera ' + nowe.length + ' definicji. Na liście jest już ' + stan.definicje.length + '.',
@@ -766,7 +840,9 @@
           stan.definicje.forEach(function (d) { ids[d.id] = true; });
           nowe.forEach(function (d) { if (ids[d.id]) d.id = noweId(); stan.definicje.push(d); });
         } else return;
-        if (dane.ustawienia && dane.ustawienia.licencja) stan.ustawienia.licencja = dane.ustawienia.licencja;
+        if (dane.ustawienia && dane.ustawienia.licencja && !KLIENT) stan.ustawienia.licencja = dane.ustawienia.licencja;
+        // akceptacja z pliku dotyczy wartości z pliku
+        nowe.forEach(function (d) { if (d.akceptacja) d.akceptacja.odcisk = odcisk(d); });
         document.getElementById('licencja').value = stan.ustawienia.licencja;
         stan.wybrana = nowe.length ? nowe[0].id : null;
         stan.zakladka = null;
@@ -789,6 +865,9 @@
     var btnKlient = document.getElementById('btnKlient');
     btnKlient.hidden = KLIENT;
     btnKlient.addEventListener('click', function () { stan.widok = 'konfiguracja'; zapiszSzkic(); renderLista(); renderEdytor(); });
+    var wiad = document.getElementById('wiadomosc');
+    wiad.hidden = !(KLIENT && KONF.wiadomosc);
+    if (!wiad.hidden) wiad.appendChild(el('div', { klasa: 'wiadomosc' }, el('strong', { tekst: 'Informacja od wdrożeniowca: ' }), KONF.wiadomosc));
     if (KLIENT && !KONF.mozeDodawac) ['btnNowa', 'btnDuplikuj', 'btnUsun'].forEach(function (id) { document.getElementById(id).hidden = true; });
     document.getElementById('btnNowa').addEventListener('click', function (e) {
       e.stopPropagation();
