@@ -28,9 +28,7 @@ namespace Soneta.Runtime.Database.Business.TblCodeFiles {
         // (godziny ponadwymiarowe niepełnoetatowców mają własną strefę i nie są tu liczone).
         public static Time NadgodzinyWRoku(Pracownik pracownik) {
             FromTo rok = new FromTo(Date.Today.FirstDayYear(), Date.Today.LastDayYear());
-            KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
-            return CzasStrefy(pracownik, kalkPracy, rok, "Praca poza normą")
-                - CzasStrefy(pracownik, kalkPracy, rok, "Rozliczenie wyjścia prywatnego");
+            return PracaPozaNormaBezOdpracowan(pracownik, rok);
         }
 
         public static int DniDoOdbioru(Pracownik pracownik) {
@@ -47,8 +45,7 @@ namespace Soneta.Runtime.Database.Business.TblCodeFiles {
         public static Time DoWyplaty(Pracownik pracownik) {
             FromTo okres = pracownik.WyliczOkresRoliczeniowyNadgodzin(Date.Today);
             KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
-            Time doWyplaty = CzasStrefy(pracownik, kalkPracy, okres, "Praca poza normą")
-                - CzasStrefy(pracownik, kalkPracy, okres, "Rozliczenie wyjścia prywatnego");
+            Time doWyplaty = PracaPozaNormaBezOdpracowan(pracownik, okres);
 
             foreach (DefinicjaStrefy definicja in KalendModule.GetInstance(pracownik.Session).DefinicjeStref) {
                 if (CzyWyjsciePrywatne(definicja))
@@ -76,46 +73,51 @@ namespace Soneta.Runtime.Database.Business.TblCodeFiles {
         }
 
         // Cały magazyn pracownika (bez ograniczenia do okresu - nierozliczone godziny przechodzą na kolejne okresy).
-        // Rozliczenia wyjściami prywatnymi są pomijane: enova paruje je z nadgodzinami, a nie zmniejszają one nadgodzin.
+        // Nie zależy od parowania zasobów: enova paruje odbiór/wypłatę z nadgodzinami dopiero czynnością
+        // "Rozlicz nadgodziny" (albo dokumentem rozliczenia), więc ręcznie wpisany odbiór zwykle wisi osobno.
+        // Dlatego suma odbiorów i wypłat zdejmowana jest z nadgodzin od najstarszych (jak FIFO enova).
+        // Strefy wyjść prywatnych (wyjście, odpracowanie, potrącenie) są pomijane po obu stronach.
         // Dzień wolny do odbioru = praca w dniu wolnym wg planu, której część "dniówkowa"
         // (do normy dobowej etatu, jak w enova przy odbiorze dnia wolnego) nie została jeszcze odebrana ani wypłacona;
         // po częściowym odbiorze dzień znika, a reszta przechodzi do godzin.
         public static StanDoOdbioru PoliczDoOdbioru(Pracownik pracownik) {
             Dictionary<StrefaPracy, Time> wypracowaneWStrefie = new Dictionary<StrefaPracy, Time>();
-            Dictionary<StrefaPracy, Time> pozostaloWStrefie = new Dictionary<StrefaPracy, Time>();
-            Time rozliczoneBezNadgodzin = Time.Zero;
+            Time rozliczono = Time.Zero;
 
             foreach (ZasobRN zasob in pracownik.ZasobyRN) {
                 if (CzyWyjsciePrywatne(zasob.Strefa.Definicja))
                     continue;
-                if (zasob.Kierunek == KierunekMagazynuNadgodzin.NadgodzinyDoRozliczenia) {
+                if (zasob.Kierunek == KierunekMagazynuNadgodzin.NadgodzinyDoRozliczenia)
                     Dodaj(wypracowaneWStrefie, zasob.Strefa, zasob.Partia.Rozliczany);
-                    Dodaj(pozostaloWStrefie, zasob.Strefa, zasob.Partia.Rozliczany);
-                }
                 else
-                    rozliczoneBezNadgodzin += zasob.Partia.Rozliczany;   // odbiór "na zapas", bez pokrycia w nadgodzinach
+                    rozliczono += zasob.Partia.Rozliczany;
             }
 
             foreach (ObrotRN obrot in KalendModule.GetInstance(pracownik.Session).ObrotyRN.WgPracownik[pracownik]) {
-                bool zWyjsciaPrywatnego = CzyWyjsciePrywatne(obrot.StrefaNadgodziny.Definicja);
-                bool naWyjsciePrywatne = CzyWyjsciePrywatne(obrot.StrefaRozliczenie.Definicja);
-                Time rozliczono = obrot.Nadgodziny.Rozliczany;
-                if (!zWyjsciaPrywatnego) {
-                    Dodaj(wypracowaneWStrefie, obrot.StrefaNadgodziny, rozliczono);
-                    Dodaj(pozostaloWStrefie, obrot.StrefaNadgodziny, naWyjsciePrywatne ? rozliczono : Time.Zero);
-                }
-                else if (!naWyjsciePrywatne)
-                    rozliczoneBezNadgodzin += rozliczono;   // odbiór/wypłata sparowane przez enova z odpracowaniem wyjścia
+                if (!CzyWyjsciePrywatne(obrot.StrefaNadgodziny.Definicja))
+                    Dodaj(wypracowaneWStrefie, obrot.StrefaNadgodziny, obrot.Nadgodziny.Rozliczany);
+                if (!CzyWyjsciePrywatne(obrot.StrefaRozliczenie.Definicja))
+                    rozliczono += obrot.Rozliczenie.Rozliczany;
             }
+
+            List<StrefaPracy> strefyOdNajstarszej = new List<StrefaPracy>(wypracowaneWStrefie.Keys);
+            strefyOdNajstarszej.Sort(delegate (StrefaPracy pierwsza, StrefaPracy druga) {
+                return pierwsza.Dzien.Data == druga.Dzien.Data ? pierwsza.ID.CompareTo(druga.ID)
+                    : (pierwsza.Dzien.Data < druga.Dzien.Data ? -1 : 1);
+            });
 
             StanDoOdbioru stan = new StanDoOdbioru();
             KalkulatorPracownika czasy = pracownik.Czasy;
-            foreach (KeyValuePair<StrefaPracy, Time> strefaNadgodzin in pozostaloWStrefie) {
-                Date data = strefaNadgodzin.Key.Dzien.Data;
-                Time pozostalo = strefaNadgodzin.Value;
+            foreach (StrefaPracy strefaNadgodzin in strefyOdNajstarszej) {
+                Time wypracowano = wypracowaneWStrefie[strefaNadgodzin];
+                Time zdjete = Time.Min(wypracowano, rozliczono);
+                Time pozostalo = wypracowano - zdjete;
+                rozliczono -= zdjete;
+
+                Date data = strefaNadgodzin.Dzien.Data;
                 Dzien dzienPlanu = czasy.KalkPlanu[data];
                 if (dzienPlanu != null && dzienPlanu.Definicja.Typ != TypDnia.Pracy) {
-                    Time dniowka = Time.Min(wypracowaneWStrefie[strefaNadgodzin.Key], pracownik[data].Etat.NormaDobowa);
+                    Time dniowka = Time.Min(wypracowano, pracownik[data].Etat.NormaDobowa);
                     if (dniowka > Time.Zero && pozostalo >= dniowka) {
                         stan.Dni++;
                         pozostalo -= dniowka;
@@ -123,8 +125,31 @@ namespace Soneta.Runtime.Database.Business.TblCodeFiles {
                 }
                 stan.Godziny += pozostalo;
             }
-            stan.Godziny -= rozliczoneBezNadgodzin;
+            stan.Godziny -= rozliczono;   // odbiór "na zapas", bez pokrycia w nadgodzinach
             return stan;
+        }
+
+        // Praca poza normą w okresie bez godzin odpracowania wyjścia prywatnego - per dzień, bo odpracowanie
+        // wpisane samą strefą rozliczenia (bez pracy poza normą) nie może zmniejszać nadgodzin z innych dni.
+        public static Time PracaPozaNormaBezOdpracowan(Pracownik pracownik, FromTo okres) {
+            View<DzienPracy> dniPracy = KalendModule.GetInstance(pracownik.Session).DniPracy.WgPracownik[pracownik].CreateView();
+            dniPracy.Condition = new FieldCondition.Contain("Data", okres);
+            Time wynik = Time.Zero;
+            foreach (DzienPracy dzienPracy in dniPracy) {
+                Time pozaNorma = Time.Zero;
+                Time odpracowanie = Time.Zero;
+                foreach (StrefaPracy strefa in dzienPracy.Strefy) {
+                    if (strefa.Definicja == null)
+                        continue;
+                    if (strefa.Definicja.Nazwa == "Praca poza normą")
+                        pozaNorma += strefa.Czas;
+                    else if (strefa.Definicja.Nazwa == "Rozliczenie wyjścia prywatnego")
+                        odpracowanie += strefa.Czas;
+                }
+                if (pozaNorma > odpracowanie)
+                    wynik += pozaNorma - odpracowanie;
+            }
+            return wynik;
         }
 
         // ---------------- pomocnicze ----------------
