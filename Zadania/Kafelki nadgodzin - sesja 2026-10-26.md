@@ -27,3 +27,20 @@ S2 0 / 0:00 / 2:00, S4 1 dzień / 0:00 / 4:00, S5 0 / 6:00 / 6:00, T4 0 / 1:00 /
 - Przetestować na danych: częściowy odbiór dnia wolnego, wypłata z magazynu, wyjście prywatne przy nadgodzinach w magazynie, nadgodziny naliczone na liście płac.
 - Do potwierdzenia: czy ujemny bilans „na zapas” ma być widoczny (teraz tak); czy strefa „Potrącenie wyjścia prywatnego” u klienta ma zmniejszać kafelek WyjsciePrywatne (teraz nie – nie znam jej konfiguracji); czy „Bilans wszystkich nadgodzin” ma iść ze stref (teraz) czy z silnika enova.
 - Kod wymaga wersji klienta zgodnej z API magazynu (`ZasobyRN`, `ObrotyRN.WgPracownik`) – sprawdzone tylko na 2610.
+
+## Uwagi klienta po testach (ta sama data) – ocena
+Spełnione (zgodne z kodem i oznaczone przez klienta „ok”): wnioski i ręczne WP, odpracowanie WP wnioskiem
+nie rusza bilansu nadgodzin, ręczny odbiór zmniejsza bilans, nadgodziny do odbioru w dni robocze, praca w normie
+nie wpływa na bilanse.
+
+Niespełnione:
+1. Ręczne odpracowanie WP 1 h zwiększa NadgRazem o 2 h – wzór PPN − „Rozliczenie wyjścia prywatnego” nie
+   rozpoznaje sposobu zapisu odpracowania u klienta (potrzebne strefy takiego dnia).
+2. NadgRazem nie widzi wniosków na kolejne miesiące – liczy tylko strefę „Praca poza normą” z roku `Date.Today`;
+   wniosek z wyprzedzeniem prawdopodobnie zakłada tylko strefę magazynu. Nazwa kafelka („ze wszystkich złożonych
+   wniosków”) wskazuje, że źródłem mają być wnioski/magazyn, nie RCP.
+3. Dni wolne: wartości −1 i „losowe” 3/4/6 dni są niemożliwe w obecnym `DniDoOdbioru` (tylko `Dni++`) –
+   do sprawdzenia, czy u klienta jest wgrany kod z CodeFiles A1KafelkiNadgodzin i co liczy kafelek pulpitu.
+   Godziny ≤ 8 h w sobotę trafiają do godzin, gdy dzień w planie ma typ „Pracy” (np. po zamianie dnia).
+4. Do wypłaty po zmianie przestało działać przy ręcznym wniosku – regresja: wzór ze stref zamiast silnika.
+   Propozycja: `Czasy.Nadgodziny(okres).Razem` (silnik sam odejmuje magazyn i dolicza wypłatę) − elementy z listy.
