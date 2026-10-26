@@ -1,0 +1,151 @@
+using System;
+using System.Collections.Generic;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kadry;
+using Soneta.Kalend;
+using Soneta.Place;
+
+// Wspólny kod cech kafelków nadgodzin (kategoria cech "Kafelek" na Pracownicy).
+// Magazyn nadgodzin enova: ZasobRN = nierozliczona reszta strefy, ObrotRN = rozliczona para
+// (strefa nadgodzin -> strefa odbioru / wypłaty). Godziny liczone w jednostkach nadgodzin (Partia.Rozliczany).
+
+namespace Soneta.Runtime.Database.Business.TblCodeFiles {
+
+    public static class KafelkiNadgodzin {
+
+        // ---------------- kafelki ----------------
+
+        // Wyjścia prywatne nieodpracowane w bieżącym okresie rozliczeniowym.
+        public static Time WyjsciaPrywatne(Pracownik pracownik) {
+            FromTo okres = pracownik.WyliczOkresRoliczeniowyNadgodzin(Date.Today);
+            KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
+            return CzasStrefy(pracownik, kalkPracy, okres, "Wyjście prywatne")
+                - CzasStrefy(pracownik, kalkPracy, okres, "Rozliczenie wyjścia prywatnego");
+        }
+
+        // Wszystkie nadgodziny w bieżącym roku - ze stref, niezależnie od wymiaru etatu
+        // (godziny ponadwymiarowe niepełnoetatowców mają własną strefę i nie są tu liczone).
+        public static Time NadgodzinyWRoku(Pracownik pracownik) {
+            FromTo rok = new FromTo(Date.Today.FirstDayYear(), Date.Today.LastDayYear());
+            KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
+            return CzasStrefy(pracownik, kalkPracy, rok, "Praca poza normą")
+                - CzasStrefy(pracownik, kalkPracy, rok, "Rozliczenie wyjścia prywatnego");
+        }
+
+        public static int DniDoOdbioru(Pracownik pracownik) {
+            return PoliczDoOdbioru(pracownik).Dni;
+        }
+
+        public static Time GodzinyDoOdbioru(Pracownik pracownik) {
+            return PoliczDoOdbioru(pracownik).Godziny;
+        }
+
+        // Nadgodziny bieżącego okresu rozliczeniowego do wypłaty, jeszcze nierozliczone na liście płac:
+        // praca poza normą, której nie odłożono do magazynu, + godziny przekwalifikowane do wypłaty
+        // - godziny elementów nadgodzin już naliczonych za ten okres.
+        public static Time DoWyplaty(Pracownik pracownik) {
+            FromTo okres = pracownik.WyliczOkresRoliczeniowyNadgodzin(Date.Today);
+            KalkulatorPracy kalkPracy = pracownik.Czasy.KalkPracy;
+            Time doWyplaty = CzasStrefy(pracownik, kalkPracy, okres, "Praca poza normą")
+                - CzasStrefy(pracownik, kalkPracy, okres, "Rozliczenie wyjścia prywatnego");
+
+            foreach (DefinicjaStrefy definicja in KalendModule.GetInstance(pracownik.Session).DefinicjeStref) {
+                if (CzyWyjsciePrywatne(definicja))
+                    continue;
+                if (definicja.Rozliczenie == TypRozliczenia.WKolejnychMiesiącach)
+                    doWyplaty -= kalkPracy.Praca(okres, definicja).Czas;
+                else if (definicja.Rozliczenie == TypRozliczenia.WypłataNadgodzin)
+                    doWyplaty += kalkPracy.Praca(okres, definicja).Czas;
+            }
+
+            foreach (WypElement elementWyplaty in pracownik.Elementy[okres]) {
+                if (elementWyplaty.RodzajZrodla == RodzajŹródłaWypłaty.NadgodzinyI
+                    || elementWyplaty.RodzajZrodla == RodzajŹródłaWypłaty.NadgodzinyII
+                    || elementWyplaty.RodzajZrodla == RodzajŹródłaWypłaty.NadgodzinyŚw)
+                    doWyplaty -= elementWyplaty.Czas;
+            }
+            return doWyplaty > Time.Zero ? doWyplaty : Time.Zero;
+        }
+
+        // ---------------- magazyn nadgodzin ----------------
+
+        public class StanDoOdbioru {
+            public int Dni;
+            public Time Godziny = Time.Zero;
+        }
+
+        // Cały magazyn pracownika (bez ograniczenia do okresu - nierozliczone godziny przechodzą na kolejne okresy).
+        // Rozliczenia wyjściami prywatnymi są pomijane: enova paruje je z nadgodzinami, a nie zmniejszają one nadgodzin.
+        // Dzień wolny do odbioru = praca w dniu wolnym wg planu, której część "dniówkowa"
+        // (do normy dobowej etatu, jak w enova przy odbiorze dnia wolnego) nie została jeszcze odebrana ani wypłacona;
+        // po częściowym odbiorze dzień znika, a reszta przechodzi do godzin.
+        public static StanDoOdbioru PoliczDoOdbioru(Pracownik pracownik) {
+            Dictionary<StrefaPracy, Time> wypracowaneWStrefie = new Dictionary<StrefaPracy, Time>();
+            Dictionary<StrefaPracy, Time> pozostaloWStrefie = new Dictionary<StrefaPracy, Time>();
+            Time rozliczoneBezNadgodzin = Time.Zero;
+
+            foreach (ZasobRN zasob in pracownik.ZasobyRN) {
+                if (CzyWyjsciePrywatne(zasob.Strefa.Definicja))
+                    continue;
+                if (zasob.Kierunek == KierunekMagazynuNadgodzin.NadgodzinyDoRozliczenia) {
+                    Dodaj(wypracowaneWStrefie, zasob.Strefa, zasob.Partia.Rozliczany);
+                    Dodaj(pozostaloWStrefie, zasob.Strefa, zasob.Partia.Rozliczany);
+                }
+                else
+                    rozliczoneBezNadgodzin += zasob.Partia.Rozliczany;   // odbiór "na zapas", bez pokrycia w nadgodzinach
+            }
+
+            foreach (ObrotRN obrot in KalendModule.GetInstance(pracownik.Session).ObrotyRN.WgPracownik[pracownik]) {
+                bool zWyjsciaPrywatnego = CzyWyjsciePrywatne(obrot.StrefaNadgodziny.Definicja);
+                bool naWyjsciePrywatne = CzyWyjsciePrywatne(obrot.StrefaRozliczenie.Definicja);
+                Time rozliczono = obrot.Nadgodziny.Rozliczany;
+                if (!zWyjsciaPrywatnego) {
+                    Dodaj(wypracowaneWStrefie, obrot.StrefaNadgodziny, rozliczono);
+                    Dodaj(pozostaloWStrefie, obrot.StrefaNadgodziny, naWyjsciePrywatne ? rozliczono : Time.Zero);
+                }
+                else if (!naWyjsciePrywatne)
+                    rozliczoneBezNadgodzin += rozliczono;   // odbiór/wypłata sparowane przez enova z odpracowaniem wyjścia
+            }
+
+            StanDoOdbioru stan = new StanDoOdbioru();
+            KalkulatorPracownika czasy = pracownik.Czasy;
+            foreach (KeyValuePair<StrefaPracy, Time> strefaNadgodzin in pozostaloWStrefie) {
+                Date data = strefaNadgodzin.Key.Dzien.Data;
+                Time pozostalo = strefaNadgodzin.Value;
+                Dzien dzienPlanu = czasy.KalkPlanu[data];
+                if (dzienPlanu != null && dzienPlanu.Definicja.Typ != TypDnia.Pracy) {
+                    Time dniowka = Time.Min(wypracowaneWStrefie[strefaNadgodzin.Key], pracownik[data].Etat.NormaDobowa);
+                    if (dniowka > Time.Zero && pozostalo >= dniowka) {
+                        stan.Dni++;
+                        pozostalo -= dniowka;
+                    }
+                }
+                stan.Godziny += pozostalo;
+            }
+            stan.Godziny -= rozliczoneBezNadgodzin;
+            return stan;
+        }
+
+        // ---------------- pomocnicze ----------------
+
+        // shortcut: wyjścia prywatne rozpoznawane po nazwie strefy ("Wyjście prywatne", "Rozliczenie/Potrącenie wyjścia prywatnego");
+        // przy innym nazewnictwie u klienta podać tu listę definicji.
+        public static bool CzyWyjsciePrywatne(DefinicjaStrefy definicja) {
+            return definicja != null && definicja.Nazwa.IndexOf("prywatn", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        // Bez definicji Praca() policzyłaby wszystkie strefy dnia - brak strefy o tej nazwie = 0.
+        public static Time CzasStrefy(Pracownik pracownik, KalkulatorPracy kalkPracy, FromTo okres, string nazwaStrefy) {
+            DefinicjaStrefy definicja = KalendModule.GetInstance(pracownik.Session).DefinicjeStref.WgNazwy[nazwaStrefy];
+            return definicja == null ? Time.Zero : kalkPracy.Praca(okres, definicja).Czas;
+        }
+
+        static void Dodaj(Dictionary<StrefaPracy, Time> czasWStrefie, StrefaPracy strefa, Time czas) {
+            Time dotychczas;
+            if (!czasWStrefie.TryGetValue(strefa, out dotychczas))
+                dotychczas = Time.Zero;
+            czasWStrefie[strefa] = dotychczas + czas;
+        }
+    }
+}

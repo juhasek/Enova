@@ -1,43 +1,7 @@
 public int Feature_DniDoOdbioru {
     get {
-	    int dni = 0;
-	    FromTo okresRozliczeniowy = Row.WyliczOkresRoliczeniowyNadgodzin(Date.Today);
-	    KalkulatorPracy kalkPracy = Row.Czasy.KalkPracy;
-	    kalkPracy.LoadOkres(okresRozliczeniowy);
-	    KalendModule kalend = KalendModule.GetInstance(Session);
-	    View<DzienPracy> view = kalend.DniPracy.WgPracownik[Row].CreateView();
-	    view.Condition = new FieldCondition.Contain("Data", okresRozliczeniowy);
-	
-			foreach (DzienPracy dp in view)
-			{
-			    Dzien dzien = kalkPracy[dp.Data];
-			    
-			    
-			    if (dzien.Definicja.Typ != TypDnia.Świąteczny && dzien.Definicja.Typ != TypDnia.Wolny)
-			    {
-			        continue;
-			    }
-			
-			    var obrot = dp.Strefy
-			        .Where(s => s.Obroty != null)
-			        .SelectMany(s => s.Obroty)
-			        .FirstOrDefault();
-				
-					var zasob = dp.Strefy
-							.Where(s => s.Zasoby != null && s.Kierunek == KierunekMagazynuNadgodzin.NadgodzinyDoRozliczenia)
-							.SelectMany(s => s.Zasoby)
-							.FirstOrDefault();
-				
-			
-			    if (zasob == null)
-			    {
-			        continue;
-			    }
-			
-			    dni++;
-			}
-	
-	    return dni;
+        // kod wspólny: Dodatkowy kod kompilacji "A1KafelkiNadgodzin"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.KafelkiNadgodzin.DniDoOdbioru(Row);
     }
 }
 

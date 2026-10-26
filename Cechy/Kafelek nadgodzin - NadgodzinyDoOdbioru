@@ -1,89 +1,10 @@
 public Time Feature_NadgodzinyDoOdbioru {
     get {
-			
-					Time doOdbioru = Time.Zero;
-			    FromTo okresRozliczeniowy = Row.WyliczOkresRoliczeniowyNadgodzin(Date.Today);
-			    KalkulatorPracy kalkPracy = Row.Czasy.KalkPracy;
-			    kalkPracy.LoadOkres(okresRozliczeniowy);
-			    KalendModule kalend = KalendModule.GetInstance(Session);
-			    View<DzienPracy> view = kalend.DniPracy.WgPracownik[Row].CreateView();
-			    view.Condition = new FieldCondition.Contain("Data", okresRozliczeniowy);
-			
-					foreach (DzienPracy dp in view)
-					{
-					    Dzien dzien = kalkPracy[dp.Data];
-					
-					    var obrot = dp.Strefy
-					        .Where(s => s.Obroty != null)
-					        .SelectMany(s => s.Obroty)
-					        .FirstOrDefault();
-						
-							var zasob = dp.Strefy
-									.Where(s => s.Zasoby != null && s.Kierunek == KierunekMagazynuNadgodzin.NadgodzinyDoRozliczenia)
-									.SelectMany(s => s.Zasoby)
-									.FirstOrDefault();
-						
-							var wyplata = dp.Strefy
-									.Where(s => s.Zasoby != null && s.Kierunek == KierunekMagazynuNadgodzin.RozliczenieNadgodzin)
-									.SelectMany(s => s.Zasoby)
-									.FirstOrDefault();
-						
-						
-							Time prog = new Time(8,0);
-							
-					    
-					    if (dzien.Definicja.Typ == TypDnia.Świąteczny || dzien.Definicja.Typ == TypDnia.Wolny)
-					    {
-					    	if(zasob != null && zasob.Strefa.Czas > prog)
-								{
-									if(zasob.Partia != null && zasob.Partia.Czas > prog)
-										doOdbioru += (zasob.Partia.Czas - prog);
-									else
-										doOdbioru += zasob.Partia.Czas;
-								}
-					    }
-							else
-							{
-								if(zasob != null && zasob.Partia != null)
-								{
-									if(wyplata != null)
-										doOdbioru += (zasob.Partia.Czas - wyplata.Partia.Czas);
-									else
-										doOdbioru += zasob.Partia.Czas;
-								}
-							}
-					
-					}
-			
-			    return doOdbioru;
-			
-			
-			
-                /*Time empty = Time.Empty;
-                Time empty2 = Time.Empty;
-                //Time Kompensata = Time.Zero;
-                FromTo okresRozliczeniowy = Row.WyliczOkresRoliczeniowyNadgodzin(Date.Today);
-                KalendModule instance = KalendModule.GetInstance(Session);
-                DefinicjaStrefy def = instance.DefinicjeStref.WgNazwy["Nadgodziny do przeniesienia"];
-                DefinicjaStrefy def2 = instance.DefinicjeStref.WgNazwy["Rozliczenie nadgodzin (prac)"];
-                DefinicjaStrefy def3 = instance.DefinicjeStref.WgNazwy["Wypłata nadgodzin"];
-                DefinicjaStrefy def4 = instance.DefinicjeStref.WgNazwy["Rozliczenie nadgodzin nieob."];
-
-                // dodać obslugę Rozliczenie nadgodzin nieob. tak jak linijka 9
-                DefinicjaStrefy definicjaStrefy = instance.DefinicjeStref.WgNazwy["Praca poza normą"];
-                CzasDni czasDni = Row.Czasy.KalkPracy.Praca(okresRozliczeniowy, def);
-                CzasDni czasDni2 = Row.Czasy.KalkPracy.Praca(okresRozliczeniowy, def3);
-                CzasDni czasDni3 = Row.Czasy.KalkPracy.Praca(okresRozliczeniowy, def2);
-                CzasDni czasDni4 = Row.Czasy.KalkPracy.Praca(okresRozliczeniowy, def4);
-
-                if(czasDni.Czas != Time.Zero)
-                    empty = czasDni.Czas - (czasDni3.Czas + czasDni4.Czas)- czasDni2.Czas;
-                else
-                    empty = Time.Zero;
-                int Dni = DniDoOdbioru();
-                return empty - Kompensata;*/
+        // kod wspólny: Dodatkowy kod kompilacji "A1KafelkiNadgodzin"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.KafelkiNadgodzin.GodzinyDoOdbioru(Row);
     }
 }
+
 // W kodzie możesz używać następujacych zmiennych:
 // Row: Pracownik - Wiersz przeliczanej cechy
 // Table: Pracownicy - Tabela wiersza przeliczanej cechy
