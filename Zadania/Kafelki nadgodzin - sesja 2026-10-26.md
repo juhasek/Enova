@@ -56,3 +56,13 @@ Niespełnione:
 - Dysk C: zapełnił się w trakcie (SQL timeout) – usunięte 2 kopie Claude_przed_widokiem_DAK (14.10 i 22.10 10:05) za zgodą użytkownika.
 
 Otwarte: rok kalendarzowy w NadgRazem (nadgodziny z kolejnego roku nie wchodzą); kolejność FIFO – odbiór 8 h przy starszych godzinach z dnia roboczego zdejmie najpierw je, a dopiero potem dzień wolny; „do wypłaty” − elementy listy płac niesprawdzone.
+
+## Runda 3 – uwagi klientki (święto > 8 h, ½ etatu, wolny za święto, do wypłaty)
+- Decyzja użytkownika: „do wypłaty” tylko bieżący miesiąc (jak było) + odjęcie elementów z listy płac.
+- Dzień „Wolny za święto” → wszystko do godzin: przyczyna = niewypełniona „Wartość dobowa” kalendarza (Etat.NormaDobowa = 0) – odtworzone w Al (kal. 1076 na czas testu, przywrócone 8:00). Fallback 8 h.
+- ½ etatu: dniówka z `Etat.WymNormaDobowa` (norma z wymiarem).
+- Odbiór 8 h za święto 9 h nie zdejmował dnia: nowa zasada zdejmowania – sparowane obroty zdejmują swoją strefę, niesparowany odbiór ≥ dniówki zdejmuje najpierw dzień wolny.
+- Przykład 2 (bilans 49/51 zamiast 48/49) i brak odjęcia listy płac = stary kod u klientki – trzeba wgrać CodeFiles A1KafelkiNadgodzin + cechy 21–24, 26.
+- Testy K12–K17 OK, bez regresji K01–K11 (szczegóły w `Cechy/Kafelek nadgodzin.md`).
+- Kompilacja: „Wymuś rekompilację” na wpisie Dodatkowego kodu (MCP: open_subform cf… → execute_action ResyncAssemblyCacheWorker|Resync).
+- Otwarte: odejmowanie listy płac w „do wypłaty” nadal niesprawdzone (brak list w Al); tytuł kafelka zmienia się w konfiguracji pulpitu u klientki.
