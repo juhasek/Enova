@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
+          Priority="10">
+  <Page CaptionHtml="Metryczka klienta" DataContext="{DataSource}">
+    <Row>
+      <Label CaptionHtml="{Podsumowanie}" Width="*" />
+      <Command Name="PokazUkryj" CaptionHtml="{TekstPrzycisku}" MethodName="PrzelaczWidocznosc" />
+    </Row>
+    <Group Name="Aktywne" CaptionHtml="Cechy uzupełnione" Visibility="{Widoczna}">
+      <Grid Name="CechyAktywne" Width="*" Height="*" EditValue="{Aktywne}"
+            NewButton="None" EditButton="None" RemoveButton="None">
+        <Appearance Condition="{?Aktywna}" FontBold="true" />
+        <Field CaptionHtml="Cecha" Width="30" EditValue="{Nazwa}" />
+        <Field CaptionHtml="Wartość" Width="40" EditValue="{Wartosc}" />
+        <Field CaptionHtml="Opis" Width="60" EditValue="{Opis}" />
+        <GroupBy EditValue="{Kategoria}" IsDescending="false" />
+      </Grid>
+    </Group>
+    <Group Name="Nieaktywne" CaptionHtml="Nieaktywne" Class="Collapsable" Visibility="{Widoczna}">
+      <Grid Name="CechyNieaktywne" Width="*" Height="*" EditValue="{Nieaktywne}"
+            NewButton="None" EditButton="None" RemoveButton="None">
+        <Field CaptionHtml="Cecha" Width="30" EditValue="{Nazwa}" />
+        <Field CaptionHtml="Wartość" Width="40" EditValue="{Wartosc}" />
+        <Field CaptionHtml="Opis" Width="60" EditValue="{Opis}" />
+        <GroupBy EditValue="{Kategoria}" IsDescending="false" />
+      </Grid>
+    </Group>
+  </Page>
+</DataForm>
