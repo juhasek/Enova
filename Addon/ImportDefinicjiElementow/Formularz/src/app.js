@@ -5,14 +5,32 @@
 (function () {
   'use strict';
 
+  // Kopia strony sprzed pierwszego renderu – z niej powstaje formularz dla klienta.
+  var ZRODLO_HTML = '<!doctype html>\n' + document.documentElement.outerHTML;
   var W = window.Warunki;
   var SCHEMAT = JSON.parse(document.getElementById('schemat').textContent);
+  // Konfiguracja wdrożeniowca wstawiona do formularza dla klienta; null = tryb wdrożeniowca (pełny formularz).
+  var KONF = JSON.parse(document.getElementById('konfiguracja').textContent || 'null');
+  var KLIENT = !!KONF;
   var FORMAT = 'enova-definicje-elementow-wynagrodzenia';
-  var KLUCZ_SZKICU = 'enova-definicje-elementow:' + SCHEMAT.wersjaSchematu;
+  var KLUCZ_SZKICU = 'enova-definicje-elementow:' + SCHEMAT.wersjaSchematu + (KLIENT ? ':klient:' + KONF.id : '');
   var ZAKLADKA_UWAGI = '__uwagi';
+  var STANY_KLIENTA = [
+    { id: 'ukryte', etykieta: 'Ukryte' },
+    { id: 'wglad', etykieta: 'Do wglądu' },
+    { id: 'edycja', etykieta: 'Klient może zmienić' },
+    { id: 'wymagane', etykieta: 'Klient musi uzupełnić' }
+  ];
 
-  var stan = wczytajSzkic() || { ustawienia: { licencja: 'zlota' }, definicje: [], wybrana: null, zakladka: null };
+  var stan = wczytajSzkic() || (KLIENT
+    ? { ustawienia: { licencja: KONF.licencja }, definicje: kopia(KONF.definicje), wybrana: null, zakladka: null }
+    : { ustawienia: { licencja: 'zlota' }, definicje: [], wybrana: null, zakladka: null });
+  if (KLIENT) stan.ustawienia.licencja = KONF.licencja;
+  else if (!stan.klient) stan.klient = { mozeDodawac: true, pola: { RodzajZrodla: 'wglad', Nazwa: 'wymagane', Skrot: 'wymagane' } };
   var bledyCache = null;
+
+  function dlaKlienta(sciezka) { return KONF.pola[sciezka] || 'ukryte'; }
+  function klientEdytuje(sciezka) { var s = dlaKlienta(sciezka); return s === 'edycja' || s === 'wymagane'; }
 
   /* ---------------- narzędzia ---------------- */
 
@@ -101,9 +119,23 @@
     if (bledyCache) return bledyCache;
     bledyCache = {};
     stan.definicje.forEach(function (d) {
-      bledyCache[d.id] = W.waliduj(SCHEMAT, d, stan.definicje, stan.ustawienia);
+      bledyCache[d.id] = KLIENT ? bledyKlienta(d) : W.waliduj(SCHEMAT, d, stan.definicje, stan.ustawienia);
     });
     return bledyCache;
+  }
+
+  /** Klient poprawia tylko swoje pola; błędy pól wdrożeniowca dostają poziom „wdrozeniowiec” (nie blokują). */
+  function bledyKlienta(d) {
+    var k = new W.Kontekst(SCHEMAT, d, stan.ustawienia);
+    var wynik = W.waliduj(SCHEMAT, d, stan.definicje, stan.ustawienia).map(function (b) {
+      return klientEdytuje(b.sciezka) || b.poziom !== 'blad' ? b : { sciezka: b.sciezka, poziom: 'wdrozeniowiec', komunikat: b.komunikat };
+    }).filter(function (b) { return b.poziom === 'wdrozeniowiec' || klientEdytuje(b.sciezka); });
+    Object.keys(KONF.pola).forEach(function (s) {
+      if (KONF.pola[s] !== 'wymagane' || !k.stan(s).aktywne || !W.pusty(k.uzytkownika(s))) return;
+      if (!wynik.some(function (b) { return b.sciezka === s && b.poziom === 'blad'; }))
+        wynik.push({ sciezka: s, poziom: 'blad', komunikat: 'Uzupełnij to pole.' });
+    });
+    return wynik;
   }
 
   function liczBledy(lista, poziom) {
@@ -132,8 +164,8 @@
       var nb = liczBledy(lb, 'blad'), no = liczBledy(lb, 'ostrzezenie');
       var rodzaj = d.wartosci && d.wartosci.RodzajZrodla ? enumEtykieta('RodzajŹródłaWypłaty', d.wartosci.RodzajZrodla) : '';
       ul.appendChild(el('li', {
-        klasa: d.id === stan.wybrana ? 'wybrana' : '',
-        onclick: function () { stan.wybrana = d.id; renderLista(); renderEdytor(); zapiszSzkic(); }
+        klasa: d.id === stan.wybrana && !stan.widok ? 'wybrana' : '',
+        onclick: function () { stan.wybrana = d.id; stan.widok = null; renderLista(); renderEdytor(); zapiszSzkic(); }
       },
         el('div', { klasa: 'nazwa' }, el('div', { tekst: nazwaDefinicji(d) }), el('div', { klasa: 'rodzaj', tekst: rodzaj })),
         nb ? el('span', { klasa: 'znaczek blad', tekst: nb + ' bł.', title: 'Liczba błędów' })
@@ -155,6 +187,7 @@
     };
     stan.definicje.push(d);
     stan.wybrana = d.id;
+    stan.widok = null;
     stan.zakladka = null;
     zmieniono(true);
     var pole = document.querySelector('[data-sciezka="Nazwa"]');
@@ -202,6 +235,7 @@
     var kont = document.getElementById('edytor');
     var fokus = document.activeElement && document.activeElement.getAttribute && document.activeElement.getAttribute('data-klucz');
     var przewiniecie = window.scrollY;
+    if (!KLIENT && stan.widok === 'konfiguracja') { renderKonfiguracja(); return; }
     kont.textContent = '';
     var d = wybrana();
     if (!d) {
@@ -221,7 +255,53 @@
       el('h2', { tekst: nazwaDefinicji(d) }),
       szablon ? el('div', { klasa: 'szablon', tekst: 'Utworzono z szablonu: ' + szablon.etykieta }) : null));
     kont.appendChild(el('div', { id: 'podsumowanie' }));
+    if (KLIENT) kont.appendChild(trescKlienta(d, k));
+    else renderZakladki(kont, d, k, zakladki);
+    odswiezKomunikaty();
+    window.scrollTo(0, przewiniecie);
+    if (fokus) {
+      var f = kont.querySelector('[data-klucz="' + fokus.replace(/"/g, '\\"') + '"]');
+      if (f) f.focus();
+    }
+  }
 
+  function trescUwag(d) {
+    return [
+      el('p', { klasa: 'opis-zakladki', tekst: 'Opisz wszystko, czego nie da się ustawić polami: zasady regulaminu, wyjątki, sposób liczenia (np. „premia 10% od zasadniczego, nie przysługuje przy nieobecności nieusprawiedliwionej”), wątpliwości.' }),
+      el('div', { klasa: 'kontrolka' }, el('textarea', {
+        'data-klucz': '__uwagi', value: d.uwagi || '', 'aria-label': 'Uwagi dla wdrożeniowca',
+        oninput: function (e) { d.uwagi = e.target.value; zapiszSzkic(); }
+      }))
+    ];
+  }
+
+  /** Klient: jedna strona – tylko pola wskazane przez wdrożeniowca, pogrupowane jak zakładki enova (bez klikania zakładek). */
+  function trescKlienta(d, k) {
+    var tresc = el('div', { klasa: 'tresc' });
+    var byly = {};
+    zakladkiWidoczne(k).forEach(function (z) {
+      var sekcje = [];
+      z.sekcje.forEach(function (s) {
+        if (!k.sekcjaWidoczna(s)) return;
+        var pola = s.pola.filter(function (p) {
+          if (byly[p] || dlaKlienta(p) === 'ukryte' || !k.stan(p).widoczne) return false;
+          return (byly[p] = true);
+        });
+        if (!pola.length) return;
+        var fs = el('fieldset', null, el('legend', { tekst: s.etykieta }));
+        if (s.opis) fs.appendChild(el('p', { klasa: 'opis-sekcji', tekst: s.opis }));
+        pola.forEach(function (p) { fs.appendChild(renderPole(d, k, p)); });
+        sekcje.push(fs);
+      });
+      if (sekcje.length) tresc.appendChild(el('section', { klasa: 'grupa-klienta' }, el('h3', { tekst: z.etykieta }), sekcje));
+    });
+    if (!tresc.childNodes.length)
+      tresc.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'W tej definicji nie ma pól do uzupełnienia – ewentualne uwagi wpisz poniżej.' }));
+    tresc.appendChild(el('section', { klasa: 'grupa-klienta' }, el('h3', { tekst: 'Uwagi dla wdrożeniowca' }), trescUwag(d)));
+    return tresc;
+  }
+
+  function renderZakladki(kont, d, k, zakladki) {
     var nav = el('nav', { klasa: 'zakladki', role: 'tablist' });
     zakladki.concat([{ id: ZAKLADKA_UWAGI, etykieta: 'Uwagi dla wdrożeniowca' }]).forEach(function (z) {
       nav.appendChild(el('button', {
@@ -234,11 +314,7 @@
 
     var tresc = el('div', { klasa: 'tresc', role: 'tabpanel' });
     if (stan.zakladka === ZAKLADKA_UWAGI) {
-      tresc.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'Opisz wszystko, czego nie da się ustawić polami: zasady regulaminu, wyjątki, sposób liczenia (np. „premia 10% od zasadniczego, nie przysługuje przy nieobecności nieusprawiedliwionej”), wątpliwości.' }));
-      tresc.appendChild(el('div', { klasa: 'kontrolka' }, el('textarea', {
-        'data-klucz': '__uwagi', value: d.uwagi || '', 'aria-label': 'Uwagi dla wdrożeniowca',
-        oninput: function (e) { d.uwagi = e.target.value; zapiszSzkic(); }
-      })));
+      trescUwag(d).forEach(function (x) { tresc.appendChild(x); });
     } else {
       var z = SCHEMAT.zakladki.filter(function (x) { return x.id === stan.zakladka; })[0];
       if (z.opis) tresc.appendChild(el('p', { klasa: 'opis-zakladki', tekst: z.opis }));
@@ -253,12 +329,6 @@
       });
     }
     kont.appendChild(tresc);
-    odswiezKomunikaty();
-    window.scrollTo(0, przewiniecie);
-    if (fokus) {
-      var f = kont.querySelector('[data-klucz="' + fokus.replace(/"/g, '\\"') + '"]');
-      if (f) f.focus();
-    }
   }
 
   /** Komunikaty walidacji bez przebudowy kontrolek (po wpisaniu znaku). */
@@ -285,9 +355,11 @@
     if (!pods) return;
     pods.textContent = '';
     var bl = lb.filter(function (b) { return b.poziom === 'blad'; });
+    var nw = liczBledy(lb, 'wdrozeniowiec');
     if (!bl.length) {
       pods.className = 'podsumowanie ok';
-      pods.textContent = 'Definicja nie ma błędów.' + (liczBledy(lb, 'ostrzezenie') ? ' Ostrzeżenia: ' + liczBledy(lb, 'ostrzezenie') + '.' : '');
+      pods.textContent = 'Definicja nie ma błędów.' + (liczBledy(lb, 'ostrzezenie') ? ' Ostrzeżenia: ' + liczBledy(lb, 'ostrzezenie') + '.' : '')
+        + (nw ? ' Ustawienia wdrożeniowca do sprawdzenia przez niego: ' + nw + ' – nie musisz ich poprawiać.' : '');
       return;
     }
     pods.className = 'podsumowanie blad';
@@ -306,7 +378,7 @@
   function przejdzDoPola(sciezka) {
     var d = wybrana();
     var k = new W.Kontekst(SCHEMAT, d, stan.ustawienia);
-    var z = zakladkaPola(sciezka, k);
+    var z = KLIENT ? null : zakladkaPola(sciezka, k);
     if (z && z !== stan.zakladka) { stan.zakladka = z; renderEdytor(); }
     var f = document.querySelector('[data-sciezka="' + sciezka + '"]');
     if (f) { f.scrollIntoView({ block: 'center' }); f.focus(); }
@@ -317,6 +389,9 @@
   function renderPole(d, k, sciezka) {
     var pole = SCHEMAT.pola[sciezka];
     var st = k.stan(sciezka);
+    var wglad = KLIENT && !klientEdytuje(sciezka);
+    if (wglad) st = Object.assign({}, st, { edytowalne: false, wymagane: false });
+    else if (KLIENT && dlaKlienta(sciezka) === 'wymagane' && st.aktywne) st = Object.assign({}, st, { wymagane: true });
     var id = 'p_' + sciezka.replace(/[^\w]/g, '_');
     var wartosc = k.wartosc(sciezka);
     var ustaw = function (v, pelny) {
@@ -334,6 +409,7 @@
       var ew = SCHEMAT.enumy[pole.enum].wartosci.filter(function (x) { return x.nazwa === wartosc; })[0];
       if (ew && ew.opis) kontr.appendChild(el('div', { klasa: 'opis-wartosci', tekst: ew.opis }));
     }
+    if (wglad) kontr.appendChild(el('div', { klasa: 'niedostepne', tekst: 'Tylko do wglądu – to ustawienie przygotował wdrożeniowiec. Jeśli u Was jest inaczej, napisz w uwagach.' }));
     if (st.powod) kontr.appendChild(el('div', { klasa: 'niedostepne', tekst: 'Pole nieaktywne – ' + st.powod + '. Obowiązuje wartość domyślna.' }));
     else if (pole.podpowiedz) kontr.appendChild(el('div', { klasa: 'podpowiedz', tekst: pole.podpowiedz }));
     kontr.appendChild(el('div', { klasa: 'komunikaty' }));
@@ -346,6 +422,13 @@
     var wsp = { id: id, 'data-sciezka': pole.sciezka, 'data-klucz': pole.sciezka, disabled: wyl };
     switch (pole.typ) {
       case 'bool':
+        if (KLIENT && !wyl && dlaKlienta(pole.sciezka) === 'wymagane') { // klient musi świadomie wybrać Tak/Nie
+          var b = d.wartosci[pole.sciezka];
+          return el('select', Object.assign({ onchange: function (e) { ustaw(e.target.value === '' ? undefined : e.target.value === 'tak', true); } }, wsp),
+            el('option', { value: '', tekst: '— wybierz —' }),
+            el('option', { value: 'tak', tekst: 'Tak', selected: b === true }),
+            el('option', { value: 'nie', tekst: 'Nie', selected: b === false }));
+        }
         return el('label', { klasa: 'bool' }, el('input', Object.assign({
           type: 'checkbox', checked: wartosc === true,
           onchange: function (e) { ustaw(e.target.checked, true); }
@@ -508,6 +591,11 @@
   }
 
   function pokazOgolnaPomoc() {
+    if (KLIENT) return zapytaj('Jak wypełnić formularz', [
+      'Każda pozycja na liście po lewej to jedna definicja elementu wynagrodzenia (dodatek, premia, potrącenie…). Wdrożeniowiec przygotował je wstępnie – uzupełnij pola na stronie każdej definicji.',
+      'Pole z gwiazdką trzeba uzupełnić. Przycisk „?” pokazuje pełny opis pola i znaczenie każdej opcji. Pola szare są tylko do wglądu – jeśli u Was jest inaczej, napisz o tym w „Uwagach dla wdrożeniowca” na dole strony.',
+      'Formularz zapisuje szkic w tej przeglądarce. Gotowy plik zapisz przyciskiem „Zapisz plik dla wdrożeniowca” i prześlij go mailem; zapisany plik można wczytać ponownie przyciskiem „Wczytaj plik…”.'
+    ]);
     zapytaj('Jak wypełnić formularz', [
       'Każda pozycja na liście po lewej to jedna definicja elementu wynagrodzenia (dodatek, premia, potrącenie, zasiłek…). Najprościej zacząć od szablonu – ma ustawienia takie jak gotowe składniki enova – i zmienić to, co u Was jest inaczej.',
       'Zakładki odpowiadają oknu definicji w enova. Pola pojawiają się i znikają zależnie od wcześniejszych wyborów (np. procent podatku tylko przy zaliczce procentowej). Pole z gwiazdką jest wymagane, przycisk „?” pokazuje pełny opis i znaczenie każdej opcji.',
@@ -543,17 +631,114 @@
             szablon: d.szablon || null,
             uwagi: d.uwagi || '',
             wartosci: W.doEksportu(SCHEMAT, d, stan.ustawienia),
-            bledy: (b[d.id] || []).filter(function (x) { return x.poziom === 'blad'; })
+            // pełna walidacja (także pól wdrożeniowca) – tak samo sprawdzi import
+            bledy: W.waliduj(SCHEMAT, d, stan.definicje, stan.ustawienia).filter(function (x) { return x.poziom === 'blad'; })
               .map(function (x) { return (SCHEMAT.pola[x.sciezka] ? SCHEMAT.pola[x.sciezka].etykieta : x.sciezka) + ': ' + x.komunikat; })
           };
         })
       };
-      var blob = new Blob([JSON.stringify(plik, null, 2)], { type: 'application/json' });
-      var a = el('a', { href: URL.createObjectURL(blob), download: 'elementy-wynagrodzenia.json' });
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      pobierz('elementy-wynagrodzenia.json', JSON.stringify(plik, null, 2), 'application/json');
     });
+  }
+
+  function pobierz(nazwa, tresc, typ) {
+    var a = el('a', { href: URL.createObjectURL(new Blob([tresc], { type: typ })), download: nazwa });
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  /* ---------------- formularz dla klienta (tryb wdrożeniowca) ---------------- */
+
+  function ustawDlaKlienta(sciezka, v) {
+    if (v === 'ukryte') delete stan.klient.pola[sciezka];
+    else stan.klient.pola[sciezka] = v;
+  }
+
+  function selectStanu(wartosc, onzmiana, etykieta) {
+    var s = el('select', { 'aria-label': etykieta, onchange: function (e) { onzmiana(e.target.value); } });
+    if (wartosc === null) s.appendChild(el('option', { value: '', tekst: '— ustaw wszystkie —' }));
+    STANY_KLIENTA.forEach(function (x) { s.appendChild(el('option', { value: x.id, tekst: x.etykieta, selected: x.id === wartosc })); });
+    return s;
+  }
+
+  function renderKonfiguracja() {
+    var kont = document.getElementById('edytor');
+    var fokus = document.activeElement && document.activeElement.id === 'filtrKonf';
+    var przewiniecie = window.scrollY;
+    var kl = stan.klient;
+    var odswiez = function () { zapiszSzkic(); renderKonfiguracja(); };
+    var filtr = (stan.filtrKonf || '').trim().toLocaleLowerCase('pl');
+    var pusty = new W.Kontekst(SCHEMAT, { wartosci: {} }, stan.ustawienia); // do okna „?”
+    var licz = {};
+    STANY_KLIENTA.forEach(function (x) { licz[x.id] = 0; });
+    Object.keys(SCHEMAT.pola).forEach(function (s) { licz[kl.pola[s] || 'ukryte']++; });
+    kont.textContent = '';
+    kont.appendChild(el('div', { klasa: 'edytor-naglowek' },
+      el('h2', { tekst: 'Formularz dla klienta' }),
+      el('p', { klasa: 'opis-zakladki', tekst: 'Wybierz pola, które zobaczy klient, i te, które musi uzupełnić. Pozostałe ustawiasz sam na definicjach: klient ich nie widzi, a w pliku importu będą Twoje wartości (albo domyślne enova). Definicje z listy po lewej trafią do klienta wstępnie wypełnione, licencja – jak ustawiona u góry.' })));
+    var tresc = el('div', { klasa: 'tresc' });
+    tresc.appendChild(el('div', { klasa: 'konf-pasek' },
+      el('span', { klasa: 'konf-liczniki', tekst: STANY_KLIENTA.map(function (x) { return x.etykieta + ': ' + licz[x.id]; }).join(' · ') }),
+      el('label', { klasa: 'bool' }, el('input', {
+        type: 'checkbox', checked: kl.mozeDodawac,
+        onchange: function (e) { kl.mozeDodawac = e.target.checked; odswiez(); }
+      }), 'Klient może dodawać i usuwać definicje'),
+      el('input', {
+        type: 'search', id: 'filtrKonf', placeholder: 'Szukaj pola…', value: stan.filtrKonf || '', 'aria-label': 'Szukaj pola',
+        oninput: function (e) { stan.filtrKonf = e.target.value; renderKonfiguracja(); }
+      }),
+      el('button', { type: 'button', tekst: 'Ukryj wszystkie', onclick: function () { kl.pola = {}; odswiez(); } }),
+      el('button', { type: 'button', klasa: 'glowny', id: 'btnPobierzKlienta', tekst: 'Pobierz formularz dla klienta', onclick: pobierzFormularzKlienta })));
+    var byly = {};
+    SCHEMAT.zakladki.forEach(function (z) {
+      var sekcje = [];
+      z.sekcje.forEach(function (s) {
+        // pole występujące w kilku sekcjach (warianty algorytmu) – tylko przy pierwszym wystąpieniu
+        var pola = s.pola.filter(function (p) {
+          if (byly[p] || (filtr && SCHEMAT.pola[p].etykieta.toLocaleLowerCase('pl').indexOf(filtr) < 0)) return false;
+          return (byly[p] = true);
+        });
+        if (!pola.length) return;
+        var fs = el('fieldset', null, el('legend', { tekst: s.etykieta }),
+          el('div', { klasa: 'konf-sekcja' }, 'Cała sekcja: ', selectStanu(null, function (v) {
+            pola.forEach(function (p) { ustawDlaKlienta(p, v); }); odswiez();
+          }, 'Ustaw całą sekcję ' + s.etykieta)));
+        pola.forEach(function (p) {
+          var pole = SCHEMAT.pola[p];
+          fs.appendChild(el('div', { klasa: 'pole konf-' + (kl.pola[p] || 'ukryte'), 'data-konf': p },
+            el('div', { klasa: 'etykieta' },
+              el('label', null, pole.etykieta, pole.wymagane ? el('span', { klasa: 'wym', tekst: '*', title: 'Wymagane w enova' }) : null),
+              el('button', { type: 'button', klasa: 'pomoc', tekst: '?', title: 'Opis pola', onclick: function () { pokazPomoc(p, pusty); } })),
+            el('div', { klasa: 'kontrolka' }, selectStanu(kl.pola[p] || 'ukryte', function (v) { ustawDlaKlienta(p, v); odswiez(); }, pole.etykieta))));
+        });
+        sekcje.push(fs);
+      });
+      if (sekcje.length) tresc.appendChild(el('section', { klasa: 'grupa-klienta' }, el('h3', { tekst: z.etykieta }), sekcje));
+    });
+    kont.appendChild(tresc);
+    window.scrollTo(0, przewiniecie);
+    if (fokus) { var f = document.getElementById('filtrKonf'); f.focus(); f.setSelectionRange(f.value.length, f.value.length); }
+  }
+
+  function pobierzFormularzKlienta() {
+    var kl = stan.klient;
+    var widoczne = Object.keys(kl.pola).length;
+    if (!widoczne) { zapytaj('Brak pól dla klienta', 'Wskaż co najmniej jedno pole, które zobaczy klient.'); return; }
+    if (!stan.definicje.length && !kl.mozeDodawac) { zapytaj('Brak definicji', 'Dodaj definicje albo pozwól klientowi dodawać je samodzielnie.'); return; }
+    var konf = {
+      id: noweId(),
+      utworzono: new Date().toISOString(),
+      licencja: stan.ustawienia.licencja,
+      mozeDodawac: !!kl.mozeDodawac,
+      pola: kopia(kl.pola),
+      // własne uwagi wdrożeniowca zostają u niego
+      definicje: stan.definicje.map(function (d) { return { id: d.id, szablon: d.szablon || null, uwagi: '', wartosci: kopia(d.wartosci || {}) }; })
+    };
+    var BS = String.fromCharCode(92);
+    var json = JSON.stringify(konf).replace(/</g, BS + 'u003c').replace(new RegExp(String.fromCharCode(0x2028), 'g'), BS + 'u2028').replace(new RegExp(String.fromCharCode(0x2029), 'g'), BS + 'u2029');
+    var html = ZRODLO_HTML.replace(/(<script type="application\/json" id="konfiguracja">)[\s\S]*?(<\/script>)/, function (_, a, b) { return a + json + b; });
+    pobierz('formularz-elementow-wynagrodzenia-klient.html', html, 'text/html');
   }
 
   function wczytaj(plik) {
@@ -595,10 +780,16 @@
 
   function start() {
     document.getElementById('podtytul').textContent =
-      'Wersja formularza ' + SCHEMAT.wersjaSchematu + ' · enova ' + String(SCHEMAT.wersjaEnova).split('-')[0] + ' · dane zostają na tym komputerze';
+      (KLIENT ? 'Przygotował wdrożeniowiec ' + new Date(KONF.utworzono).toLocaleDateString('pl-PL') + ' · ' : '')
+      + 'Wersja formularza ' + SCHEMAT.wersjaSchematu + ' · enova ' + String(SCHEMAT.wersjaEnova).split('-')[0] + ' · dane zostają na tym komputerze';
     var lic = document.getElementById('licencja');
     lic.value = stan.ustawienia.licencja;
+    lic.disabled = KLIENT;
     lic.addEventListener('change', function () { stan.ustawienia.licencja = lic.value; zmieniono(true); });
+    var btnKlient = document.getElementById('btnKlient');
+    btnKlient.hidden = KLIENT;
+    btnKlient.addEventListener('click', function () { stan.widok = 'konfiguracja'; zapiszSzkic(); renderLista(); renderEdytor(); });
+    if (KLIENT && !KONF.mozeDodawac) ['btnNowa', 'btnDuplikuj', 'btnUsun'].forEach(function (id) { document.getElementById(id).hidden = true; });
     document.getElementById('btnNowa').addEventListener('click', function (e) {
       e.stopPropagation();
       var m = document.getElementById('menuNowa');
@@ -616,6 +807,7 @@
       if (n.wartosci.Nazwa) n.wartosci.Nazwa = (n.wartosci.Nazwa + ' (kopia)').slice(0, SCHEMAT.pola.Nazwa.maxDlugosc || 40);
       stan.definicje.splice(stan.definicje.indexOf(d) + 1, 0, n);
       stan.wybrana = n.id;
+      stan.widok = null;
       zmieniono(true);
     });
     document.getElementById('btnUsun').addEventListener('click', function () {

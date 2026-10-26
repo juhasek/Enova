@@ -37,3 +37,9 @@ Założenia (do potwierdzenia przy STOP po etapie 1):
 - [x] 18 testów xUnit (reguły – parzystość z formularzem, plik, analiza na atrapie bazy, mapowanie, konwersje typów Soneta)
 - [x] README: build, przekazanie formularza, import, aktualizacja schematu
 - [ ] Do sprawdzenia przez operatora: okno podglądu (MessageBox) w SonetaFrame – przez MCP nie jest zwracane
+
+## Etap 4 – formularz dla klienta konfigurowany przez wdrożeniowca (26.10, czeka na akceptację)
+- [x] Widok „Formularz dla klienta”: stan pola (ukryte / do wglądu / może zmienić / musi uzupełnić), sekcje, wyszukiwarka
+- [x] Pobranie HTML klienta z wbudowaną konfiguracją i wstępnie wypełnionymi definicjami
+- [x] Widok klienta: jedna strona, tylko wskazane pola, walidacja „musi uzupełnić”, format pliku bez zmian
+- [x] E2E rozszerzony

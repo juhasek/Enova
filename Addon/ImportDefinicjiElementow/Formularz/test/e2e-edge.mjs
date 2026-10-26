@@ -194,6 +194,49 @@ try {
   assert.ok(await js(`[...document.querySelectorAll('.komunikat.blad')].some(e => e.textContent.includes('Wiersz 18'))`), 'pusty wiersz progu = błąd');
   await js(`window.scrollTo(0, 0)`);
   await zrzut('09-staz-progi');
+
+  // wdrożeniowiec: wybór pól dla klienta i pobranie jego formularza
+  await klik('#btnKlient');
+  await czekaj(200);
+  const konf = (sciezka, v) => js(`(() => { const s = document.querySelector('[data-konf="${sciezka}"] select'); s.value = '${v}'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await konf('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', 'edycja');
+  await konf('Blokada', 'wymagane');
+  await czekaj(200);
+  assert.ok(await js(`document.querySelector('.konf-liczniki').textContent.includes('Klient musi uzupełnić: 3')`), 'liczniki konfiguracji');
+  await js(`window.scrollTo(0, 0)`);
+  await zrzut('10-konfiguracja-klienta');
+  await klik('#btnPobierzKlienta');
+  for (let i = 0; i < 30 && !readdirSync(pobrane).some((f) => f.endsWith('.html')); i++) await czekaj(200);
+  const plikHtml = readdirSync(pobrane).find((f) => f.endsWith('.html'));
+  assert.ok(plikHtml, 'pobrany formularz klienta');
+
+  // klient: tylko wskazane pola, jedna strona bez zakładek
+  await cdp('Page.navigate', { url: pathToFileURL(path.join(pobrane, plikHtml)).href });
+  await czekaj(1500);
+  assert.equal(await js('document.querySelectorAll("#definicje li").length'), 5, 'definicje od wdrożeniowca');
+  assert.equal(await js('document.querySelector("nav.zakladki")'), null, 'bez zakładek');
+  assert.equal(await js('document.getElementById("licencja").disabled && document.getElementById("btnKlient").hidden'), true, 'licencja zablokowana');
+  assert.ok(await widoczne('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent'), 'pole „może zmienić” widoczne');
+  assert.equal(await widoczne('Deklaracje.PozycjaPIT'), false, 'pole ukryte');
+  assert.equal(await js(`document.querySelector('[data-sciezka="RodzajZrodla"]').disabled`), true, 'pole do wglądu zablokowane');
+  assert.equal(await js(`document.querySelector('[data-sciezka="Blokada"]').tagName + '=' + document.querySelector('[data-sciezka="Blokada"]').value`), 'SELECT=nie', 'wymagane Tak/Nie jako lista');
+  await zrzut('11-klient');
+  await ustaw('Blokada', '');
+  await czekaj(200);
+  assert.ok(await js(`[...document.querySelectorAll('[data-pole="Blokada"] .komunikat.blad')].some(e => e.textContent === 'Uzupełnij to pole.')`), 'Blokada do uzupełnienia');
+  await ustaw('Blokada', 'tak');
+  await ustaw('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', '12');
+  await czekaj(200);
+  rmSync(path.join(pobrane, plikJson)); // przeglądarka zapisze plik klienta pod tą samą nazwą
+  await klik('#btnEksport');
+  await czekaj(300);
+  await js(`[...document.querySelectorAll('#dialogPrzyciski button')].find(b => b.value === 'tak')?.click()`); // dane testowe mają zdublowane nazwy
+  for (let i = 0; i < 30 && !existsSync(path.join(pobrane, plikJson)); i++) await czekaj(200);
+  const odKlienta = JSON.parse(readFileSync(path.join(pobrane, plikJson), 'utf8'));
+  const d0 = odKlienta.definicje[0].wartosci;
+  assert.equal(d0['Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent'], 12, 'wartość klienta');
+  assert.equal(d0.Blokada, true, 'wybór klienta Tak/Nie');
+  assert.equal(d0['Deklaracje.PozycjaPIT'], 'PIT-11 1/PIT-4R 1', 'ukryte pola wdrożeniowca w pliku importu');
   console.log('E2E OK – zrzuty i plik w ' + wyniki);
 } catch (e) {
   await zrzut('99-blad').catch(() => {});

@@ -62,11 +62,23 @@ z której powstał szablon); aktualizacja → dokładnie 3 różnice (priorytet,
 Jeden plik `Formularz/dist/formularz-elementow-wynagrodzenia.html` – działa offline, z dysku, w Edge/Chrome/Firefox,
 bez instalacji i bez serwera. Dane zostają na komputerze klienta (szkic w `localStorage` przeglądarki).
 
-**Przekazanie klientowi:** wysłać sam plik HTML (mailem / na dysk współdzielony). Klient:
-1. otwiera plik w przeglądarce, ustawia licencję enova (srebrna/złota/platynowa),
-2. dodaje definicje (najlepiej z szablonu), wypełnia zakładki – przycisk „?” przy każdym polu ma opis i znaczenie opcji,
-3. opisuje nietypowe zasady na zakładce „Uwagi dla wdrożeniowca”,
-4. klika „Zapisz plik dla wdrożeniowca” → `elementy-wynagrodzenia.json` i odsyła ten plik.
+**Dwa tryby.** Plik z `dist/` to **pełny formularz wdrożeniowca** (wszystkie 201 pól, zakładki jak w enova).
+Klient dostaje **okrojony formularz**, który wdrożeniowiec generuje z pełnego:
+
+1. Wdrożeniowiec ustawia licencję, przygotowuje definicje (z szablonów) i ustawia pola techniczne.
+2. Przycisk **„Formularz dla klienta”** → dla każdego pola (lub całej sekcji): *Ukryte* / *Do wglądu* /
+   *Klient może zmienić* / *Klient musi uzupełnić*, opcja „Klient może dodawać i usuwać definicje”, wyszukiwarka pól.
+3. **„Pobierz formularz dla klienta”** → `formularz-elementow-wynagrodzenia-klient.html` – ta sama strona z wbudowaną
+   konfiguracją (`<script id="konfiguracja">`: licencja, stany pól, wstępnie wypełnione definicje; uwagi wdrożeniowca nie trafiają).
+4. Klient widzi jedną stronę na definicję: tylko wskazane pola, pogrupowane nagłówkami zakładek enova, z opisami i „?”;
+   na dole „Uwagi dla wdrożeniowca”. Licencja zablokowana. Pole „musi uzupełnić” bez wartości = błąd (Tak/Nie jako lista
+   do świadomego wyboru). Błędy pól ukrytych/do wglądu nie blokują klienta (podsumowanie: „do sprawdzenia przez wdrożeniowca”).
+5. Klient klika „Zapisz plik dla wdrożeniowca” → `elementy-wynagrodzenia.json` w **tym samym formacie** co dotąd:
+   wartości wszystkich aktywnych pól (także ukrytych – ustawionych przez wdrożeniowca), `bledy` z pełnej walidacji.
+   Import w dodatku bez zmian; plik klienta można też wczytać do pełnego formularza.
+
+Pole ukryte nadal podlega regułom schematu: jeśli wybór klienta je aktywuje, obowiązuje wartość wdrożeniowca albo domyślna.
+Szkic klienta w `localStorage` ma osobny klucz (id konfiguracji), więc nie miesza się z pracą wdrożeniowca.
 
 Plik JSON można wczytać z powrotem do formularza („Wczytaj plik…” – zastąp lub dołącz), np. po uwagach wdrożeniowca.
 Format pliku: `format`, `wersjaSchematu`, `wersjaEnova`, `dataEksportu`, `ustawienia.licencja`,
@@ -82,7 +94,7 @@ premia uznaniowa, premia procentowa, dodatek stażowy (z progami), dodatek funkc
 ```bash
 node Formularz/build.mjs                        # schemat + src → dist (po każdej zmianie schematu lub src)
 node --test Formularz/test/warunki.test.mjs     # silnik reguł na prawdziwym schemacie
-node Formularz/test/e2e-edge.mjs                # Edge/Chrome headless: szablon, warunki, eksport, import, autozapis + zrzuty
+node Formularz/test/e2e-edge.mjs                # Edge/Chrome headless: szablon, warunki, eksport, import, autozapis, formularz klienta + zrzuty
 ```
 
 Silnik reguł (`src/warunki.js`) ma tę samą semantykę co import – zmieniać oba naraz.

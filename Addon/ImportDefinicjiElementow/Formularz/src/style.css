@@ -135,6 +135,23 @@ legend { font-weight: 600; padding: 0 6px; }
 .pole.ma-blad > .kontrolka > input, .pole.ma-blad > .kontrolka > select, .pole.ma-blad > .kontrolka > .z-jednostka > input { border-color: var(--blad); }
 .pole.ma-blad table.siatka { outline: 1px solid var(--blad); }
 .weryfikacja { font-size: 11px; color: var(--ostrz); }
+.komunikat.wdrozeniowiec { color: var(--tekst2); }
+[hidden] { display: none !important; }
+
+.grupa-klienta h3 { font-size: 15px; margin: 18px 0 8px; color: var(--akcent); }
+.grupa-klienta:first-child h3 { margin-top: 0; }
+.konf-pasek { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
+.konf-pasek .bool { display: inline-flex; align-items: center; gap: 6px; }
+.konf-pasek input[type=search] { padding: 6px 8px; border: 1px solid var(--linia); border-radius: 6px; background: var(--karta); min-width: 200px; }
+.konf-liczniki { color: var(--tekst2); font-size: 12px; flex-basis: 100%; }
+.konf-sekcja { font-size: 12px; color: var(--tekst2); margin: 0 0 4px; }
+.konf-sekcja select { padding: 2px 4px; border: 1px solid var(--linia); border-radius: 6px; background: var(--karta); }
+.pole.konf-ukryte label { color: var(--tekst2); }
+.pole.konf-wglad { background: var(--tlo); }
+.pole.konf-edycja { background: var(--akcent-tlo); }
+.pole.konf-wymagane { background: var(--ostrz-tlo); }
+.pole[data-konf] { padding: 4px 6px; border-radius: 4px; }
+.pole[data-konf] .kontrolka select { max-width: 240px; }
 
 table.siatka { border-collapse: collapse; width: 100%; max-width: 620px; }
 .siatka th, .siatka td { border: 1px solid var(--linia); padding: 4px 6px; text-align: left; }
