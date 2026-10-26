@@ -1,0 +1,17 @@
+public Time Feature_WyjsciePrywatne {
+    get {
+			KalendModule instance = KalendModule.GetInstance(Session);
+			DefinicjaStrefy def = instance.DefinicjeStref.WgNazwy["Wyjście prywatne"];
+			DefinicjaStrefy def2 = instance.DefinicjeStref.WgNazwy["Rozliczenie wyjścia prywatnego"];
+			FromTo okresRozliczeniowy = Row.WyliczOkresRoliczeniowyNadgodzin(Date.Today);
+			CzasDni czasDni = Row.Czasy.KalkPracy.Praca(okresRozliczeniowy, def);
+			CzasDni czasDni2 = Row.Czasy.KalkPracy.Praca(okresRozliczeniowy, def2);
+			return czasDni.Czas - czasDni2.Czas;
+    }
+}
+
+// W kodzie możesz używać następujacych zmiennych:
+// Row: Pracownik - Wiersz przeliczanej cechy
+// Table: Pracownicy - Tabela wiersza przeliczanej cechy
+// Module: KadryModule - Moduł, w którym znajduje się tabela
+// Session: Session - Obiekt sesji dający dostęp do wszystkich danych programu
