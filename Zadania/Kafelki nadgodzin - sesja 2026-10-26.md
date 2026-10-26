@@ -44,3 +44,15 @@ Niespełnione:
    Godziny ≤ 8 h w sobotę trafiają do godzin, gdy dzień w planie ma typ „Pracy” (np. po zamianie dnia).
 4. Do wypłaty po zmianie przestało działać przy ręcznym wniosku – regresja: wzór ze stref zamiast silnika.
    Propozycja: `Czasy.Nadgodziny(okres).Razem` (silnik sam odejmuje magazyn i dolicza wypłatę) − elementy z listy.
+
+## Test stref wpisanych na kalendarz (bez wniosków)
+- Strefy wpisane przez MCP `import_business_xml` (logika biznesowa) u S1, S2, S5, S6, S7, T1, T2, T3 od 27.10.2026; przypadki K01–K11 w `Cechy/Kafelek nadgodzin.md`.
+- Wynik 1. wersji: odbiór nie zdejmował dnia, godziny szły w minus (odbiór za sobotę/święto, także w kolejnym miesiącu, częściowy odbiór);
+  odpracowanie WP samą strefą rozliczenia zmniejszało NadgRazem.
+- Przyczyna: enova paruje zasoby magazynu tylko czynnością „Rozlicz nadgodziny” / dokumentem rozliczenia czasu pracy (`DniPracy.WykonajRozliczenieWorker`);
+  zwykły wpis strefy zostawia odbiór jako osobny zasób „minus”. Najpewniej to samo widziała klientka (−1, dzień nie schodzi).
+- Poprawka (commit b0ca6a9): suma odbiorów/wypłat zdejmowana z nadgodzin FIFO po dacie, bez względu na parowanie; odpracowanie WP odejmowane tylko od pracy poza normą z tego samego dnia.
+- Po poprawce wszystkie przypadki OK, bez regresji u pozostałych pracowników testowych.
+- Dysk C: zapełnił się w trakcie (SQL timeout) – usunięte 2 kopie Claude_przed_widokiem_DAK (14.10 i 22.10 10:05) za zgodą użytkownika.
+
+Otwarte: rok kalendarzowy w NadgRazem (nadgodziny z kolejnego roku nie wchodzą); kolejność FIFO – odbiór 8 h przy starszych godzinach z dnia roboczego zdejmie najpierw je, a dopiero potem dzień wolny; „do wypłaty” − elementy listy płac niesprawdzone.

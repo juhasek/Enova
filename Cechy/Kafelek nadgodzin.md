@@ -20,8 +20,11 @@ Cechy to jednolinijkowe wywołania tej klasy.
 strefy) i obrotów (`ObrotRN`, rozliczone pary) magazynu nadgodzin pracownika, **bez ograniczenia
 do okresu** – nieodebrane godziny przechodzą na kolejne okresy, a odbiór zaplanowany na przyszłą datę
 (wnioski z terminem odbioru) od razu zmniejsza bilans.
-- Odbiór pracownika/firmy i wypłata nadgodzin („przekwalifikowanie”) zmniejszają bilans – enova
-  rozlicza je z zasobami, więc te same godziny nie występują jednocześnie w „do odbioru” i „do wypłaty”.
+- **Niezależnie od parowania zasobów.** enova paruje odbiór/wypłatę z nadgodzinami dopiero czynnością
+  „Rozlicz nadgodziny” (lub dokumentem rozliczenia czasu pracy) – wpisana strefa odbioru zwykle wisi
+  jako osobny zasób „minus”. Dlatego suma odbiorów i wypłat zdejmowana jest z nadgodzin od najstarszych.
+- Odbiór pracownika/firmy i wypłata nadgodzin („przekwalifikowanie”) zmniejszają bilans,
+  więc te same godziny nie występują jednocześnie w „do odbioru” i „do wypłaty”.
 - Strefy wyjść prywatnych (nazwa zawiera „prywatn”: wyjście, rozliczenie, potrącenie) są pomijane:
   enova paruje wyjście prywatne z nadgodzinami w magazynie, a nie powinno to zmniejszać nadgodzin.
 - Dzień wolny do odbioru: strefa nadgodzin w dniu wolnym/świątecznym **wg planu** (KalkPlanu).
@@ -30,7 +33,9 @@ do okresu** – nieodebrane godziny przechodzą na kolejne okresy, a odbiór zap
   a reszta przechodzi do godzin.
 - Odbiór bez pokrycia w nadgodzinach („na zapas”) daje **ujemne** godziny (np. −8:00).
 
-**NadgRazem** – suma stref niezależna od wymiaru etatu (stara wersja liczyła niepełnoetatowców
+**NadgRazem** – praca poza normą minus odpracowanie wyjścia prywatnego **z tego samego dnia**
+(samo odpracowanie bez pracy poza normą nie zmniejsza nadgodzin), w roku kalendarzowym
+`Date.Today` – nadgodziny z następnego roku nie są wliczane. Suma niezależna od wymiaru etatu (stara wersja liczyła niepełnoetatowców
 dzień po dniu i po zmianie etatu nadpisywała sumę). Godziny ponadwymiarowe mają własną strefę
 i nie są wliczane.
 
@@ -51,5 +56,24 @@ Brak strefy o podanej nazwie = 0 (wcześniej `WgNazwy[...] == null` liczyło wsz
 | T6 (niepełny) | sobota 3 h | 1 | 0:00 | 3:00 |
 | 026 | odbiór 8 h bez nadgodzin | 0 | −8:00 | 0:00 |
 
-Niesprawdzone na danych (brak przypadków w Al): częściowy odbiór dnia wolnego, wypłata
-z magazynu, wyjście prywatne sparowane z nadgodzinami, odjęcie elementów z listy płac.
+### Test stref wpisanych na kalendarz (bez wniosków), 26.10.2026
+
+Strefy wpisane `import_business_xml` (logika biznesowa – zakłada zasoby magazynu, nie paruje ich).
+Wynik: dni / godz. do odbioru / NadgRazem / do wypłaty / WP.
+
+| # | Pracownik | Przypadek | Wynik |
+|---|---|---|---|
+| K01 | S7 | sobota 7.11, 6 h do magazynu → odbiór 6 h 16.11 | 1/0/6 → **0/0:00** |
+| K02 | S1 | sobota 14.11, 10 h → odbiór 8 h 23.11 | 1/2:00/10 → **0/2:00** |
+| K03 | T1 | niedziela 15.11, 4 h (niepełny) → odbiór 2 h 17.11 | 1/0:00/4 → **0/2:00** |
+| K04 | T2 | święto 11.11, 8 h → odbiór 8 h 2.12 | 1/0:00/8 → **0/0:00** |
+| K05 | T3 | sobota 5.12 5 h + niedziela 10.01.2027 3 h | 2/0:00/**5:00** (2027 poza rokiem) |
+| K06 | S2 | WP 1 h 27.10 → odpracowanie 28.10 (PPN 1 h + rozl. WP 1 h) | WP 1:00 → 0:00, NadgRazem bez zmian |
+| K07 | S5 | WP 1 h przy 6 h w magazynie → odpracowanie samą strefą rozl. WP | do odbioru 6:00, NadgRazem 6:00 bez zmian |
+| K08 | S7 | 27.10: 2 h poza normą bez magazynu | do wypłaty 2:00 |
+| K09 | S6 | 30.10: wypłata 5 h z magazynu | do odbioru 0:00, do wypłaty 5:00 |
+| K10 | S1 | 28.10: praca w normie 9 h | bez zmian |
+
+Pierwsza wersja (parowanie zasobów) dawała przy odbiorach dzień nadal widoczny i ujemne godziny,
+a samo odpracowanie WP zmniejszało NadgRazem – poprawione, wszystkie przypadki OK.
+Niesprawdzone: odjęcie elementów z listy płac w „do wypłaty”.
