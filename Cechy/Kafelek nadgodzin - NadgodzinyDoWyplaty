@@ -1,0 +1,44 @@
+public Time Feature_NadgodzinyDoWyplaty {
+  get 
+	{
+		KalendModule instance = KalendModule.GetInstance(Session);
+		FromTo miesiac = new FromTo(Date.Today.FirstDayMonth(), Date.Today.LastDayMonth());
+		Time nadgodziny = Row.Czasy.Nadgodziny(miesiac).Razem;
+		
+			return nadgodziny;	
+	
+   }
+}
+
+// W kodzie możesz używać następujacych zmiennych:
+// Row: Pracownik - Wiersz przeliczanej cechy
+// Table: Pracownicy - Tabela wiersza przeliczanej cechy
+// Module: KadryModule - Moduł, w którym znajduje się tabela
+// Session: Session - Obiekt sesji dający dostęp do wszystkich danych programu
+
+/*
+		KalendModule instance = KalendModule.GetInstance(Session);
+		DefinicjaStrefy def = instance.DefinicjeStref.WgNazwy["Wypłata nadgodzin"];
+		DefinicjaStrefy def2 = instance.DefinicjeStref.WgNazwy["Praca poza normą"];
+		DefinicjaStrefy def3 = instance.DefinicjeStref.WgNazwy["Rozliczenie wyjścia prywatnego"];
+		DefinicjaStrefy def4 = instance.DefinicjeStref.WgNazwy["Nadgodziny do przeniesienia"];
+		FromTo miesiac = new FromTo(Date.Today.FirstDayMonth(), Date.Today.LastDayMonth());
+		Time nadgodziny = Row.Czasy.Nadgodziny(miesiac).Razem;
+		CzasDni czasDni = Row.Czasy.KalkPracy.Praca(miesiac, def);
+		CzasDni czasDni2 = Row.Czasy.KalkPracy.Praca(miesiac, def2);
+		CzasDni czasDni3 = Row.Czasy.KalkPracy.Praca(miesiac, def4);
+		CzasDni czasDni4 = Row.Czasy.KalkPracy.Praca(miesiac, def3);
+		Time time = czasDni2.Czas - czasDni4.Czas - czasDni3.Czas;
+		if(nadgodziny != Time.Zero)
+		{
+			if (time.TotalMinutes > 0)
+			{
+				return czasDni.Czas + time;
+			}
+			return czasDni.Czas;
+		}
+		return Time.Zero;
+*/
+
+
+
