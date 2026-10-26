@@ -45,4 +45,5 @@ Założenia (do potwierdzenia przy STOP po etapie 1):
 - [x] E2E rozszerzony
 - [x] Informacja wdrożeniowca dla klienta (ogólna i do definicji), akceptacja definicji przez klienta (odcisk wartości)
 - [x] Import: ostrzeżenie przy definicjach niezaakceptowanych, akceptacja w podglądzie i raporcie
-- [ ] Instalacja nowej wersji dodatku w bazie Claude i test podglądu na żywo
+- [x] Instalacja nowej wersji dodatku w bazie Claude (26.10)
+- [ ] Test podglądu i raportu (akceptacja) na żywo
