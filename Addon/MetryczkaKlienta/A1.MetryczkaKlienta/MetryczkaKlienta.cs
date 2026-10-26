@@ -15,7 +15,7 @@ using Soneta.Types;
 
 namespace A1.Metryczka;
 
-/// <summary>Jedna cecha globalna metryczki (wiersz listy / aktualność).</summary>
+/// <summary>Jedna cecha globalna metryczki (wiersz karty).</summary>
 public class CechaMetryczki
 {
     public string Kategoria { get; init; }
@@ -23,14 +23,13 @@ public class CechaMetryczki
     public string Opis { get; init; }
     /// <summary>Kolumna "Zakres danych" metryczki (na widokach zamiast opisu).</summary>
     public string ZakresDanych { get; init; }
+    /// <summary>Tak/Nie dla Bool; null = nieuzupełniona (pusty tekst, pusta data/miesiąc).</summary>
     public string Wartosc { get; init; }
-    public bool Aktywna { get; init; }
 }
 
 /// <summary>
-/// Obiekt okna "Ogólne / Metryczka klienta (TST_)". Lista budowana przy każdym odczycie
+/// Obiekt okna "Ogólne / Metryczka klienta (TST_)": karta metryczki (KartaMetryczki) budowana przy każdym odczycie
 /// z definicji cech globalnych z prefiksem TST_ - nowa cecha dodana w Opcjach pojawia się sama.
-/// Lista (Grid) zamiast pól generowanych w układzie, bo układ formularza jest cache'owany.
 /// </summary>
 public class MetryczkaKlienta
 {
@@ -45,59 +44,31 @@ public class MetryczkaKlienta
         session.Global.Table.FeatureDefinitions.Where(fd => fd.Name.StartsWith(DefinicjeCech.Prefiks, StringComparison.Ordinal));
 
     public static List<CechaMetryczki> Cechy(Session session) => DefinicjeTST(session)
-        .Select(fd => {
-            object v = session.Global.Features[fd.Name];
-            return new CechaMetryczki {
-                Kategoria = string.IsNullOrEmpty(fd.Category) ? "Inne" : fd.Category,
-                Nazwa = fd.Name,
-                Opis = fd.Description,
-                ZakresDanych = DefinicjeCech.Etykieta(fd.Name) ?? fd.Description,
-                Wartosc = v is bool b ? (b ? "Tak" : "Nie") : v?.ToString(),
-                Aktywna = JestAktywna(v),
-            };
+        .Select(fd => new CechaMetryczki {
+            Kategoria = string.IsNullOrEmpty(fd.Category) ? "Inne" : fd.Category,
+            Nazwa = fd.Name,
+            Opis = fd.Description,
+            ZakresDanych = DefinicjeCech.Etykieta(fd.Name) ?? fd.Description,
+            Wartosc = Tekst(session.Global.Features[fd.Name]),
         })
-        .OrderBy(c => c.Kategoria).ThenBy(c => c.Nazwa)
         .ToList();
 
-    public List<CechaMetryczki> Aktywne => Cechy(Session).Where(c => c.Aktywna).ToList();
+    static string Tekst(object v) => v switch {
+        bool b => b ? "Tak" : "Nie",
+        Date d when d == Date.Empty => null,
+        YearMonth ym when ym == YearMonth.Empty => null,
+        _ => string.IsNullOrWhiteSpace(v?.ToString()) ? null : v.ToString(),
+    };
 
-    public List<CechaMetryczki> Nieaktywne => Cechy(Session).Where(c => !c.Aktywna).ToList();
+    public string KartaHtml => KartaMetryczki.Html(Cechy(Session));
 
     public string Podsumowanie
     {
         get {
             var cechy = Cechy(Session);
             return cechy.Count == 0
-                ? "Brak cech globalnych z prefiksem TST_ - użyj Czynności → Utwórz cechy testowe (TST_)."
-                : $"Cech TST_: {cechy.Count}, uzupełnionych: {cechy.Count(c => c.Aktywna)}.";
+                ? "Brak cech TST_ – Czynności → Utwórz cechy testowe (TST_)"
+                : $"Uzupełniono {cechy.Count(c => c.Wartosc != null)} z {cechy.Count} pozycji";
         }
-    }
-
-    /// <summary>Aktywna = uzupełniona: Bool = Tak, niepusty tekst, liczba ≠ 0, ustawiona data.</summary>
-    public static bool JestAktywna(object v) => v switch {
-        null => false,
-        bool b => b,
-        string s => !string.IsNullOrWhiteSpace(s),
-        int i => i != 0,
-        double d => d != 0,
-        decimal m => m != 0,
-        Date d => d != Date.Empty,
-        YearMonth ym => ym != YearMonth.Empty,
-        _ => !string.IsNullOrWhiteSpace(v.ToString()),
-    };
-
-    // "Nieaktywne" domyślnie zwinięte; stan tylko na czas otwarcia okna.
-    bool pokazNieaktywne;
-
-    public bool NieaktywneWidoczne => pokazNieaktywne;
-
-    public string TekstNieaktywnych => pokazNieaktywne
-        ? "Ukryj nieaktywne"
-        : $"Pokaż nieaktywne ({Nieaktywne.Count})";
-
-    public void PrzelaczNieaktywne()
-    {
-        pokazNieaktywne = !pokazNieaktywne;
-        Session.InvokeChanged();
     }
 }

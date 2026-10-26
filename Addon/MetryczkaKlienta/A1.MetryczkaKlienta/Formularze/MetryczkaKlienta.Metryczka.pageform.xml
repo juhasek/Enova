@@ -4,29 +4,8 @@
           xmlns="http://www.enova.pl/schema/form.xsd"
           xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
           Priority="10">
-  <!-- Stałe wysokości list: dwie listy Height="*" na jednej stronie klient web rysuje tylko jako ostatnią.
-       "Nieaktywne" zwijane własnym przyciskiem - Class="Collapsable" na tej stronie nie zwijał grupy domyślnie. -->
+  <!-- Karta metryczki (KartaMetryczki) - ta sama co nad Kadrami; Czynności: Utwórz/Usuń cechy TST_. -->
   <Page CaptionHtml="Metryczka klienta" DataContext="{DataSource}">
-    <Label CaptionHtml="{Podsumowanie}" Width="*" />
-    <Group Name="Aktywne" CaptionHtml="Cechy uzupełnione">
-      <Grid Name="CechyAktywne" Width="*" Height="15" EditValue="{Aktywne}" OrderBy="Kategoria"
-            NewButton="None" EditButton="None" RemoveButton="None">
-        <Appearance Condition="{?Aktywna}" FontBold="true" />
-        <Field CaptionHtml="Zakres danych" Width="60" EditValue="{ZakresDanych}" />
-        <Field CaptionHtml="Dane" Width="40" EditValue="{Wartosc}" />
-        <GroupBy EditValue="{Kategoria}" IsDescending="false" />
-      </Grid>
-    </Group>
-    <Row>
-      <Command Name="PokazNieaktywne" CaptionHtml="{TekstNieaktywnych}" MethodName="PrzelaczNieaktywne" />
-    </Row>
-    <Group Name="Nieaktywne" CaptionHtml="Nieaktywne" Visibility="{NieaktywneWidoczne}">
-      <Grid Name="CechyNieaktywne" Width="*" Height="15" EditValue="{Nieaktywne}" OrderBy="Kategoria"
-            NewButton="None" EditButton="None" RemoveButton="None">
-        <Field CaptionHtml="Zakres danych" Width="60" EditValue="{ZakresDanych}" />
-        <Field CaptionHtml="Dane" Width="40" EditValue="{Wartosc}" />
-        <GroupBy EditValue="{Kategoria}" IsDescending="false" />
-      </Grid>
-    </Group>
+    <Html Name="KartaMetryczki" EditValue="{KartaHtml}" Width="*" Height="*" ScrollBarsEnabled="true" />
   </Page>
 </DataForm>

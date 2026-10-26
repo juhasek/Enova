@@ -13,95 +13,17 @@
   <Stack Name="FolderMenuList" Class="MainPage">
 
     <!-- Wszystko w jednym Row, którego pierwszym elementem jest MainGroup: tylko taki wiersz dostaje w kliencie web
-         wysokość "unset" (Row/Stack.prepareStyle) i rysuje zwykłe grupy pod kafelkami. Field w zwykłej grupie rysuje się
-         jako niski wiersz z etykietą - tabelka metryczki jak w pliku (Zakres danych | Dane). Kafelki per informacja
-         (poprzedni wariant) - commit 845ebe8. Stałe sloty 8 kategorii x 8 pozycji, puste ukryte. -->
+         wysokość "unset" (Row/Stack.prepareStyle) i rysuje zwykłe grupy pod kafelkami. Pod kafelkami karta metryczki
+         jako HTML (KartaMetryczki) - poprzedni wariant z polami-paskami: commit 0eb9129. -->
     <Row DataContext="{new MetryczkaAktualnosciExtender}">
-      <Group Name="MetryczkaAktualnosci" Class="MainGroup" CaptionHtml="Aktualności">
+      <Group Name="MetryczkaAktualnosci" Class="MainGroup" CaptionHtml="Metryczka klienta">
         <Command Name="MetryczkaPokazUkryj" Class="MainCommand" CaptionHtml="{TekstPrzycisku}"
-                 DescriptionHtml="Zwija lub rozwija metryczkę nad sekcją Kadry" MethodName="PrzelaczWidocznosc" />
+                 DescriptionHtml="Zwija lub rozwija kartę metryczki nad sekcją Kadry" MethodName="PrzelaczWidocznosc" />
         <Command Name="MetryczkaOtworz" Class="MainCommand" CaptionHtml="Metryczka klienta"
                  DescriptionHtml="{Podsumowanie}" MethodName="OtworzMetryczke" />
       </Group>
-      <Group Name="MetryczkaKategoria0" DataContext="{Kategoria0}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK0P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK0P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK0P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK0P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK0P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK0P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK0P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK0P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
-      </Group>
-      <Group Name="MetryczkaKategoria1" DataContext="{Kategoria1}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK1P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK1P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK1P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK1P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK1P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK1P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK1P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK1P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
-      </Group>
-      <Group Name="MetryczkaKategoria2" DataContext="{Kategoria2}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK2P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK2P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK2P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK2P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK2P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK2P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK2P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK2P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
-      </Group>
-      <Group Name="MetryczkaKategoria3" DataContext="{Kategoria3}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK3P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK3P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK3P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK3P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK3P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK3P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK3P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK3P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
-      </Group>
-      <Group Name="MetryczkaKategoria4" DataContext="{Kategoria4}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK4P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK4P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK4P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK4P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK4P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK4P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK4P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK4P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
-      </Group>
-      <Group Name="MetryczkaKategoria5" DataContext="{Kategoria5}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK5P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK5P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK5P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK5P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK5P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK5P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK5P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK5P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
-      </Group>
-      <Group Name="MetryczkaKategoria6" DataContext="{Kategoria6}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK6P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK6P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK6P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK6P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK6P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK6P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK6P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK6P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
-      </Group>
-      <Group Name="MetryczkaKategoria7" DataContext="{Kategoria7}" Visibility="{Jest}" CaptionHtml="{Tytul}">
-        <Field Name="MetryczkaK7P0" CaptionHtml="{Pozycja0.Tekst}" EditValue="{Pozycja0.Dane}" Visibility="{Pozycja0.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK7P1" CaptionHtml="{Pozycja1.Tekst}" EditValue="{Pozycja1.Dane}" Visibility="{Pozycja1.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK7P2" CaptionHtml="{Pozycja2.Tekst}" EditValue="{Pozycja2.Dane}" Visibility="{Pozycja2.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK7P3" CaptionHtml="{Pozycja3.Tekst}" EditValue="{Pozycja3.Dane}" Visibility="{Pozycja3.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK7P4" CaptionHtml="{Pozycja4.Tekst}" EditValue="{Pozycja4.Dane}" Visibility="{Pozycja4.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK7P5" CaptionHtml="{Pozycja5.Tekst}" EditValue="{Pozycja5.Dane}" Visibility="{Pozycja5.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK7P6" CaptionHtml="{Pozycja6.Tekst}" EditValue="{Pozycja6.Dane}" Visibility="{Pozycja6.Jest}" IsReadOnly="true" Width="60" />
-        <Field Name="MetryczkaK7P7" CaptionHtml="{Pozycja7.Tekst}" EditValue="{Pozycja7.Dane}" Visibility="{Pozycja7.Jest}" IsReadOnly="true" Width="60" />
+      <Group Name="MetryczkaKarta" Visibility="{Widoczna}">
+        <Html Name="MetryczkaKartaHtml" EditValue="{KartaHtml}" Width="*" Height="45" ScrollBarsEnabled="true" />
       </Group>
     </Row>
 
