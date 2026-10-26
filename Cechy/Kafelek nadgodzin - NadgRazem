@@ -1,28 +1,7 @@
 public Time Feature_NadgRazem {
     get {
-			KalendModule km = KalendModule.GetInstance(Session);
-			DefinicjaStrefy ppn = km.DefinicjeStref.WgNazwy["Praca poza normą"];
-			DefinicjaStrefy rwp = km.DefinicjeStref.WgNazwy["Rozliczenie wyjścia prywatnego"];
-			FromTo rok = new (Date.Today.FirstDayYear(), Date.Today.LastDayYear());
-
-			CzasDni czasDniPpn = Row.Czasy.KalkPracy.Praca(rok, ppn);
-			CzasDni czasDniRwp = Row.Czasy.KalkPracy.Praca(rok, rwp);
-			
-			Time nadgodziny = Time.Zero;
-
-			foreach(Date data in rok)
-			{
-				if(Row.Historia[data].Etat.Wymiar == 1)
-					nadgodziny = czasDniPpn.Czas - czasDniRwp.Czas;
-				else	
-				{
-					DzienPracy dp = (DzienPracy)Row.DniPracy[data];
-					if(dp != null && dp.Czas > Row.Historia[data].Etat.Kalendarz.NormaDobowa)
-						nadgodziny += (dp.Czas - Row.Historia[data].Etat.Kalendarz.NormaDobowa);
-				}
-			}
-
-			return nadgodziny;
+        // kod wspólny: Dodatkowy kod kompilacji "A1KafelkiNadgodzin"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.KafelkiNadgodzin.NadgodzinyWRoku(Row);
     }
 }
 
