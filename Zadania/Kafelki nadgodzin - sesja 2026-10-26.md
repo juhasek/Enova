@@ -66,3 +66,11 @@ Otwarte: rok kalendarzowy w NadgRazem (nadgodziny z kolejnego roku nie wchodzą)
 - Testy K12–K17 OK, bez regresji K01–K11 (szczegóły w `Cechy/Kafelek nadgodzin.md`).
 - Kompilacja: „Wymuś rekompilację” na wpisie Dodatkowego kodu (MCP: open_subform cf… → execute_action ResyncAssemblyCacheWorker|Resync).
 - Otwarte: odejmowanie listy płac w „do wypłaty” nadal niesprawdzone (brak list w Al); tytuł kafelka zmienia się w konfiguracji pulpitu u klientki.
+
+## Scenariusze testowe i przeniesienie na main
+- Arkusz `Cechy/Kafelek nadgodzin - scenariusze testowe.xlsx` (32 scenariusze: S01–S06 dane bazowe, K01–K17 OK w Al, N01–N05 do sprawdzenia u klienta: lista płac, zmiana etatu, „Rozlicz nadgodziny”, e-wnioski, potrącenie WP) + arkusze „Zasady liczenia” i „Jak testować”. Generator (DevExpress 25.2, net10) tylko w scratchpadzie.
+- Rozwiązanie (pliki `Cechy/Kafelek nadgodzin*` i ten opis sesji) przeniesione na `main` na prośbę użytkownika.
+
+## Stan końcowy
+- Al: CodeFiles 2016 A1KafelkiNadgodzin + FeatureDefs 21–24, 26 (25 bez zmian); dane testowe od 27.10.2026 u S1, S2, S5, S6, S7, T1, T2, T3 oraz 14–15.08 u DW2, NP7, NP4 (i 2–3.05.2025 u DW1, bez zasobów – magazyn w Al od 08.2026).
+- U klientki do wgrania: CodeFiles A1KafelkiNadgodzin, kod cech 21–24, 26, potem „Wymuś rekompilację”; tytuł kafelka w konfiguracji pulpitu.
