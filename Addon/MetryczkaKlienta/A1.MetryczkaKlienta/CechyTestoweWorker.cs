@@ -1,6 +1,10 @@
 using System.Linq;
+using System.Net;
 using A1.Metryczka;
 using Soneta.Business;
+using Soneta.Business.App;
+using Soneta.Core;
+using Soneta.Core.Conversation.Models;
 using Soneta.Business.Db;
 using Soneta.Business.UI;
 
@@ -84,6 +88,40 @@ public class CechyTestoweWorker
     static FeatureSetDefinition Zestaw(Session sesja) =>
         BusinessModule.GetInstance(sesja).FSDefs.ByHostName[DefinicjeCech.TabelaCechGlobalnych]
             .FirstOrDefault(z => z.Name == DefinicjeCech.NazwaZestawu);
+
+    /// <summary>
+    /// Aktualności (Soneta.Core.Aktualnosc) z uzupełnionych cech TST_: jedna na kategorię, odbiorcy = aktywni operatorzy.
+    /// Każde uruchomienie dodaje nowy komplet (stan metryczki na dzień) - poprzednie zostają w historii aktualności.
+    /// </summary>
+    [Action("Generuj aktualności z metryczki", Mode = ActionMode.SingleSession, Target = ActionTarget.Menu)]
+    public object GenerujAktualnosci()
+    {
+        var kategorie = MetryczkaKlienta.Cechy(Metryczka.Session).Where(c => c.Aktywna).GroupBy(c => c.Kategoria).ToList();
+        if (kategorie.Count == 0)
+            return "Brak uzupełnionych cech TST_ - nie ma z czego wygenerować aktualności.";
+        using (Session sesja = Metryczka.Session.Login.CreateSession(false, false, "Metryczka - aktualności"))
+        {
+            Operator[] operatorzy = BusinessModule.GetInstance(sesja).Operators.Cast<Operator>().Where(o => !o.Locked).ToArray();
+            using (ITransaction t = sesja.Logout(true))
+            {
+                foreach (var kategoria in kategorie)
+                {
+                    var aktualnosc = new Aktualnosc();
+                    sesja.AddRow(aktualnosc);
+                    aktualnosc.Temat = $"Metryczka klienta – {kategoria.Key}";
+                    aktualnosc.Opis = "<ul>" + string.Concat(kategoria.Select(c =>
+                        $"<li><b>{WebUtility.HtmlEncode(c.Opis)}</b>: {WebUtility.HtmlEncode(c.Wartosc)}</li>")) + "</ul>";
+                    // Autor dyskusji bywa już uczestnikiem - bez duplikatów.
+                    var obecni = aktualnosc.Users.Select(u => u.Guid).ToHashSet();
+                    foreach (Operator op in operatorzy.Where(o => !obecni.Contains(o.Guid)))
+                        sesja.AddRow(new DiscussionParticipant(aktualnosc.Dyskusja, op));
+                }
+                t.Commit();
+            }
+            sesja.Save();
+        }
+        return $"Wygenerowano aktualności: {kategorie.Count} (kategorie), odbiorców: wszyscy aktywni operatorzy.";
+    }
 
     [Action("Usuń cechy testowe (TST_)", Mode = ActionMode.SingleSession, Target = ActionTarget.Menu)]
     public object Usun()

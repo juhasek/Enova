@@ -21,7 +21,8 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Enova bierze 3 ostatnie człony nazwy zasobu: <NazwaKlasy>.<NazwaStrony>.pageform. -->
-    <EmbeddedResource Include="Formularze\*.pageform.xml">
+    <!-- FolderMenu-KadryIPlace.form.xml: układ ekranu modułu Kadry i płace (szukany po nazwie pliku). -->
+    <EmbeddedResource Include="Formularze\*.xml">
       <LogicalName>A1.Metryczka.%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

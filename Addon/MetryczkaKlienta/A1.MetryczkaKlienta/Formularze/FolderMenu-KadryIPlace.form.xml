@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ekran modułu Kadry i płace (web). FolderMenuWindow ładuje najpierw "FolderMenu-<NormalizedPath>.form.xml",
+     a dopiero gdy go nie ma - standardowy FolderMenu.form.xml (Soneta.Net.Business). Ten sam mechanizm ma
+     standardowy FolderMenu-Ustawienia.form.xml. Poniżej kopia standardowego układu + sekcja aktualności nad
+     sekcjami generowanymi z szablonów (klony szablonów wstawiane są w miejscu szablonu, czyli pod sekcją).
+     Pierwszy element to Row z grupą MainGroup jak w standardzie - klient web (isFirstChildHasMainGroup)
+     tylko wtedy rysuje sekcje modułu na pełną szerokość; elementy MainGroup są kafelkami. -->
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          Mode="Folder" ViewType="Folder">
+
+  <Stack Name="FolderMenuList" Class="MainPage">
+
+    <Row>
+      <Group Name="MetryczkaAktualnosci" Class="MainGroup" CaptionHtml="Aktualności"
+             DataContext="{new MetryczkaAktualnosciExtender}">
+        <Command Name="MetryczkaPokazUkryj" Class="MainCommand" CaptionHtml="{TekstPrzycisku}"
+                 DescriptionHtml="Zwija lub rozwija aktualności nad sekcją Kadry" MethodName="PrzelaczWidocznosc" />
+        <Command Name="MetryczkaOtworz" Class="MainCommand" CaptionHtml="Metryczka klienta"
+                 DescriptionHtml="{Podsumowanie}" MethodName="OtworzMetryczke" />
+      </Group>
+    </Row>
+
+    <!-- Ten sam widget co "Aktualności" na pulpicie / Moje aktualności (Soneta.Core.UI). -->
+    <Row DataContext="{new MetryczkaAktualnosciExtender}" Visibility="{Widoczna}">
+      <Group Name="MetryczkaAktualnosciWidget" Width="*" Height="25">
+        <Include DataContext="{new MojeAktualnosciViewInfo}" Source="Dashboard.Aktualnosci.form.xml" />
+      </Group>
+    </Row>
+
+    <Template Name="ItemTemplate">
+      <Command Name="MenuItem" Class="MainCommand"/>
+    </Template>
+
+    <Template Name="GroupTemplate">
+      <Group Name="MenuGroup" Class="MainGroup" />
+    </Template>
+
+    <Template Name="RowTemplate">
+      <Row />
+    </Template>
+
+  </Stack>
+
+</DataForm>

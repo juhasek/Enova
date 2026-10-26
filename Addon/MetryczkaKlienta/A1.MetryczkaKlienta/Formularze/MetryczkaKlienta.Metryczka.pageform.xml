@@ -4,13 +4,12 @@
           xmlns="http://www.enova.pl/schema/form.xsd"
           xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
           Priority="10">
+  <!-- Stałe wysokości list: dwie listy Height="*" na jednej stronie klient web rysuje tylko jako ostatnią.
+       "Nieaktywne" zwijane własnym przyciskiem - Class="Collapsable" na tej stronie nie zwijał grupy domyślnie. -->
   <Page CaptionHtml="Metryczka klienta" DataContext="{DataSource}">
-    <Row>
-      <Label CaptionHtml="{Podsumowanie}" Width="*" />
-      <Command Name="PokazUkryj" CaptionHtml="{TekstPrzycisku}" MethodName="PrzelaczWidocznosc" />
-    </Row>
-    <Group Name="Aktywne" CaptionHtml="Cechy uzupełnione" Visibility="{Widoczna}">
-      <Grid Name="CechyAktywne" Width="*" Height="*" EditValue="{Aktywne}"
+    <Label CaptionHtml="{Podsumowanie}" Width="*" />
+    <Group Name="Aktywne" CaptionHtml="Cechy uzupełnione">
+      <Grid Name="CechyAktywne" Width="*" Height="15" EditValue="{Aktywne}" OrderBy="Kategoria"
             NewButton="None" EditButton="None" RemoveButton="None">
         <Appearance Condition="{?Aktywna}" FontBold="true" />
         <Field CaptionHtml="Cecha" Width="30" EditValue="{Nazwa}" />
@@ -19,8 +18,11 @@
         <GroupBy EditValue="{Kategoria}" IsDescending="false" />
       </Grid>
     </Group>
-    <Group Name="Nieaktywne" CaptionHtml="Nieaktywne" Class="Collapsable" Visibility="{Widoczna}">
-      <Grid Name="CechyNieaktywne" Width="*" Height="*" EditValue="{Nieaktywne}"
+    <Row>
+      <Command Name="PokazNieaktywne" CaptionHtml="{TekstNieaktywnych}" MethodName="PrzelaczNieaktywne" />
+    </Row>
+    <Group Name="Nieaktywne" CaptionHtml="Nieaktywne" Visibility="{NieaktywneWidoczne}">
+      <Grid Name="CechyNieaktywne" Width="*" Height="15" EditValue="{Nieaktywne}" OrderBy="Kategoria"
             NewButton="None" EditButton="None" RemoveButton="None">
         <Field CaptionHtml="Cecha" Width="30" EditValue="{Nazwa}" />
         <Field CaptionHtml="Wartość" Width="40" EditValue="{Wartosc}" />
