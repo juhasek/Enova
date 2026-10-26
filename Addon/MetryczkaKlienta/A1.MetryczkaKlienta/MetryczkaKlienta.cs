@@ -6,9 +6,10 @@ using Soneta.Business;
 using Soneta.Business.UI;
 using Soneta.Types;
 
-// Okno administracyjne (podgląd wszystkich cech TST_ + Czynności Utwórz/Usuń) w Ustawieniach.
+// Okno administracyjne (podgląd wszystkich cech TST_ + Czynności Utwórz/Usuń) w module Ogólne.
+// Nie w Ustawieniach: drzewo Ustawień (ConfigurationFolderViewAttribute) składa się tylko ze stron Config.*.pageform.xml.
 // Sekcja na ekranie modułu Kadry i płace to FolderMenu-KadryIPlace.form.xml + MetryczkaAktualnosciExtender.
-[assembly: FolderView("Ustawienia/Ogólne/Metryczka klienta (TST_)",
+[assembly: FolderView("Ogólne/Metryczka klienta (TST_)",
     ObjectType = typeof(MetryczkaKlienta),
     Description = "Cechy globalne TST_ z metryczki klienta: podgląd, tworzenie i usuwanie definicji")]
 
@@ -25,7 +26,7 @@ public class CechaMetryczki
 }
 
 /// <summary>
-/// Obiekt okna "Ustawienia / Ogólne / Metryczka klienta (TST_)". Lista budowana przy każdym odczycie
+/// Obiekt okna "Ogólne / Metryczka klienta (TST_)". Lista budowana przy każdym odczycie
 /// z definicji cech globalnych z prefiksem TST_ - nowa cecha dodana w Opcjach pojawia się sama.
 /// Lista (Grid) zamiast pól generowanych w układzie, bo układ formularza jest cache'owany.
 /// </summary>
