@@ -26,3 +26,9 @@ Uporządkowanie repozytorium wg zasady: `main` = rozwiązania zaakceptowane,
 ## Otwarte punkty
 - Branch `claude/gifted-goldberg-3z9lm2` – do decyzji użytkownika (usunąć / zachować raport).
 - `CLAUDE.md` na `main` nie zawiera jeszcze nowej zasady – przeniesienie wymaga PR i zgody.
+
+## Ciąg dalszy (2026-10-27)
+- PR z nową zasadą w `CLAUDE.md` do `main`: https://github.com/juhasek/Enova/pull/32
+  (branch `claude-md-podzial-do-main`), czeka na scalenie.
+- Usunięcie brancha `claude/gifted-goldberg-3z9lm2` z sesji nie przeszło (serwer zrywa
+  połączenie przy `git push --delete`) – do usunięcia ręcznie w GitHub (Branches).
