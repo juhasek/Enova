@@ -32,3 +32,6 @@ Uporządkowanie repozytorium wg zasady: `main` = rozwiązania zaakceptowane,
   `CLAUDE.md` identyczny na `main` i `Testy`. Branch `claude-md-podzial-do-main` do usunięcia ręcznie.
 - Usunięcie brancha `claude/gifted-goldberg-3z9lm2` z sesji nie przeszło (serwer zrywa
   połączenie przy `git push --delete`) – usunięty ręcznie przez użytkownika.
+- Branch `main` przemianowany przez użytkownika na **`Produkcja`** (branch domyślny).
+  `CLAUDE.md` poprawiony na `Testy` i przez PR https://github.com/juhasek/Enova/pull/33
+  (scalony) na `Produkcja`. Lokalne kopie repo: `git fetch --prune` + `git remote set-head origin -a`.
