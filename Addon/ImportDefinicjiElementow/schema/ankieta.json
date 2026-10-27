@@ -820,7 +820,13 @@
           "etykieta": "Inaczej",
           "opis": "Np. pomniejszany tylko po 30 dniach choroby.",
           "szczegoly": [
-            "Algorytm.KreatorAlgorytmu.Korekta.*",
+            "Algorytm.KreatorAlgorytmu.Korekta.ZUS",
+            "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe",
+            "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske",
+            "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne",
+            "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze",
+            "Algorytm.KreatorAlgorytmu.PomniejszDoZera",
+            "Algorytm.KreatorAlgorytmu.ProgZerowania",
             "Nieobecnosci.ZasilkiPracownicy.*",
             "Nieobecnosci.ZasilkiInni.*"
           ]

@@ -45,6 +45,7 @@
    * Wynik ankiety dla definicji.
    * def: { wartosci, ankieta: { odpowiedzi: {id: odp}, reczne: {sciezka: true} } }
    * Zwraca { szablon, wartosci, pochodzenie: {sciezka: 'szablon'|'reczne'|idPytania}, szczegoly: [ścieżki pól do pokazania],
+   *          pola: [pola wpisywane w widocznych pytaniach],
    *          wdrozeniowiec: [{pytanie, powod}], doPotwierdzenia: [idPytania], nieWiem: [idPytania], brak: [idPytania] }.
    */
   function zastosuj(ankieta, schemat, def) {
@@ -52,7 +53,7 @@
     var odp = a.odpowiedzi || {};
     var reczne = a.reczne || {};
     var biezace = def.wartosci || {};
-    var wynik = { szablon: null, wartosci: {}, pochodzenie: {}, szczegoly: [], wdrozeniowiec: [], doPotwierdzenia: [], nieWiem: [], brak: [] };
+    var wynik = { szablon: null, wartosci: {}, pochodzenie: {}, szczegoly: [], pola: [], wdrozeniowiec: [], doPotwierdzenia: [], nieWiem: [], brak: [] };
     var widoczne = widocznePytania(ankieta, odp);
     var ctx = ctxOdpowiedzi(odp);
     var wzorce = [];
@@ -80,6 +81,7 @@
       var t = typ(p);
       if (t === 'pola') {
         p.pola.forEach(function (s) {
+          wynik.pola.push(s);
           if (!W.pusty(biezace[s])) { wynik.wartosci[s] = kopia(biezace[s]); wynik.pochodzenie[s] = p.id; }
         });
         return;

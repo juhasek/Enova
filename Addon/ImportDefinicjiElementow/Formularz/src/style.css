@@ -179,3 +179,29 @@ dialog h2 { margin: 0 0 10px; font-size: 17px; }
 .dialog-tresc dd { margin: 0 0 0 14px; color: var(--tekst2); }
 .dialog-tresc .zrodlo { color: var(--tekst2); font-size: 12px; margin-top: 10px; }
 dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; margin: 16px 0 0; }
+
+/* ankieta */
+.kreator { padding: 16px 20px 28px; max-width: 760px; }
+.postep { height: 6px; background: var(--wylaczone); border-radius: 3px; margin: 4px 0 18px; overflow: hidden; }
+.postep > div { height: 100%; background: var(--akcent); }
+.krok-nr { color: var(--tekst2); font-size: 12px; }
+.kreator h3 { font-size: 18px; margin: 4px 0 6px; }
+.odpowiedzi { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+.odpowiedz { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--linia); border-radius: var(--promien); padding: 10px 12px; cursor: pointer; }
+.odpowiedz:hover { border-color: var(--akcent); }
+.odpowiedz.wybrana { border-color: var(--akcent); background: var(--akcent-tlo); }
+.odpowiedz input { margin-top: 3px; }
+.odpowiedz small { display: block; color: var(--tekst2); margin-top: 2px; }
+.odpowiedz.nie-wiem { border-style: dashed; }
+.kreator-nawigacja { display: flex; gap: 8px; justify-content: space-between; margin-top: 18px; }
+.kreator dt button { text-align: left; }
+.kreator textarea { width: 100%; min-height: 120px; }
+.ankieta-podsumowanie { margin: 10px 20px 0; border: 1px solid var(--linia); border-radius: var(--promien); padding: 8px 12px; }
+.ankieta-podsumowanie summary { cursor: pointer; font-weight: 600; }
+.ankieta-podsumowanie dl, .kreator dl { display: grid; grid-template-columns: minmax(180px, 45%) 1fr; gap: 4px 12px; margin: 10px 0; }
+.ankieta-podsumowanie dt, .kreator dt { color: var(--tekst2); }
+.ankieta-podsumowanie dd, .kreator dd { margin: 0; }
+.ankieta-uwagi { margin: 8px 0 0; padding-left: 18px; font-size: 13px; }
+.ankieta-uwagi li { margin: 2px 0; }
+.pochodzenie { font-size: 11px; color: var(--info); margin-top: 3px; }
+.pochodzenie.reczne { color: var(--ostrz); }

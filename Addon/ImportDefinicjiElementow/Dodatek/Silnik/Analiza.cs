@@ -97,6 +97,7 @@ public static class Analizator
             wynik.Definicje.Add(a);
             if (a.Akceptacja == null)
                 a.Komunikaty.Add(new("Akceptacja", "ostrzezenie", "Klient nie zaakceptował tej definicji w formularzu."));
+            a.Komunikaty.AddRange(d.Ankieta.Select(t => new Komunikat("Ankieta", "ostrzezenie", t)));
             a.Komunikaty.AddRange(Walidacja.Waliduj(schemat, d.Wartosci, wszystkie.Where(w => !ReferenceEquals(w, d.Wartosci)), baza.Licencja)
                 .Where(k => k.Poziom != "informacja"));
             a.Przypisania = Walidacja.DoZapisu(schemat, d.Wartosci, baza.Licencja);

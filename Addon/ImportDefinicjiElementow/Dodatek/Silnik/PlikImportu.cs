@@ -23,6 +23,8 @@ public sealed class PlikImportu
         public string AkceptacjaOsoba;
         public string AkceptacjaData;
         public JsonObject Wartosci;
+        /// <summary>Sprawy z ankiety formularza do wyjaśnienia przez wdrożeniowca (gotowe komunikaty).</summary>
+        public List<string> Ankieta = new();
         public List<string> BledyFormularza = new();
     }
 
@@ -63,6 +65,7 @@ public sealed class PlikImportu
                 AkceptacjaData = dobj["akceptacja"]?["data"]?.GetValue<string>(),
                 Wartosci = (dobj["wartosci"] as JsonObject)?.DeepClone().AsObject() ?? new JsonObject(),
                 BledyFormularza = (dobj["bledy"] as JsonArray)?.Select(b => b!.GetValue<string>()).ToList() ?? new(),
+                Ankieta = UwagiAnkiety(dobj["ankieta"] as JsonObject),
             });
         }
         if (plik.Definicje.Count == 0)
@@ -71,6 +74,21 @@ public sealed class PlikImportu
     }
 
     static string Glowna(string w) => (w ?? "").Split('.')[0];
+
+    static List<string> UwagiAnkiety(JsonObject a)
+    {
+        var wynik = new List<string>();
+        if (a == null)
+            return wynik;
+        if (a["zakonczona"]?.GetValue<bool>() == false)
+            wynik.Add("Klient nie dokończył ankiety.");
+        wynik.AddRange(Teksty(a["doWyjasnienia"]).Select(p => $"Klient nie zna odpowiedzi (do wyjaśnienia): {p}"));
+        wynik.AddRange(Teksty(a["doPotwierdzenia"]).Select(p => $"Potwierdź zgodność z przepisami: {p}"));
+        wynik.AddRange(Teksty(a["dlaWdrozeniowca"]));
+        return wynik;
+    }
+
+    static IEnumerable<string> Teksty(JsonNode n) => (n as JsonArray)?.Select(x => x!.GetValue<string>()) ?? Enumerable.Empty<string>();
 }
 
 public sealed class BladPliku : Exception

@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 const kat = new URL('./', import.meta.url);
 const czytaj = (p) => readFileSync(new URL(p, kat), 'utf8');
 const schemat = JSON.parse(czytaj('../schema/definicja-elementu.schema.json'));
+const ankieta = JSON.parse(czytaj('../schema/ankieta.json'));
 
 // Do formularza trafia tylko to, czego potrzebuje klient – bez reguł z kodu enova, typów .NET i uwag technicznych.
 const POLA_POLA = ['sciezka', 'etykieta', 'etykietaEnova', 'typ', 'enum', 'slownik', 'wymagane', 'wymaganeGdy', 'maxDlugosc',
@@ -31,6 +32,7 @@ const klient = {
   }])),
   definicjeStandardowe: schemat.definicjeStandardowe.map((d) => ({ nazwa: d.nazwa })),
   szablony: schemat.szablony.map((s) => wybierz(s, ['id', 'etykieta', 'opis', 'uwagi', 'wartosci'])),
+  ankieta,
 };
 
 // JSON wewnątrz <script>: zabezpieczenie przed "</script>" i znakami końca linii JS
@@ -44,9 +46,10 @@ const html = czytaj('src/index.html')
   .replace('/*__STYLE__*/', () => czytaj('src/style.css'))
   .replace('/*__SCHEMAT__*/', () => jsonSchematu)
   .replace('/*__WARUNKI__*/', () => czytaj('src/warunki.js'))
+  .replace('/*__ANKIETA__*/', () => czytaj('src/ankieta.js'))
   .replace('/*__APP__*/', () => czytaj('src/app.js'));
 
 mkdirSync(new URL('dist/', kat), { recursive: true });
 const cel = new URL('dist/formularz-elementow-wynagrodzenia.html', kat);
 writeFileSync(cel, html, 'utf8');
-console.log(`Zapisano ${cel.pathname} (${Math.round(html.length / 1024)} KB, pól: ${Object.keys(klient.pola).length}, szablonów: ${klient.szablony.length})`);
+console.log(`Zapisano ${cel.pathname} (${Math.round(html.length / 1024)} KB, pól: ${Object.keys(klient.pola).length}, szablonów: ${klient.szablony.length}, pytań ankiety: ${ankieta.pytania.length})`);

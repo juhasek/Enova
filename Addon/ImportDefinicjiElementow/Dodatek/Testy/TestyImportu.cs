@@ -243,6 +243,27 @@ public class TestyAnalizy
         Assert.All(a.Definicje, d => Assert.Equal(StatusDefinicji.Nowa, d.Status));
         Assert.Contains("zaakceptowane przez klienta: **1 z 2**", Raport.Podglad(a, S));
     }
+
+    [Fact]
+    public void Sprawy_z_ankiety_to_ostrzezenia_dla_wdrozeniowca()
+    {
+        var json = JsonNode.Parse(Przyklad())!.AsObject();
+        json["definicje"]![0]!["ankieta"] = new JsonObject
+        {
+            ["zakonczona"] = true,
+            ["doWyjasnienia"] = new JsonArray("Czy od składnika pobiera się podatek i składki ZUS?"),
+            ["doPotwierdzenia"] = new JsonArray("Co dzieje się ze składnikiem w czasie urlopu wypoczynkowego?"),
+            ["dlaWdrozeniowca"] = new JsonArray("Nietypowy sposób wyliczenia – możliwy algorytm w edytorze (kod C#)."),
+        };
+        var plik = PlikImportu.Wczytaj(Encoding.UTF8.GetBytes(json.ToJsonString()), S);
+        var a = Analizator.Analizuj(S, plik, new Baza(), TrybImportu.NoweIAktualizacja);
+        var ank = a.Definicje[0].Komunikaty.Where(k => k.Sciezka == "Ankieta").ToList();
+        Assert.Equal(3, ank.Count);
+        Assert.All(ank, k => Assert.Equal("ostrzezenie", k.Poziom));
+        Assert.Contains(ank, k => k.Tekst.Contains("podatek i składki ZUS"));
+        Assert.DoesNotContain(a.Definicje[1].Komunikaty, k => k.Sciezka == "Ankieta");
+        Assert.All(a.Definicje, d => Assert.Equal(StatusDefinicji.Nowa, d.Status));
+    }
 }
 
 /// <summary>Mapowanie wartości z pliku na właściwości obiektów i typy Soneta.</summary>
