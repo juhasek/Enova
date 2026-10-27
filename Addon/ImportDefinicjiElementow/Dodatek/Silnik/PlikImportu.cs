@@ -25,6 +25,8 @@ public sealed class PlikImportu
         public JsonObject Wartosci;
         /// <summary>Sprawy z ankiety formularza do wyjaśnienia przez wdrożeniowca (gotowe komunikaty).</summary>
         public List<string> Ankieta = new();
+        /// <summary>Odpowiedzi klienta z ankiety (pytanie, odpowiedź) – do raportu.</summary>
+        public List<(string Pytanie, string Odpowiedz)> OdpowiedziAnkiety = new();
         public List<string> BledyFormularza = new();
     }
 
@@ -66,6 +68,8 @@ public sealed class PlikImportu
                 Wartosci = (dobj["wartosci"] as JsonObject)?.DeepClone().AsObject() ?? new JsonObject(),
                 BledyFormularza = (dobj["bledy"] as JsonArray)?.Select(b => b!.GetValue<string>()).ToList() ?? new(),
                 Ankieta = UwagiAnkiety(dobj["ankieta"] as JsonObject),
+                OdpowiedziAnkiety = (dobj["ankieta"]?["podsumowanie"] as JsonArray)?.OfType<JsonObject>()
+                    .Select(x => (x["pytanie"]?.GetValue<string>() ?? "", x["odpowiedz"]?.GetValue<string>() ?? "")).ToList() ?? new(),
             });
         }
         if (plik.Definicje.Count == 0)

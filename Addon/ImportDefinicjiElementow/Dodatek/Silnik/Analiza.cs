@@ -44,6 +44,7 @@ public sealed class AnalizaDefinicji
     public string Skrot;
     public string Rodzaj;
     public string Uwagi;
+    public List<(string Pytanie, string Odpowiedz)> OdpowiedziAnkiety = new();
     /// <summary>„osoba, data” akceptacji klienta albo null.</summary>
     public string Akceptacja;
     public StatusDefinicji Status;
@@ -89,6 +90,7 @@ public static class Analizator
                 Numer = ++numer,
                 Id = d.Id,
                 Uwagi = d.Uwagi,
+                OdpowiedziAnkiety = d.OdpowiedziAnkiety,
                 Nazwa = Tekst(d.Wartosci["Nazwa"]),
                 Skrot = Tekst(d.Wartosci["Skrot"]),
                 Rodzaj = Tekst(d.Wartosci["RodzajZrodla"]),

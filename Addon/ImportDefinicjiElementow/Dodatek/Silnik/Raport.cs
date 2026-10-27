@@ -102,6 +102,13 @@ public static class Raport
             }
             if (!string.IsNullOrWhiteSpace(d.Uwagi))
                 sb.Append($"<p><b>Uwagi klienta dla wdrożeniowca:</b></p><div class=\"uwagi\">{H(d.Uwagi)}</div>");
+            if (d.OdpowiedziAnkiety.Count > 0)
+            {
+                sb.Append($"<details><summary><b>Odpowiedzi klienta z ankiety ({d.OdpowiedziAnkiety.Count})</b></summary><table><tr><th>Pytanie</th><th>Odpowiedź</th></tr>");
+                foreach (var (pytanie, odpowiedz) in d.OdpowiedziAnkiety)
+                    sb.Append($"<tr><td>{H(pytanie)}</td><td>{H(odpowiedz)}</td></tr>");
+                sb.Append("</table></details>");
+            }
         }
         sb.Append("</body></html>");
         return sb.ToString();

@@ -118,7 +118,18 @@
       if (p.prawne && p.odpowiedzi[0].id !== o.id) wynik.doPotwierdzenia.push(p.id);
     });
 
+    // pola z obszarów prawnych (PIT, ZUS, podstawy urlopu i zasiłków) zmienione względem szablonu i odpowiedzi → do potwierdzenia
+    var rozdzialPrawny = {};
+    (ankieta.rozdzialy || []).forEach(function (r) { if (r.prawne) rozdzialPrawny[r.id] = true; });
+    var pytaniePrawne = {};
+    ankieta.pytania.forEach(function (p) {
+      if (p.prawne || rozdzialPrawny[p.rozdzial]) polaPytania(p).forEach(function (s) { pytaniePrawne[s] = pytaniePrawne[s] || p.id; });
+    });
     Object.keys(reczne).forEach(function (s) {
+      var q = pytaniePrawne[s];
+      var bazowa = s in wynik.wartosci ? wynik.wartosci[s] : (schemat.pola[s] || {}).domyslna;
+      if (q && JSON.stringify(W.pusty(biezace[s]) ? undefined : biezace[s]) !== JSON.stringify(W.pusty(bazowa) ? undefined : bazowa)
+        && wynik.doPotwierdzenia.indexOf(q) < 0) wynik.doPotwierdzenia.push(q);
       if (W.pusty(biezace[s])) delete wynik.wartosci[s];
       else wynik.wartosci[s] = kopia(biezace[s]);
       wynik.pochodzenie[s] = pytaniePola[s] || 'reczne';
@@ -175,6 +186,10 @@
       if (p.zestaw && !(ankieta.zestawy || {})[p.zestaw]) bledy.push(g + ': brak zestawu ' + p.zestaw);
       warunek(p.widoczneGdy, g);
       polaPytania(p).forEach(function (s) { if (!schemat.pola[s]) bledy.push(g + ': brak pola ' + s); });
+      if (typ(p) === 'pole') (p.typowe || []).forEach(function (v) {
+        var pole = schemat.pola[p.pole];
+        if (!pole || !pole.enum || !schemat.enumy[pole.enum].wartosci.some(function (x) { return x.nazwa === v; })) bledy.push(g + ': typowa wartość ' + v + ' spoza wartości pola ' + p.pole);
+      });
       if (typ(p) === 'pole' && p.etykiety) Object.keys(p.etykiety).forEach(function (v) {
         var pole = schemat.pola[p.pole];
         var ok = pole && (pole.typ === 'bool' ? v === 'true' || v === 'false'

@@ -238,3 +238,6 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; ma
 .konf-zestawy small { flex-basis: 100%; color: var(--tekst2); }
 .pytanie.do-potwierdzenia { border-color: var(--ostrz); background: var(--ostrz-tlo); }
 .potwierdzenie { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--ostrz); }
+.konf-wzorzec { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.konf-wzorzec select { padding: 4px 6px; border: 1px solid var(--linia); border-radius: 6px; background: var(--karta); max-width: 280px; }
+.inna-wartosc { margin-top: 6px; }

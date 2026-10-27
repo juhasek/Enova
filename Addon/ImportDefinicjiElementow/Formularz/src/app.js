@@ -30,7 +30,9 @@
     { id: 'edycja', etykieta: 'Klient odpowiada' },
     { id: 'wymagane', etykieta: 'Klient musi odpowiedzieć' }
   ];
-  var MAKS_KAFELKOW = 8; // pytanie o pole z większą liczbą wartości – lista rozwijana zamiast kafelków
+  var MAKS_KAFELKOW = 8; // pytanie o pole z większą liczbą wartości – lista rozwijana zamiast kafelków (chyba że ma „typowe”)
+  var INNA = '__inna';
+  var inneRozwiniete = {}; // pola z rozwiniętą pełną listą („Inna wartość…”) – stan widoku, bez zapisu
 
   var stan = wczytajSzkic() || (KLIENT
     ? { ustawienia: { licencja: KONF.licencja }, definicje: kopia(KONF.definicje), wybrana: null, zakladka: null }
@@ -267,7 +269,7 @@
       wKreatorze = true;
       try {
         AN.polaPytania(p).forEach(function (s) {
-          if (k.stan(s).aktywne) karta.appendChild(renderPole(d, k, s, typ === 'pole' ? { kafelki: true, bezEtykiety: true, etykiety: p.etykiety, wylacz: wglad } : { wylacz: wglad }));
+          if (k.stan(s).aktywne) karta.appendChild(renderPole(d, k, s, typ === 'pole' ? { kafelki: true, bezEtykiety: true, etykiety: p.etykiety, typowe: p.typowe, wylacz: wglad } : { wylacz: wglad }));
         });
       } finally { wKreatorze = false; }
       if (potwierdz) karta.appendChild(el('div', { klasa: 'potwierdzenie' },
@@ -540,6 +542,12 @@
       wartosci: szablon ? kopia(szablon.wartosci) : zAnkiety ? {} : { RodzajZrodla: 'Dodatek' }
     };
     if (zAnkiety) d.ankieta = { wersja: ANKIETA.wersja, odpowiedzi: {}, reczne: {}, krok: 0, zakonczona: false };
+    if (zAnkiety && KLIENT && KONF.wzorzec) { // odpowiedzi wdrożeniowca (także na pytania ukryte) z definicji wzorcowej
+      d.ankieta.odpowiedzi = kopia(KONF.wzorzec.odpowiedzi);
+      d.ankieta.reczne = kopia(KONF.wzorzec.reczne);
+      d.wartosci = kopia(KONF.wzorzec.wartosci);
+      przelicz(d);
+    }
     stan.definicje.push(d);
     stan.wybrana = d.id;
     stan.widok = null;
@@ -811,7 +819,7 @@
       if (wa) d.ankieta.reczne[sciezka] = true; // zmiana pola wygrywa z odpowiedziami ustawiającymi wiele pól
       zmieniono(pelny);
     };
-    var kafelkowe = opcje.kafelki && (pole.typ === 'bool' || (pole.enum && (st.dozwolone || []).length <= MAKS_KAFELKOW));
+    var kafelkowe = opcje.kafelki && (pole.typ === 'bool' || (pole.enum && (!!opcje.typowe || (st.dozwolone || []).length <= MAKS_KAFELKOW)));
     var div = el('div', { klasa: 'pole' + (opcje.bezEtykiety ? ' bez-etykiety' : ''), 'data-pole': sciezka },
       opcje.bezEtykiety ? null : el('div', { klasa: 'etykieta' },
         el('label', { htmlFor: id }, pole.etykieta, st.wymagane ? el('span', { klasa: 'wym', tekst: '*', title: 'Pole wymagane' }) : null),
@@ -819,7 +827,7 @@
     var kontr = el('div', { klasa: 'kontrolka' });
     // „Klient musi uzupełnić” Tak/Nie – bez podpowiedzi wartości domyślnej, klient wybiera świadomie
     var swiadomy = KLIENT && pole.typ === 'bool' && st.edytowalne && dlaKlienta(sciezka, d) === 'wymagane';
-    kontr.appendChild(kafelkowe ? kafelkiPola(pole, st, swiadomy ? d.wartosci[sciezka] : wartosc, ustaw, opcje.etykiety) : kontrolka(pole, st, wartosc, id, ustaw, d));
+    kontr.appendChild(kafelkowe ? kafelkiPola(pole, st, swiadomy ? d.wartosci[sciezka] : wartosc, ustaw, opcje.etykiety, opcje.typowe) : kontrolka(pole, st, wartosc, id, ustaw, d));
     if (pole.enum && wartosc !== undefined && !kafelkowe) {
       var ew = SCHEMAT.enumy[pole.enum].wartosci.filter(function (x) { return x.nazwa === wartosc; })[0];
       if (ew && ew.opis) kontr.appendChild(el('div', { klasa: 'opis-wartosci', tekst: ew.opis }));
@@ -884,18 +892,31 @@
   }
 
   /** Enum lub Tak/Nie jako kafelki odpowiedzi (pytanie ankiety o pole). */
-  function kafelkiPola(pole, st, wartosc, ustaw, etykiety) {
+  /** Enum lub Tak/Nie jako kafelki; typowe – kafelki tylko dla typowych wartości + „Inna wartość…” z pełną listą. */
+  function kafelkiPola(pole, st, wartosc, ustaw, etykiety, typowe) {
     etykiety = etykiety || {};
+    var v = wartosc === undefined || wartosc === null ? undefined : String(wartosc);
+    var lista = st.dozwolone || [];
+    var inna = false;
+    if (typowe) {
+      inna = !!inneRozwiniete[pole.sciezka] || (v !== undefined && typowe.indexOf(v) < 0);
+      lista = lista.filter(function (n) { return typowe.indexOf(n) >= 0; });
+    }
     var opcje = pole.typ === 'bool'
       ? [true, false].map(function (b) { return { id: String(b), etykieta: etykiety[String(b)] || (b ? 'Tak' : 'Nie') }; })
-      : st.dozwolone.map(function (n) {
+      : lista.map(function (n) {
         var ew = SCHEMAT.enumy[pole.enum].wartosci.filter(function (x) { return x.nazwa === n; })[0];
         return { id: n, etykieta: etykiety[n] || ew.etykieta, opis: ew.opis };
       });
-    var v = wartosc === undefined || wartosc === null ? undefined : String(wartosc);
-    return el('div', { 'data-sciezka': pole.sciezka, tabIndex: -1 }, kafelki('k_' + pole.sciezka, pole.etykieta, opcje, v, function (id) {
+    if (typowe) opcje.push({ id: INNA, etykieta: 'Inna wartość…', opis: 'Pełna lista możliwości.' });
+    var wyl = !st.edytowalne;
+    var kont = el('div', { 'data-sciezka': pole.sciezka, tabIndex: -1 }, kafelki('k_' + pole.sciezka, pole.etykieta, opcje, inna ? INNA : v, function (id) {
+      if (id === INNA) { inneRozwiniete[pole.sciezka] = true; zmieniono(true); return; }
+      delete inneRozwiniete[pole.sciezka];
       ustaw(pole.typ === 'bool' ? id === 'true' : id, true);
-    }, !st.edytowalne, true));
+    }, wyl, true));
+    if (inna) kont.appendChild(selectEnum(pole, st, wartosc, { 'data-klucz': pole.sciezka + '#inna', 'aria-label': pole.etykieta, disabled: wyl, klasa: 'inna-wartosc' }, ustaw));
+    return kont;
   }
 
   function selectEnum(pole, st, wartosc, wsp, ustaw) {
@@ -1125,6 +1146,12 @@
         type: 'checkbox', checked: kl.mozeDodawac,
         onchange: function (e) { kl.mozeDodawac = e.target.checked; odswiez(); }
       }), 'Klient może dodawać i usuwać definicje'),
+      el('label', { klasa: 'konf-wzorzec' }, 'Nowe definicje klienta zaczynają od: ', el('select', {
+        id: 'wzorzecKonf', disabled: !kl.mozeDodawac, onchange: function (e) { kl.wzorzec = e.target.value || null; odswiez(); }
+      }, el('option', { value: '', tekst: 'pustej ankiety' }),
+        stan.definicje.filter(function (d) { return d.ankieta; }).map(function (d) {
+          return el('option', { value: d.id, tekst: 'odpowiedzi z „' + nazwaDefinicji(d) + '”', selected: d.id === kl.wzorzec });
+        }))),
       el('input', {
         type: 'search', id: 'filtrKonf', placeholder: 'Szukaj pytania lub pola…', value: stan.filtrKonf || '', 'aria-label': 'Szukaj pytania lub pola',
         oninput: function (e) { stan.filtrKonf = e.target.value; renderKonfiguracja(); }
@@ -1236,6 +1263,15 @@
     });
   }
 
+  /** Odpowiedzi i ustawienia definicji wzorcowej bez danych identyfikujących składnik (nazwa, skrót, kod). */
+  function wzorzecDlaKlienta(id) {
+    var d = stan.definicje.filter(function (x) { return x.id === id && x.ankieta; })[0];
+    if (!d) return null;
+    var w = { odpowiedzi: kopia(d.ankieta.odpowiedzi), reczne: kopia(d.ankieta.reczne || {}), wartosci: kopia(d.wartosci) };
+    ['Nazwa', 'Skrot', 'Kod', 'NazwaPomocnicza'].forEach(function (s) { delete w.wartosci[s]; delete w.reczne[s]; });
+    return w;
+  }
+
   function pobierzFormularzKlienta() {
     var kl = stan.klient;
     var widoczne = Object.keys(kl.pola).length;
@@ -1248,6 +1284,7 @@
       mozeDodawac: !!kl.mozeDodawac,
       wiadomosc: kl.wiadomosc || '',
       pytania: kopia(kl.pytania || {}),
+      wzorzec: wzorzecDlaKlienta(kl.wzorzec),
       pola: kopia(kl.pola),
       definicje: kopia(stan.definicje)
     };

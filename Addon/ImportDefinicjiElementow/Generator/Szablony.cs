@@ -11,13 +11,15 @@ namespace ImportDefinicjiElementow.Generator;
 /// </summary>
 static class Szablony
 {
-    public static JsonArray Buduj(Konfiguracja konf, Dictionary<string, string> zasobyLogiki, JsonObject pola, JsonObject slowniki, List<string> ostrzezenia)
+    public static JsonArray Buduj(Konfiguracja konf, Dictionary<string, string> zasobyLogiki, JsonObject pola, JsonObject slowniki, List<string> ostrzezenia,
+        List<KonfSzablon> lista = null)
     {
+        lista ??= konf.Szablony;
         var wynik = new JsonArray();
-        if (konf.Szablony.Count == 0)
+        if (lista.Count == 0)
             return wynik;
         var rekordy = RekordyStandardowe(konf, zasobyLogiki);
-        foreach (var ks in konf.Szablony)
+        foreach (var ks in lista)
         {
             if (!rekordy.TryGetValue(ks.ZrodloGuid, out var liscie))
             {

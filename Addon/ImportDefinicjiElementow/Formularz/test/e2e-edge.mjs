@@ -341,6 +341,14 @@ try {
   await doRozdzialu('Podatek i składki ZUS');
   await zaznacz('podatki', '?');
   await dalej();
+  await doRozdzialu('Sprawozdania i informacje dodatkowe');
+  // długa lista: kafelki typowych wartości + „Inna wartość…” z pełną listą
+  assert.equal(await jest('[data-klucz="k_GUS.RodzajSkladnikaWynagrodzeniaGus_Honorarium"]'), false, 'nietypowa wartość bez kafelka');
+  await zaznaczPole('GUS.RodzajSkladnikaWynagrodzeniaGus', '__inna');
+  await js(`(() => { const s = document.querySelector('[data-klucz="GUS.RodzajSkladnikaWynagrodzeniaGus#inna"]'); s.value = 'Honorarium'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await czekaj(200);
+  assert.equal(await js(`document.querySelector('[data-klucz="GUS.RodzajSkladnikaWynagrodzeniaGus#inna"]').value`), 'Honorarium', 'pełna lista zostaje po wyborze');
+  await zrzut('15b-ankieta-inna-wartosc');
   await doRozdzialu('Uwagi');
   await js(`(() => { const t = document.querySelector('[data-klucz="__uwagi"]'); t.value = 'Premia wg oceny jakości z systemu QMS.'; t.dispatchEvent(new Event('input')); })()`);
   await dalej();
@@ -386,13 +394,14 @@ try {
   assert.equal(wa['Algorytm.KreatorAlgorytmu.Korekta.ZUS'] ?? wa['Algorytm.KreatorAlgorytmu.Korekta.Macierzynske'], 'JakZasadnicze', 'nowa odpowiedź dla pozostałych pól');
   assert.equal(wa['Nieobecnosci.Urlop.Typ'], 'WliczaćJakZasadnicze', 'urlop: procent od zasadniczego');
   assert.equal(wa.Blokada, false, 'potwierdzona podpowiedź');
+  assert.equal(wa['GUS.RodzajSkladnikaWynagrodzeniaGus'], 'Honorarium', 'wartość z pełnej listy');
   assert.deepEqual(zAnkiety.bledy, [], 'definicja z ankiety bez błędów');
   assert.equal(zAnkiety.uwagi, 'Premia wg oceny jakości z systemu QMS.');
   assert.equal(zAnkiety.ankieta.wersja, '2.0');
   assert.equal(zAnkiety.ankieta.odpowiedzi.choroba, 'proporcjonalnie');
   assert.equal(zAnkiety.ankieta.odpowiedzi.podatki, '?');
   assert.deepEqual(zAnkiety.ankieta.doWyjasnienia, ['Czy od składnika pobiera się podatek i składki ZUS?']);
-  assert.deepEqual(zAnkiety.ankieta.reczne.sort(), ['Algorytm.KreatorAlgorytmu.Korekta.Chorobowe', 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', 'Blokada', 'Nazwa', 'Skrot']);
+  assert.deepEqual(zAnkiety.ankieta.reczne.sort(), ['Algorytm.KreatorAlgorytmu.Korekta.Chorobowe', 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', 'Blokada', 'GUS.RodzajSkladnikaWynagrodzeniaGus', 'Nazwa', 'Skrot']);
   writeFileSync(path.join(wyniki, 'elementy-wynagrodzenia-ankieta.json'), JSON.stringify(zAnkiety, null, 2));
   console.log('E2E OK – zrzuty i plik w ' + wyniki);
 } catch (e) {

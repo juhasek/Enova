@@ -254,6 +254,7 @@ public class TestyAnalizy
             ["doWyjasnienia"] = new JsonArray("Czy od składnika pobiera się podatek i składki ZUS?"),
             ["doPotwierdzenia"] = new JsonArray("Co dzieje się ze składnikiem w czasie urlopu wypoczynkowego?"),
             ["dlaWdrozeniowca"] = new JsonArray("Nietypowy sposób wyliczenia – możliwy algorytm w edytorze (kod C#)."),
+            ["podsumowanie"] = new JsonArray(new JsonObject { ["pytanie"] = "Czym jest ten składnik?", ["odpowiedz"] = "Premia" }),
         };
         var plik = PlikImportu.Wczytaj(Encoding.UTF8.GetBytes(json.ToJsonString()), S);
         var a = Analizator.Analizuj(S, plik, new Baza(), TrybImportu.NoweIAktualizacja);
@@ -263,6 +264,10 @@ public class TestyAnalizy
         Assert.Contains(ank, k => k.Tekst.Contains("podatek i składki ZUS"));
         Assert.DoesNotContain(a.Definicje[1].Komunikaty, k => k.Sciezka == "Ankieta");
         Assert.All(a.Definicje, d => Assert.Equal(StatusDefinicji.Nowa, d.Status));
+        var z = new WynikZapisu { Zapisano = true, Definicje = a.Definicje.Select(d => new WynikZapisuDefinicji(d, true, null, 10)).ToList() };
+        var html = Raport.Html(a, z, S);
+        Assert.Contains("Odpowiedzi klienta z ankiety (1)", html);
+        Assert.Contains("<td>Czym jest ten składnik?</td><td>Premia</td>", html);
     }
 }
 

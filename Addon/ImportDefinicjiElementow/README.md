@@ -88,6 +88,15 @@ Plik z wersji 1.0 wczytuje się do 2.0 (pola z pytań „pola” przechodzą jak
   ma `tylkoWdrozeniowiec` – klient go nigdy nie widzi.
 - **Świadome potwierdzenie:** pytanie o pola „Klient musi odpowiedzieć” z wartością podpowiedzianą (szablon, wdrożeniowiec)
   trzeba potwierdzić przyciskiem „Potwierdzam” albo zmienić – do tego czasu „Dalej” i „Zakończ ankietę” są zablokowane.
+- **Obszary prawne:** rozdziały „Podatek i ZUS” i „Urlop i zasiłki” (`prawne` w `rozdzialy`) oraz pytania z `prawne` – zmiana pola przez
+  klienta względem szablonu i odpowiedzi ogólnych trafia do „do potwierdzenia przez wdrożeniowca” (import w enova ostrzega).
+- **Długie listy** (`typowe`): kafelki tylko dla typowych wartości + „Inna wartość…” rozwijająca pełną listę.
+- **Definicja wzorcowa:** w konfiguracji „Nowe definicje klienta zaczynają od: odpowiedzi z „…”” – nowa definicja klienta przejmuje
+  odpowiedzi, zmienione pola i wartości wskazanej definicji wdrożeniowca (bez nazwy, skrótu, kodu), także odpowiedzi na pytania ukryte.
+- **Raport importu** (dodatek) pokazuje przy każdej definicji odpowiedzi klienta z ankiety (`ankieta.podsumowanie`).
+- **Przegląd merytoryczny:** `node Formularz/przeglad-pytan.mjs` → `schema/przeglad-pytan.xlsx` (wszystkie pytania z polami, odpowiedziami,
+  zestawem, kolumny na uwagi i decyzję konsultanta); `node Formularz/test/test-odwrotny.mjs` → `schema/TEST-ODWROTNY.md` – jak blisko
+  same pytania ogólne odtwarzają 12 definicji standardowych enova (`wzorceTestowe` w `zrodla.json`, wartości z generatora schematu).
 - Test `ankieta.test.mjs` pilnuje m.in., że ankieta pyta o każde pole schematu (`niepokryte` = []).
 
 ## Formularz dla klienta

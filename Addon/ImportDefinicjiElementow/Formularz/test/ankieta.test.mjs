@@ -175,3 +175,13 @@ test('pytania ogólne a szczegółowe, zestawy, pytania tylko dla wdrożeniowca'
   for (const q of ankieta.pytania.filter((x) => x.zestaw)) assert.ok(A.szczegolowe(q), `zestaw tylko dla pytań szczegółowych: ${q.id}`);
   assert.deepEqual([...new Set(ankieta.pytania.filter((x) => x.tylkoWdrozeniowiec).map((x) => x.rozdzial))], ['techniczne']);
 });
+
+test('zmiana pola w obszarze prawnym trafia do potwierdzenia przez wdrożeniowca', () => {
+  const odp = { rodzaj: 'premia', kwota: 'stala', podatki: 'tak' };
+  const baza = A.zastosuj(ankieta, schemat, { wartosci: {}, ankieta: { odpowiedzi: odp, reczne: {} } });
+  const z = (s, v) => A.zastosuj(ankieta, schemat, { wartosci: { ...baza.wartosci, [s]: v }, ankieta: { odpowiedzi: odp, reczne: { [s]: true } } });
+  assert.ok(z('Deklaracje.Spoleczne.Typ', 'NieNaliczać').doPotwierdzenia.includes('Deklaracje.Spoleczne.Typ'), 'ZUS');
+  assert.ok(z('Nieobecnosci.WahaniaWysokosci', true).doPotwierdzenia.includes('Nieobecnosci.WahaniaWysokosci'), 'urlop i zasiłki');
+  assert.deepEqual(z('Deklaracje.Spoleczne.Typ', baza.wartosci['Deklaracje.Spoleczne.Typ']).doPotwierdzenia, [], 'potwierdzenie podpowiedzi to nie zmiana');
+  assert.deepEqual(z('GenerujZerowy', true).doPotwierdzenia, [], 'pole spoza obszarów prawnych');
+});

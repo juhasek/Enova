@@ -131,5 +131,22 @@
     { "id": "dodatekStazowy", "etykieta": "Dodatek stażowy", "opis": "Procent zależny od stażu pracy – ustawienia jak standardowy „Dodatek stażowy”; progi stażu uzupełnij wg regulaminu.", "zrodloGuid": "71a2fac0-4f66-43a5-9e25-13c97f8e4a00", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
     { "id": "dodatekFunkcyjny", "etykieta": "Dodatek funkcyjny", "opis": "Stały dodatek kwotowy – ustawienia jak standardowy „Dodatek funkcyjny”.", "zrodloGuid": "df97dc0b-2cb9-47b3-b8f0-81ce39934a06", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
     { "id": "potracenie", "etykieta": "Potrącenie (np. składka ubezpieczenia)", "opis": "Nieopodatkowane potrącenie kwotowe z wypłaty netto – ustawienia jak standardowa „Składka PZU”.", "zrodloGuid": "2b04aaba-22ec-4613-8fbc-a80e544c7245", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } }
+  ],
+
+  // Test odwrotny ankiety (Formularz/test/test-odwrotny.mjs → schema/TEST-ODWROTNY.md): definicje standardowe,
+  // które klient opisałby ankietą. Nie trafiają do formularza.
+  "wzorceTestowe": [
+    { "id": "premia", "etykieta": "Premia", "zrodloGuid": "c9c3dc52-be71-4b8f-b89b-728d83cd4a9a", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "premiaProcentowa", "etykieta": "Premia procentowa", "zrodloGuid": "35c29464-e2c4-4182-8944-1ddf87dff9ab", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "dodatekFunkcyjny", "etykieta": "Dodatek funkcyjny", "zrodloGuid": "df97dc0b-2cb9-47b3-b8f0-81ce39934a06", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "dodatekStazowy", "etykieta": "Dodatek stażowy", "zrodloGuid": "71a2fac0-4f66-43a5-9e25-13c97f8e4a00", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "skladkaPZU", "etykieta": "Składka PZU", "zrodloGuid": "2b04aaba-22ec-4613-8fbc-a80e544c7245", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "nagrodaPieniezna", "etykieta": "Nagroda pieniężna", "zrodloGuid": "5c0db3e6-e06c-11d6-ac9e-00c1260746ee", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "odprawa", "etykieta": "Odprawa", "zrodloGuid": "00000000-0007-0002-0222-000000000000", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "odprawaEmerytalna", "etykieta": "Odprawa emerytalna", "zrodloGuid": "C955AB11-B500-4D90-933D-0A0FB2EE7BE8", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "ekwiwalentPracaZdalna", "etykieta": "Ekwiwalent za pracę zdalną", "zrodloGuid": "00000000-0007-0002-0270-000000000000", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "ryczaltPracaZdalna", "etykieta": "Ryczałt za pracę zdalną", "zrodloGuid": "00000000-0007-0002-0280-000000000000", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "swiadczenieSocjalne", "etykieta": "Świadczenie socjalne", "zrodloGuid": "5c0db3e5-e06c-11d6-ac9e-00c1260746ee", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } },
+    { "id": "ryczaltPaliwo", "etykieta": "Ryczałt za paliwo do 900 cm", "zrodloGuid": "00000000-0007-0002-0172-000000000000", "nadpisz": { "Nazwa": "", "Skrot": "", "Kod": "" } }
   ]
 }

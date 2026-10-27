@@ -51,6 +51,9 @@ sealed class Konfiguracja
     /// <summary>Szablony startowe formularza z definicji standardowych enova.</summary>
     public List<KonfSzablon> Szablony { get; set; } = new();
 
+    /// <summary>Definicje standardowe do testu odwrotnego ankiety (nie trafiają do formularza).</summary>
+    public List<KonfSzablon> WzorceTestowe { get; set; } = new();
+
     public static Konfiguracja Wczytaj(string plik) =>
         JsonSerializer.Deserialize<Konfiguracja>(File.ReadAllText(plik), Json.Opcje);
 }

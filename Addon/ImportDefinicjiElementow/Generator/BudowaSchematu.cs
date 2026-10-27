@@ -141,6 +141,7 @@ sealed class BudowaSchematu
             ["slowniki"] = slowniki,
             ["definicjeStandardowe"] = DefinicjeStandardowe(),
             ["szablony"] = Szablony.Buduj(konf, zasobyLogiki, pola, slowniki, Ostrzezenia),
+            ["wzorceTestowe"] = Szablony.Buduj(konf, zasobyLogiki, pola, slowniki, Ostrzezenia, konf.WzorceTestowe),
             ["pominiete"] = pominiete,
         };
     }

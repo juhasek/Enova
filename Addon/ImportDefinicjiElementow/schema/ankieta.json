@@ -1,6 +1,6 @@
 {
   "wersja": "2.0",
-  "opis": "Ankieta elementu wynagrodzenia – pytania w języku kadrowym o wszystkie pola definicji, w rozdziałach. Pytania „wybor” ustawiają wiele pól naraz (punkt startu), pytania „pole”/„pola” pytają o konkretne pola (odpowiedź = wartość pola, ma pierwszeństwo). Pytanie o pole pojawia się tylko, gdy pole jest aktywne. Wdrożeniowiec wybiera pytania widoczne dla klienta. Sprawdzane testem Formularz/test/ankieta.test.mjs (także pokrycie wszystkich pól schematu). Pytanie o pole ustawiane przez pokazane pytanie ogólne pojawia się dopiero po odpowiedzi „Inaczej” (albo gdy klient już je zmienił). „zestaw” = rozszerzona; „tylkoWdrozeniowiec” – nigdy dla klienta; „podstawowe” – pytanie o pola należące do pytań ogólnych (zawsze w zestawie podstawowym).",
+  "opis": "Ankieta elementu wynagrodzenia – pytania w języku kadrowym o wszystkie pola definicji, w rozdziałach. Pytania „wybor” ustawiają wiele pól naraz (punkt startu), pytania „pole”/„pola” pytają o konkretne pola (odpowiedź = wartość pola, ma pierwszeństwo). Pytanie o pole pojawia się tylko, gdy pole jest aktywne. Wdrożeniowiec wybiera pytania widoczne dla klienta. Sprawdzane testem Formularz/test/ankieta.test.mjs (także pokrycie wszystkich pól schematu). Pytanie o pole ustawiane przez pokazane pytanie ogólne pojawia się dopiero po odpowiedzi „Inaczej” (albo gdy klient już je zmienił). „zestaw” = rozszerzona; „tylkoWdrozeniowiec” – nigdy dla klienta; „podstawowe” – pytanie o pola należące do pytań ogólnych (zawsze w zestawie podstawowym). „prawne” (rozdział lub pytanie) – zmiana pola względem szablonu i odpowiedzi ogólnych trafia do potwierdzenia przez wdrożeniowca. „typowe” – przy długiej liście wartości kafelki tylko dla typowych + „Inna wartość…” (pełna lista).",
   "rozdzialy": [
     {
       "id": "podstawowe",
@@ -25,12 +25,14 @@
     {
       "id": "urlopZasilki",
       "tytul": "Urlop i zasiłki",
-      "opis": "Czy składnik wchodzi do wynagrodzenia za urlop, ekwiwalentu i podstawy zasiłków."
+      "opis": "Czy składnik wchodzi do wynagrodzenia za urlop, ekwiwalentu i podstawy zasiłków.",
+      "prawne": true
     },
     {
       "id": "podatki",
       "tytul": "Podatek i składki ZUS",
-      "opis": "Podatek, składki i deklaracje."
+      "opis": "Podatek, składki i deklaracje.",
+      "prawne": true
     },
     {
       "id": "wyplata",
@@ -198,7 +200,13 @@
       "rozdzial": "podstawowe",
       "pole": "RodzajZrodla",
       "pytanie": "Jak program ma traktować ten składnik?",
-      "opis": "Zwykle „Dodatek” – składnik przypisywany pracownikowi w kartotece (premie, dodatki, potrącenia)."
+      "opis": "Zwykle „Dodatek” – składnik przypisywany pracownikowi w kartotece (premie, dodatki, potrącenia).",
+      "typowe": [
+        "Dodatek",
+        "Nagroda",
+        "Świadczenie",
+        "Kara"
+      ]
     },
     {
       "id": "Algorytm.Potracenie",
@@ -747,7 +755,15 @@
       "rozdzial": "wysokosc",
       "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
       "pytanie": "Od czego zależy kwota (co jest podstawą wyliczenia)?",
-      "opis": "Np. stała kwota, wynagrodzenie zasadnicze, płaca minimalna, suma kilku składników."
+      "opis": "Np. stała kwota, wynagrodzenie zasadnicze, płaca minimalna, suma kilku składników.",
+      "typowe": [
+        "Kwota",
+        "ZasadniczeNominalne",
+        "SumaElementów",
+        "Wynagrodzenia",
+        "Cecha",
+        "Wskaźniki"
+      ]
     },
     {
       "id": "Algorytm.KreatorAlgorytmu.Cecha",
@@ -775,7 +791,13 @@
       "typ": "pole",
       "rozdzial": "wysokosc",
       "pole": "Algorytm.KreatorAlgorytmu.Zasiłki",
-      "pytanie": "Który zasiłek jest podstawą?"
+      "pytanie": "Który zasiłek jest podstawą?",
+      "typowe": [
+        "Porodowy",
+        "Pogrzebowy",
+        "Pielęgnacyjny",
+        "RodzinnyNa1I2Dziecko"
+      ]
     },
     {
       "id": "Algorytm.KreatorAlgorytmu.PodstawaZa",
@@ -866,7 +888,16 @@
       "rozdzial": "wysokosc",
       "pole": "Algorytm.KreatorAlgorytmu.Czas.Typ",
       "pytanie": "Przez jaki czas mnożona jest stawka?",
-      "opis": "Np. godziny przepracowane, godziny nocne, nadgodziny."
+      "opis": "Np. godziny przepracowane, godziny nocne, nadgodziny.",
+      "typowe": [
+        "RzeczywistyCzasPracy",
+        "NominalnyCzasPracy",
+        "WpisanyCzasPracy",
+        "CzasPracyWNocy",
+        "CzasPracyWNiedzieleIŚwięta",
+        "LiczbaNadgodzin50",
+        "LiczbaNadgodzin100"
+      ]
     },
     {
       "id": "Algorytm.KreatorAlgorytmu.Czas.Czas",
@@ -1614,7 +1645,14 @@
       "typ": "pole",
       "rozdzial": "urlopZasilki",
       "pole": "Nieobecnosci.Urlop.WspolczynnikTyp",
-      "pytanie": "Według czego przeliczać składnik w wynagrodzeniu urlopowym, gdy zmieniła się stawka?"
+      "pytanie": "Według czego przeliczać składnik w wynagrodzeniu urlopowym, gdy zmieniła się stawka?",
+      "typowe": [
+        "Wynagrodzenia",
+        "Wskaźniki",
+        "ZasadniczeNominalne",
+        "StawkaZaszeregowania",
+        "NajniższeWynagrodzenie"
+      ]
     },
     {
       "typ": "pola",
@@ -1646,7 +1684,14 @@
       "typ": "pole",
       "rozdzial": "urlopZasilki",
       "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp",
-      "pytanie": "Według czego przeliczać składnik w ekwiwalencie, gdy zmieniła się stawka?"
+      "pytanie": "Według czego przeliczać składnik w ekwiwalencie, gdy zmieniła się stawka?",
+      "typowe": [
+        "Wynagrodzenia",
+        "Wskaźniki",
+        "ZasadniczeNominalne",
+        "StawkaZaszeregowania",
+        "NajniższeWynagrodzenie"
+      ]
     },
     {
       "typ": "pola",
@@ -1831,7 +1876,13 @@
       "typ": "pole",
       "rozdzial": "podatki",
       "pole": "Deklaracje.Koszty.Typ",
-      "pytanie": "Jakie koszty uzyskania przychodu odliczać?"
+      "pytanie": "Jakie koszty uzyskania przychodu odliczać?",
+      "typowe": [
+        "NieNaliczać",
+        "ZeStosunkuPracy",
+        "ZeStosunkuPracy50",
+        "Procentowe"
+      ]
     },
     {
       "id": "Deklaracje.Koszty.Procent",
@@ -1910,7 +1961,12 @@
       "typ": "pole",
       "rozdzial": "podatki",
       "pole": "Deklaracje.PozycjaRCA",
-      "pytanie": "Czy składnik to świadczenie z budżetu państwa wykazywane na RCA (np. zasiłek rodzinny)?"
+      "pytanie": "Czy składnik to świadczenie z budżetu państwa wykazywane na RCA (np. zasiłek rodzinny)?",
+      "typowe": [
+        "NieDotyczy",
+        "ZasiłekRodzinny",
+        "ZasiłekPielęgnacyjny"
+      ]
     },
     {
       "id": "Deklaracje.PozycjaRP7",
@@ -2006,7 +2062,8 @@
       "typ": "pole",
       "rozdzial": "wyplata",
       "pole": "MinimalneWynagrodzenie",
-      "pytanie": "Czy składnik liczy się do minimalnego wynagrodzenia (wyrównanie do płacy minimalnej)?"
+      "pytanie": "Czy składnik liczy się do minimalnego wynagrodzenia (wyrównanie do płacy minimalnej)?",
+      "prawne": true
     },
     {
       "id": "DoWyplaty",
@@ -2149,7 +2206,14 @@
       "typ": "pole",
       "rozdzial": "sprawozdania",
       "pole": "GUS.Kategoria",
-      "pytanie": "Jak wykazywać składnik w sprawozdaniach GUS?"
+      "pytanie": "Jak wykazywać składnik w sprawozdaniach GUS?",
+      "typowe": [
+        "WgDefinicjiElementu",
+        "WynagrodzenieOsobowe",
+        "NagrodyIPremieUznaniowe",
+        "WynagrodzenieNadliczbowe",
+        "NieWykazujNaDeklaracjach"
+      ]
     },
     {
       "id": "GUS.RodzajSkladnikaWynagrodzeniaGus",
@@ -2157,7 +2221,15 @@
       "rozdzial": "sprawozdania",
       "pole": "GUS.RodzajSkladnikaWynagrodzeniaGus",
       "pytanie": "Do której kolumny sprawozdania GUS Z-12 trafia składnik?",
-      "zestaw": "rozszerzona"
+      "zestaw": "rozszerzona",
+      "typowe": [
+        "WgDefinicjiElementu",
+        "WynagrodzenieZasadnicze",
+        "PremieRegulaminowe",
+        "NagrodyIPremieUznaniowe",
+        "DodatkiZaPraceZmianowa",
+        "NieWykazujNaDeklaracjach"
+      ]
     },
     {
       "id": "GUS.ZaliczajDoCzasuPracy",
@@ -2405,7 +2477,12 @@
       "rozdzial": "techniczne",
       "pole": "Zaokraglenie.Precyzja",
       "pytanie": "Do ilu zaokrąglać kwotę składnika?",
-      "tylkoWdrozeniowiec": true
+      "tylkoWdrozeniowiec": true,
+      "typowe": [
+        "DoPełnegoGrosza",
+        "DoPełnegoZłotego",
+        "DoPełnychDziesiątekGroszy"
+      ]
     },
     {
       "id": "Zaokraglenie.Sposob",
