@@ -1,6 +1,6 @@
 # Weryfikatory osób z niepełnosprawnością
 
-Wydzielone z `../KontrolePlanuZAlgorytmuKalendarza.md` (sekcje 8, 8a, 8b). Kod metod jest w `../KontrolePlanuZAlgorytmuKalendarza` (jeden plik = CodeFiles 13 w bazie). W tym katalogu: instrukcja dla klienta `Instrukcja_Weryfikatory_niepelnosprawnych.docx`, scenariusze `Scenariusze testowe weryfikatorow niepelnosprawnych.xlsx` (arkusze „Brak zgody 8h”, „Zgody nadgodziny i noc”, „Norma tygodniowa 35-40h”) i dane testowe XML. Te same sekcje i arkusze są nadal we wspólnych `../Instrukcja_Weryfikatory.docx` i `../Scenariusze testowe weryfikatorow czasu pracy.xlsx`.
+Wydzielone z `../KontrolePlanuZAlgorytmuKalendarza.md` (sekcje 8, 8a, 8b). Kod metod jest w `../KontrolePlanuZAlgorytmuKalendarza` (jeden plik = CodeFiles 13 w bazie). W tym katalogu: instrukcja dla klienta `Instrukcja_Weryfikatory_niepelnosprawnych.docx`, scenariusze `Scenariusze testowe weryfikatorow niepelnosprawnych.xlsx` (arkusze „Brak zgody 8h”, „Zgody nadgodziny i noc”, „Norma tygodniowa 35-40h”) i dane testowe XML. We wspólnych `../Instrukcja_Weryfikatory.docx` i `../Scenariusze testowe weryfikatorow czasu pracy.xlsx` tych sekcji i arkuszy już nie ma (tylko odsyłacz).
 
 ## 8. Norma niepełnosprawnych
 
