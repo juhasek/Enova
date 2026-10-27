@@ -33,7 +33,14 @@ Teams (3 h 24 min) i swoje notatki. Zadanie: przygotować materiały tak jak po 
 - Płace: listy bez podziału na wydziały; listy rehabilitacyjne/wychowawcze/właścicieli – naliczenie testowe z datą
   10. dnia; rezerwa urlopowa tylko w spółce transportowej (ustalenia 29.10).
 
-## 4. Dalej
+## 4. Nagranie audio/wideo
+
+Użytkownik zaproponował wrzucenie nagrania spotkania. W tym środowisku nie ma narzędzia do zamiany mowy na tekst,
+więc nagranie nie zostanie przetworzone – pracujemy wyłącznie na transkrypcji Teams. Przydatne byłyby: brakujący początek
+transkrypcji (jeśli istnieje) oraz odpowiedzi użytkownika na punkty z pliku weryfikacji. Fragment o limicie nadgodzin
+w nagraniu: 23:41–24:41.
+
+## 5. Dalej
 
 - Przed wysłaniem notatki D3: uczestnicy, link do nagrania, grupy z okresem 12-miesięcznym, opcja ujemnej podstawy.
 - 29.10.2026 – spotkanie w spółce transportowej (kierowcy, stacja paliw, rezerwa).
