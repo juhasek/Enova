@@ -118,6 +118,9 @@ public class CechyTestoweWorker
                 }
                 foreach (FeatureDefinition fd in MetryczkaKlienta.DefinicjeTST(sesja).ToList())
                 {
+                    // Usunięcie definicji nie kasuje wartości w Features - po ponownym utworzeniu cechy wróciłyby stare wartości.
+                    if (sesja.Global.Features.Exists(fd.Name))
+                        sesja.Global.Features.Remove(fd.Name);
                     if (fd.DictionaryList != null)
                         foreach (DictionaryItem pozycja in fd.DictionaryList.ToList())
                             pozycja.Delete();
