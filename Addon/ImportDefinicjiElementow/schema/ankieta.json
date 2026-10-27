@@ -632,9 +632,21 @@
         {
           "id": "jednorazowo",
           "etykieta": "Jednorazowo",
-          "opis": "Np. nagroda jubileuszowa, premia za projekt.",
+          "opis": "Np. nagroda jubileuszowa, premia za projekt. Wypłata jednorazowa nie wchodzi do wynagrodzenia urlopowego ani do podstawy zasiłku.",
           "ustaw": {
-            "OkresNaliczania.Typ": "Jednorazowa"
+            "OkresNaliczania.Typ": "Jednorazowa",
+            "Nieobecnosci.Urlop.Typ": "NieWliczać",
+            "Nieobecnosci.Ekwiwalent.Typ": "NieWliczać",
+            "Nieobecnosci.ZasilkiPracownicy.Typ": "NieWliczać",
+            "Nieobecnosci.ZasilkiPracownicy.Chorobowych": false,
+            "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": false,
+            "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": false,
+            "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": false,
+            "Nieobecnosci.ZasilkiInni.Typ": "NieWliczać",
+            "Nieobecnosci.ZasilkiInni.Chorobowych": false,
+            "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": false,
+            "Nieobecnosci.ZasilkiInni.Macierzynskich": false,
+            "Nieobecnosci.ZasilkiInni.Opiekunczych": false
           }
         },
         {

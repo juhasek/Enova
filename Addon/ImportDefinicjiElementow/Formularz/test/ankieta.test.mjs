@@ -125,6 +125,16 @@ test('pierwszeństwo: szablon → odpowiedzi → pola z ankiety → zmiany ręcz
   assert.equal('Algorytm.DodPodstawa' in u.wartosci, false);
 });
 
+test('wypłata jednorazowa: bez urlopu i podstawy zasiłku (pytania o chorobę i urlop ukryte)', () => {
+  const { d, w } = poAnkiecie({ rodzaj: 'nagroda', kogo: 'etat', kwota: 'indywidualna', czestotliwosc: 'jednorazowo', podatki: 'tak', minimalne: 'nie' });
+  assert.deepEqual(w.brak, []);
+  const e = W.doEksportu(schemat, d, { licencja: 'zlota' });
+  assert.equal(e['Nieobecnosci.Urlop.Typ'], 'NieWliczać');
+  assert.equal(e['Nieobecnosci.ZasilkiPracownicy.Typ'], 'NieWliczać');
+  assert.equal(e.MinimalneWynagrodzenie, false);
+  assert.equal(e['OkresNaliczania.Typ'], 'Jednorazowa');
+});
+
 test('nie wiem, inaczej, wdrożeniowiec, do potwierdzenia', () => {
   const { w } = poAnkiecie({ rodzaj: 'dodatek', kogo: 'umowa', kwota: 'stala', czestotliwosc: 'miesiac', zaOkres: A.NIE_WIEM, choroba: 'inaczej', urlop: 'zmienny', nieplatne: 'tak', podatki: 'tak', minimalne: 'nie' });
   assert.deepEqual(w.nieWiem, ['zaOkres']);
