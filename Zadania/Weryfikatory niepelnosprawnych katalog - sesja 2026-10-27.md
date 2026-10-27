@@ -25,12 +25,17 @@ Zebranie wszystkich materiałów o weryfikatorach dla osób z niepełnosprawnoś
 ## Ustalenia
 - Kod metod zostaje w jednym pliku `KontrolePlanuZAlgorytmuKalendarza` (= CodeFiles 13 w bazie),
   bez rozdzielania.
-- Wspólne `Instrukcja_Weryfikatory.docx` i `Scenariusze testowe weryfikatorow czasu pracy.xlsx`
+- (zmienione później tego dnia, zob. niżej) Wspólne `Instrukcja_Weryfikatory.docx` i `Scenariusze testowe weryfikatorow czasu pracy.xlsx`
   bez zmian – sekcje niepełnosprawnych są na razie w dwóch miejscach.
 
 ## Otwarte
 - Scalić PR #34 i sprawdzić docx/xlsx w Office.
-- Decyzja: usunąć sekcje niepełnosprawnych ze wspólnej instrukcji i arkusza?
 - Stare opisy sesji w `Zadania/` (2026-10-15, 2026-10-19) wskazują ścieżki `ImportyXML/...` – nieaktualne.
 - Pytania do klienta bez zmian: niepełny tydzień w 3070, zgoda 8h = 40/8, średnia pon–pt przy
   zmianie stopnia, włączenie 2039, kal. 1080 (norma 8:00 przy limicie 7:00).
+
+## Dopisane: usunięcie z plików wspólnych
+- Na prośbę użytkownika ze wspólnej `Instrukcja_Weryfikatory.docx` usunięto 6 sekcji niepełnosprawnych
+  (na końcu odsyłacz do `Niepelnosprawni\Instrukcja_Weryfikatory_niepelnosprawnych.docx`), a ze wspólnego
+  `Scenariusze testowe weryfikatorow czasu pracy.xlsx` – 3 arkusze (w „Informacje” odsyłacz, zakres: sześć
+  weryfikatorów). Commit na branchu PR #34.
