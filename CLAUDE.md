@@ -3,39 +3,39 @@
 ## Branch roboczy
 
 Domyślnym branchem, na który powinny trafiać zmiany w tym repozytorium, jest
-`Testy` — nie `main`. Zmiany należy commitować i pushować bezpośrednio na
+`Testy` — nie `Produkcja`. Zmiany należy commitować i pushować bezpośrednio na
 `Testy`, bez tworzenia dodatkowych branchy `claude/...` na potrzeby
 pojedynczych zadań, chyba że użytkownik wyraźnie poprosi inaczej.
 
-Branch `main` traktowany jest jako stabilny/produkcyjny. Przenoszenie zmian
-z `Testy` do `main` odbywa się świadomie (np. przez Pull Request) i wymaga
+Branch `Produkcja` traktowany jest jako stabilny/produkcyjny. Przenoszenie zmian
+z `Testy` do `Produkcja` odbywa się świadomie (np. przez Pull Request) i wymaga
 wyraźnej zgody użytkownika za każdym razem.
 
-### Podział main / Testy
+### Podział Produkcja / Testy
 
-- **`main`** zawiera wszystkie rozwiązania zaakceptowane – przeszły testy
+- **`Produkcja`** zawiera wszystkie rozwiązania zaakceptowane – przeszły testy
   i użytkownik nie ma do nich zastrzeżeń.
 - **`Testy`** zawiera tylko rozwiązania w trakcie prac/testów oraz pliki
   wspólne, które zostają na obu branchach: `CLAUDE.md`, `README.md`,
   `.claude/`, `.gitignore`, `.mcp.json`, `Addon/.gitignore`, `Pobrane/README.md`.
-  Brak rozwiązania w `Testy` nie oznacza, że nie istnieje – szukać go na `main`
-  (`git ls-tree -r --name-only origin/main`).
+  Brak rozwiązania w `Testy` nie oznacza, że nie istnieje – szukać go na `Produkcja`
+  (`git ls-tree -r --name-only origin/Produkcja`).
 - Branche **nie mają wspólnej historii i nie scala się ich w całości**
-  (merge `Testy` → `main` usunąłby z `main` zaakceptowane rozwiązania, a merge
-  `main` → `Testy` przywróciłby je do `Testy`). Rozwiązania przenosi się
+  (merge `Testy` → `Produkcja` usunąłby z `Produkcja` zaakceptowane rozwiązania, a merge
+  `Produkcja` → `Testy` przywróciłby je do `Testy`). Rozwiązania przenosi się
   pojedynczo.
 - **Akceptacja rozwiązania** (tylko na wyraźne polecenie użytkownika):
-  1. branch z `main`, np. `<temat>-do-main`;
+  1. branch z `Produkcja`, np. `<temat>-do-Produkcja`;
   2. skopiowanie plików rozwiązania z `Testy`: `git checkout origin/Testy -- <ścieżki>`
      (cały folder rozwiązania wraz z dokumentacją `.md`, scenariuszami i opisami sesji);
-  3. Pull Request do `main` i jego scalenie;
+  3. Pull Request do `Produkcja` i jego scalenie;
   4. po scaleniu usunięcie tych plików z `Testy` (`git rm`) – commit + push na `Testy`.
-- **Poprawka zaakceptowanego rozwiązania:** przywrócić je do `Testy` z `main`
-  (`git checkout origin/main -- <ścieżki>`), poprawić i przetestować na `Testy`,
+- **Poprawka zaakceptowanego rozwiązania:** przywrócić je do `Testy` z `Produkcja`
+  (`git checkout origin/Produkcja -- <ścieżki>`), poprawić i przetestować na `Testy`,
   a po akceptacji ponownie przenieść jak wyżej.
 - Rozwiązanie, którego choć jeden plik jest w testach, trzymać w `Testy` w całości
   (np. cały projekt `Addon/<nazwa>/`), żeby dało się je zbudować i testować.
-- Opis struktury repo poniżej dotyczy całości (`main` + `Testy`); na `Testy`
+- Opis struktury repo poniżej dotyczy całości (`Produkcja` + `Testy`); na `Testy`
   część folderów może być pusta/nieobecna.
 
 ## Struktura repo
