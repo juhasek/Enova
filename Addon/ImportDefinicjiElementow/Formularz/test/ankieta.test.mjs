@@ -11,7 +11,7 @@ const czytaj = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8
 const schemat = czytaj('../../schema/definicja-elementu.schema.json');
 const ankieta = czytaj('../../schema/ankieta.json');
 
-// Wartości wpisywane przez klienta w pytaniach typu „pola”.
+// Wartości wpisywane przez klienta w pytaniach o pola (odpowiedź = zmiana pola, zapamiętana w „reczne”).
 const WPISANE = {
   Nazwa: 'Test ankiety', Skrot: 'TA',
   'Algorytm.KreatorAlgorytmu.Podstawa': 250,
@@ -23,7 +23,7 @@ const WPISANE = {
 function poAnkiecie(odpowiedzi, wpisane = WPISANE) {
   const d = { id: 'a', wartosci: {}, ankieta: { odpowiedzi, reczne: {} } };
   for (const p of A.widocznePytania(ankieta, odpowiedzi))
-    if (A.typ(p) === 'pola') for (const s of p.pola) if (s in wpisane) d.wartosci[s] = wpisane[s];
+    for (const s of A.polaPytania(p)) if (s in wpisane) { d.wartosci[s] = wpisane[s]; d.ankieta.reczne[s] = true; }
   const w = A.zastosuj(ankieta, schemat, d);
   d.wartosci = w.wartosci;
   return { d, w };
@@ -31,8 +31,12 @@ function poAnkiecie(odpowiedzi, wpisane = WPISANE) {
 
 const bledy = (d, licencja) => W.waliduj(schemat, d, [d], { licencja }).filter((b) => b.poziom === 'blad');
 
-test('ankieta zgodna ze schematem (pola, enumy, szablony, warunki)', () => {
+test('ankieta zgodna ze schematem (pola, enumy, szablony, warunki, rozdziały)', () => {
   assert.deepEqual(A.sprawdz(ankieta, schemat), []);
+});
+
+test('ankieta pyta o każde pole schematu', () => {
+  assert.deepEqual(A.niepokryte(ankieta, schemat), []);
 });
 
 test('każda ścieżka odpowiedzi daje definicję bez błędów (srebrna, złota, platynowa)', () => {
@@ -107,10 +111,10 @@ test('test odwrotny: odpowiedzi odtwarzają szablony standardowe (poza opisanymi
   }
 });
 
-test('pierwszeństwo: szablon → odpowiedzi → pola z ankiety → zmiany ręczne', () => {
+test('pierwszeństwo: szablon → odpowiedzi → odpowiedzi o pola / zmiany ręczne', () => {
   const odp = { rodzaj: 'premia', kwota: 'stala', choroba: 'zachowany' };
-  const d = { wartosci: { 'Algorytm.KreatorAlgorytmu.Podstawa': 300, 'Nieobecnosci.Urlop.Typ': 'Wliczać' },
-    ankieta: { odpowiedzi: odp, reczne: { 'Nieobecnosci.Urlop.Typ': true } } };
+  const d = { wartosci: { 'Algorytm.KreatorAlgorytmu.Podstawa': 300, 'Nieobecnosci.Urlop.Typ': 'Wliczać', 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent': 5 },
+    ankieta: { odpowiedzi: odp, reczne: { 'Algorytm.KreatorAlgorytmu.Podstawa': true, 'Nieobecnosci.Urlop.Typ': true, 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent': true } } };
   const w = A.zastosuj(ankieta, schemat, d);
   assert.equal(w.szablon, 'premiaUznaniowa');
   assert.equal(w.pochodzenie.RodzajZrodla, 'szablon');
@@ -119,7 +123,12 @@ test('pierwszeństwo: szablon → odpowiedzi → pola z ankiety → zmiany ręcz
   assert.equal(w.wartosci['Algorytm.KreatorAlgorytmu.Podstawa'], 300);
   assert.equal(w.pochodzenie['Algorytm.KreatorAlgorytmu.Podstawa'], 'kwotaStala');
   assert.equal(w.wartosci['Nieobecnosci.Urlop.Typ'], 'Wliczać');
-  assert.equal(w.pochodzenie['Nieobecnosci.Urlop.Typ'], 'reczne');
+  assert.equal(w.pochodzenie['Nieobecnosci.Urlop.Typ'], 'Nieobecnosci.Urlop.Typ');
+  // pytanie ukryte warunkiem (procent przy stałej kwocie) – zmiana zostaje jako ręczna
+  assert.equal(w.pochodzenie['Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent'], 'reczne');
+  // pole bez zmiany użytkownika nie przechodzi ze starych wartości (zmiana odpowiedzi nie zostawia śladów)
+  const s = A.zastosuj(ankieta, schemat, { wartosci: { 'Algorytm.DodProcent': 'stare' }, ankieta: { odpowiedzi: odp, reczne: {} } });
+  assert.equal(s.wartosci['Algorytm.DodProcent'], undefined);
   // null w „ustaw” usuwa wartość szablonu
   const u = A.zastosuj(ankieta, schemat, { wartosci: {}, ankieta: { odpowiedzi: { rodzaj: 'dodatek', kwota: 'stala' } } });
   assert.equal('Algorytm.DodPodstawa' in u.wartosci, false);
@@ -145,4 +154,12 @@ test('nie wiem, inaczej, wdrożeniowiec, do potwierdzenia', () => {
   assert.ok(w.szczegoly.includes('Nieobecnosci.WahaniaWysokosci'));
   // pytania ukryte dla rodzaju nie są wymagane
   assert.deepEqual(poAnkiecie({ rodzaj: 'zasadnicze' }).w.brak, []);
+});
+
+test('pytania ukryte przed klientem i „Nie wiem” przy pytaniu o pole', () => {
+  const d = { wartosci: {}, ankieta: { odpowiedzi: { rodzaj: 'premia', 'Deklaracje.KodRSA': A.NIE_WIEM }, reczne: {} } };
+  const w = A.zastosuj(ankieta, schemat, d, (p) => !['rodzaj', 'Deklaracje.KodRSA'].includes(p.id));
+  assert.deepEqual(w.brak, []);
+  assert.deepEqual(w.nieWiem, ['Deklaracje.KodRSA']);
+  assert.ok(A.zastosuj(ankieta, schemat, d).brak.includes('kogo'));
 });

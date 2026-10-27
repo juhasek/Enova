@@ -199,6 +199,18 @@ try {
   // wdrożeniowiec: wybór pól dla klienta i pobranie jego formularza
   await klik('#btnKlient');
   await czekaj(200);
+  // pytania ankiety: ukryte (wdrożeniowiec odpowie sam), wymagane (bez „Nie wiem”), pytanie o pole pokazane
+  const konfPytanie = (id, v) => js(`(() => { const s = document.querySelector('[data-konf-pytanie="${id}"] select'); s.value = '${v}'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await konfPytanie('minimalne', 'ukryte');
+  await konfPytanie('urlop', 'wymagane');
+  await konfPytanie('OkresNaliczania.Opoznienie', 'edycja');
+  await czekaj(200);
+  assert.ok(await js(`document.querySelectorAll('[data-konf-pytanie]').length > 150`), 'lista pytań ankiety');
+  assert.ok(await js(`document.querySelector('[data-konf-pytanie="minimalne"]').classList.contains('konf-ukryte')`), 'pytanie ukryte');
+  await js(`window.scrollTo(0, 0)`);
+  await zrzut('10a-konfiguracja-pytan');
+  await klik('[data-konf-widok="pola"]');
+  await czekaj(200);
   const konf = (sciezka, v) => js(`(() => { const s = document.querySelector('[data-konf="${sciezka}"] select'); s.value = '${v}'; s.dispatchEvent(new Event('change')); return true; })()`);
   await konf('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', 'edycja');
   await konf('Blokada', 'wymagane');
@@ -265,49 +277,62 @@ try {
   assert.equal(d0.Blokada, true, 'wybór klienta Tak/Nie');
   assert.equal(d0['Deklaracje.PozycjaPIT'], 'PIT-11 1/PIT-4R 1', 'ukryte pola wdrożeniowca w pliku importu');
 
-  // klient: nowa definicja zaczyna się od ankiety
-  const odpowiedz = async (pytanie, odp) => { await klik(`[data-klucz="odp_${pytanie}_${odp}"]`); await czekaj(150); await klik('#btnDalej'); await czekaj(150); };
-  const pytanie = () => js(`document.querySelector('.kreator h3').textContent`);
+  // klient: nowa definicja zaczyna się od ankiety w rozdziałach
+  const zaznacz = async (pytanie, odp) => { await klik(`[data-klucz="odp_${pytanie}_${odp}"]`); await czekaj(150); };
+  const zaznaczPole = async (sciezka, odp) => { await klik(`[data-klucz="k_${sciezka}_${odp}"]`); await czekaj(150); };
+  const dalej = async () => { await klik('#btnDalej'); await czekaj(200); };
+  const rozdzial = () => js(`document.querySelector('.kreator .rozdzial-tytul').textContent`);
+  const jest = (sel) => js(`!!document.querySelector(${JSON.stringify(sel)})`);
   await klik('#btnNowa');
   await czekaj(300);
   assert.ok(await js(`document.querySelector('.kreator') !== null`), 'kreator ankiety');
   assert.ok(await js(`document.querySelector('#definicje li.wybrana .znaczek').textContent === 'ankieta'`), 'znaczek ankiety na liście');
+  assert.equal(await rozdzial(), 'Podstawowe informacje');
   await zrzut('13-ankieta-start');
-  await klik('#btnDalej');
-  await czekaj(150);
-  assert.ok((await pytanie()).startsWith('Jak nazywa się'), 'bez nazwy nie przechodzi dalej');
+  await dalej();
+  assert.equal(await rozdzial(), 'Podstawowe informacje', 'bez odpowiedzi nie przechodzi dalej');
+  assert.ok(await js(`document.getElementById('kreatorInfo').textContent.length > 0`), 'komunikat kreatora');
+  assert.equal(await jest('[data-pytanie="Blokada"]'), true, 'pytanie o pole „musi uzupełnić” w ankiecie');
+  assert.equal(await jest('[data-pytanie="Kod"]'), false, 'pytanie o pole ukryte');
   await ustaw('Nazwa', 'Premia za jakość');
   await ustaw('Skrot', 'Pr.jak.');
-  await czekaj(150);
-  await klik('#btnDalej');
-  await czekaj(150);
-  assert.equal(await js(`document.getElementById('btnDalej').disabled`), true, 'Dalej zablokowane bez odpowiedzi');
-  await zrzut('14-ankieta-rodzaj');
-  await odpowiedz('rodzaj', 'premia');
-  await odpowiedz('kogo', 'etat');
-  await odpowiedz('kwota', 'procent');
-  assert.ok((await pytanie()).startsWith('Ile wynosi procent'), 'pytanie o procent po odpowiedzi „procent”');
+  await zaznacz('rodzaj', 'premia');
+  await zaznacz('kogo', 'etat');
+  await zaznaczPole('Blokada', 'true');
+  await zrzut('14-ankieta-rozdzial-1');
+  await dalej();
+  assert.equal(await rozdzial(), 'Wysokość składnika');
+  await zaznacz('kwota', 'procent');
+  assert.ok(await jest('[data-pytanie="procentWartosc"]'), 'pytanie o procent po odpowiedzi „procent”');
   await ustaw('Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', '15');
   await czekaj(150);
-  await klik('#btnDalej');
-  await czekaj(150);
-  await odpowiedz('czestotliwosc', 'miesiac');
-  await odpowiedz('zaOkres', 'zDolu');
-  await zrzut('15-ankieta-choroba');
-  await odpowiedz('choroba', 'inaczej');
-  await odpowiedz('urlop', 'staly');
-  await odpowiedz('nieplatne', 'tak');
-  await odpowiedz('podatki', '?');
-  await odpowiedz('minimalne', 'tak');
+  await dalej();
+  assert.equal(await rozdzial(), 'Kiedy jest wypłacany');
+  await zaznacz('czestotliwosc', 'miesiac');
+  await zaznacz('zaOkres', 'zDolu');
+  assert.ok(await jest('[data-pytanie="OkresNaliczania.Opoznienie"]'), 'pytanie o pole pokazane przez wdrożeniowca');
+  await dalej();
+  assert.equal(await rozdzial(), 'Nieobecności');
+  assert.equal(await jest('[data-klucz="odp_urlop_?"]'), false, 'pytanie wymagane bez „Nie wiem”');
+  await zaznacz('choroba', 'inaczej');
+  await zaznacz('urlop', 'staly');
+  await zaznacz('nieplatne', 'tak');
+  await zrzut('15-ankieta-nieobecnosci');
+  await dalej();
+  assert.equal(await rozdzial(), 'Podatek i składki ZUS', 'rozdział bez pytań dla klienta pominięty');
+  await zaznacz('podatki', '?');
+  await dalej();
+  assert.equal(await rozdzial(), 'Uwagi', 'pytanie ukryte (minimalne) pominięte');
   await js(`(() => { const t = document.querySelector('[data-klucz="__uwagi"]'); t.value = 'Premia wg oceny jakości z systemu QMS.'; t.dispatchEvent(new Event('input')); })()`);
-  await klik('#btnDalej');
-  await czekaj(200);
+  await dalej();
   assert.ok(await js(`document.querySelector('.kreator').textContent.includes('Do ustalenia z wdrożeniowcem')`), 'podsumowanie: nie wiem');
+  assert.equal(await js(`document.getElementById('btnZakonczAnkiete').disabled`), false, 'pytanie ukryte nie blokuje zakończenia');
   await zrzut('16-ankieta-podsumowanie');
   await klik('#btnZakonczAnkiete');
   await czekaj(300);
   // po ankiecie: pola ze „szczegółów” (choroba – inaczej) do uzupełnienia, ramka z odpowiedziami
   assert.ok(await js(`document.querySelector('details.ankieta-podsumowanie') !== null`), 'ramka ankiety');
+  assert.equal(await widoczne('Nazwa'), false, 'pola z ankiety nie powtarzają się na stronie definicji');
   assert.ok(await widoczne('Algorytm.KreatorAlgorytmu.Korekta.Chorobowe'), 'szczegóły choroby widoczne u klienta');
   assert.equal(await js(`document.querySelector('[data-sciezka="Algorytm.KreatorAlgorytmu.Korekta.Chorobowe"]').disabled`), false, 'szczegóły edytowalne');
   await ustaw('Algorytm.KreatorAlgorytmu.Korekta.Chorobowe', 'ZaKażdyDzień');
@@ -315,12 +340,14 @@ try {
   assert.ok(await js(`document.querySelector('[data-pole="Algorytm.KreatorAlgorytmu.Korekta.Chorobowe"] .pochodzenie.reczne') !== null`), 'zmiana ręczna oznaczona');
   await js(`document.querySelector('details.ankieta-podsumowanie').open = true; window.scrollTo(0, 0)`);
   await zrzut('17-po-ankiecie');
-  // zmiana odpowiedzi nie nadpisuje zmiany ręcznej
+  // zmiana odpowiedzi (skok do rozdziału) nie nadpisuje zmiany ręcznej
   await klik('#btnZmienOdpowiedzi');
   await czekaj(200);
-  for (let i = 0; i < 20 && !(await pytanie()).startsWith('Jak często'); i++) { await klik('#btnDalej'); await czekaj(120); }
-  await odpowiedz('czestotliwosc', 'kwartal');
-  for (let i = 0; i < 20 && await js(`!document.getElementById('btnZakonczAnkiete')`); i++) { await klik('#btnDalej'); await czekaj(120); }
+  await js(`[...document.querySelectorAll('.kroki button')].find(b => b.textContent === 'Kiedy jest wypłacany').click()`);
+  await czekaj(200);
+  await zaznacz('czestotliwosc', 'kwartal');
+  await js(`[...document.querySelectorAll('.kroki button')].find(b => b.textContent === 'Podsumowanie').click()`);
+  await czekaj(200);
   await klik('#btnZakonczAnkiete');
   await czekaj(300);
   rmSync(path.join(pobrane, plikJson));
@@ -336,11 +363,13 @@ try {
   assert.equal(wa['OkresNaliczania.Ilosc'], 3, 'ankieta: zmieniona odpowiedź – co kwartał');
   assert.equal(wa['Algorytm.KreatorAlgorytmu.Korekta.Chorobowe'], 'ZaKażdyDzień', 'zmiana ręczna zachowana');
   assert.equal(wa['Nieobecnosci.Urlop.Typ'], 'WliczaćJakZasadnicze', 'urlop: procent od zasadniczego');
+  assert.equal(wa.Blokada, true, 'odpowiedź kafelkiem Tak/Nie');
   assert.deepEqual(zAnkiety.bledy, [], 'definicja z ankiety bez błędów');
   assert.equal(zAnkiety.uwagi, 'Premia wg oceny jakości z systemu QMS.');
+  assert.equal(zAnkiety.ankieta.wersja, '2.0');
   assert.equal(zAnkiety.ankieta.odpowiedzi.podatki, '?');
   assert.deepEqual(zAnkiety.ankieta.doWyjasnienia, ['Czy od składnika pobiera się podatek i składki ZUS?']);
-  assert.deepEqual(zAnkiety.ankieta.reczne, ['Algorytm.KreatorAlgorytmu.Korekta.Chorobowe']);
+  assert.deepEqual(zAnkiety.ankieta.reczne.sort(), ['Algorytm.KreatorAlgorytmu.Korekta.Chorobowe', 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent', 'Blokada', 'Nazwa', 'Skrot']);
   writeFileSync(path.join(wyniki, 'elementy-wynagrodzenia-ankieta.json'), JSON.stringify(zAnkiety, null, 2));
   console.log('E2E OK – zrzuty i plik w ' + wyniki);
 } catch (e) {

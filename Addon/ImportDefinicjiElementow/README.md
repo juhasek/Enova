@@ -57,6 +57,31 @@ nie podnosi; trzeba zatrzymać wszystkie procesy `dotnet` z `C:\enovaServer\2610
 zgodne z plikiem (28 pól zmienionych względem domyślnych; ustawienia identyczne ze standardową „Premia procentowa”,
 z której powstał szablon); aktualizacja → dokładnie 3 różnice (priorytet, procent, skrót); ponowny import → „bez zmian”.
 
+## Wersje
+
+| Wersja | Gdzie | Co |
+|---|---|---|
+| **1.0.0** | tag `ImportDefinicjiElementow-v1.0.0`, gotowy plik `Formularz/dist/v1.0.0/formularz-elementow-wynagrodzenia.html` | ankieta 1.0 (16 pytań ogólnych, jedno na ekran), formularz klienta ze stanami pól |
+| **2.0** (bieżąca, `src/`) | `Formularz/dist/formularz-elementow-wynagrodzenia.html` | ankieta 2.0: 172 pytania o **wszystkie 201 pól**, w 11 rozdziałach; wdrożeniowiec wybiera pytania dla klienta |
+
+Format pliku `elementy-wynagrodzenia.json` i dodatek importu są wspólne dla obu wersji (ankieta 2.0 zapisuje `ankieta.wersja = "2.0"`).
+Plik z wersji 1.0 wczytuje się do 2.0 (pola z pytań „pola” przechodzą jako zmienione przez klienta).
+
+### Ankieta 2.0 (`schema/ankieta.json`)
+
+- `rozdzialy` – kroki kreatora (Podstawowe, Wysokość, Kiedy, Nieobecności, Urlop i zasiłki, Podatek i ZUS, Wypłata i potrącenia,
+  Sprawozdania, Składniki szczególne, Techniczne, Uwagi); klient przechodzi rozdział po rozdziale, rozdział bez pytań jest pomijany.
+- Pytania `wybor` (z 1.0) – kafelki odpowiedzi ustawiające naraz wiele pól (szablon + `ustaw`).
+- Pytania `pole` (jedno pole, opcjonalnie `etykiety` wartości w języku kadrowym) i `pola` (kilka pól, np. podstawy zasiłków) –
+  odpowiedź = wartość pola; enum do 8 wartości i Tak/Nie jako kafelki, reszta jako zwykła kontrolka. Pytanie pojawia się tylko,
+  gdy pole jest aktywne przy wcześniejszych odpowiedziach. Każde pytanie ma „Nie wiem” (lista do wyjaśnienia).
+- Pierwszeństwo: szablon → odpowiedzi `wybor` → pola zmienione przez użytkownika (odpowiedzi na pytania o pola i zmiany ręczne, `reczne`).
+- **Wdrożeniowiec:** „Formularz dla klienta” → zakładka **Pytania ankiety**: stan każdego pytania (lub całego rozdziału) – *Ukryte* /
+  *Do wglądu* / *Klient odpowiada* / *Klient musi odpowiedzieć* (bez „Nie wiem”). Pytanie o pola dzieli stan z tymi polami
+  (zakładka *Pola definicji*). Na pytania ukryte odpowiada wdrożeniowiec na definicjach przed wysłaniem; ukryte bez odpowiedzi
+  nie blokują klienta. Pola z pokazanych pytań nie powtarzają się na stronie definicji klienta.
+- Test `ankieta.test.mjs` pilnuje m.in., że ankieta pyta o każde pole schematu (`niepokryte` = []).
+
 ## Formularz dla klienta
 
 Jeden plik `Formularz/dist/formularz-elementow-wynagrodzenia.html` – działa offline, z dysku, w Edge/Chrome/Firefox,

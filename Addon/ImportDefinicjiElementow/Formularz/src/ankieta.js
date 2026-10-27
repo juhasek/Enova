@@ -3,7 +3,8 @@
  * Odpowiedzi ustawiają pola definicji; reguły widoczności pytań w DSL warunki.js („pole” = id pytania).
  *
  * Kolejność nakładania wartości: szablon (odpowiedź z „szablon”) → „ustaw”/„ustawGdy” odpowiedzi w kolejności pytań
- * → pola wpisane w pytaniach typu „pola” → zmiany ręczne (def.ankieta.reczne). Wartość null w „ustaw” = usuń (domyślna enova).
+ * → pola zmienione przez użytkownika (def.ankieta.reczne – także odpowiedzi na pytania „pole”/„pola”).
+ * Wartość null w „ustaw” = usuń (domyślna enova).
  * Odpowiedź NIE_WIEM nie zmienia wartości (zostaje szablon) i trafia na listę do wyjaśnienia z wdrożeniowcem.
  */
 (function (root, factory) {
@@ -17,6 +18,9 @@
   function kopia(o) { return o === undefined ? undefined : JSON.parse(JSON.stringify(o)); }
 
   function typ(p) { return p.typ || 'wybor'; }
+
+  /** Pola, o które pyta pytanie typu „pole”/„pola” (pusta lista dla pozostałych). */
+  function polaPytania(p) { return p.pola || (p.pole ? [p.pole] : []); }
 
   function ctxOdpowiedzi(odp) {
     return { licencja: null, wartosc: function (id) { return odp[id]; } };
@@ -44,11 +48,12 @@
   /**
    * Wynik ankiety dla definicji.
    * def: { wartosci, ankieta: { odpowiedzi: {id: odp}, reczne: {sciezka: true} } }
+   * ukryte(p): pytanie ukryte przed klientem – bez odpowiedzi nie trafia na listę „brak” (obowiązuje ustawienie wdrożeniowca).
    * Zwraca { szablon, wartosci, pochodzenie: {sciezka: 'szablon'|'reczne'|idPytania}, szczegoly: [ścieżki pól do pokazania],
-   *          pola: [pola wpisywane w widocznych pytaniach],
+   *          pola: [pola z widocznych pytań o pola],
    *          wdrozeniowiec: [{pytanie, powod}], doPotwierdzenia: [idPytania], nieWiem: [idPytania], brak: [idPytania] }.
    */
-  function zastosuj(ankieta, schemat, def) {
+  function zastosuj(ankieta, schemat, def, ukryte) {
     var a = def.ankieta || {};
     var odp = a.odpowiedzi || {};
     var reczne = a.reczne || {};
@@ -77,18 +82,18 @@
       });
     }
 
+    var pytaniePola = {};
     widoczne.forEach(function (p) {
       var t = typ(p);
-      if (t === 'pola') {
-        p.pola.forEach(function (s) {
-          wynik.pola.push(s);
-          if (!W.pusty(biezace[s])) { wynik.wartosci[s] = kopia(biezace[s]); wynik.pochodzenie[s] = p.id; }
-        });
+      if (t === 'pola' || t === 'pole') {
+        if (ukryte && ukryte(p)) return; // zmiana takiego pola u klienta to zmiana ręczna (np. szczegóły po „Inaczej”)
+        polaPytania(p).forEach(function (s) { wynik.pola.push(s); pytaniePola[s] = p.id; });
+        if (odp[p.id] === NIE_WIEM) wynik.nieWiem.push(p.id);
         return;
       }
       if (t !== 'wybor') return;
       var v = odp[p.id];
-      if (v === undefined) { wynik.brak.push(p.id); return; }
+      if (v === undefined) { if (!(ukryte && ukryte(p))) wynik.brak.push(p.id); return; }
       if (v === NIE_WIEM) { wynik.nieWiem.push(p.id); return; }
       var o = odpowiedz(p, v);
       if (!o) { wynik.brak.push(p.id); return; }
@@ -102,7 +107,7 @@
     Object.keys(reczne).forEach(function (s) {
       if (W.pusty(biezace[s])) delete wynik.wartosci[s];
       else wynik.wartosci[s] = kopia(biezace[s]);
-      wynik.pochodzenie[s] = 'reczne';
+      wynik.pochodzenie[s] = pytaniePola[s] || 'reczne';
     });
     wynik.szczegoly = rozwinSzczegoly(schemat, wzorce);
     return wynik;
@@ -111,10 +116,9 @@
   /** Krótki opis odpowiedzi na pytanie (do podsumowania). */
   function opisOdpowiedzi(p, def) {
     var odp = (def.ankieta && def.ankieta.odpowiedzi) || {};
+    if (odp[p.id] === NIE_WIEM) return 'Nie wiem';
     if (typ(p) === 'wybor') {
-      var v = odp[p.id];
-      if (v === NIE_WIEM) return 'Nie wiem';
-      var o = odpowiedz(p, v);
+      var o = odpowiedz(p, odp[p.id]);
       return o ? o.etykieta : '';
     }
     if (typ(p) === 'uwagi') return def.uwagi || '';
@@ -148,11 +152,21 @@
         if (!odpowiedz(p, v)) bledy.push(gdzie + ': pytanie ' + w.pole + ' nie ma odpowiedzi ' + v);
       });
     }
+    var rozdzialy = {};
+    (ankieta.rozdzialy || []).forEach(function (r) { rozdzialy[r.id] = true; });
     ankieta.pytania.forEach(function (p) {
       var g = 'pytanie ' + p.id;
       if (ids[p.id]) bledy.push(g + ': powtórzone id');
+      if (ankieta.rozdzialy && !rozdzialy[p.rozdzial]) bledy.push(g + ': brak rozdziału ' + p.rozdzial);
       warunek(p.widoczneGdy, g);
-      if (typ(p) === 'pola') (p.pola || []).forEach(function (s) { if (!schemat.pola[s]) bledy.push(g + ': brak pola ' + s); });
+      polaPytania(p).forEach(function (s) { if (!schemat.pola[s]) bledy.push(g + ': brak pola ' + s); });
+      if (typ(p) === 'pole' && p.etykiety) Object.keys(p.etykiety).forEach(function (v) {
+        var pole = schemat.pola[p.pole];
+        var ok = pole && (pole.typ === 'bool' ? v === 'true' || v === 'false'
+          : pole.enum && schemat.enumy[pole.enum].wartosci.some(function (x) { return x.nazwa === v; }));
+        if (!ok) bledy.push(g + ': odpowiedź ' + v + ' spoza wartości pola ' + p.pole);
+      });
+      if (typ(p) === 'pole') return;
       (p.odpowiedzi || []).forEach(function (o) {
         var go = g + '/' + o.id;
         if (o.id === NIE_WIEM) bledy.push(go + ': id zarezerwowane dla „Nie wiem”');
@@ -169,9 +183,18 @@
     return bledy;
   }
 
+  /** Pola schematu, o które nie pyta żadne pytanie typu „pole”/„pola”. */
+  function niepokryte(ankieta, schemat) {
+    var jest = {};
+    ankieta.pytania.forEach(function (p) { polaPytania(p).forEach(function (s) { jest[s] = true; }); });
+    return Object.keys(schemat.pola).filter(function (s) { return !jest[s]; });
+  }
+
   return {
     NIE_WIEM: NIE_WIEM,
     typ: typ,
+    polaPytania: polaPytania,
+    niepokryte: niepokryte,
     widocznePytania: widocznePytania,
     odpowiedz: odpowiedz,
     zastosuj: zastosuj,

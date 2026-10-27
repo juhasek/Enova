@@ -1,9 +1,67 @@
 {
-  "wersja": "1.0",
-  "opis": "Ankieta elementu wynagrodzenia – pytania w języku kadrowym; odpowiedzi ustawiają pola definicji. Kolejność: szablon (z odpowiedzi „rodzaj”) → odpowiedzi w kolejności pytań → pola wpisane w ankiecie → zmiany ręczne. Warunki widoczności w DSL warunki.js, „pole” = id pytania. Utrzymywane ręcznie, sprawdzane testem Formularz/test/ankieta.test.mjs.",
+  "wersja": "2.0",
+  "opis": "Ankieta elementu wynagrodzenia – pytania w języku kadrowym o wszystkie pola definicji, w rozdziałach. Pytania „wybor” ustawiają wiele pól naraz (punkt startu), pytania „pole”/„pola” pytają o konkretne pola (odpowiedź = wartość pola, ma pierwszeństwo). Pytanie o pole pojawia się tylko, gdy pole jest aktywne. Wdrożeniowiec wybiera pytania widoczne dla klienta. Sprawdzane testem Formularz/test/ankieta.test.mjs (także pokrycie wszystkich pól schematu).",
+  "rozdzialy": [
+    {
+      "id": "podstawowe",
+      "tytul": "Podstawowe informacje",
+      "opis": "Nazwa, rodzaj składnika i komu jest wypłacany."
+    },
+    {
+      "id": "wysokosc",
+      "tytul": "Wysokość składnika",
+      "opis": "Jak program wylicza kwotę."
+    },
+    {
+      "id": "kiedy",
+      "tytul": "Kiedy jest wypłacany",
+      "opis": "Jak często i za jaki okres."
+    },
+    {
+      "id": "nieobecnosci",
+      "tytul": "Nieobecności",
+      "opis": "Czy i jak składnik zmniejsza się, gdy pracownika nie ma w pracy."
+    },
+    {
+      "id": "urlopZasilki",
+      "tytul": "Urlop i zasiłki",
+      "opis": "Czy składnik wchodzi do wynagrodzenia za urlop, ekwiwalentu i podstawy zasiłków."
+    },
+    {
+      "id": "podatki",
+      "tytul": "Podatek i składki ZUS",
+      "opis": "Podatek, składki i deklaracje."
+    },
+    {
+      "id": "wyplata",
+      "tytul": "Wypłata i potrącenia",
+      "opis": "Jak składnik jest wypłacany, komu przekazywane są potrącenia, zajęcia komornicze."
+    },
+    {
+      "id": "sprawozdania",
+      "tytul": "Sprawozdania i informacje dodatkowe",
+      "opis": "GUS, PFRON, luka płacowa, pulpit pracownika."
+    },
+    {
+      "id": "szczegolne",
+      "tytul": "Składniki szczególne",
+      "opis": "Zasiłki i ekwiwalenty liczone przez firmę, wypłaty za czas nieobecności, umowy cywilnoprawne, fundusz pożyczkowy."
+    },
+    {
+      "id": "techniczne",
+      "tytul": "Ustawienia techniczne",
+      "opis": "Kolejność, zaokrąglenia i nazwy parametrów – zwykle ustawia je wdrożeniowiec."
+    },
+    {
+      "id": "koniec",
+      "tytul": "Uwagi",
+      "opis": ""
+    }
+  ],
   "pytania": [
     {
       "id": "nazwa",
+      "rozdzial": "podstawowe",
       "typ": "pola",
       "pytanie": "Jak nazywa się ten składnik u Was?",
       "opis": "Nazwa pojawi się na liście płac i pasku wypłaty. Skrót to krótka nazwa do kolumn wydruków.",
@@ -14,6 +72,7 @@
     },
     {
       "id": "rodzaj",
+      "rozdzial": "podstawowe",
       "pytanie": "Czym jest ten składnik?",
       "opis": "Wybierz najbliższy rodzaj – kolejne pytania doprecyzują szczegóły.",
       "nieWiem": false,
@@ -91,6 +150,7 @@
     },
     {
       "id": "kogo",
+      "rozdzial": "podstawowe",
       "pytanie": "Komu wypłacacie ten składnik?",
       "widoczneGdy": {
         "pole": "rodzaj",
@@ -132,7 +192,75 @@
       ]
     },
     {
+      "id": "RodzajZrodla",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "RodzajZrodla",
+      "pytanie": "Jak program ma traktować ten składnik?",
+      "opis": "Zwykle „Dodatek” – składnik przypisywany pracownikowi w kartotece (premie, dodatki, potrącenia)."
+    },
+    {
+      "id": "Algorytm.Potracenie",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "Algorytm.Potracenie",
+      "pytanie": "Czy składnik zmniejsza wypłatę (jest potrąceniem)?",
+      "etykiety": {
+        "true": "Tak – to potrącenie (np. składka na ubezpieczenie grupowe)",
+        "false": "Nie – zwiększa wypłatę"
+      }
+    },
+    {
+      "id": "NazwaPomocnicza",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "NazwaPomocnicza",
+      "pytanie": "Czy na pasku wypłaty składnik ma mieć inną nazwę? Jeśli tak – wpisz ją.",
+      "opis": "Zostaw puste, gdy na pasku ma być nazwa podana wyżej."
+    },
+    {
+      "id": "Kod",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "Kod",
+      "pytanie": "Czy w firmie składniki mają kody (np. do raportów lub innego systemu)? Wpisz kod tego składnika."
+    },
+    {
+      "id": "Blokada",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "Blokada",
+      "pytanie": "Czy to składnik archiwalny, którego nie przypisujecie już pracownikom?",
+      "etykiety": {
+        "true": "Tak – zablokuj (zostaje tylko w historii)",
+        "false": "Nie – składnik jest w użyciu"
+      }
+    },
+    {
+      "id": "Zatrudnienie",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "Zatrudnienie",
+      "pytanie": "Komu wypłacany jest składnik?"
+    },
+    {
+      "id": "DefinicjaListyPlac",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "DefinicjaListyPlac",
+      "pytanie": "Na której liście płac ma się pojawiać składnik?",
+      "opis": "Np. LPE – wynagrodzenia pracowników, LPU – umowy cywilnoprawne. Puste – program wybierze listę sam."
+    },
+    {
+      "id": "RodzajNaliczania",
+      "typ": "pole",
+      "rozdzial": "podstawowe",
+      "pole": "RodzajNaliczania",
+      "pytanie": "Czy składnik naliczać na listach rzeczywistych, planowanych (budżet, rezerwy), czy na obu?"
+    },
+    {
       "id": "kwota",
+      "rozdzial": "wysokosc",
       "pytanie": "Jak ustalana jest wysokość składnika?",
       "widoczneGdy": {
         "pole": "rodzaj",
@@ -484,6 +612,7 @@
     },
     {
       "id": "kwotaStala",
+      "rozdzial": "wysokosc",
       "typ": "pola",
       "pytanie": "Jaka jest kwota?",
       "opis": "Kwota miesięczna (dla składnika wypłacanego rzadziej – kwota jednej wypłaty).",
@@ -512,6 +641,7 @@
     },
     {
       "id": "procentWartosc",
+      "rozdzial": "wysokosc",
       "typ": "pola",
       "pytanie": "Ile wynosi procent?",
       "opis": "Jeśli procent jest różny u różnych pracowników, wpisz najczęstszy – kadry zmienią go pracownikowi indywidualnie.",
@@ -543,6 +673,7 @@
     },
     {
       "id": "skladnikiSumy",
+      "rozdzial": "wysokosc",
       "typ": "pola",
       "pytanie": "Od których składników liczony jest procent?",
       "opis": "Dodaj wiersz dla każdego składnika. „Wartość wyliczona” = kwota faktycznie wypłacona (po pomniejszeniach), „nominalna” = pełna kwota z umowy.",
@@ -571,6 +702,7 @@
     },
     {
       "id": "staz",
+      "rozdzial": "wysokosc",
       "typ": "pola",
       "pytanie": "Sprawdź progi stażu pracy",
       "opis": "Wpisane są progi z Kodeksu pracy i typowych regulaminów (od 5 lat 5%, co rok +1%, maks. 20%). Popraw je wg Waszego regulaminu.",
@@ -583,7 +715,189 @@
       ]
     },
     {
+      "id": "Algorytm.Typ",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.Typ",
+      "pytanie": "W jaki sposób program ma wyliczać kwotę?",
+      "etykiety": {
+        "KreatorAlgorytmu": "Według prostej zasady: kwota, procent, stawka × czas",
+        "EdytorAlgorytmu": "Według indywidualnej formuły – przygotuje ją wdrożeniowiec",
+        "ZaOkresNieobecności": "Wypłata za czas nieobecności w miejsce innego składnika",
+        "PomniejszeniaIOdchyłki": "Rozliczenie pomniejszeń i odchyłek czasu pracy",
+        "JakUrlopWypoczynkowy": "Tak jak wynagrodzenie za urlop wypoczynkowy",
+        "JakUrlopOkolicznościowy": "Tak jak wynagrodzenie za urlop okolicznościowy",
+        "JakEkwiwalentZaUrlop": "Tak jak ekwiwalent za niewykorzystany urlop",
+        "JakChorobowe": "Tak jak zasiłek lub wynagrodzenie chorobowe"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+      "pytanie": "Od czego zależy kwota (co jest podstawą wyliczenia)?",
+      "opis": "Np. stała kwota, wynagrodzenie zasadnicze, płaca minimalna, suma kilku składników."
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Cecha",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Cecha",
+      "pytanie": "Jak nazywa się cecha pracownika, w której zapisana jest kwota?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wskaźniki",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wskaźniki",
+      "pytanie": "Jak nazywa się wskaźnik firmy, od którego liczony jest składnik?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wynagrodzenia",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wynagrodzenia",
+      "pytanie": "Które wynagrodzenie ustawowe jest podstawą?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Zasiłki",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Zasiłki",
+      "pytanie": "Który zasiłek jest podstawą?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.PodstawaZa",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.PodstawaZa",
+      "pytanie": "Czy kwota jest za miesiąc, za godzinę, czy nie zależy od czasu pracy?",
+      "etykiety": {
+        "Miesięcznie": "Za miesiąc (przy pełnym etacie)",
+        "Godzinę": "Za godzinę pracy",
+        "NieZależyOdCzasu": "Nie zależy od czasu – zawsze ta sama kwota"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.SposobProporcjonalnosci",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.SposobProporcjonalnosci",
+      "pytanie": "Gdy pracownik nie był zatrudniony przez cały miesiąc (przyjęcie lub zwolnienie w trakcie), jak zmniejszyć składnik?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.PrzeliczNa1h",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.PrzeliczNa1h",
+      "pytanie": "Czy kwotę miesięczną przeliczać na stawkę za godzinę?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Strefa",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Strefa",
+      "pytanie": "Według której strefy czasu pracy przeliczać kwotę na godzinę?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ",
+      "pytanie": "Czy podstawa jest mnożona przez procent, ułamek albo współczynnik?",
+      "etykiety": {
+        "BezWspółczynnika": "Nie – składnik to sama podstawa",
+        "Procent": "Tak – przez procent (np. 10%)",
+        "Ułamek": "Tak – przez ułamek (np. 1/2)",
+        "Współczynnik": "Tak – przez współczynnik (np. 1,5)",
+        "ZależnyOdStażuPracy": "Tak – przez procent zależny od stażu pracy",
+        "ZależnyOdStażuPracyZwyczajowego": "Tak – przez procent zależny od stażu (staż zwyczajowy)"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik",
+      "pytanie": "Czy procent (współczynnik) jest wspólny dla całej firmy i zapisany jako wskaźnik?",
+      "etykiety": {
+        "true": "Tak – bierzemy go ze wskaźnika firmy",
+        "false": "Nie – wpisujemy go na składniku / pracownikowi"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.NazwaWskaznika",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.NazwaWskaznika",
+      "pytanie": "Jak nazywa się ten wskaźnik?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wspolczynnik",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wspolczynnik",
+      "pytanie": "Ile wynosi współczynnik?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Ulamek",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.Ulamek",
+      "pytanie": "Jaki jest ułamek?",
+      "opis": "Np. 1/2."
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Czas.Typ",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Czas.Typ",
+      "pytanie": "Przez jaki czas mnożona jest stawka?",
+      "opis": "Np. godziny przepracowane, godziny nocne, nadgodziny."
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Czas.Czas",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Czas.Czas",
+      "pytanie": "Ile godzin przyjąć (stały czas)?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Czas.Strefa",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Czas.Strefa",
+      "pytanie": "Która strefa czasu pracy jest podstawą?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaWFirmie",
+      "pytanie": "Czy liczy się tylko staż w Waszej firmie (bez wcześniejszych pracodawców)?",
+      "etykiety": {
+        "true": "Tak – tylko staż w firmie",
+        "false": "Nie – cały staż pracy"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaNaDzien",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.PracaNaDzien",
+      "pytanie": "Na który dzień sprawdzać staż pracy?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Wspolczynnik.PodstawaStazu",
+      "typ": "pole",
+      "rozdzial": "wysokosc",
+      "pole": "Algorytm.KreatorAlgorytmu.Wspolczynnik.PodstawaStazu",
+      "pytanie": "Który rodzaj stażu (z kartoteki pracownika) jest podstawą?"
+    },
+    {
       "id": "czestotliwosc",
+      "rozdzial": "kiedy",
       "pytanie": "Jak często składnik jest wypłacany?",
       "widoczneGdy": {
         "pole": "rodzaj",
@@ -661,6 +975,7 @@
     },
     {
       "id": "zaOkres",
+      "rozdzial": "kiedy",
       "pytanie": "Za który miesiąc składnik jest wypłacany?",
       "opis": "Np. wypłata 10 listopada: za październik (z dołu) albo za listopad (z góry).",
       "widoczneGdy": {
@@ -699,7 +1014,77 @@
       ]
     },
     {
+      "id": "OkresNaliczania.Typ",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "OkresNaliczania.Typ",
+      "pytanie": "Jak często składnik jest naliczany?"
+    },
+    {
+      "id": "OkresNaliczania.Ilosc",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "OkresNaliczania.Ilosc",
+      "pytanie": "Co ile tygodni / miesięcy / lat?",
+      "opis": "Np. premia kwartalna – co 3 miesiące."
+    },
+    {
+      "id": "OkresNaliczania.Naliczanie",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "OkresNaliczania.Naliczanie",
+      "pytanie": "Czy składnik jest płacony za miniony miesiąc (z dołu), czy za bieżący (z góry)?"
+    },
+    {
+      "id": "OkresNaliczania.Opoznienie",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "OkresNaliczania.Opoznienie",
+      "pytanie": "O ile miesięcy wypłata jest późniejsza niż okres, za który się należy?",
+      "opis": "Np. premia roczna za ubiegły rok wypłacana w lutym – 2. Zwykle 0."
+    },
+    {
+      "id": "OkresNaliczania.DlaKazdejUmowy",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "OkresNaliczania.DlaKazdejUmowy",
+      "pytanie": "Gdy pracownik ma w miesiącu dwie kolejne umowy o pracę, czy liczyć składnik osobno dla każdej z nich?"
+    },
+    {
+      "id": "Korygowany",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "Korygowany",
+      "pytanie": "Czy poprawiać składnik za poprzedni miesiąc, gdy później dojdzie np. zwolnienie lekarskie?",
+      "etykiety": {
+        "true": "Tak – korekta w następnej wypłacie",
+        "false": "Nie – raz wypłacony zostaje bez zmian"
+      }
+    },
+    {
+      "id": "GenerujZerowy",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "GenerujZerowy",
+      "pytanie": "Czy pokazywać składnik na pasku także wtedy, gdy wynosi 0 zł?"
+    },
+    {
+      "id": "Aktualizacja",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "Aktualizacja",
+      "pytanie": "Czy po każdej wypłacie zapamiętywać w kartotece pracownika wartości (np. procent premii) z tej wypłaty?"
+    },
+    {
+      "id": "Zerowanie",
+      "typ": "pole",
+      "rozdzial": "kiedy",
+      "pole": "Zerowanie",
+      "pytanie": "Czy po wypłacie zerować kwotę lub liczbę godzin, żeby w kolejnym miesiącu wpisać je od nowa?"
+    },
+    {
       "id": "choroba",
+      "rozdzial": "nieobecnosci",
       "pytanie": "Co dzieje się ze składnikiem, gdy pracownik jest na zwolnieniu lekarskim?",
       "opis": "Od odpowiedzi zależy też, czy składnik wchodzi do podstawy zasiłku chorobowego: składnik zachowany w czasie choroby do podstawy nie wchodzi, pomniejszany – wchodzi.",
       "prawne": true,
@@ -847,6 +1232,7 @@
     },
     {
       "id": "urlop",
+      "rozdzial": "nieobecnosci",
       "pytanie": "Co dzieje się ze składnikiem w czasie urlopu wypoczynkowego?",
       "opis": "Od odpowiedzi zależy, czy składnik wchodzi do wynagrodzenia za urlop i ekwiwalentu za niewykorzystany urlop.",
       "prawne": true,
@@ -946,6 +1332,7 @@
     },
     {
       "id": "nieplatne",
+      "rozdzial": "nieobecnosci",
       "pytanie": "Czy składnik jest pomniejszany za urlop bezpłatny i nieobecność nieusprawiedliwioną?",
       "widoczneGdy": {
         "wszystkie": [
@@ -999,7 +1386,333 @@
       ]
     },
     {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.ZUS",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.ZUS",
+      "pytanie": "Czy składnik zmniejsza się za zwolnienia lekarskie i inne nieobecności z zasiłkiem ZUS?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe",
+      "pytanie": "Czy składnik zmniejsza się za zwolnienia lekarskie (chorobowe)?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske",
+      "pytanie": "Czy składnik zmniejsza się za urlopy macierzyńskie i rodzicielskie?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne",
+      "pytanie": "Czy składnik zmniejsza się za świadczenie rehabilitacyjne?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze",
+      "pytanie": "Czy składnik zmniejsza się za opiekę nad dzieckiem lub członkiem rodziny (zasiłek opiekuńczy)?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Platne",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Platne",
+      "pytanie": "Czy składnik zmniejsza się za urlop wypoczynkowy i inne płatne nieobecności?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione",
+      "pytanie": "Czy składnik zmniejsza się za urlop bezpłatny i inne niepłatne nieobecności?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione",
+      "pytanie": "Czy składnik zmniejsza się za nieobecności nieusprawiedliwione?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze",
+      "pytanie": "Czy składnik zmniejsza się za urlop wychowawczy?",
+      "etykiety": {
+        "NiePomniejsza": "Nie zmniejszamy",
+        "Proporcjonalnie": "Proporcjonalnie do czasu nieobecności",
+        "JakZasadnicze": "Tak samo jak wynagrodzenie zasadnicze",
+        "JednaTrzydziesta": "O 1/30 za każdy dzień nieobecności"
+      }
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.OgraniczeniePomniejszen",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.OgraniczeniePomniejszen",
+      "pytanie": "Czy pomniejszenia mogą zmniejszyć składnik najwyżej do zera (nigdy poniżej)?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.PomniejszDoZera",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.PomniejszDoZera",
+      "pytanie": "Czy składnik przepada w całości, gdy pracownik był nieobecny?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.ProgZerowania",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.ProgZerowania",
+      "pytanie": "Po ilu dniach nieobecności składnik przepada?",
+      "opis": "0 – przepada już po jednym dniu."
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki",
+      "pytanie": "Czy składnik zmienia się, gdy pracownik przepracował więcej lub mniej godzin niż w planie (odchyłki)?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta.Odchylki",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta.Odchylki",
+      "pytanie": "Czy składnik zmienia się, gdy pracownik przepracował więcej lub mniej godzin niż w planie (odchyłki)?"
+    },
+    {
+      "id": "Algorytm.KreatorAlgorytmu.Korekta._OdchyłkiPlus",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.KreatorAlgorytmu.Korekta._OdchyłkiPlus",
+      "pytanie": "Czy uwzględniać godziny przepracowane ponad plan?"
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "nieobecnosci",
+      "id": "odchylkiPlus",
+      "pola": [
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlus50",
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlus100",
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlusSW",
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiPlusPozostale"
+      ],
+      "pytanie": "Które godziny ponad plan uwzględniać?"
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "nieobecnosci",
+      "id": "odchylkiInne",
+      "pola": [
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiMinus",
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiAkord",
+        "Algorytm.KreatorAlgorytmu.Korekta.Postojowe",
+        "Algorytm.KreatorAlgorytmu.Korekta.OdchylkiRozliczaneUI"
+      ],
+      "pytanie": "Które jeszcze odchyłki uwzględniać?",
+      "opis": "Godziny poniżej planu, praca akordowa, przestój, odchyłki rozliczane indywidualnie."
+    },
+    {
+      "id": "Algorytm.PomniejszeniaIOdchylki.WybranaStrefa",
+      "typ": "pole",
+      "rozdzial": "nieobecnosci",
+      "pole": "Algorytm.PomniejszeniaIOdchylki.WybranaStrefa",
+      "pytanie": "Która strefa czasu pracy jest rozliczana indywidualnie?"
+    },
+    {
+      "id": "Nieobecnosci.Urlop.Typ",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.Urlop.Typ",
+      "pytanie": "Jak składnik wchodzi do wynagrodzenia za urlop wypoczynkowy?"
+    },
+    {
+      "id": "Nieobecnosci.WahaniaWysokosci",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.WahaniaWysokosci",
+      "pytanie": "Czy wysokość składnika mocno zmienia się z miesiąca na miesiąc (np. prowizja)?",
+      "opis": "Tak – do wynagrodzenia urlopowego liczy się średnia z 12 miesięcy zamiast z 3."
+    },
+    {
+      "id": "Nieobecnosci.Urlop.WspolczynnikTyp",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.Urlop.WspolczynnikTyp",
+      "pytanie": "Według czego przeliczać składnik w wynagrodzeniu urlopowym, gdy zmieniła się stawka?"
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "urlopZasilki",
+      "id": "urlopWspolczynnik",
+      "pola": [
+        "Nieobecnosci.Urlop.Wynagrodzenie",
+        "Nieobecnosci.Urlop.Zasiłek",
+        "Nieobecnosci.Urlop.Wskaźnik"
+      ],
+      "pytanie": "Które wynagrodzenie, zasiłek lub wskaźnik jest podstawą przeliczenia (urlop)?"
+    },
+    {
+      "id": "Nieobecnosci.Ekwiwalent.Typ",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.Ekwiwalent.Typ",
+      "pytanie": "Jak składnik wchodzi do ekwiwalentu za niewykorzystany urlop?"
+    },
+    {
+      "id": "Nieobecnosci.Ekwiwalent.Dopelnienie",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.Ekwiwalent.Dopelnienie",
+      "pytanie": "Czy w ekwiwalencie uzupełniać składnik do pełnego miesiąca, gdy był zmniejszony za czas niezatrudnienia?"
+    },
+    {
+      "id": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.Ekwiwalent.WspolczynnikTyp",
+      "pytanie": "Według czego przeliczać składnik w ekwiwalencie, gdy zmieniła się stawka?"
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "urlopZasilki",
+      "id": "ekwiwalentWspolczynnik",
+      "pola": [
+        "Nieobecnosci.Ekwiwalent.Wynagrodzenie",
+        "Nieobecnosci.Ekwiwalent.Zasiłek",
+        "Nieobecnosci.Ekwiwalent.Wskaźnik"
+      ],
+      "pytanie": "Które wynagrodzenie, zasiłek lub wskaźnik jest podstawą przeliczenia (ekwiwalent)?"
+    },
+    {
+      "id": "Nieobecnosci.ZasilkiPracownicy.Typ",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.ZasilkiPracownicy.Typ",
+      "pytanie": "Jak składnik wchodzi do podstawy zasiłków pracowników (chorobowego, macierzyńskiego…)?",
+      "opis": "Składnik zachowany w czasie choroby – nie wliczać; pomniejszany za chorobę – wliczać (z uzupełnieniem)."
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "urlopZasilki",
+      "id": "zasilkiPracownicy",
+      "pola": [
+        "Nieobecnosci.ZasilkiPracownicy.Chorobowych",
+        "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych",
+        "Nieobecnosci.ZasilkiPracownicy.Macierzynskich",
+        "Nieobecnosci.ZasilkiPracownicy.Opiekunczych"
+      ],
+      "pytanie": "Do podstawy których zasiłków pracowników wliczać składnik?"
+    },
+    {
+      "id": "Nieobecnosci.ZasilkiInni.Typ",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.ZasilkiInni.Typ",
+      "pytanie": "Jak składnik wchodzi do podstawy zasiłków zleceniobiorców i innych ubezpieczonych?"
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "urlopZasilki",
+      "id": "zasilkiInni",
+      "pola": [
+        "Nieobecnosci.ZasilkiInni.Chorobowych",
+        "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych",
+        "Nieobecnosci.ZasilkiInni.Macierzynskich",
+        "Nieobecnosci.ZasilkiInni.Opiekunczych"
+      ],
+      "pytanie": "Do podstawy których zasiłków zleceniobiorców wliczać składnik?"
+    },
+    {
+      "id": "Nieobecnosci.DoMinimalnej",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.DoMinimalnej",
+      "pytanie": "Czy pracownik zachowuje składnik w czasie zasiłku (liczy się przy porównaniu podstawy zasiłku z płacą minimalną)?"
+    },
+    {
+      "id": "Nieobecnosci.WliczanieDoPodstawyChorobowego",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.WliczanieDoPodstawyChorobowego",
+      "pytanie": "Do kiedy wliczać składnik do podstawy zasiłków?"
+    },
+    {
+      "id": "Nieobecnosci.OdMiesiaca",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.OdMiesiaca",
+      "pytanie": "Od którego miesiąca zaczyna się okres, za który należy się składnik?",
+      "opis": "Dla składników za kwartał lub rok, np. premia roczna za marzec–luty: marzec."
+    },
+    {
+      "id": "Nieobecnosci.DefinicjaLimitu",
+      "typ": "pole",
+      "rozdzial": "urlopZasilki",
+      "pole": "Nieobecnosci.DefinicjaLimitu",
+      "pytanie": "Czy składnik jest ekwiwalentem za niewykorzystany limit nieobecności? Jeśli tak – którego?"
+    },
+    {
       "id": "podatki",
+      "rozdzial": "podatki",
       "pytanie": "Czy od składnika pobiera się podatek i składki ZUS?",
       "prawne": true,
       "widoczneGdy": {
@@ -1059,7 +1772,186 @@
       ]
     },
     {
+      "id": "Deklaracje.PozycjaPIT",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.PozycjaPIT",
+      "pytanie": "Na której pozycji PIT wykazywać składnik?",
+      "opis": "Wybrana pozycja oznacza, że składnik jest opodatkowany. Puste – nieopodatkowany."
+    },
+    {
+      "id": "Deklaracje.Zaliczka.Typ",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Zaliczka.Typ",
+      "pytanie": "Jak liczyć zaliczkę na podatek?"
+    },
+    {
+      "id": "Deklaracje.Zaliczka.Procent",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Zaliczka.Procent",
+      "pytanie": "Jaki procent podatku?"
+    },
+    {
+      "id": "Deklaracje.Zaliczka.PomniejszonaZUS",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Zaliczka.PomniejszonaZUS",
+      "pytanie": "Czy podstawę podatku zmniejszać o składki ZUS pracownika?"
+    },
+    {
+      "id": "Deklaracje.Zaliczka.NaliczaniePit26",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Zaliczka.NaliczaniePit26",
+      "pytanie": "Czy stosować zwolnienia z podatku (do 26 lat, duża rodzina, senior, powrót z zagranicy)?"
+    },
+    {
+      "id": "Deklaracje.Koszty.Typ",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Koszty.Typ",
+      "pytanie": "Jakie koszty uzyskania przychodu odliczać?"
+    },
+    {
+      "id": "Deklaracje.Koszty.Procent",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Koszty.Procent",
+      "pytanie": "Ile procent kosztów uzyskania?"
+    },
+    {
+      "id": "Deklaracje.Ulga.Typ",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Ulga.Typ",
+      "pytanie": "Czy odliczać kwotę zmniejszającą podatek (ulgę)?"
+    },
+    {
+      "id": "Deklaracje.Spoleczne.Typ",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Spoleczne.Typ",
+      "pytanie": "Czy od składnika naliczać składki emerytalną, rentową, chorobową i wypadkową?"
+    },
+    {
+      "id": "Deklaracje.Zdrowotne.Typ",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Zdrowotne.Typ",
+      "pytanie": "Czy od składnika naliczać składkę zdrowotną?"
+    },
+    {
+      "id": "Deklaracje.Zdrowotne.PomniejszoneZUS",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Zdrowotne.PomniejszoneZUS",
+      "pytanie": "Czy podstawę składki zdrowotnej zmniejszać o składki ZUS pracownika?"
+    },
+    {
+      "id": "Deklaracje.Zdrowotne.PomniejszaFIS",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Zdrowotne.PomniejszaFIS",
+      "pytanie": "Czy składka zdrowotna zmniejsza zaliczkę na podatek?"
+    },
+    {
+      "id": "Deklaracje.Narzuty.SkladkaFP",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Narzuty.SkladkaFP",
+      "pytanie": "Jak ustalać składkę na Fundusz Pracy?"
+    },
+    {
+      "id": "Deklaracje.Narzuty.SkladkaFGSP",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Narzuty.SkladkaFGSP",
+      "pytanie": "Czy naliczać składkę na FGŚP?"
+    },
+    {
+      "id": "Deklaracje.NieoskladkowanyZUS",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.NieoskladkowanyZUS",
+      "pytanie": "Czy składnik jest wypłacany obok zasiłku (za czas choroby) bez składek emerytalnej i rentowej?",
+      "opis": "Np. dodatek stażowy za okres choroby – wykazywany na ZUS RPA/RIA."
+    },
+    {
+      "id": "Deklaracje.KodRSA",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.KodRSA",
+      "pytanie": "Jaki kod świadczenia lub przerwy na raporcie ZUS RSA?",
+      "opis": "Tylko dla wypłat za nieobecności (np. 313 zasiłek chorobowy). Dla zwykłych składników – puste."
+    },
+    {
+      "id": "Deklaracje.PozycjaRCA",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.PozycjaRCA",
+      "pytanie": "Czy składnik to świadczenie z budżetu państwa wykazywane na RCA (np. zasiłek rodzinny)?"
+    },
+    {
+      "id": "Deklaracje.PozycjaRP7",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.PozycjaRP7",
+      "pytanie": "W której kolumnie zaświadczenia ERP-7 (kapitał początkowy) wykazywać składnik?"
+    },
+    {
+      "id": "Deklaracje.RozrzucajPodatkiISkładki",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.RozrzucajPodatkiISkładki",
+      "pytanie": "Czy podatek i składki od tego składnika mogą być przypisane do niego na pasku (dotyczy składników niewypłacanych w gotówce, np. bonów)?"
+    },
+    {
+      "id": "Deklaracje.TrybPodleganiaRozpMF070122",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.TrybPodleganiaRozpMF070122",
+      "pytanie": "Czy składnik podlega rozporządzeniu MF z 7.01.2022 (przedłużony termin poboru zaliczek)?"
+    },
+    {
+      "id": "Deklaracje.PodstawaSkladek.UrlopWychowawczy",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.PodstawaSkladek.UrlopWychowawczy",
+      "pytanie": "Jak wliczać składnik do podstawy składek osób na urlopie wychowawczym?"
+    },
+    {
+      "id": "Deklaracje.Umowa",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.Umowa",
+      "pytanie": "Jak zwykle jest ubezpieczona umowa cywilnoprawna z tym składnikiem?"
+    },
+    {
+      "id": "Deklaracje.UmowaTyUb",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.UmowaTyUb",
+      "pytanie": "Jaki tytuł ubezpieczenia podpowiadać przy umowie?"
+    },
+    {
+      "id": "Deklaracje.UmowaJakEtat",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.UmowaJakEtat",
+      "pytanie": "Gdy zleceniobiorca jest też Waszym pracownikiem, czy przepisywać tytuł ubezpieczenia z umowy o pracę?"
+    },
+    {
+      "id": "Deklaracje.OpisNaPIT8C",
+      "typ": "pole",
+      "rozdzial": "podatki",
+      "pole": "Deklaracje.OpisNaPIT8C",
+      "pytanie": "Jaki rodzaj przychodu wpisać w części F PIT-11?"
+    },
+    {
       "id": "minimalne",
+      "rozdzial": "wyplata",
       "pytanie": "Czy składnik liczy się do minimalnego wynagrodzenia?",
       "opis": "Program porównuje wynagrodzenie z płacą minimalną i wypłaca wyrównanie. Nie liczą się m.in.: dodatek stażowy, nagroda jubileuszowa, odprawa, nadgodziny, dodatek nocny.",
       "prawne": true,
@@ -1091,7 +1983,458 @@
       ]
     },
     {
+      "id": "MinimalneWynagrodzenie",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "MinimalneWynagrodzenie",
+      "pytanie": "Czy składnik liczy się do minimalnego wynagrodzenia (wyrównanie do płacy minimalnej)?"
+    },
+    {
+      "id": "DoWyplaty",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "DoWyplaty",
+      "pytanie": "Czy składnik jest wypłacany pracownikowi pieniędzmi?",
+      "etykiety": {
+        "true": "Tak – zwiększa kwotę do wypłaty",
+        "false": "Nie – to świadczenie w naturze (np. bony, pakiet), liczy się tylko do podatku i składek"
+      }
+    },
+    {
+      "id": "ZawszeGotowka",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "ZawszeGotowka",
+      "pytanie": "Czy składnik zawsze wypłacać gotówką, nawet gdy pracownik ma konto?"
+    },
+    {
+      "id": "Rozliczenie.Ewidencja",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Rozliczenie.Ewidencja",
+      "pytanie": "Z której kasy lub rachunku firmy wypłacać składnik?"
+    },
+    {
+      "id": "Rozliczenie.Odbiorca",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Rozliczenie.Odbiorca",
+      "pytanie": "Komu przekazywana jest potrącona kwota (np. ubezpieczyciel, związek zawodowy)?"
+    },
+    {
+      "id": "Rozliczenie.RachunekOdbiorcy",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Rozliczenie.RachunekOdbiorcy",
+      "pytanie": "Na jaki rachunek odbiorcy przelewać kwotę?"
+    },
+    {
+      "id": "Rozliczenie.ZmianaOdbiorcy",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Rozliczenie.ZmianaOdbiorcy",
+      "pytanie": "Czy odbiorcę można zmienić indywidualnie u pracownika (np. inny komornik)?"
+    },
+    {
+      "id": "Rozliczenie.WspolnaPlatnosc",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Rozliczenie.WspolnaPlatnosc",
+      "pytanie": "Czy robić jeden zbiorczy przelew do odbiorcy za całą listę płac?"
+    },
+    {
+      "id": "Rozliczenie.OpisPrzelewu",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Rozliczenie.OpisPrzelewu",
+      "pytanie": "Jaki tytuł zbiorczego przelewu?"
+    },
+    {
+      "id": "Algorytm.LimitPotracenia",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Algorytm.LimitPotracenia",
+      "pytanie": "Czy potrącenie jest ograniczone limitem (np. kwota wolna od potrąceń)?"
+    },
+    {
+      "id": "Algorytm.TylkoPelnePotracenie",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Algorytm.TylkoPelnePotracenie",
+      "pytanie": "Gdy całej kwoty nie da się potrącić w limicie – czy potrącenie pominąć w całości?"
+    },
+    {
+      "id": "Zajecie.Alimenty",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Zajecie.Alimenty",
+      "pytanie": "Jak składnik podlega potrąceniom alimentacyjnym?"
+    },
+    {
+      "id": "Zajecie.Komornik",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Zajecie.Komornik",
+      "pytanie": "Jak składnik podlega zajęciom komorniczym (innym niż alimenty)?"
+    },
+    {
+      "id": "Zajecie.Pozostale",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Zajecie.Pozostale",
+      "pytanie": "Jak składnik podlega innym potrąceniom za zgodą pracownika?"
+    },
+    {
+      "id": "Zajecie.UwzgledniajJakWyplatyZFSS",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "Zajecie.UwzgledniajJakWyplatyZFSS",
+      "pytanie": "Czy przy zajęciach komorniczych traktować składnik jak świadczenie z ZFŚS?"
+    },
+    {
+      "id": "StanowiKUP",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "StanowiKUP",
+      "pytanie": "Czy składnik jest kosztem uzyskania przychodu firmy (dla księgowości)?"
+    },
+    {
+      "id": "UwzgledniajZwrotSkladkiPPK",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "UwzgledniajZwrotSkladkiPPK",
+      "pytanie": "Czy składnik to zwrot składki PPK?"
+    },
+    {
+      "id": "UwzgledniajWLimicieZFSS",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "UwzgledniajWLimicieZFSS",
+      "pytanie": "Czy składnik wlicza się do rocznego limitu świadczeń socjalnych zwolnionych z podatku?"
+    },
+    {
+      "id": "WliczajDoPodstawyWynagrodzeniaZaNadgodziny",
+      "typ": "pole",
+      "rozdzial": "wyplata",
+      "pole": "WliczajDoPodstawyWynagrodzeniaZaNadgodziny",
+      "pytanie": "Czy składnik wlicza się do stawki za nadgodziny?"
+    },
+    {
+      "id": "GUS.Kategoria",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "GUS.Kategoria",
+      "pytanie": "Jak wykazywać składnik w sprawozdaniach GUS?"
+    },
+    {
+      "id": "GUS.RodzajSkladnikaWynagrodzeniaGus",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "GUS.RodzajSkladnikaWynagrodzeniaGus",
+      "pytanie": "Do której kolumny sprawozdania GUS Z-12 trafia składnik?"
+    },
+    {
+      "id": "GUS.ZaliczajDoCzasuPracy",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "GUS.ZaliczajDoCzasuPracy",
+      "pytanie": "Czy odchyłki zaliczać do czasu pracy w sprawozdaniach GUS?"
+    },
+    {
+      "id": "Deklaracje.WliczajSOD",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "Deklaracje.WliczajSOD",
+      "pytanie": "Czy składnik wliczać do wynagrodzenia w deklaracjach PFRON (Wn-D, INF-DP)?"
+    },
+    {
+      "id": "Deklaracje.WliczDoKosztowPlacy",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "Deklaracje.WliczDoKosztowPlacy",
+      "pytanie": "Czy składnik wliczać do kosztów płacy w deklaracjach PFRON?"
+    },
+    {
+      "id": "Dodatkowe.LukaPlacowa",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "Dodatkowe.LukaPlacowa",
+      "pytanie": "Jak uwzględniać składnik w wyliczeniu luki płacowej?"
+    },
+    {
+      "id": "Dodatkowe.RefundowanyInfo",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "Dodatkowe.RefundowanyInfo",
+      "pytanie": "Czy składnik podlega refundacji z FP lub FGŚP (np. przestój ekonomiczny)?"
+    },
+    {
+      "id": "Dodatkowe.DodatekDoEtatu",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "Dodatkowe.DodatekDoEtatu",
+      "pytanie": "Czy składnik wynika z umowy o pracę (ma być na wydruku umowy)?"
+    },
+    {
+      "id": "PulpitPracownika",
+      "typ": "pole",
+      "rozdzial": "sprawozdania",
+      "pole": "PulpitPracownika",
+      "pytanie": "Czy pracownik ma widzieć składnik w Pulpicie pracownika?"
+    },
+    {
+      "id": "Algorytm.JakEkwiwalent",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakEkwiwalent",
+      "pytanie": "Czy formuła składnika korzysta z podstawy liczonej jak dla ekwiwalentu za urlop?"
+    },
+    {
+      "id": "Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakUrlopWypoczynkowy.StdOkresPodstawy",
+      "pytanie": "Czy podstawę liczyć ze standardowego okresu (jak dla urlopu – 3 miesiące)?"
+    },
+    {
+      "id": "Algorytm.JakUrlopWypoczynkowy.OkresPodstawy",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakUrlopWypoczynkowy.OkresPodstawy",
+      "pytanie": "Z ilu miesięcy liczyć podstawę?"
+    },
+    {
+      "id": "Algorytm.JakChorobowe.StdOkresPodstawy",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakChorobowe.StdOkresPodstawy",
+      "pytanie": "Czy podstawę liczyć ze standardowego okresu (jak dla zasiłku – 12 miesięcy)?"
+    },
+    {
+      "id": "Algorytm.JakChorobowe.OkresPodstawy",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakChorobowe.OkresPodstawy",
+      "pytanie": "Z ilu miesięcy liczyć podstawę zasiłku?"
+    },
+    {
+      "id": "Algorytm.JakChorobowe.Procent",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakChorobowe.Procent",
+      "pytanie": "Ile procent podstawy wynosi świadczenie?"
+    },
+    {
+      "id": "Algorytm.JakChorobowe.Zatrudnienie",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakChorobowe.Zatrudnienie",
+      "pytanie": "Komu wypłacane jest świadczenie?"
+    },
+    {
+      "id": "Algorytm.JakEkwiwalentZaUrlop.DefinicjaLimitu",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakEkwiwalentZaUrlop.DefinicjaLimitu",
+      "pytanie": "Którego limitu nieobecności dotyczy ekwiwalent?"
+    },
+    {
+      "id": "Algorytm.JakEkwiwalentZaUrlop.StdOkresPodstawy",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakEkwiwalentZaUrlop.StdOkresPodstawy",
+      "pytanie": "Czy podstawę liczyć ze standardowego okresu (jak dla ekwiwalentu)?"
+    },
+    {
+      "id": "Algorytm.JakEkwiwalentZaUrlop.OkresPodstawy",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakEkwiwalentZaUrlop.OkresPodstawy",
+      "pytanie": "Z ilu miesięcy liczyć podstawę ekwiwalentu?"
+    },
+    {
+      "id": "Algorytm.JakEkwiwalentZaUrlop.StdWspółczynnik",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakEkwiwalentZaUrlop.StdWspółczynnik",
+      "pytanie": "Czy stosować standardowy współczynnik ekwiwalentu?"
+    },
+    {
+      "id": "Algorytm.JakEkwiwalentZaUrlop.Ulamek",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakEkwiwalentZaUrlop.Ulamek",
+      "pytanie": "Jaki własny współczynnik (ułamek, np. 21/1)?"
+    },
+    {
+      "id": "Algorytm.JakEkwiwalentZaUrlop.WgWymiaruEtatu",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.JakEkwiwalentZaUrlop.WgWymiaruEtatu",
+      "pytanie": "Czy we współczynniku uwzględniać wymiar etatu pracownika?"
+    },
+    {
+      "id": "Algorytm.ZaNieobecnosc.Podstawowa",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.ZaNieobecnosc.Podstawowa",
+      "pytanie": "Za który składnik ten składnik jest wypłacany w czasie nieobecności?",
+      "opis": "Np. dodatek stażowy oskładkowany wypłacany za okres choroby."
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "szczegolne",
+      "id": "zaNieobecnosc",
+      "pola": [
+        "Algorytm.ZaNieobecnosc.ZUS",
+        "Algorytm.ZaNieobecnosc.Chorobowego",
+        "Algorytm.ZaNieobecnosc.Macierzynskiego",
+        "Algorytm.ZaNieobecnosc.Rehabilitacyjnego",
+        "Algorytm.ZaNieobecnosc.Opiekunczego",
+        "Algorytm.ZaNieobecnosc.Wychowawczego"
+      ],
+      "pytanie": "Za czas których nieobecności wypłacać składnik?"
+    },
+    {
+      "id": "Algorytm.RozliczenieCzasuUmowy.Podstawowa",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.RozliczenieCzasuUmowy.Podstawowa",
+      "pytanie": "Którego składnika umowy dotyczy rozliczenie czasu?"
+    },
+    {
+      "id": "Algorytm.RozliczenieCzasuUmowy.WliczanyDoRozliczenia",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.RozliczenieCzasuUmowy.WliczanyDoRozliczenia",
+      "pytanie": "Czy składnik wliczać do rozliczenia czasu umowy?"
+    },
+    {
+      "id": "Algorytm.Umowa.RodzajRozliczenia",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.Umowa.RodzajRozliczenia",
+      "pytanie": "Jak rozliczana jest umowa cywilnoprawna?"
+    },
+    {
+      "id": "Algorytm.Umowa.TypWartosci",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.Umowa.TypWartosci",
+      "pytanie": "Czy kwota umowy jest brutto czy netto?"
+    },
+    {
+      "id": "Algorytm.Umowa.MinimalnaStawkaGodz",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Algorytm.Umowa.MinimalnaStawkaGodz",
+      "pytanie": "Czy umowa podlega minimalnej stawce godzinowej?"
+    },
+    {
+      "id": "WliczajUmoweDoStazuPracy",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "WliczajUmoweDoStazuPracy",
+      "pytanie": "Czy okres umowy z tym składnikiem wliczać do stażu pracy?"
+    },
+    {
+      "id": "Zakres",
+      "typ": "pole",
+      "rozdzial": "szczegolne",
+      "pole": "Zakres",
+      "pytanie": "Którego funduszu pożyczkowego (PKZP, ZFM…) dotyczy składnik?"
+    },
+    {
+      "id": "Algorytm.Priorytet",
+      "typ": "pole",
+      "rozdzial": "techniczne",
+      "pole": "Algorytm.Priorytet",
+      "pytanie": "W jakiej kolejności liczyć składnik w wypłacie?",
+      "opis": "Składnik liczony od innych musi mieć większą liczbę niż one. 0 – najwcześniej."
+    },
+    {
+      "id": "Deklaracje.Priorytet",
+      "typ": "pole",
+      "rozdzial": "techniczne",
+      "pole": "Deklaracje.Priorytet",
+      "pytanie": "Kolejność przypisywania podatku i składek do składników wypłaty"
+    },
+    {
+      "id": "Kolejnosc",
+      "typ": "pole",
+      "rozdzial": "techniczne",
+      "pole": "Kolejnosc",
+      "pytanie": "Miejsce składnika na pasku i liście płac",
+      "opis": "0 – program ustali sam."
+    },
+    {
+      "id": "Zaokraglenie.Precyzja",
+      "typ": "pole",
+      "rozdzial": "techniczne",
+      "pole": "Zaokraglenie.Precyzja",
+      "pytanie": "Do ilu zaokrąglać kwotę składnika?"
+    },
+    {
+      "id": "Zaokraglenie.Sposob",
+      "typ": "pole",
+      "rozdzial": "techniczne",
+      "pole": "Zaokraglenie.Sposob",
+      "pytanie": "Jak zaokrąglać?"
+    },
+    {
+      "id": "Zaokraglenie.Podstawa",
+      "typ": "pole",
+      "rozdzial": "techniczne",
+      "pole": "Zaokraglenie.Podstawa",
+      "pytanie": "Czy zaokrąglać do grosza także podstawę?"
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "techniczne",
+      "id": "nazwyDodatku",
+      "pola": [
+        "Algorytm.DodPodstawa",
+        "Algorytm.DodCzas",
+        "Algorytm.DodDni",
+        "Algorytm.DodUlamek",
+        "Algorytm.DodProcent",
+        "Algorytm.DodWspolczynnik"
+      ],
+      "pytanie": "Jak nazwać parametry składnika w kartotece pracownika?",
+      "opis": "Te nazwy kadry zobaczą, wpisując pracownikowi np. kwotę lub procent."
+    },
+    {
+      "id": "Algorytm.ElPodglad",
+      "typ": "pole",
+      "rozdzial": "techniczne",
+      "pole": "Algorytm.ElPodglad",
+      "pytanie": "Czy parametry składnika na wypłacie mają być tylko do podglądu?"
+    },
+    {
+      "typ": "pola",
+      "rozdzial": "techniczne",
+      "id": "nazwyElementu",
+      "pola": [
+        "Algorytm.ElPodstawa1",
+        "Algorytm.ElPodstawa2",
+        "Algorytm.ElPodstawa3",
+        "Algorytm.ElPodstawa4",
+        "Algorytm.ElPodstawa5",
+        "Algorytm.ElCzas",
+        "Algorytm.ElDni",
+        "Algorytm.ElUlamek",
+        "Algorytm.ElProcent",
+        "Algorytm.ElWspolczynnik",
+        "Algorytm.ElIlosc",
+        "Algorytm.ElPodstawaOkres",
+        "Algorytm.ElRazemCzas",
+        "Algorytm.ElRazemDni"
+      ],
+      "pytanie": "Jak nazwać parametry składnika na wypłacie (pasku)?"
+    },
+    {
       "id": "uwagi",
+      "rozdzial": "koniec",
       "typ": "uwagi",
       "pytanie": "Czy jest coś jeszcze, co wdrożeniowiec powinien wiedzieć?",
       "opis": "Zasady z regulaminu, wyjątki, wątpliwości. Możesz zostawić puste."

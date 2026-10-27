@@ -51,7 +51,7 @@ button.link { border: 0; background: none; color: var(--akcent); padding: 0; tex
 .licencja select { padding: 4px 6px; border-radius: 6px; border: 1px solid var(--linia); background: var(--karta); }
 .akcje { display: flex; gap: 8px; flex-wrap: wrap; }
 
-.uklad { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; padding: 16px 20px; align-items: start; }
+.uklad { display: grid; grid-template-columns: 260px minmax(0, 960px); justify-content: center; gap: 20px; padding: 20px; align-items: start; }
 @media (max-width: 900px) { .uklad { grid-template-columns: 1fr; } }
 
 .lista { background: var(--karta); border-radius: var(--promien); box-shadow: var(--cien); padding: 12px; position: sticky; top: 76px; }
@@ -161,7 +161,8 @@ legend { font-weight: 600; padding: 0 6px; }
 .pole.konf-edycja { background: var(--akcent-tlo); }
 .pole.konf-wymagane { background: var(--ostrz-tlo); }
 .pole[data-konf] { padding: 4px 6px; border-radius: 4px; }
-.pole[data-konf] .kontrolka select { max-width: 240px; }
+.pole[data-konf] .kontrolka select, .pole[data-konf-pytanie] .kontrolka select { max-width: 240px; }
+.pole[data-konf-pytanie] { padding: 4px 6px; border-radius: 4px; }
 
 table.siatka { border-collapse: collapse; width: 100%; max-width: 620px; }
 .siatka th, .siatka td { border: 1px solid var(--linia); padding: 4px 6px; text-align: left; }
@@ -181,12 +182,12 @@ dialog h2 { margin: 0 0 10px; font-size: 17px; }
 dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; margin: 16px 0 0; }
 
 /* ankieta */
-.kreator { padding: 16px 20px 28px; max-width: 760px; }
+.kreator { padding: 12px 20px 28px; max-width: 720px; margin: 0 auto; }
 .postep { height: 6px; background: var(--wylaczone); border-radius: 3px; margin: 4px 0 18px; overflow: hidden; }
 .postep > div { height: 100%; background: var(--akcent); }
 .krok-nr { color: var(--tekst2); font-size: 12px; }
 .kreator h3 { font-size: 18px; margin: 4px 0 6px; }
-.odpowiedzi { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+.odpowiedzi { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
 .odpowiedz { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--linia); border-radius: var(--promien); padding: 10px 12px; cursor: pointer; }
 .odpowiedz:hover { border-color: var(--akcent); }
 .odpowiedz.wybrana { border-color: var(--akcent); background: var(--akcent-tlo); }
@@ -205,3 +206,31 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; ma
 .ankieta-uwagi li { margin: 2px 0; }
 .pochodzenie { font-size: 11px; color: var(--info); margin-top: 3px; }
 .pochodzenie.reczne { color: var(--ostrz); }
+
+/* ankieta 2.0 – rozdziały, karty pytań, kafelki */
+.edytor-naglowek h2 { line-height: 1.3; }
+.kroki { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; padding: 0; margin: 4px 0 8px; counter-reset: krok; }
+.kroki li { counter-increment: krok; }
+.kroki button { border: 0; background: none; padding: 3px 8px; border-radius: 12px; font-size: 12px; color: var(--tekst2); }
+.kroki button::before { content: counter(krok) ". "; }
+.kroki li.zrobiony button { color: var(--ok); }
+.kroki li.biezacy button { background: var(--akcent); color: #fff; font-weight: 600; }
+.rozdzial-tytul { font-size: 19px !important; margin: 8px 0 2px !important; }
+.pytanie { border: 1px solid var(--linia); border-radius: var(--promien); padding: 14px 16px 12px; margin: 14px 0; background: var(--karta); }
+.pytanie.wglad { background: var(--tlo); }
+.pytanie-naglowek { display: flex; gap: 8px; align-items: flex-start; }
+.pytanie-naglowek h3 { flex: 1; font-size: 15px; margin: 0; line-height: 1.4; }
+.opis-pytania { color: var(--tekst2); font-size: 13px; margin: 4px 0 6px; }
+.pytanie .pole { grid-template-columns: minmax(150px, 40%) minmax(0, 1fr); border-top: 0; padding: 6px 0 0; }
+.pytanie .pole.bez-etykiety { display: block; }
+.pytanie .kontrolka input[type=text], .pytanie .kontrolka select { max-width: 360px; }
+.odpowiedzi.kompakt { gap: 6px; }
+.odpowiedzi.kompakt .odpowiedz { padding: 7px 10px; }
+.odpowiedz.wylaczona { cursor: default; opacity: .75; }
+.odpowiedz.wylaczona:hover { border-color: var(--linia); }
+.odpowiedz.wylaczona.wybrana:hover { border-color: var(--akcent); }
+.nie-wiem-pole { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--tekst2); }
+.ankieta-podsumowanie h4, .kreator h4 { margin: 14px 0 0; font-size: 13px; color: var(--akcent); }
+.konf-zakladki { padding: 0; margin: 4px 0 12px; }
+.konf-typ { display: block; color: var(--tekst2); font-size: 11px; margin-top: 2px; }
+@media (max-width: 700px) { .pytanie .pole { grid-template-columns: 1fr; } .uklad { padding: 12px; } }

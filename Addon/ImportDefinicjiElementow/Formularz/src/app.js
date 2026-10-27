@@ -23,30 +23,87 @@
     { id: 'edycja', etykieta: 'Klient może zmienić' },
     { id: 'wymagane', etykieta: 'Klient musi uzupełnić' }
   ];
+  // Te same stany dla pytań ankiety; pytanie o pola dzieli stan z tymi polami (konfiguracja.pola).
+  var STANY_PYTAN = [
+    { id: 'ukryte', etykieta: 'Ukryte' },
+    { id: 'wglad', etykieta: 'Do wglądu' },
+    { id: 'edycja', etykieta: 'Klient odpowiada' },
+    { id: 'wymagane', etykieta: 'Klient musi odpowiedzieć' }
+  ];
+  var MAKS_KAFELKOW = 8; // pytanie o pole z większą liczbą wartości – lista rozwijana zamiast kafelków
 
   var stan = wczytajSzkic() || (KLIENT
     ? { ustawienia: { licencja: KONF.licencja }, definicje: kopia(KONF.definicje), wybrana: null, zakladka: null }
     : { ustawienia: { licencja: 'zlota' }, definicje: [], wybrana: null, zakladka: null });
   if (KLIENT) stan.ustawienia.licencja = KONF.licencja;
-  else if (!stan.klient) stan.klient = { mozeDodawac: true, pola: { RodzajZrodla: 'wglad', Nazwa: 'wymagane', Skrot: 'wymagane' } };
+  else if (!stan.klient) stan.klient = { mozeDodawac: true, pytania: {}, pola: {
+    RodzajZrodla: 'wglad', Nazwa: 'wymagane', Skrot: 'wymagane', 'Algorytm.KreatorAlgorytmu.Podstawa': 'edycja',
+    'Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent': 'edycja', PodstawyDefinicji: 'edycja', 'Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi': 'edycja' } };
+  if (!KLIENT && !stan.klient.pytania) stan.klient.pytania = {};
+  stan.definicje.forEach(migrujAnkiete);
   var bledyCache = null;
   var ankietyCache = {};
-  var wKreatorze = false; // renderPole wywołane z pytania ankiety – zmiana pola nie jest „ręczna”
+  var wKreatorze = false; // renderPole wywołane z pytania ankiety – bez dopisku o pochodzeniu wartości
 
-  /** Pola wpisane w ankiecie i pola ze „szczegółów” (odpowiedź „Inaczej”) klient może zmienić niezależnie od konfiguracji. */
+  /** Pola ze „szczegółów” (odpowiedź „Inaczej”) klient może zmienić niezależnie od konfiguracji. */
   function dlaKlienta(sciezka, d) {
     var s = KONF.pola[sciezka] || 'ukryte';
     var w = wynikAnkiety(d);
-    if (w && s !== 'wymagane' && (w.pola.indexOf(sciezka) >= 0 || w.szczegoly.indexOf(sciezka) >= 0)) return 'edycja';
+    if (w && s !== 'wymagane' && w.szczegoly.indexOf(sciezka) >= 0) return 'edycja';
     return s;
   }
   function klientEdytuje(sciezka, d) { var s = dlaKlienta(sciezka, d); return s === 'edycja' || s === 'wymagane'; }
 
   /* ---------------- ankieta ---------------- */
 
+  /** Stan pytania dla klienta: pytanie o pola – stan pierwszego pola, pozostałe – konfiguracja.pytania (domyślnie klient odpowiada). */
+  function stanPytania(p, konf) {
+    var pola = AN.polaPytania(p);
+    if (pola.length) return konf.pola[pola[0]] || 'ukryte';
+    return (konf.pytania || {})[p.id] || 'edycja';
+  }
+
   function wynikAnkiety(d) {
     if (!d || !d.ankieta) return null;
-    return ankietyCache[d.id] || (ankietyCache[d.id] = AN.zastosuj(ANKIETA, SCHEMAT, d));
+    return ankietyCache[d.id] || (ankietyCache[d.id] = AN.zastosuj(ANKIETA, SCHEMAT, d,
+      KLIENT ? function (p) { return stanPytania(p, KONF) === 'ukryte'; } : null));
+  }
+
+  /** Ankieta 1.x brała wpisane pola z bieżących wartości – od 2.0 obowiązują tylko pola zapamiętane jako zmienione. */
+  function migrujAnkiete(d) {
+    if (!d.ankieta || d.ankieta.wersja === ANKIETA.wersja) return;
+    d.ankieta.reczne = d.ankieta.reczne || {};
+    ANKIETA.pytania.forEach(function (p) {
+      if (AN.typ(p) === 'pola') p.pola.forEach(function (s) { if (!W.pusty((d.wartosci || {})[s])) d.ankieta.reczne[s] = true; });
+    });
+    d.ankieta.wersja = ANKIETA.wersja;
+  }
+
+  /** Czy klient widzi pytanie: warunki ankiety, konfiguracja wdrożeniowca, a pytanie o pola – gdy któreś pole jest aktywne. */
+  function pokazanePytanie(p, d, k) {
+    if (KLIENT && stanPytania(p, KONF) === 'ukryte') return false;
+    var pola = AN.polaPytania(p);
+    return !pola.length || pola.some(function (s) { return k.stan(s).aktywne; });
+  }
+
+  /** Rozdziały z pytaniami do pokazania: [{ r, pytania }]. */
+  function rozdzialyAnkiety(d) {
+    var k = new W.Kontekst(SCHEMAT, d, stan.ustawienia);
+    var widoczne = AN.widocznePytania(ANKIETA, d.ankieta.odpowiedzi).filter(function (p) { return pokazanePytanie(p, d, k); });
+    return ANKIETA.rozdzialy.map(function (r) {
+      return { r: r, pytania: widoczne.filter(function (p) { return p.rozdzial === r.id; }) };
+    }).filter(function (x) { return x.pytania.length; });
+  }
+
+  /** Pola z pytań pokazanych w ankiecie – na stronie definicji klienta już się nie powtarzają. */
+  function polaZAnkiety(d) {
+    var wynik = {};
+    rozdzialyAnkiety(d).forEach(function (x) { x.pytania.forEach(function (p) { AN.polaPytania(p).forEach(function (s) { wynik[s] = true; }); }); });
+    return wynik;
+  }
+
+  function tylkoDoWgladu(p) {
+    return KLIENT && stanPytania(p, KONF) === 'wglad';
   }
 
   /** Odpowiedzi ankiety ustawiają wartości definicji (szablon → odpowiedzi → pola z ankiety → zmiany ręczne). */
@@ -67,18 +124,27 @@
     return t + (pole && pole.typ === 'percent' ? '%' : pole && pole.typ === 'currency' ? ' zł' : '');
   }
 
-  /** Odpowiedzi i sprawy do wyjaśnienia; w kreatorze pytania są linkami do zmiany odpowiedzi. */
+  /** Tekst odpowiedzi do podsumowania (pytanie o pola – wartości pól). */
+  function tekstOdpowiedzi(p, d) {
+    var t = AN.opisOdpowiedzi(p, d);
+    if (t !== null) return t;
+    return AN.polaPytania(p).map(function (s) { return wartoscTekst(s, d.wartosci[s]); }).filter(Boolean).join(' · ');
+  }
+
+  /** Odpowiedzi (wg rozdziałów) i sprawy do wyjaśnienia; w kreatorze pytania są linkami do zmiany odpowiedzi. */
   function trescPodsumowaniaAnkiety(d, kreator) {
     var w = wynikAnkiety(d);
-    var dl = el('dl');
-    AN.widocznePytania(ANKIETA, d.ankieta.odpowiedzi).forEach(function (p, i) {
-      var txt = AN.typ(p) === 'pola'
-        ? p.pola.map(function (s) { return wartoscTekst(s, d.wartosci[s]); }).filter(Boolean).join(' · ')
-        : AN.opisOdpowiedzi(p, d);
-      dl.appendChild(el('dt', null, kreator
-        ? el('button', { type: 'button', klasa: 'link', tekst: p.pytanie, onclick: function () { d.ankieta.krok = i; zapiszSzkic(); renderEdytor(); } })
-        : p.pytanie));
-      dl.appendChild(el('dd', { tekst: txt || '—' }));
+    var tresc = [];
+    rozdzialyAnkiety(d).forEach(function (x, i) {
+      var dl = el('dl');
+      x.pytania.forEach(function (p) {
+        if (AN.typ(p) === 'uwagi') return;
+        dl.appendChild(el('dt', null, kreator
+          ? el('button', { type: 'button', klasa: 'link', tekst: p.pytanie, onclick: function () { d.ankieta.krok = i; zapiszSzkic(); renderEdytor(); } })
+          : p.pytanie));
+        dl.appendChild(el('dd', { tekst: tekstOdpowiedzi(p, d) || '— (ustawienie domyślne)' }));
+      });
+      if (dl.children.length) tresc.push(el('h4', { tekst: x.r.tytul }), dl);
     });
     var ul = el('ul', { klasa: 'ankieta-uwagi' });
     var tekst = function (id) { return '„' + pytanieAnkiety(id).pytanie + '”'; };
@@ -87,7 +153,8 @@
     w.doPotwierdzenia.forEach(function (id) { ul.appendChild(el('li', { tekst: 'Wdrożeniowiec potwierdzi zgodność z przepisami: ' + tekst(id) })); });
     w.wdrozeniowiec.forEach(function (x) { ul.appendChild(el('li', { tekst: 'Dla wdrożeniowca: ' + x.powod })); });
     if (w.szczegoly.length) ul.appendChild(el('li', { tekst: 'Szczegóły do uzupełnienia na stronie definicji: ' + w.szczegoly.length + (w.szczegoly.length === 1 ? ' pole' : ' pól') + '.' }));
-    return [dl, ul.children.length ? ul : null];
+    if (ul.children.length) tresc.push(ul);
+    return tresc;
   }
 
   /** Ramka z wynikiem ankiety nad polami definicji. */
@@ -100,90 +167,132 @@
       el('button', { type: 'button', id: 'btnZmienOdpowiedzi', tekst: 'Zmień odpowiedzi', onclick: function () { d.ankieta.zakonczona = false; d.ankieta.krok = 0; zmieniono(true); } }));
   }
 
+  /** Kafelki odpowiedzi; opcje: [{ id, etykieta, opis, nieWiem }], wybrana: id, wybierz(id). */
+  function kafelki(nazwa, etykieta, opcje, wybrana, wybierz, wylaczone, kompakt) {
+    var lista = el('div', { klasa: 'odpowiedzi' + (kompakt ? ' kompakt' : ''), role: 'radiogroup', 'aria-label': etykieta });
+    opcje.forEach(function (o) {
+      var wyb = wybrana === o.id;
+      lista.appendChild(el('label', { klasa: 'odpowiedz' + (wyb ? ' wybrana' : '') + (o.nieWiem ? ' nie-wiem' : '') + (wylaczone ? ' wylaczona' : '') },
+        el('input', { type: 'radio', name: nazwa, value: o.id, checked: wyb, disabled: wylaczone, 'data-klucz': nazwa + '_' + o.id, onchange: function () { wybierz(o.id); } }),
+        el('span', null, el('strong', { tekst: o.etykieta }), o.opis ? el('small', { tekst: o.opis }) : null)));
+    });
+    return lista;
+  }
+
+  var OPCJA_NIE_WIEM = { id: AN.NIE_WIEM, etykieta: 'Nie wiem', opis: 'Zostanie ustawienie typowe – ustalisz to z wdrożeniowcem.', nieWiem: true };
+
+  /** Jedno pytanie ankiety jako karta. */
+  function kartaPytania(d, k, p) {
+    var odp = d.ankieta.odpowiedzi;
+    var typ = AN.typ(p);
+    var wglad = tylkoDoWgladu(p);
+    var mozeNieWiem = !wglad && p.nieWiem !== false && !(KLIENT && stanPytania(p, KONF) === 'wymagane');
+    var karta = el('div', { klasa: 'pytanie' + (wglad ? ' wglad' : ''), 'data-pytanie': p.id });
+    var naglowek = el('div', { klasa: 'pytanie-naglowek' }, el('h3', { tekst: p.pytanie }));
+    if (typ === 'pole') naglowek.appendChild(el('button', { type: 'button', klasa: 'pomoc', tekst: '?', title: 'Więcej o tym pytaniu', onclick: function () { pokazPomoc(p.pole, k); } }));
+    karta.appendChild(naglowek);
+    if (p.opis) karta.appendChild(el('p', { klasa: 'opis-pytania', tekst: p.opis }));
+    if (wglad) karta.appendChild(el('p', { klasa: 'niedostepne', tekst: 'Tylko do wglądu – odpowiedź przygotował wdrożeniowiec. Jeśli u Was jest inaczej, napisz w uwagach.' }));
+    if (typ === 'wybor') {
+      var opcje = p.odpowiedzi.slice();
+      if (mozeNieWiem) opcje.push(OPCJA_NIE_WIEM);
+      karta.appendChild(kafelki('odp_' + p.id, p.pytanie, opcje, odp[p.id], function (id) { odp[p.id] = id; przelicz(d); zmieniono(true); }, wglad));
+    } else if (typ === 'uwagi') {
+      karta.appendChild(el('div', { klasa: 'kontrolka' }, el('textarea', {
+        'data-klucz': '__uwagi', value: d.uwagi || '', 'aria-label': p.pytanie,
+        oninput: function (e) { d.uwagi = e.target.value; zapiszSzkic(); }
+      })));
+    } else {
+      var nieWiem = odp[p.id] === AN.NIE_WIEM;
+      wKreatorze = true;
+      try {
+        AN.polaPytania(p).forEach(function (s) {
+          if (k.stan(s).aktywne) karta.appendChild(renderPole(d, k, s, typ === 'pole' ? { kafelki: true, bezEtykiety: true, etykiety: p.etykiety, wylacz: wglad } : { wylacz: wglad }));
+        });
+      } finally { wKreatorze = false; }
+      if (mozeNieWiem) karta.appendChild(el('label', { klasa: 'bool nie-wiem-pole' }, el('input', {
+        type: 'checkbox', checked: nieWiem, 'data-klucz': 'niewiem_' + p.id,
+        onchange: function (e) { if (e.target.checked) odp[p.id] = AN.NIE_WIEM; else delete odp[p.id]; zmieniono(true); }
+      }), 'Nie wiem – ustalę z wdrożeniowcem'));
+    }
+    return karta;
+  }
+
   function renderKreator(kont, d) {
     var a = d.ankieta;
-    var odp = a.odpowiedzi;
-    var pytania = AN.widocznePytania(ANKIETA, odp);
-    var n = pytania.length;
+    var rozdzialy = rozdzialyAnkiety(d);
+    var n = rozdzialy.length;
     a.krok = Math.max(0, Math.min(a.krok || 0, n));
     kont.appendChild(el('div', { klasa: 'edytor-naglowek' },
       el('h2', { tekst: nazwaDefinicji(d) }),
-      el('div', { klasa: 'szablon', tekst: 'Ankieta – odpowiedz na kilka pytań, a formularz sam ustawi definicję. Odpowiedzi możesz później zmienić.' })));
-    var box = el('div', { klasa: 'kreator' },
-      el('div', { klasa: 'krok-nr', tekst: a.krok < n ? 'Pytanie ' + (a.krok + 1) + ' z ' + n : 'Podsumowanie' }),
-      el('div', { klasa: 'postep' }, el('div', { style: 'width:' + Math.round(100 * a.krok / n) + '%' })));
-    var p = pytania[a.krok];
-    var gotowe = function () { return true; };
-    if (!p) {
-      box.appendChild(el('h3', { tekst: 'Sprawdź odpowiedzi' }));
-      box.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'Kliknij pytanie, aby zmienić odpowiedź. Po zakończeniu zobaczysz stronę definicji z polami do uzupełnienia (jeśli są) i akceptacją.' }));
-      trescPodsumowaniaAnkiety(d, true).forEach(function (x) { if (x) box.appendChild(x); });
-    } else {
-      box.appendChild(el('h3', { tekst: p.pytanie }));
-      if (p.opis) box.appendChild(el('p', { klasa: 'opis-zakladki', tekst: p.opis }));
-      var typ = AN.typ(p);
-      if (typ === 'wybor') {
-        var lista = el('div', { klasa: 'odpowiedzi', role: 'radiogroup', 'aria-label': p.pytanie });
-        var opcje = p.odpowiedzi.slice();
-        if (p.nieWiem !== false) opcje.push({ id: AN.NIE_WIEM, etykieta: 'Nie wiem', opis: 'Zostanie ustawienie typowe – ustalisz to z wdrożeniowcem.' });
-        opcje.forEach(function (o) {
-          var wyb = odp[p.id] === o.id;
-          lista.appendChild(el('label', { klasa: 'odpowiedz' + (wyb ? ' wybrana' : '') + (o.id === AN.NIE_WIEM ? ' nie-wiem' : '') },
-            el('input', {
-              type: 'radio', name: 'odp_' + p.id, value: o.id, checked: wyb, 'data-klucz': 'odp_' + p.id + '_' + o.id,
-              onchange: function () { odp[p.id] = o.id; przelicz(d); zmieniono(true); }
-            }),
-            el('span', null, el('strong', { tekst: o.etykieta }), o.opis ? el('small', { tekst: o.opis }) : null)));
-        });
-        box.appendChild(lista);
-        gotowe = function () { return odp[p.id] !== undefined; };
-      } else if (typ === 'pola') {
-        var k = new W.Kontekst(SCHEMAT, d, stan.ustawienia);
-        var fs = el('fieldset', { klasa: 'pola-ankiety' });
-        wKreatorze = true;
-        try { p.pola.forEach(function (s) { fs.appendChild(renderPole(d, k, s)); }); } finally { wKreatorze = false; }
-        box.appendChild(fs);
-        gotowe = function () {
-          return !(bledy()[d.id] || []).some(function (b) { return b.poziom === 'blad' && p.pola.indexOf(b.sciezka) >= 0; });
-        };
-      } else {
-        box.appendChild(el('div', { klasa: 'kontrolka' }, el('textarea', {
-          'data-klucz': '__uwagi', value: d.uwagi || '', 'aria-label': p.pytanie,
-          oninput: function (e) { d.uwagi = e.target.value; zapiszSzkic(); }
-        })));
-      }
-    }
+      el('div', { klasa: 'szablon', tekst: 'Ankieta – odpowiedz na pytania, a formularz sam ustawi definicję. Odpowiedzi możesz później zmienić.' })));
+    var kroki = el('ol', { klasa: 'kroki' });
+    rozdzialy.concat([{ r: { tytul: 'Podsumowanie' } }]).forEach(function (x, i) {
+      kroki.appendChild(el('li', { klasa: i === a.krok ? 'biezacy' : i < a.krok ? 'zrobiony' : '' },
+        el('button', { type: 'button', tekst: x.r.tytul, 'aria-current': i === a.krok ? 'step' : null, onclick: function () { a.krok = i; zmieniono(true); } })));
+    });
+    var box = el('div', { klasa: 'kreator' }, kroki,
+      el('div', { klasa: 'postep' }, el('div', { style: 'width:' + Math.round(100 * a.krok / Math.max(n, 1)) + '%' })));
+    var x = rozdzialy[a.krok];
     var wynik = wynikAnkiety(d);
+    var info = el('div', { klasa: 'komunikat blad', id: 'kreatorInfo' });
+    var gotowe = function () { return true; };
+    if (!x) {
+      box.appendChild(el('h3', { klasa: 'rozdzial-tytul', tekst: 'Sprawdź odpowiedzi' }));
+      box.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'Kliknij pytanie, aby zmienić odpowiedź. Po zakończeniu zobaczysz stronę definicji z ewentualnymi polami do uzupełnienia i akceptacją.' }));
+      trescPodsumowaniaAnkiety(d, true).forEach(function (e) { box.appendChild(e); });
+    } else {
+      box.appendChild(el('h3', { klasa: 'rozdzial-tytul', tekst: x.r.tytul }));
+      if (x.r.opis) box.appendChild(el('p', { klasa: 'opis-zakladki', tekst: x.r.opis }));
+      var k = new W.Kontekst(SCHEMAT, d, stan.ustawienia);
+      x.pytania.forEach(function (p) { box.appendChild(kartaPytania(d, k, p)); });
+      var pola = {};
+      x.pytania.forEach(function (p) { AN.polaPytania(p).forEach(function (s) { pola[s] = true; }); });
+      gotowe = function () {
+        if (x.pytania.some(function (p) { return wynik.brak.indexOf(p.id) >= 0; })) return 'Odpowiedz na wszystkie pytania (możesz wybrać „Nie wiem”).';
+        if ((bledy()[d.id] || []).some(function (b) { return b.poziom === 'blad' && pola[b.sciezka]; })) return 'Uzupełnij pola zaznaczone na czerwono.';
+        return true;
+      };
+    }
     // mousedown bez zmiany fokusu: zmiana pola (blur → przebudowa) nie gubi kliknięcia
     var bezFokusu = function (e) { e.preventDefault(); };
-    var info = el('div', { klasa: 'komunikat blad', id: 'kreatorInfo' });
     box.appendChild(el('div', { klasa: 'kreator-nawigacja' },
       el('button', { type: 'button', tekst: '← Wstecz', disabled: a.krok === 0, onmousedown: bezFokusu,
-        onclick: function () { a.krok--; zmieniono(true); } }),
-      p
-        ? el('button', { type: 'button', klasa: 'glowny', id: 'btnDalej', tekst: 'Dalej →', disabled: AN.typ(p) === 'wybor' && !gotowe(), onmousedown: bezFokusu,
+        onclick: function () { a.krok--; zmieniono(true); window.scrollTo(0, 0); } }),
+      x
+        ? el('button', { type: 'button', klasa: 'glowny', id: 'btnDalej', tekst: 'Dalej →', onmousedown: bezFokusu,
           onclick: function () {
             bledyCache = null;
-            if (!gotowe()) { odswiezKomunikaty(); info.textContent = 'Uzupełnij pola zaznaczone na czerwono.'; return; }
-            a.krok++; zmieniono(true);
+            var g = gotowe();
+            if (g !== true) { odswiezKomunikaty(); info.textContent = g; return; }
+            a.krok++; zmieniono(true); window.scrollTo(0, 0);
           } })
         : el('button', { type: 'button', klasa: 'glowny', id: 'btnZakonczAnkiete', tekst: 'Zakończ ankietę', disabled: wynik.brak.length > 0,
           onclick: function () { a.zakonczona = true; stan.zakladka = null; zmieniono(true); } })));
     box.appendChild(info);
-    if (!p && wynik.brak.length) info.textContent = 'Odpowiedz na wszystkie pytania (możesz wybrać „Nie wiem”).';
+    if (!x && wynik.brak.length) info.textContent = 'Odpowiedz na wszystkie pytania (możesz wybrać „Nie wiem”).';
     kont.appendChild(box);
   }
 
   function eksportAnkiety(d) {
     var w = wynikAnkiety(d);
     var tekst = function (id) { return pytanieAnkiety(id).pytanie; };
+    var reczne = d.ankieta.reczne || {};
+    var podsumowanie = [];
+    rozdzialyAnkiety(d).forEach(function (x) {
+      x.pytania.forEach(function (p) {
+        var t = AN.typ(p);
+        // pytania o pola – tylko te, na które odpowiedziano (pozostałe mają ustawienie z szablonu / domyślne)
+        if (t === 'uwagi' || (t !== 'wybor' && d.ankieta.odpowiedzi[p.id] === undefined && !AN.polaPytania(p).some(function (s) { return reczne[s]; }))) return;
+        podsumowanie.push({ pytanie: p.pytanie, odpowiedz: tekstOdpowiedzi(p, d) || '(brak odpowiedzi)' });
+      });
+    });
     return {
       wersja: ANKIETA.wersja,
       zakonczona: !!d.ankieta.zakonczona,
       odpowiedzi: kopia(d.ankieta.odpowiedzi),
-      reczne: Object.keys(d.ankieta.reczne || {}),
-      podsumowanie: AN.widocznePytania(ANKIETA, d.ankieta.odpowiedzi).filter(function (p) { return AN.typ(p) === 'wybor'; })
-        .map(function (p) { return { pytanie: p.pytanie, odpowiedz: AN.opisOdpowiedzi(p, d) || '(brak odpowiedzi)' }; }),
+      reczne: Object.keys(reczne),
+      podsumowanie: podsumowanie,
       doWyjasnienia: w.nieWiem.concat(w.brak).map(tekst),
       doPotwierdzenia: w.doPotwierdzenia.map(tekst),
       dlaWdrozeniowca: w.wdrozeniowiec.map(function (x) { return x.powod; })
@@ -362,7 +471,7 @@
       uwagi: szablon && szablon.uwagi ? szablon.uwagi : '',
       wartosci: szablon ? kopia(szablon.wartosci) : zAnkiety ? {} : { RodzajZrodla: 'Dodatek' }
     };
-    if (zAnkiety) d.ankieta = { odpowiedzi: {}, reczne: {}, krok: 0, zakonczona: false };
+    if (zAnkiety) d.ankieta = { wersja: ANKIETA.wersja, odpowiedzi: {}, reczne: {}, krok: 0, zakonczona: false };
     stan.definicje.push(d);
     stan.wybrana = d.id;
     stan.widok = null;
@@ -376,7 +485,7 @@
     var m = document.getElementById('menuNowa');
     m.textContent = '';
     m.appendChild(el('button', { type: 'button', onclick: function () { zamknijMenu(); dodajDefinicje('ankieta'); } },
-      el('strong', { tekst: 'Z ankiety (zalecane)' }), el('small', { tekst: 'Kilkanaście pytań o składnik – formularz sam ustawi pola.' })));
+      el('strong', { tekst: 'Z ankiety (zalecane)' }), el('small', { tekst: 'Pytania o składnik w rozdziałach – formularz sam ustawi pola.' })));
     m.appendChild(el('button', { type: 'button', onclick: function () { zamknijMenu(); dodajDefinicje(null); } },
       el('strong', { tekst: 'Pusta definicja' }), el('small', { tekst: 'Wszystkie pola z wartościami domyślnymi enova.' })));
     (SCHEMAT.szablony || []).forEach(function (s) {
@@ -507,7 +616,7 @@
   function trescKlienta(d, k) {
     var tresc = el('div', { klasa: 'tresc' });
     if (d.informacja) tresc.appendChild(el('div', { klasa: 'wiadomosc' }, el('strong', { tekst: 'Informacja od wdrożeniowca: ' }), d.informacja));
-    var byly = {};
+    var byly = d.ankieta ? polaZAnkiety(d) : {}; // pola z pytań ankiety są w jej podsumowaniu
     zakladkiWidoczne(k).forEach(function (z) {
       var sekcje = [];
       z.sekcje.forEach(function (s) {
@@ -616,10 +725,12 @@
 
   /* ---------------- pole ---------------- */
 
-  function renderPole(d, k, sciezka) {
+  /** opcje (pytanie ankiety): kafelki – enum/Tak-Nie jako kafelki, bezEtykiety – etykietą jest pytanie, etykiety – własne nazwy wartości, wylacz – do wglądu. */
+  function renderPole(d, k, sciezka, opcje) {
+    opcje = opcje || {};
     var pole = SCHEMAT.pola[sciezka];
     var st = k.stan(sciezka);
-    var wglad = KLIENT && !klientEdytuje(sciezka, d);
+    var wglad = (KLIENT && !klientEdytuje(sciezka, d)) || opcje.wylacz;
     if (wglad) st = Object.assign({}, st, { edytowalne: false, wymagane: false });
     else if (KLIENT && dlaKlienta(sciezka, d) === 'wymagane' && st.aktywne) st = Object.assign({}, st, { wymagane: true });
     var id = 'p_' + sciezka.replace(/[^\w]/g, '_');
@@ -629,23 +740,27 @@
     var ustaw = function (v, pelny) {
       if (W.pusty(v)) delete d.wartosci[sciezka];
       else d.wartosci[sciezka] = v;
-      if (wa && !zKreatora && wa.pola.indexOf(sciezka) < 0) d.ankieta.reczne[sciezka] = true;
+      if (wa) d.ankieta.reczne[sciezka] = true; // zmiana pola wygrywa z odpowiedziami ustawiającymi wiele pól
       zmieniono(pelny);
     };
-    var div = el('div', { klasa: 'pole', 'data-pole': sciezka },
-      el('div', { klasa: 'etykieta' },
+    var kafelkowe = opcje.kafelki && (pole.typ === 'bool' || (pole.enum && (st.dozwolone || []).length <= MAKS_KAFELKOW));
+    var div = el('div', { klasa: 'pole' + (opcje.bezEtykiety ? ' bez-etykiety' : ''), 'data-pole': sciezka },
+      opcje.bezEtykiety ? null : el('div', { klasa: 'etykieta' },
         el('label', { htmlFor: id }, pole.etykieta, st.wymagane ? el('span', { klasa: 'wym', tekst: '*', title: 'Pole wymagane' }) : null),
         el('button', { type: 'button', klasa: 'pomoc', tekst: '?', title: 'Opis pola', onclick: function () { pokazPomoc(sciezka, k); } })));
     var kontr = el('div', { klasa: 'kontrolka' });
-    kontr.appendChild(kontrolka(pole, st, wartosc, id, ustaw, d));
-    if (pole.enum && wartosc !== undefined) {
+    // „Klient musi uzupełnić” Tak/Nie – bez podpowiedzi wartości domyślnej, klient wybiera świadomie
+    var swiadomy = KLIENT && pole.typ === 'bool' && st.edytowalne && dlaKlienta(sciezka, d) === 'wymagane';
+    kontr.appendChild(kafelkowe ? kafelkiPola(pole, st, swiadomy ? d.wartosci[sciezka] : wartosc, ustaw, opcje.etykiety) : kontrolka(pole, st, wartosc, id, ustaw, d));
+    if (pole.enum && wartosc !== undefined && !kafelkowe) {
       var ew = SCHEMAT.enumy[pole.enum].wartosci.filter(function (x) { return x.nazwa === wartosc; })[0];
       if (ew && ew.opis) kontr.appendChild(el('div', { klasa: 'opis-wartosci', tekst: ew.opis }));
     }
     var poch = wa && !zKreatora ? wa.pochodzenie[sciezka] : null;
-    if (poch === 'reczne') kontr.appendChild(el('div', { klasa: 'pochodzenie reczne' }, 'Ustawione ręcznie – ma pierwszeństwo przed ankietą. ',
-      el('button', { type: 'button', klasa: 'link', tekst: 'Przywróć wartość z ankiety', onclick: function () { delete d.ankieta.reczne[sciezka]; przelicz(d); zmieniono(true); } })));
-    else if (poch && poch !== 'szablon') kontr.appendChild(el('div', { klasa: 'pochodzenie', tekst: 'Z ankiety: ' + pytanieAnkiety(poch).pytanie }));
+    var przywroc = el('button', { type: 'button', klasa: 'link', tekst: 'Przywróć ustawienie z szablonu i pytań ogólnych', onclick: function () { delete d.ankieta.reczne[sciezka]; przelicz(d); zmieniono(true); } });
+    if (poch === 'reczne') kontr.appendChild(el('div', { klasa: 'pochodzenie reczne' }, 'Ustawione ręcznie – ma pierwszeństwo przed ankietą. ', przywroc));
+    else if (poch && poch !== 'szablon') kontr.appendChild(el('div', { klasa: 'pochodzenie' }, 'Z ankiety: ' + pytanieAnkiety(poch).pytanie + '. ',
+      d.ankieta.reczne[sciezka] ? przywroc : null));
     if (wglad) kontr.appendChild(el('div', { klasa: 'niedostepne', tekst: 'Tylko do wglądu – to ustawienie przygotował wdrożeniowiec. Jeśli u Was jest inaczej, napisz w uwagach.' }));
     if (st.powod) kontr.appendChild(el('div', { klasa: 'niedostepne', tekst: 'Pole nieaktywne – ' + st.powod + '. Obowiązuje wartość domyślna.' }));
     else if (pole.podpowiedz) kontr.appendChild(el('div', { klasa: 'podpowiedz', tekst: pole.podpowiedz }));
@@ -698,6 +813,21 @@
         return t;
       }
     }
+  }
+
+  /** Enum lub Tak/Nie jako kafelki odpowiedzi (pytanie ankiety o pole). */
+  function kafelkiPola(pole, st, wartosc, ustaw, etykiety) {
+    etykiety = etykiety || {};
+    var opcje = pole.typ === 'bool'
+      ? [true, false].map(function (b) { return { id: String(b), etykieta: etykiety[String(b)] || (b ? 'Tak' : 'Nie') }; })
+      : st.dozwolone.map(function (n) {
+        var ew = SCHEMAT.enumy[pole.enum].wartosci.filter(function (x) { return x.nazwa === n; })[0];
+        return { id: n, etykieta: etykiety[n] || ew.etykieta, opis: ew.opis };
+      });
+    var v = wartosc === undefined || wartosc === null ? undefined : String(wartosc);
+    return el('div', { 'data-sciezka': pole.sciezka, tabIndex: -1 }, kafelki('k_' + pole.sciezka, pole.etykieta, opcje, v, function (id) {
+      ustaw(pole.typ === 'bool' ? id === 'true' : id, true);
+    }, !st.edytowalne, true));
   }
 
   function selectEnum(pole, st, wartosc, wsp, ustaw) {
@@ -829,7 +959,7 @@
 
   function pokazOgolnaPomoc() {
     if (KLIENT) return zapytaj('Jak wypełnić formularz', [
-      'Każda pozycja na liście po lewej to jedna definicja elementu wynagrodzenia (dodatek, premia, potrącenie…). Nową definicję zaczynasz od krótkiej ankiety – odpowiedzi same ustawiają definicję. Gdy coś jest u Was nietypowe, wybierz „Inaczej” – pokażą się pola do uzupełnienia. Gdy nie znasz odpowiedzi, wybierz „Nie wiem”.',
+      'Każda pozycja na liście po lewej to jedna definicja elementu wynagrodzenia (dodatek, premia, potrącenie…). Nową definicję zaczynasz od ankiety podzielonej na rozdziały (u góry widać, gdzie jesteś) – odpowiedzi same ustawiają definicję. Odpowiedzi podpowiedziane przez program możesz zmienić. Gdy coś jest u Was nietypowe, wybierz „Inaczej” – pokażą się pola do uzupełnienia. Gdy nie znasz odpowiedzi, wybierz „Nie wiem”.',
       'Pole z gwiazdką trzeba uzupełnić. Przycisk „?” pokazuje pełny opis pola i znaczenie każdej opcji. Pola szare są tylko do wglądu – jeśli u Was jest inaczej, napisz o tym w „Uwagach dla wdrożeniowca” na dole strony.',
       'Gdy definicja jest ostatecznie omówiona z wdrożeniowcem, wpisz na dole strony imię i nazwisko i kliknij „Akceptuję definicję”. Każda późniejsza zmiana definicji cofa akceptację.',
       'Formularz zapisuje szkic w tej przeglądarce. Gotowy plik zapisz przyciskiem „Zapisz plik dla wdrożeniowca” i prześlij go mailem; zapisany plik można wczytać ponownie przyciskiem „Wczytaj plik…”.'
@@ -898,10 +1028,10 @@
     else stan.klient.pola[sciezka] = v;
   }
 
-  function selectStanu(wartosc, onzmiana, etykieta) {
+  function selectStanu(wartosc, onzmiana, etykieta, stany) {
     var s = el('select', { 'aria-label': etykieta, onchange: function (e) { onzmiana(e.target.value); } });
     if (wartosc === null) s.appendChild(el('option', { value: '', tekst: '— ustaw wszystkie —' }));
-    STANY_KLIENTA.forEach(function (x) { s.appendChild(el('option', { value: x.id, tekst: x.etykieta, selected: x.id === wartosc })); });
+    (stany || STANY_KLIENTA).forEach(function (x) { s.appendChild(el('option', { value: x.id, tekst: x.etykieta, selected: x.id === wartosc })); });
     return s;
   }
 
@@ -928,7 +1058,7 @@
         onchange: function (e) { kl.mozeDodawac = e.target.checked; odswiez(); }
       }), 'Klient może dodawać i usuwać definicje'),
       el('input', {
-        type: 'search', id: 'filtrKonf', placeholder: 'Szukaj pola…', value: stan.filtrKonf || '', 'aria-label': 'Szukaj pola',
+        type: 'search', id: 'filtrKonf', placeholder: 'Szukaj pytania lub pola…', value: stan.filtrKonf || '', 'aria-label': 'Szukaj pytania lub pola',
         oninput: function (e) { stan.filtrKonf = e.target.value; renderKonfiguracja(); }
       }),
       el('button', { type: 'button', tekst: 'Ukryj wszystkie', onclick: function () { kl.pola = {}; odswiez(); } }),
@@ -939,6 +1069,15 @@
         id: 'wiadomoscKonf', value: kl.wiadomosc || '',
         oninput: function (e) { kl.wiadomosc = e.target.value; zapiszSzkic(); }
       })));
+    var naPola = stan.konfWidok === 'pola';
+    var nav = el('nav', { klasa: 'zakladki konf-zakladki', role: 'tablist' });
+    [{ id: 'pytania', etykieta: 'Pytania ankiety' }, { id: 'pola', etykieta: 'Pola definicji (strona szczegółów)' }].forEach(function (z) {
+      var akt = (z.id === 'pola') === naPola;
+      nav.appendChild(el('button', { type: 'button', role: 'tab', klasa: akt ? 'aktywna' : '', 'aria-selected': akt ? 'true' : 'false', 'data-konf-widok': z.id,
+        onclick: function () { stan.konfWidok = z.id; odswiez(); } }, z.etykieta));
+    });
+    tresc.appendChild(nav);
+    if (!naPola) { konfiguracjaPytan(tresc, filtr, odswiez); kont.appendChild(tresc); window.scrollTo(0, przewiniecie); return; }
     var byly = {};
     SCHEMAT.zakladki.forEach(function (z) {
       var sekcje = [];
@@ -970,6 +1109,47 @@
     if (fokus) { var f = document.getElementById('filtrKonf'); f.focus(); f.setSelectionRange(f.value.length, f.value.length); }
   }
 
+  function ustawStanPytania(p, v) {
+    var pola = AN.polaPytania(p);
+    if (pola.length) pola.forEach(function (s) { ustawDlaKlienta(s, v); });
+    else if (v === 'edycja') delete stan.klient.pytania[p.id];
+    else stan.klient.pytania[p.id] = v;
+  }
+
+  /** Lista pytań ankiety w rozdziałach ze stanem dla klienta (pytanie o pola ustawia stan swoich pól). */
+  function konfiguracjaPytan(tresc, filtr, odswiez) {
+    var kl = stan.klient;
+    var licz = {};
+    STANY_PYTAN.forEach(function (x) { licz[x.id] = 0; });
+    ANKIETA.pytania.forEach(function (p) { licz[stanPytania(p, kl)]++; });
+    tresc.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'Klient przechodzi ankietę rozdział po rozdziale i widzi tylko pytania, które tu pokażesz. Pytania ogólne (z kafelkami odpowiedzi) ustawiają naraz wiele pól – na pytania ukryte odpowiadasz sam na definicjach przed wysłaniem formularza. Pytanie o pole pojawi się klientowi tylko wtedy, gdy pole ma znaczenie przy jego wcześniejszych odpowiedziach. „Klient musi odpowiedzieć” = bez opcji „Nie wiem” (pole wymagane).' }));
+    tresc.appendChild(el('div', { klasa: 'konf-liczniki', tekst: 'Pytań: ' + ANKIETA.pytania.length + ' · ' + STANY_PYTAN.map(function (x) { return x.etykieta + ': ' + licz[x.id]; }).join(' · ') }));
+    var opisTypu = function (p) {
+      var pola = AN.polaPytania(p);
+      if (pola.length) return 'Pole: ' + pola.map(function (s) { return SCHEMAT.pola[s].etykieta; }).join(', ');
+      return AN.typ(p) === 'uwagi' ? 'Uwagi dla wdrożeniowca' : 'Pytanie ogólne – ustawia kilka pól naraz';
+    };
+    ANKIETA.rozdzialy.forEach(function (r) {
+      var pytania = ANKIETA.pytania.filter(function (p) {
+        return p.rozdzial === r.id && (!filtr || (p.pytanie + ' ' + opisTypu(p)).toLocaleLowerCase('pl').indexOf(filtr) >= 0);
+      });
+      if (!pytania.length) return;
+      var fs = el('fieldset', null, el('legend', { tekst: r.tytul }),
+        el('div', { klasa: 'konf-sekcja' }, 'Cały rozdział: ', selectStanu(null, function (v) {
+          pytania.forEach(function (p) { ustawStanPytania(p, v); }); odswiez();
+        }, 'Ustaw cały rozdział ' + r.tytul, STANY_PYTAN)));
+      pytania.forEach(function (p) {
+        var s = stanPytania(p, kl);
+        fs.appendChild(el('div', { klasa: 'pole konf-' + s, 'data-konf-pytanie': p.id },
+          el('div', { klasa: 'etykieta' },
+            el('label', null, p.pytanie, el('small', { klasa: 'konf-typ', tekst: opisTypu(p) })),
+            p.pole ? el('button', { type: 'button', klasa: 'pomoc', tekst: '?', title: 'Opis pola', onclick: function () { pokazPomoc(p.pole, new W.Kontekst(SCHEMAT, { wartosci: {} }, stan.ustawienia)); } }) : null),
+          el('div', { klasa: 'kontrolka' }, selectStanu(s, function (v) { ustawStanPytania(p, v); odswiez(); }, p.pytanie, STANY_PYTAN))));
+      });
+      tresc.appendChild(fs);
+    });
+  }
+
   function pobierzFormularzKlienta() {
     var kl = stan.klient;
     var widoczne = Object.keys(kl.pola).length;
@@ -981,6 +1161,7 @@
       licencja: stan.ustawienia.licencja,
       mozeDodawac: !!kl.mozeDodawac,
       wiadomosc: kl.wiadomosc || '',
+      pytania: kopia(kl.pytania || {}),
       pola: kopia(kl.pola),
       definicje: kopia(stan.definicje)
     };
@@ -1006,11 +1187,12 @@
           id: d.id || noweId(), szablon: d.szablon || null, uwagi: d.uwagi || '', informacja: d.informacja || '', wartosci: d.wartosci || {},
           akceptacja: d.akceptacja && d.akceptacja.osoba ? { osoba: d.akceptacja.osoba, data: d.akceptacja.data } : undefined,
           ankieta: d.ankieta && d.ankieta.odpowiedzi ? {
-            odpowiedzi: d.ankieta.odpowiedzi, krok: 0, zakonczona: d.ankieta.zakonczona !== false,
+            wersja: d.ankieta.wersja, odpowiedzi: d.ankieta.odpowiedzi, krok: 0, zakonczona: d.ankieta.zakonczona !== false,
             reczne: (d.ankieta.reczne || []).reduce(function (m, s) { m[s] = true; return m; }, {})
           } : undefined
         };
       });
+      nowe.forEach(migrujAnkiete);
       var wybor = stan.definicje.length
         ? zapytaj('Wczytywanie pliku', 'Plik zawiera ' + nowe.length + ' definicji. Na liście jest już ' + stan.definicje.length + '.',
           [{ tekst: 'Anuluj', wartosc: 'anuluj' }, { tekst: 'Dołącz do listy', wartosc: 'dolacz' }, { tekst: 'Zastąp listę', wartosc: 'zastap', glowny: true }])
@@ -1039,7 +1221,7 @@
   function start() {
     document.getElementById('podtytul').textContent =
       (KLIENT ? 'Przygotował wdrożeniowiec ' + new Date(KONF.utworzono).toLocaleDateString('pl-PL') + ' · ' : '')
-      + 'Wersja formularza ' + SCHEMAT.wersjaSchematu + ' · enova ' + String(SCHEMAT.wersjaEnova).split('-')[0] + ' · dane zostają na tym komputerze';
+      + 'Wersja formularza ' + SCHEMAT.wersjaSchematu + ' · ankieta ' + ANKIETA.wersja + ' · enova ' + String(SCHEMAT.wersjaEnova).split('-')[0] + ' · dane zostają na tym komputerze';
     var lic = document.getElementById('licencja');
     lic.value = stan.ustawienia.licencja;
     lic.disabled = KLIENT;
