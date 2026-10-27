@@ -1,6 +1,6 @@
 # Przegląd schematu definicji elementu wynagrodzenia
 
-Wygenerowano 2026-10-22 z bibliotek enova **2610.0.0-beta.241094** (wersja schematu 1.0).
+Wygenerowano 2026-10-27 z bibliotek enova **2610.0.0-beta.241094** (wersja schematu 1.0).
 Plik generowany — nie edytować ręcznie. Opisy i warunki zmienia się w `opisy.json`, układ w `zrodla.json`,
 potem uruchamia generator (patrz README).
 

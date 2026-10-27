@@ -1,0 +1,1082 @@
+{
+  "wersja": "1.0",
+  "opis": "Ankieta elementu wynagrodzenia – pytania w języku kadrowym; odpowiedzi ustawiają pola definicji. Kolejność: szablon (z odpowiedzi „rodzaj”) → odpowiedzi w kolejności pytań → pola wpisane w ankiecie → zmiany ręczne. Warunki widoczności w DSL warunki.js, „pole” = id pytania. Utrzymywane ręcznie, sprawdzane testem Formularz/test/ankieta.test.mjs.",
+  "pytania": [
+    {
+      "id": "nazwa",
+      "typ": "pola",
+      "pytanie": "Jak nazywa się ten składnik u Was?",
+      "opis": "Nazwa pojawi się na liście płac i pasku wypłaty. Skrót to krótka nazwa do kolumn wydruków.",
+      "pola": [
+        "Nazwa",
+        "Skrot"
+      ]
+    },
+    {
+      "id": "rodzaj",
+      "pytanie": "Czym jest ten składnik?",
+      "opis": "Wybierz najbliższy rodzaj – kolejne pytania doprecyzują szczegóły.",
+      "nieWiem": false,
+      "odpowiedzi": [
+        {
+          "id": "premia",
+          "etykieta": "Premia",
+          "opis": "Np. premia miesięczna, kwartalna, uznaniowa, procentowa, za wyniki.",
+          "szablon": "premiaUznaniowa"
+        },
+        {
+          "id": "dodatek",
+          "etykieta": "Dodatek do wynagrodzenia",
+          "opis": "Np. dodatek funkcyjny, za kierowanie zespołem, za znajomość języka, za pracę w szczególnych warunkach.",
+          "szablon": "dodatekFunkcyjny"
+        },
+        {
+          "id": "dodatekStazowy",
+          "etykieta": "Dodatek stażowy",
+          "opis": "Procent zależny od lat pracy.",
+          "szablon": "dodatekStazowy"
+        },
+        {
+          "id": "nagroda",
+          "etykieta": "Nagroda",
+          "opis": "Np. nagroda jubileuszowa, okolicznościowa, roczna.",
+          "szablon": "premiaUznaniowa",
+          "ustaw": {
+            "OkresNaliczania.Typ": "Jednorazowa",
+            "MinimalneWynagrodzenie": false
+          }
+        },
+        {
+          "id": "zasadnicze",
+          "etykieta": "Wynagrodzenie zasadnicze – stawka miesięczna",
+          "opis": "Własna definicja wynagrodzenia zasadniczego (zwykle wystarcza standardowa enova).",
+          "szablon": "zasadnicze",
+          "wdrozeniowiec": "Własne wynagrodzenie zasadnicze – zwykle wystarcza standardowa definicja enova; podstawa „Wyrażenie” (do skopiowania ze standardowej) wymaga licencji złotej lub platynowej."
+        },
+        {
+          "id": "zasadniczeGodz",
+          "etykieta": "Wynagrodzenie zasadnicze – stawka godzinowa",
+          "opis": "Własna definicja wynagrodzenia godzinowego (zwykle wystarcza standardowa enova).",
+          "szablon": "zasadniczeGodz",
+          "wdrozeniowiec": "Własne wynagrodzenie zasadnicze – zwykle wystarcza standardowa definicja enova; podstawa „Wyrażenie” (do skopiowania ze standardowej) wymaga licencji złotej lub platynowej."
+        },
+        {
+          "id": "potracenie",
+          "etykieta": "Potrącenie z wypłaty",
+          "opis": "Np. składka na ubezpieczenie grupowe, opłata za kartę sportową, zwrot za telefon.",
+          "szablon": "potracenie"
+        },
+        {
+          "id": "swiadczenie",
+          "etykieta": "Świadczenie lub zwrot kosztów",
+          "opis": "Np. ryczałt za pracę zdalną, dofinansowanie okularów, karta przedpłacona, świadczenie z ZFŚS.",
+          "szablon": "premiaUznaniowa",
+          "wdrozeniowiec": "Świadczenia i zwroty kosztów mają szczególne zasady podatku i ZUS – enova ma dla wielu z nich gotowe definicje."
+        },
+        {
+          "id": "standardowy",
+          "etykieta": "Nadgodziny, dodatek nocny, ekwiwalent za urlop, odprawa, zasiłek",
+          "opis": "Te składniki enova ma gotowe – zwykle nie trzeba nowej definicji.",
+          "szablon": "dodatekFunkcyjny",
+          "wdrozeniowiec": "Składnik ustawowy – sprawdzić, czy wystarczy standardowa definicja enova."
+        },
+        {
+          "id": "inny",
+          "etykieta": "Coś innego",
+          "opis": "Opisz składnik w ostatnim pytaniu.",
+          "szablon": "dodatekFunkcyjny",
+          "wdrozeniowiec": "Rodzaj składnika spoza ankiety."
+        }
+      ]
+    },
+    {
+      "id": "kogo",
+      "pytanie": "Komu wypłacacie ten składnik?",
+      "widoczneGdy": {
+        "pole": "rodzaj",
+        "wsrod": [
+          "premia",
+          "dodatek",
+          "nagroda",
+          "potracenie",
+          "swiadczenie",
+          "inny"
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "etat",
+          "etykieta": "Pracownikom zatrudnionym na umowę o pracę",
+          "ustaw": {
+            "Zatrudnienie": "Etat"
+          }
+        },
+        {
+          "id": "umowa",
+          "etykieta": "Zleceniobiorcom (umowy cywilnoprawne)",
+          "ustaw": {
+            "Zatrudnienie": "Umowa",
+            "DefinicjaListyPlac": "LPU"
+          },
+          "wdrozeniowiec": "Składnik dla umów cywilnoprawnych – inne koszty uzyskania i składki niż dla etatu."
+        },
+        {
+          "id": "obie",
+          "etykieta": "I pracownikom, i zleceniobiorcom",
+          "ustaw": {
+            "Zatrudnienie": "Warunkowy",
+            "DefinicjaListyPlac": null
+          },
+          "wdrozeniowiec": "Składnik dla etatów i umów – sprawdzić deklaracje dla obu grup."
+        }
+      ]
+    },
+    {
+      "id": "kwota",
+      "pytanie": "Jak ustalana jest wysokość składnika?",
+      "widoczneGdy": {
+        "pole": "rodzaj",
+        "wsrod": [
+          "premia",
+          "dodatek",
+          "nagroda",
+          "potracenie",
+          "swiadczenie",
+          "inny"
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "stala",
+          "etykieta": "Stała kwota, taka sama dla wszystkich",
+          "opis": "Kwotę wpiszesz w następnym pytaniu.",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Kwota",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+            "Algorytm.DodPodstawa": null,
+            "Algorytm.Priorytet": 0
+          }
+        },
+        {
+          "id": "indywidualna",
+          "etykieta": "Kwota ustalana indywidualnie dla pracownika",
+          "opis": "Kadry wpisują kwotę każdemu pracownikowi (np. w umowie lub aneksie).",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Kwota",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+            "Algorytm.KreatorAlgorytmu.Podstawa": 0,
+            "Algorytm.DodPodstawa": "Kwota",
+            "Algorytm.Priorytet": 0
+          },
+          "ustawGdy": [
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "premia"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota premii"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "dodatek"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota dodatku"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "nagroda"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota nagrody"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "potracenie"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota potrącenia"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "swiadczenie"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota świadczenia"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "inny"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota składnika"
+              }
+            }
+          ]
+        },
+        {
+          "id": "coMiesiac",
+          "etykieta": "Kwota wpisywana przy każdej wypłacie",
+          "opis": "Np. premia uznaniowa – przełożony co miesiąc decyduje o wysokości.",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Kwota",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+            "Algorytm.KreatorAlgorytmu.Podstawa": 0,
+            "Algorytm.KreatorAlgorytmu.PodstawaZa": "NieZależyOdCzasu",
+            "Algorytm.DodPodstawa": "Kwota",
+            "Algorytm.Priorytet": 0
+          },
+          "ustawGdy": [
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "premia"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota premii"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "dodatek"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota dodatku"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "nagroda"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota nagrody"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "potracenie"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota potrącenia"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "swiadczenie"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota świadczenia"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "inny"
+              },
+              "ustaw": {
+                "Algorytm.DodPodstawa": "Kwota składnika"
+              }
+            }
+          ]
+        },
+        {
+          "id": "procent",
+          "etykieta": "Procent od wynagrodzenia zasadniczego",
+          "opis": "Np. premia 10% od zasadniczego.",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.PodstawaTyp": "ZasadniczeNominalne",
+            "Algorytm.KreatorAlgorytmu.PodstawaZa": "Miesięcznie",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "Procent",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik": false,
+            "Algorytm.DodPodstawa": null,
+            "Algorytm.DodProcent": "Procent",
+            "Algorytm.ElProcent": "Procent:",
+            "Algorytm.Priorytet": 1,
+            "Algorytm.ElPodstawa1": "Wynagrodzenie zasadnicze:",
+            "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "Proporcjonalnie"
+          },
+          "ustawGdy": [
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "premia"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent premii",
+                "Algorytm.ElProcent": "Procent premii:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "dodatek"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent dodatku",
+                "Algorytm.ElProcent": "Procent dodatku:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "nagroda"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent nagrody",
+                "Algorytm.ElProcent": "Procent nagrody:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "potracenie"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent potrącenia",
+                "Algorytm.ElProcent": "Procent potrącenia:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "swiadczenie"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent świadczenia",
+                "Algorytm.ElProcent": "Procent świadczenia:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "inny"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent składnika",
+                "Algorytm.ElProcent": "Procent składnika:"
+              }
+            }
+          ]
+        },
+        {
+          "id": "procentSumy",
+          "etykieta": "Procent od kilku składników",
+          "opis": "Np. 10% od zasadniczego i dodatku funkcyjnego – składniki wskażesz w następnym pytaniu.",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.PodstawaTyp": "SumaElementów",
+            "Algorytm.KreatorAlgorytmu.PodstawaZa": "Miesięcznie",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "Procent",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Wskaznik": false,
+            "Algorytm.DodPodstawa": null,
+            "Algorytm.DodProcent": "Procent",
+            "Algorytm.ElProcent": "Procent:",
+            "Algorytm.Priorytet": 10,
+            "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze": "Proporcjonalnie"
+          },
+          "ustawGdy": [
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "premia"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent premii",
+                "Algorytm.ElProcent": "Procent premii:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "dodatek"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent dodatku",
+                "Algorytm.ElProcent": "Procent dodatku:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "nagroda"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent nagrody",
+                "Algorytm.ElProcent": "Procent nagrody:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "potracenie"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent potrącenia",
+                "Algorytm.ElProcent": "Procent potrącenia:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "swiadczenie"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent świadczenia",
+                "Algorytm.ElProcent": "Procent świadczenia:"
+              }
+            },
+            {
+              "gdy": {
+                "pole": "rodzaj",
+                "rowne": "inny"
+              },
+              "ustaw": {
+                "Algorytm.DodProcent": "Procent składnika",
+                "Algorytm.ElProcent": "Procent składnika:"
+              }
+            }
+          ]
+        },
+        {
+          "id": "stawkaGodz",
+          "etykieta": "Stawka za godzinę × liczba godzin",
+          "opis": "Np. dodatek za godziny pracy w szczególnych warunkach. Rodzaj godzin wskażesz w szczegółach.",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.PodstawaTyp": "Kwota",
+            "Algorytm.KreatorAlgorytmu.PodstawaZa": "Godzinę",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ": "BezWspółczynnika",
+            "Algorytm.KreatorAlgorytmu.Czas.Typ": "RzeczywistyCzasPracy",
+            "Algorytm.DodPodstawa": "Stawka za godzinę",
+            "Algorytm.Priorytet": 0,
+            "Algorytm.ElPodstawa1": "Stawka za godzinę:"
+          },
+          "szczegoly": [
+            "Algorytm.KreatorAlgorytmu.Czas.*"
+          ]
+        },
+        {
+          "id": "inaczej",
+          "etykieta": "Inaczej",
+          "opis": "Np. zależnie od wyników, stanowiska i stażu jednocześnie – opisz zasadę w ostatnim pytaniu.",
+          "szczegoly": [
+            "Algorytm.Typ",
+            "Algorytm.KreatorAlgorytmu.PodstawaTyp",
+            "Algorytm.KreatorAlgorytmu.PodstawaZa",
+            "Algorytm.KreatorAlgorytmu.Wspolczynnik.Typ"
+          ],
+          "wdrozeniowiec": "Nietypowy sposób wyliczenia – możliwy algorytm w edytorze (kod C#)."
+        }
+      ]
+    },
+    {
+      "id": "kwotaStala",
+      "typ": "pola",
+      "pytanie": "Jaka jest kwota?",
+      "opis": "Kwota miesięczna (dla składnika wypłacanego rzadziej – kwota jednej wypłaty).",
+      "widoczneGdy": {
+        "wszystkie": [
+          {
+            "pole": "kwota",
+            "rowne": "stala"
+          },
+          {
+            "pole": "rodzaj",
+            "wsrod": [
+              "premia",
+              "dodatek",
+              "nagroda",
+              "potracenie",
+              "swiadczenie",
+              "inny"
+            ]
+          }
+        ]
+      },
+      "pola": [
+        "Algorytm.KreatorAlgorytmu.Podstawa"
+      ]
+    },
+    {
+      "id": "procentWartosc",
+      "typ": "pola",
+      "pytanie": "Ile wynosi procent?",
+      "opis": "Jeśli procent jest różny u różnych pracowników, wpisz najczęstszy – kadry zmienią go pracownikowi indywidualnie.",
+      "widoczneGdy": {
+        "wszystkie": [
+          {
+            "pole": "kwota",
+            "wsrod": [
+              "procent",
+              "procentSumy"
+            ]
+          },
+          {
+            "pole": "rodzaj",
+            "wsrod": [
+              "premia",
+              "dodatek",
+              "nagroda",
+              "potracenie",
+              "swiadczenie",
+              "inny"
+            ]
+          }
+        ]
+      },
+      "pola": [
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent"
+      ]
+    },
+    {
+      "id": "skladnikiSumy",
+      "typ": "pola",
+      "pytanie": "Od których składników liczony jest procent?",
+      "opis": "Dodaj wiersz dla każdego składnika. „Wartość wyliczona” = kwota faktycznie wypłacona (po pomniejszeniach), „nominalna” = pełna kwota z umowy.",
+      "widoczneGdy": {
+        "wszystkie": [
+          {
+            "pole": "kwota",
+            "rowne": "procentSumy"
+          },
+          {
+            "pole": "rodzaj",
+            "wsrod": [
+              "premia",
+              "dodatek",
+              "nagroda",
+              "potracenie",
+              "swiadczenie",
+              "inny"
+            ]
+          }
+        ]
+      },
+      "pola": [
+        "PodstawyDefinicji"
+      ]
+    },
+    {
+      "id": "staz",
+      "typ": "pola",
+      "pytanie": "Sprawdź progi stażu pracy",
+      "opis": "Wpisane są progi z Kodeksu pracy i typowych regulaminów (od 5 lat 5%, co rok +1%, maks. 20%). Popraw je wg Waszego regulaminu.",
+      "widoczneGdy": {
+        "pole": "rodzaj",
+        "rowne": "dodatekStazowy"
+      },
+      "pola": [
+        "Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi"
+      ]
+    },
+    {
+      "id": "czestotliwosc",
+      "pytanie": "Jak często składnik jest wypłacany?",
+      "widoczneGdy": {
+        "pole": "rodzaj",
+        "wsrod": [
+          "premia",
+          "dodatek",
+          "nagroda",
+          "potracenie",
+          "swiadczenie",
+          "inny"
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "miesiac",
+          "etykieta": "Co miesiąc",
+          "ustaw": {
+            "OkresNaliczania.Typ": "CoNMiesięcy",
+            "OkresNaliczania.Ilosc": 1
+          }
+        },
+        {
+          "id": "kwartal",
+          "etykieta": "Co kwartał",
+          "ustaw": {
+            "OkresNaliczania.Typ": "CoNMiesięcy",
+            "OkresNaliczania.Ilosc": 3
+          }
+        },
+        {
+          "id": "polrocze",
+          "etykieta": "Co pół roku",
+          "ustaw": {
+            "OkresNaliczania.Typ": "CoNMiesięcy",
+            "OkresNaliczania.Ilosc": 6
+          }
+        },
+        {
+          "id": "rok",
+          "etykieta": "Raz w roku",
+          "ustaw": {
+            "OkresNaliczania.Typ": "CoNLat",
+            "OkresNaliczania.Ilosc": 1
+          }
+        },
+        {
+          "id": "jednorazowo",
+          "etykieta": "Jednorazowo",
+          "opis": "Np. nagroda jubileuszowa, premia za projekt.",
+          "ustaw": {
+            "OkresNaliczania.Typ": "Jednorazowa"
+          }
+        },
+        {
+          "id": "inaczej",
+          "etykieta": "Inaczej",
+          "opis": "Np. co dwa tygodnie, przy każdej wypłacie w miesiącu.",
+          "szczegoly": [
+            "OkresNaliczania.*"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zaOkres",
+      "pytanie": "Za który miesiąc składnik jest wypłacany?",
+      "opis": "Np. wypłata 10 listopada: za październik (z dołu) albo za listopad (z góry).",
+      "widoczneGdy": {
+        "wszystkie": [
+          {
+            "pole": "rodzaj",
+            "wsrod": [
+              "premia",
+              "dodatek",
+              "nagroda",
+              "swiadczenie",
+              "inny"
+            ]
+          },
+          {
+            "pole": "czestotliwosc",
+            "rowne": "miesiac"
+          }
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "zDolu",
+          "etykieta": "Za poprzedni miesiąc (z dołu)",
+          "ustaw": {
+            "OkresNaliczania.Naliczanie": "PłatnaZDołu"
+          }
+        },
+        {
+          "id": "zGory",
+          "etykieta": "Za bieżący miesiąc (z góry)",
+          "ustaw": {
+            "OkresNaliczania.Naliczanie": "PłatnaZGóry"
+          }
+        }
+      ]
+    },
+    {
+      "id": "choroba",
+      "pytanie": "Co dzieje się ze składnikiem, gdy pracownik jest na zwolnieniu lekarskim?",
+      "opis": "Od odpowiedzi zależy też, czy składnik wchodzi do podstawy zasiłku chorobowego: składnik zachowany w czasie choroby do podstawy nie wchodzi, pomniejszany – wchodzi.",
+      "prawne": true,
+      "widoczneGdy": {
+        "wszystkie": [
+          {
+            "pole": "rodzaj",
+            "wsrod": [
+              "premia",
+              "dodatek",
+              "dodatekStazowy",
+              "nagroda",
+              "swiadczenie",
+              "inny"
+            ]
+          },
+          {
+            "pole": "czestotliwosc",
+            "rozne": "jednorazowo"
+          }
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "zachowany",
+          "etykieta": "Przysługuje w pełnej wysokości",
+          "opis": "Choroba nie zmniejsza składnika (np. dodatek stażowy).",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.ZUS": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "NiePomniejsza",
+            "Nieobecnosci.ZasilkiPracownicy.Typ": "NieWliczać",
+            "Nieobecnosci.ZasilkiPracownicy.Chorobowych": false,
+            "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": false,
+            "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": false,
+            "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": false,
+            "Nieobecnosci.ZasilkiInni.Typ": "NieWliczać",
+            "Nieobecnosci.ZasilkiInni.Chorobowych": false,
+            "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": false,
+            "Nieobecnosci.ZasilkiInni.Macierzynskich": false,
+            "Nieobecnosci.ZasilkiInni.Opiekunczych": false,
+            "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Nie",
+            "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": false
+          }
+        },
+        {
+          "id": "proporcjonalnie",
+          "etykieta": "Jest pomniejszany za dni choroby",
+          "opis": "Tak jak wynagrodzenie zasadnicze (np. premia procentowa, dodatek funkcyjny).",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.ZUS": "JakZasadnicze",
+            "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "JakZasadnicze",
+            "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "JakZasadnicze",
+            "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "JakZasadnicze",
+            "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "JakZasadnicze",
+            "Nieobecnosci.ZasilkiPracownicy.Typ": "DopełniaćJakZasadniczeDla",
+            "Nieobecnosci.ZasilkiPracownicy.Chorobowych": true,
+            "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": true,
+            "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": true,
+            "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": true,
+            "Nieobecnosci.ZasilkiInni.Typ": "DopełniaćJakZasadniczeDla",
+            "Nieobecnosci.ZasilkiInni.Chorobowych": true,
+            "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": true,
+            "Nieobecnosci.ZasilkiInni.Macierzynskich": true,
+            "Nieobecnosci.ZasilkiInni.Opiekunczych": true,
+            "Korygowany": true,
+            "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Wszystkich",
+            "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": true
+          }
+        },
+        {
+          "id": "przelozony",
+          "etykieta": "Wysokość ustala przełożony, biorąc pod uwagę nieobecności",
+          "opis": "Np. premia uznaniowa – program sam jej nie pomniejsza.",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.ZUS": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "NiePomniejsza",
+            "Nieobecnosci.ZasilkiPracownicy.Typ": "WliczaćDla",
+            "Nieobecnosci.ZasilkiPracownicy.Chorobowych": true,
+            "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": true,
+            "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": true,
+            "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": true,
+            "Nieobecnosci.ZasilkiInni.Typ": "WliczaćDla",
+            "Nieobecnosci.ZasilkiInni.Chorobowych": true,
+            "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": true,
+            "Nieobecnosci.ZasilkiInni.Macierzynskich": true,
+            "Nieobecnosci.ZasilkiInni.Opiekunczych": true,
+            "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Nie",
+            "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": false
+          }
+        },
+        {
+          "id": "tracony",
+          "etykieta": "Przepada w całości, jeśli pracownik chorował",
+          "opis": "Np. premia frekwencyjna. Próg (od ilu dni choroby) wpiszesz w szczegółach.",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.ZUS": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Chorobowe": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Macierzynske": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Rehabilitacyjne": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Opiekuncze": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.PomniejszDoZera": "PrzyNieobecnościachZUS",
+            "Algorytm.KreatorAlgorytmu.ProgZerowania": 0,
+            "Nieobecnosci.ZasilkiPracownicy.Typ": "WliczaćDla",
+            "Nieobecnosci.ZasilkiPracownicy.Chorobowych": true,
+            "Nieobecnosci.ZasilkiPracownicy.Rehabilitacyjnych": true,
+            "Nieobecnosci.ZasilkiPracownicy.Macierzynskich": true,
+            "Nieobecnosci.ZasilkiPracownicy.Opiekunczych": true,
+            "Nieobecnosci.ZasilkiInni.Typ": "WliczaćDla",
+            "Nieobecnosci.ZasilkiInni.Chorobowych": true,
+            "Nieobecnosci.ZasilkiInni.Rehabilitacyjnych": true,
+            "Nieobecnosci.ZasilkiInni.Macierzynskich": true,
+            "Nieobecnosci.ZasilkiInni.Opiekunczych": true,
+            "Korygowany": true,
+            "Algorytm.KreatorAlgorytmu.Korekta._Odchyłki": "Nie",
+            "Algorytm.KreatorAlgorytmu.Korekta.Odchylki": false
+          },
+          "szczegoly": [
+            "Algorytm.KreatorAlgorytmu.PomniejszDoZera",
+            "Algorytm.KreatorAlgorytmu.ProgZerowania"
+          ]
+        },
+        {
+          "id": "inaczej",
+          "etykieta": "Inaczej",
+          "opis": "Np. pomniejszany tylko po 30 dniach choroby.",
+          "szczegoly": [
+            "Algorytm.KreatorAlgorytmu.Korekta.*",
+            "Nieobecnosci.ZasilkiPracownicy.*",
+            "Nieobecnosci.ZasilkiInni.*"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urlop",
+      "pytanie": "Co dzieje się ze składnikiem w czasie urlopu wypoczynkowego?",
+      "opis": "Od odpowiedzi zależy, czy składnik wchodzi do wynagrodzenia za urlop i ekwiwalentu za niewykorzystany urlop.",
+      "prawne": true,
+      "widoczneGdy": {
+        "wszystkie": [
+          {
+            "pole": "rodzaj",
+            "wsrod": [
+              "premia",
+              "dodatek",
+              "dodatekStazowy",
+              "nagroda",
+              "swiadczenie",
+              "inny"
+            ]
+          },
+          {
+            "pole": "czestotliwosc",
+            "rozne": "jednorazowo"
+          }
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "bezZmian",
+          "etykieta": "Wypłacany normalnie, w pełnej wysokości",
+          "opis": "Urlop nie zmniejsza składnika, więc nie wchodzi on do wynagrodzenia urlopowego (np. dodatek stażowy, funkcyjny).",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.Platne": "NiePomniejsza",
+            "Nieobecnosci.Urlop.Typ": "NieWliczać",
+            "Nieobecnosci.Ekwiwalent.Typ": "NieWliczać"
+          }
+        },
+        {
+          "id": "staly",
+          "etykieta": "Pomniejszany za urlop, w zamian wliczany do wynagrodzenia urlopowego",
+          "opis": "Tak jak wynagrodzenie zasadnicze (np. premia procentowa od zasadniczego).",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.Platne": "Proporcjonalnie",
+            "Nieobecnosci.Urlop.Typ": "WliczaćAktualnąWartość",
+            "Nieobecnosci.Ekwiwalent.Typ": "WliczaćAktualnąWartość"
+          },
+          "ustawGdy": [
+            {
+              "gdy": {
+                "pole": "kwota",
+                "wsrod": [
+                  "procent",
+                  "procentSumy"
+                ]
+              },
+              "ustaw": {
+                "Nieobecnosci.Urlop.Typ": "WliczaćJakZasadnicze",
+                "Nieobecnosci.Ekwiwalent.Typ": "WliczaćJakZasadnicze",
+                "Nieobecnosci.Ekwiwalent.Dopelnienie": true
+              }
+            },
+            {
+              "gdy": {
+                "pole": "kwota",
+                "wsrod": [
+                  "coMiesiac",
+                  "stawkaGodz"
+                ]
+              },
+              "ustaw": {
+                "Nieobecnosci.Urlop.Typ": "Wliczać",
+                "Nieobecnosci.Ekwiwalent.Typ": "Wliczać"
+              }
+            }
+          ]
+        },
+        {
+          "id": "zmienny",
+          "etykieta": "Składnik zmienny – wchodzi do wynagrodzenia urlopowego ze średniej",
+          "opis": "Np. premia za wyniki, prowizja: do urlopu liczy się średnia z 3 miesięcy (przy dużych wahaniach – z 12).",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.Platne": "NiePomniejsza",
+            "Nieobecnosci.Urlop.Typ": "Wliczać",
+            "Nieobecnosci.Ekwiwalent.Typ": "Wliczać"
+          },
+          "szczegoly": [
+            "Nieobecnosci.WahaniaWysokosci"
+          ]
+        },
+        {
+          "id": "inaczej",
+          "etykieta": "Inaczej",
+          "szczegoly": [
+            "Algorytm.KreatorAlgorytmu.Korekta.Platne",
+            "Nieobecnosci.Urlop.*",
+            "Nieobecnosci.Ekwiwalent.*",
+            "Nieobecnosci.WahaniaWysokosci"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nieplatne",
+      "pytanie": "Czy składnik jest pomniejszany za urlop bezpłatny i nieobecność nieusprawiedliwioną?",
+      "widoczneGdy": {
+        "wszystkie": [
+          {
+            "pole": "rodzaj",
+            "wsrod": [
+              "premia",
+              "dodatek",
+              "dodatekStazowy",
+              "nagroda",
+              "swiadczenie",
+              "inny"
+            ]
+          },
+          {
+            "pole": "czestotliwosc",
+            "rozne": "jednorazowo"
+          }
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "tak",
+          "etykieta": "Tak, proporcjonalnie do czasu nieobecności",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "Proporcjonalnie",
+            "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "Proporcjonalnie",
+            "Korygowany": true
+          }
+        },
+        {
+          "id": "nie",
+          "etykieta": "Nie",
+          "ustaw": {
+            "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione": "NiePomniejsza",
+            "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione": "NiePomniejsza"
+          }
+        },
+        {
+          "id": "inaczej",
+          "etykieta": "Inaczej",
+          "opis": "Np. przepada w całości po dniu nieobecności nieusprawiedliwionej.",
+          "szczegoly": [
+            "Algorytm.KreatorAlgorytmu.Korekta.Nieusprawiedliwione",
+            "Algorytm.KreatorAlgorytmu.Korekta.Usprawiedliwione",
+            "Algorytm.KreatorAlgorytmu.Korekta.Wychowawcze",
+            "Algorytm.KreatorAlgorytmu.PomniejszDoZera",
+            "Algorytm.KreatorAlgorytmu.ProgZerowania"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "podatki",
+      "pytanie": "Czy od składnika pobiera się podatek i składki ZUS?",
+      "prawne": true,
+      "widoczneGdy": {
+        "pole": "rodzaj",
+        "wsrod": [
+          "premia",
+          "dodatek",
+          "nagroda",
+          "swiadczenie",
+          "inny"
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "tak",
+          "etykieta": "Tak, jak od wynagrodzenia",
+          "opis": "Podatek i pełne składki ZUS – tak jest w większości przypadków."
+        },
+        {
+          "id": "bezZus",
+          "etykieta": "Podatek tak, składki ZUS nie",
+          "opis": "Np. nagroda jubileuszowa w budżetówce, niektóre świadczenia.",
+          "ustaw": {
+            "Deklaracje.Spoleczne.Typ": "NieNaliczać",
+            "Deklaracje.Zdrowotne.Typ": "NieNaliczać",
+            "Deklaracje.Zaliczka.PomniejszonaZUS": "False",
+            "Deklaracje.Zdrowotne.PomniejszaFIS": "NiePomniejsza",
+            "Deklaracje.Zdrowotne.PomniejszoneZUS": false
+          }
+        },
+        {
+          "id": "zwolniony",
+          "etykieta": "Ani podatku, ani składek",
+          "opis": "Np. świadczenie zwolnione z podatku i ZUS.",
+          "ustaw": {
+            "Deklaracje.PozycjaPIT": null,
+            "Deklaracje.Koszty.Typ": "NieNaliczać",
+            "Deklaracje.Zaliczka.Typ": "NieNaliczać",
+            "Deklaracje.Zaliczka.PomniejszonaZUS": "False",
+            "Deklaracje.Ulga.Typ": "NieNaliczać",
+            "Deklaracje.Spoleczne.Typ": "NieNaliczać",
+            "Deklaracje.Zdrowotne.Typ": "NieNaliczać",
+            "Deklaracje.Zdrowotne.PomniejszaFIS": "NiePomniejsza",
+            "Deklaracje.Zdrowotne.PomniejszoneZUS": false,
+            "Deklaracje.PozycjaRP7": "NieDotyczy"
+          }
+        },
+        {
+          "id": "inaczej",
+          "etykieta": "Inaczej",
+          "opis": "Np. zwolnienie do limitu kwoty.",
+          "szczegoly": [
+            "Deklaracje.*"
+          ],
+          "wdrozeniowiec": "Nietypowe zasady podatku lub składek."
+        }
+      ]
+    },
+    {
+      "id": "minimalne",
+      "pytanie": "Czy składnik liczy się do minimalnego wynagrodzenia?",
+      "opis": "Program porównuje wynagrodzenie z płacą minimalną i wypłaca wyrównanie. Nie liczą się m.in.: dodatek stażowy, nagroda jubileuszowa, odprawa, nadgodziny, dodatek nocny.",
+      "prawne": true,
+      "widoczneGdy": {
+        "pole": "rodzaj",
+        "wsrod": [
+          "premia",
+          "dodatek",
+          "dodatekStazowy",
+          "nagroda",
+          "inny"
+        ]
+      },
+      "odpowiedzi": [
+        {
+          "id": "tak",
+          "etykieta": "Tak",
+          "ustaw": {
+            "MinimalneWynagrodzenie": true
+          }
+        },
+        {
+          "id": "nie",
+          "etykieta": "Nie",
+          "ustaw": {
+            "MinimalneWynagrodzenie": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "uwagi",
+      "typ": "uwagi",
+      "pytanie": "Czy jest coś jeszcze, co wdrożeniowiec powinien wiedzieć?",
+      "opis": "Zasady z regulaminu, wyjątki, wątpliwości. Możesz zostawić puste."
+    }
+  ]
+}
