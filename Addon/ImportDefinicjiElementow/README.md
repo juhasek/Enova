@@ -80,6 +80,14 @@ Plik z wersji 1.0 wczytuje się do 2.0 (pola z pytań „pola” przechodzą jak
   *Do wglądu* / *Klient odpowiada* / *Klient musi odpowiedzieć* (bez „Nie wiem”). Pytanie o pola dzieli stan z tymi polami
   (zakładka *Pola definicji*). Na pytania ukryte odpowiada wdrożeniowiec na definicjach przed wysłaniem; ukryte bez odpowiedzi
   nie blokują klienta. Pola z pokazanych pytań nie powtarzają się na stronie definicji klienta.
+- **Bez dublowania:** pytanie szczegółowe o pole, które ustawia pokazane pytanie ogólne (np. pomniejszenia za chorobę), pojawia się
+  dopiero po odpowiedzi „Inaczej” (także gdy wdrożeniowiec je ukrył) albo gdy pole już zmieniono. Zmiana odpowiedzi ogólnej sprzecznej
+  z polami zmienionymi wcześniej pyta: „Zostaw moje ustawienia” / „Zastosuj nową odpowiedź”.
+- **Zestawy pytań** (konfiguracja): *Podstawowy* (pytania ogólne + nazwa, kwota, procent…, flaga `podstawowe`), *Rozszerzony*
+  (+ 24 pytania `zestaw: "rozszerzona"`), *Pełny*; potem stany można zmieniać pojedynczo. Rozdział „Ustawienia techniczne”
+  ma `tylkoWdrozeniowiec` – klient go nigdy nie widzi.
+- **Świadome potwierdzenie:** pytanie o pola „Klient musi odpowiedzieć” z wartością podpowiedzianą (szablon, wdrożeniowiec)
+  trzeba potwierdzić przyciskiem „Potwierdzam” albo zmienić – do tego czasu „Dalej” i „Zakończ ankietę” są zablokowane.
 - Test `ankieta.test.mjs` pilnuje m.in., że ankieta pyta o każde pole schematu (`niepokryte` = []).
 
 ## Formularz dla klienta

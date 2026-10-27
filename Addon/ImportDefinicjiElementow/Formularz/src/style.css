@@ -234,3 +234,7 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; ma
 .konf-zakladki { padding: 0; margin: 4px 0 12px; }
 .konf-typ { display: block; color: var(--tekst2); font-size: 11px; margin-top: 2px; }
 @media (max-width: 700px) { .pytanie .pole { grid-template-columns: 1fr; } .uklad { padding: 12px; } }
+.konf-zestawy { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 8px 0 12px; font-size: 13px; }
+.konf-zestawy small { flex-basis: 100%; color: var(--tekst2); }
+.pytanie.do-potwierdzenia { border-color: var(--ostrz); background: var(--ostrz-tlo); }
+.potwierdzenie { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--ostrz); }

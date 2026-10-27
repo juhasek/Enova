@@ -22,6 +22,20 @@
   /** Pola, o które pyta pytanie typu „pole”/„pola” (pusta lista dla pozostałych). */
   function polaPytania(p) { return p.pola || (p.pole ? [p.pole] : []); }
 
+  /** Pola, które może ustawić pytanie ogólne (dowolna jego odpowiedź, także „ustawGdy”). */
+  function polaUstawiane(p) {
+    var wynik = {};
+    (p.odpowiedzi || []).forEach(function (o) {
+      [o.ustaw].concat((o.ustawGdy || []).map(function (r) { return r.ustaw; })).forEach(function (m) {
+        Object.keys(m || {}).forEach(function (s) { wynik[s] = true; });
+      });
+    });
+    return Object.keys(wynik);
+  }
+
+  /** Pytanie szczegółowe: o pola, poza pytaniami podstawowymi (nazwa, kwota, procent… – uzupełniają pytania ogólne). */
+  function szczegolowe(p) { return typ(p) !== 'wybor' && polaPytania(p).length > 0 && !p.podstawowe; }
+
   function ctxOdpowiedzi(odp) {
     return { licencja: null, wartosc: function (id) { return odp[id]; } };
   }
@@ -158,6 +172,7 @@
       var g = 'pytanie ' + p.id;
       if (ids[p.id]) bledy.push(g + ': powtórzone id');
       if (ankieta.rozdzialy && !rozdzialy[p.rozdzial]) bledy.push(g + ': brak rozdziału ' + p.rozdzial);
+      if (p.zestaw && !(ankieta.zestawy || {})[p.zestaw]) bledy.push(g + ': brak zestawu ' + p.zestaw);
       warunek(p.widoczneGdy, g);
       polaPytania(p).forEach(function (s) { if (!schemat.pola[s]) bledy.push(g + ': brak pola ' + s); });
       if (typ(p) === 'pole' && p.etykiety) Object.keys(p.etykiety).forEach(function (v) {
@@ -194,6 +209,8 @@
     NIE_WIEM: NIE_WIEM,
     typ: typ,
     polaPytania: polaPytania,
+    polaUstawiane: polaUstawiane,
+    szczegolowe: szczegolowe,
     niepokryte: niepokryte,
     widocznePytania: widocznePytania,
     odpowiedz: odpowiedz,

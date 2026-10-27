@@ -163,3 +163,15 @@ test('pytania ukryte przed klientem i „Nie wiem” przy pytaniu o pole', () =>
   assert.deepEqual(w.nieWiem, ['Deklaracje.KodRSA']);
   assert.ok(A.zastosuj(ankieta, schemat, d).brak.includes('kogo'));
 });
+
+test('pytania ogólne a szczegółowe, zestawy, pytania tylko dla wdrożeniowca', () => {
+  const p = (id) => ankieta.pytania.find((x) => x.id === id);
+  assert.ok(A.polaUstawiane(p('choroba')).includes('Algorytm.KreatorAlgorytmu.Korekta.Chorobowe'));
+  assert.ok(A.polaUstawiane(p('kwota')).includes('Algorytm.DodPodstawa'), 'także „ustawGdy”');
+  assert.equal(A.szczegolowe(p('Algorytm.KreatorAlgorytmu.Korekta.Chorobowe')), true);
+  assert.equal(A.szczegolowe(p('kwotaStala')), false, 'pytanie podstawowe uzupełnia odpowiedź ogólną');
+  assert.equal(A.szczegolowe(p('nazwa')), false);
+  assert.equal(A.szczegolowe(p('choroba')), false);
+  for (const q of ankieta.pytania.filter((x) => x.zestaw)) assert.ok(A.szczegolowe(q), `zestaw tylko dla pytań szczegółowych: ${q.id}`);
+  assert.deepEqual([...new Set(ankieta.pytania.filter((x) => x.tylkoWdrozeniowiec).map((x) => x.rozdzial))], ['techniczne']);
+});

@@ -1,6 +1,6 @@
 {
   "wersja": "2.0",
-  "opis": "Ankieta elementu wynagrodzenia – pytania w języku kadrowym o wszystkie pola definicji, w rozdziałach. Pytania „wybor” ustawiają wiele pól naraz (punkt startu), pytania „pole”/„pola” pytają o konkretne pola (odpowiedź = wartość pola, ma pierwszeństwo). Pytanie o pole pojawia się tylko, gdy pole jest aktywne. Wdrożeniowiec wybiera pytania widoczne dla klienta. Sprawdzane testem Formularz/test/ankieta.test.mjs (także pokrycie wszystkich pól schematu).",
+  "opis": "Ankieta elementu wynagrodzenia – pytania w języku kadrowym o wszystkie pola definicji, w rozdziałach. Pytania „wybor” ustawiają wiele pól naraz (punkt startu), pytania „pole”/„pola” pytają o konkretne pola (odpowiedź = wartość pola, ma pierwszeństwo). Pytanie o pole pojawia się tylko, gdy pole jest aktywne. Wdrożeniowiec wybiera pytania widoczne dla klienta. Sprawdzane testem Formularz/test/ankieta.test.mjs (także pokrycie wszystkich pól schematu). Pytanie o pole ustawiane przez pokazane pytanie ogólne pojawia się dopiero po odpowiedzi „Inaczej” (albo gdy klient już je zmienił). „zestaw” = rozszerzona; „tylkoWdrozeniowiec” – nigdy dla klienta; „podstawowe” – pytanie o pola należące do pytań ogólnych (zawsze w zestawie podstawowym).",
   "rozdzialy": [
     {
       "id": "podstawowe",
@@ -68,7 +68,8 @@
       "pola": [
         "Nazwa",
         "Skrot"
-      ]
+      ],
+      "podstawowe": true
     },
     {
       "id": "rodzaj",
@@ -208,7 +209,8 @@
       "etykiety": {
         "true": "Tak – to potrącenie (np. składka na ubezpieczenie grupowe)",
         "false": "Nie – zwiększa wypłatę"
-      }
+      },
+      "zestaw": "rozszerzona"
     },
     {
       "id": "NazwaPomocnicza",
@@ -216,14 +218,16 @@
       "rozdzial": "podstawowe",
       "pole": "NazwaPomocnicza",
       "pytanie": "Czy na pasku wypłaty składnik ma mieć inną nazwę? Jeśli tak – wpisz ją.",
-      "opis": "Zostaw puste, gdy na pasku ma być nazwa podana wyżej."
+      "opis": "Zostaw puste, gdy na pasku ma być nazwa podana wyżej.",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Kod",
       "typ": "pole",
       "rozdzial": "podstawowe",
       "pole": "Kod",
-      "pytanie": "Czy w firmie składniki mają kody (np. do raportów lub innego systemu)? Wpisz kod tego składnika."
+      "pytanie": "Czy w firmie składniki mają kody (np. do raportów lub innego systemu)? Wpisz kod tego składnika.",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Blokada",
@@ -234,7 +238,8 @@
       "etykiety": {
         "true": "Tak – zablokuj (zostaje tylko w historii)",
         "false": "Nie – składnik jest w użyciu"
-      }
+      },
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Zatrudnienie",
@@ -249,7 +254,8 @@
       "rozdzial": "podstawowe",
       "pole": "DefinicjaListyPlac",
       "pytanie": "Na której liście płac ma się pojawiać składnik?",
-      "opis": "Np. LPE – wynagrodzenia pracowników, LPU – umowy cywilnoprawne. Puste – program wybierze listę sam."
+      "opis": "Np. LPE – wynagrodzenia pracowników, LPU – umowy cywilnoprawne. Puste – program wybierze listę sam.",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "RodzajNaliczania",
@@ -637,7 +643,8 @@
       },
       "pola": [
         "Algorytm.KreatorAlgorytmu.Podstawa"
-      ]
+      ],
+      "podstawowe": true
     },
     {
       "id": "procentWartosc",
@@ -669,7 +676,8 @@
       },
       "pola": [
         "Algorytm.KreatorAlgorytmu.Wspolczynnik.Procent"
-      ]
+      ],
+      "podstawowe": true
     },
     {
       "id": "skladnikiSumy",
@@ -698,7 +706,8 @@
       },
       "pola": [
         "PodstawyDefinicji"
-      ]
+      ],
+      "podstawowe": true
     },
     {
       "id": "staz",
@@ -712,7 +721,8 @@
       },
       "pola": [
         "Algorytm.KreatorAlgorytmu.Wspolczynnik.Progi"
-      ]
+      ],
+      "podstawowe": true
     },
     {
       "id": "Algorytm.Typ",
@@ -777,14 +787,16 @@
         "Miesięcznie": "Za miesiąc (przy pełnym etacie)",
         "Godzinę": "Za godzinę pracy",
         "NieZależyOdCzasu": "Nie zależy od czasu – zawsze ta sama kwota"
-      }
+      },
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Algorytm.KreatorAlgorytmu.SposobProporcjonalnosci",
       "typ": "pole",
       "rozdzial": "wysokosc",
       "pole": "Algorytm.KreatorAlgorytmu.SposobProporcjonalnosci",
-      "pytanie": "Gdy pracownik nie był zatrudniony przez cały miesiąc (przyjęcie lub zwolnienie w trakcie), jak zmniejszyć składnik?"
+      "pytanie": "Gdy pracownik nie był zatrudniony przez cały miesiąc (przyjęcie lub zwolnienie w trakcie), jak zmniejszyć składnik?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Algorytm.KreatorAlgorytmu.PrzeliczNa1h",
@@ -1041,7 +1053,8 @@
       "rozdzial": "kiedy",
       "pole": "OkresNaliczania.Opoznienie",
       "pytanie": "O ile miesięcy wypłata jest późniejsza niż okres, za który się należy?",
-      "opis": "Np. premia roczna za ubiegły rok wypłacana w lutym – 2. Zwykle 0."
+      "opis": "Np. premia roczna za ubiegły rok wypłacana w lutym – 2. Zwykle 0.",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "OkresNaliczania.DlaKazdejUmowy",
@@ -1059,14 +1072,16 @@
       "etykiety": {
         "true": "Tak – korekta w następnej wypłacie",
         "false": "Nie – raz wypłacony zostaje bez zmian"
-      }
+      },
+      "zestaw": "rozszerzona"
     },
     {
       "id": "GenerujZerowy",
       "typ": "pole",
       "rozdzial": "kiedy",
       "pole": "GenerujZerowy",
-      "pytanie": "Czy pokazywać składnik na pasku także wtedy, gdy wynosi 0 zł?"
+      "pytanie": "Czy pokazywać składnik na pasku także wtedy, gdy wynosi 0 zł?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Aktualizacja",
@@ -1080,7 +1095,8 @@
       "typ": "pole",
       "rozdzial": "kiedy",
       "pole": "Zerowanie",
-      "pytanie": "Czy po wypłacie zerować kwotę lub liczbę godzin, żeby w kolejnym miesiącu wpisać je od nowa?"
+      "pytanie": "Czy po wypłacie zerować kwotę lub liczbę godzin, żeby w kolejnym miesiącu wpisać je od nowa?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "choroba",
@@ -1590,7 +1606,8 @@
       "rozdzial": "urlopZasilki",
       "pole": "Nieobecnosci.WahaniaWysokosci",
       "pytanie": "Czy wysokość składnika mocno zmienia się z miesiąca na miesiąc (np. prowizja)?",
-      "opis": "Tak – do wynagrodzenia urlopowego liczy się średnia z 12 miesięcy zamiast z 3."
+      "opis": "Tak – do wynagrodzenia urlopowego liczy się średnia z 12 miesięcy zamiast z 3.",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Nieobecnosci.Urlop.WspolczynnikTyp",
@@ -1686,7 +1703,8 @@
       "typ": "pole",
       "rozdzial": "urlopZasilki",
       "pole": "Nieobecnosci.DoMinimalnej",
-      "pytanie": "Czy pracownik zachowuje składnik w czasie zasiłku (liczy się przy porównaniu podstawy zasiłku z płacą minimalną)?"
+      "pytanie": "Czy pracownik zachowuje składnik w czasie zasiłku (liczy się przy porównaniu podstawy zasiłku z płacą minimalną)?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Nieobecnosci.WliczanieDoPodstawyChorobowego",
@@ -1701,7 +1719,8 @@
       "rozdzial": "urlopZasilki",
       "pole": "Nieobecnosci.OdMiesiaca",
       "pytanie": "Od którego miesiąca zaczyna się okres, za który należy się składnik?",
-      "opis": "Dla składników za kwartał lub rok, np. premia roczna za marzec–luty: marzec."
+      "opis": "Dla składników za kwartał lub rok, np. premia roczna za marzec–luty: marzec.",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Nieobecnosci.DefinicjaLimitu",
@@ -1998,14 +2017,16 @@
       "etykiety": {
         "true": "Tak – zwiększa kwotę do wypłaty",
         "false": "Nie – to świadczenie w naturze (np. bony, pakiet), liczy się tylko do podatku i składek"
-      }
+      },
+      "zestaw": "rozszerzona"
     },
     {
       "id": "ZawszeGotowka",
       "typ": "pole",
       "rozdzial": "wyplata",
       "pole": "ZawszeGotowka",
-      "pytanie": "Czy składnik zawsze wypłacać gotówką, nawet gdy pracownik ma konto?"
+      "pytanie": "Czy składnik zawsze wypłacać gotówką, nawet gdy pracownik ma konto?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Rozliczenie.Ewidencja",
@@ -2019,7 +2040,8 @@
       "typ": "pole",
       "rozdzial": "wyplata",
       "pole": "Rozliczenie.Odbiorca",
-      "pytanie": "Komu przekazywana jest potrącona kwota (np. ubezpieczyciel, związek zawodowy)?"
+      "pytanie": "Komu przekazywana jest potrącona kwota (np. ubezpieczyciel, związek zawodowy)?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Rozliczenie.RachunekOdbiorcy",
@@ -2068,14 +2090,16 @@
       "typ": "pole",
       "rozdzial": "wyplata",
       "pole": "Zajecie.Alimenty",
-      "pytanie": "Jak składnik podlega potrąceniom alimentacyjnym?"
+      "pytanie": "Jak składnik podlega potrąceniom alimentacyjnym?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Zajecie.Komornik",
       "typ": "pole",
       "rozdzial": "wyplata",
       "pole": "Zajecie.Komornik",
-      "pytanie": "Jak składnik podlega zajęciom komorniczym (innym niż alimenty)?"
+      "pytanie": "Jak składnik podlega zajęciom komorniczym (innym niż alimenty)?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Zajecie.Pozostale",
@@ -2117,7 +2141,8 @@
       "typ": "pole",
       "rozdzial": "wyplata",
       "pole": "WliczajDoPodstawyWynagrodzeniaZaNadgodziny",
-      "pytanie": "Czy składnik wlicza się do stawki za nadgodziny?"
+      "pytanie": "Czy składnik wlicza się do stawki za nadgodziny?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "GUS.Kategoria",
@@ -2131,7 +2156,8 @@
       "typ": "pole",
       "rozdzial": "sprawozdania",
       "pole": "GUS.RodzajSkladnikaWynagrodzeniaGus",
-      "pytanie": "Do której kolumny sprawozdania GUS Z-12 trafia składnik?"
+      "pytanie": "Do której kolumny sprawozdania GUS Z-12 trafia składnik?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "GUS.ZaliczajDoCzasuPracy",
@@ -2159,7 +2185,8 @@
       "typ": "pole",
       "rozdzial": "sprawozdania",
       "pole": "Dodatkowe.LukaPlacowa",
-      "pytanie": "Jak uwzględniać składnik w wyliczeniu luki płacowej?"
+      "pytanie": "Jak uwzględniać składnik w wyliczeniu luki płacowej?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Dodatkowe.RefundowanyInfo",
@@ -2173,14 +2200,16 @@
       "typ": "pole",
       "rozdzial": "sprawozdania",
       "pole": "Dodatkowe.DodatekDoEtatu",
-      "pytanie": "Czy składnik wynika z umowy o pracę (ma być na wydruku umowy)?"
+      "pytanie": "Czy składnik wynika z umowy o pracę (ma być na wydruku umowy)?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "PulpitPracownika",
       "typ": "pole",
       "rozdzial": "sprawozdania",
       "pole": "PulpitPracownika",
-      "pytanie": "Czy pracownik ma widzieć składnik w Pulpicie pracownika?"
+      "pytanie": "Czy pracownik ma widzieć składnik w Pulpicie pracownika?",
+      "zestaw": "rozszerzona"
     },
     {
       "id": "Algorytm.JakEkwiwalent",
@@ -2350,14 +2379,16 @@
       "rozdzial": "techniczne",
       "pole": "Algorytm.Priorytet",
       "pytanie": "W jakiej kolejności liczyć składnik w wypłacie?",
-      "opis": "Składnik liczony od innych musi mieć większą liczbę niż one. 0 – najwcześniej."
+      "opis": "Składnik liczony od innych musi mieć większą liczbę niż one. 0 – najwcześniej.",
+      "tylkoWdrozeniowiec": true
     },
     {
       "id": "Deklaracje.Priorytet",
       "typ": "pole",
       "rozdzial": "techniczne",
       "pole": "Deklaracje.Priorytet",
-      "pytanie": "Kolejność przypisywania podatku i składek do składników wypłaty"
+      "pytanie": "Kolejność przypisywania podatku i składek do składników wypłaty",
+      "tylkoWdrozeniowiec": true
     },
     {
       "id": "Kolejnosc",
@@ -2365,28 +2396,32 @@
       "rozdzial": "techniczne",
       "pole": "Kolejnosc",
       "pytanie": "Miejsce składnika na pasku i liście płac",
-      "opis": "0 – program ustali sam."
+      "opis": "0 – program ustali sam.",
+      "tylkoWdrozeniowiec": true
     },
     {
       "id": "Zaokraglenie.Precyzja",
       "typ": "pole",
       "rozdzial": "techniczne",
       "pole": "Zaokraglenie.Precyzja",
-      "pytanie": "Do ilu zaokrąglać kwotę składnika?"
+      "pytanie": "Do ilu zaokrąglać kwotę składnika?",
+      "tylkoWdrozeniowiec": true
     },
     {
       "id": "Zaokraglenie.Sposob",
       "typ": "pole",
       "rozdzial": "techniczne",
       "pole": "Zaokraglenie.Sposob",
-      "pytanie": "Jak zaokrąglać?"
+      "pytanie": "Jak zaokrąglać?",
+      "tylkoWdrozeniowiec": true
     },
     {
       "id": "Zaokraglenie.Podstawa",
       "typ": "pole",
       "rozdzial": "techniczne",
       "pole": "Zaokraglenie.Podstawa",
-      "pytanie": "Czy zaokrąglać do grosza także podstawę?"
+      "pytanie": "Czy zaokrąglać do grosza także podstawę?",
+      "tylkoWdrozeniowiec": true
     },
     {
       "typ": "pola",
@@ -2401,14 +2436,16 @@
         "Algorytm.DodWspolczynnik"
       ],
       "pytanie": "Jak nazwać parametry składnika w kartotece pracownika?",
-      "opis": "Te nazwy kadry zobaczą, wpisując pracownikowi np. kwotę lub procent."
+      "opis": "Te nazwy kadry zobaczą, wpisując pracownikowi np. kwotę lub procent.",
+      "tylkoWdrozeniowiec": true
     },
     {
       "id": "Algorytm.ElPodglad",
       "typ": "pole",
       "rozdzial": "techniczne",
       "pole": "Algorytm.ElPodglad",
-      "pytanie": "Czy parametry składnika na wypłacie mają być tylko do podglądu?"
+      "pytanie": "Czy parametry składnika na wypłacie mają być tylko do podglądu?",
+      "tylkoWdrozeniowiec": true
     },
     {
       "typ": "pola",
@@ -2430,7 +2467,8 @@
         "Algorytm.ElRazemCzas",
         "Algorytm.ElRazemDni"
       ],
-      "pytanie": "Jak nazwać parametry składnika na wypłacie (pasku)?"
+      "pytanie": "Jak nazwać parametry składnika na wypłacie (pasku)?",
+      "tylkoWdrozeniowiec": true
     },
     {
       "id": "uwagi",
@@ -2439,5 +2477,10 @@
       "pytanie": "Czy jest coś jeszcze, co wdrożeniowiec powinien wiedzieć?",
       "opis": "Zasady z regulaminu, wyjątki, wątpliwości. Możesz zostawić puste."
     }
-  ]
+  ],
+  "zestawy": {
+    "podstawowa": "Pytania ogólne z wersji 1.0 (kilkanaście pytań) – szczegóły dopiero po odpowiedzi „Inaczej”.",
+    "rozszerzona": "Podstawowa + pytania o ustawienia, które kadrowa zna z praktyki (lista płac, korekty, potrącenia, pulpit, GUS).",
+    "pelna": "Wszystkie pytania poza technicznymi (tylko wdrożeniowiec)."
+  }
 }

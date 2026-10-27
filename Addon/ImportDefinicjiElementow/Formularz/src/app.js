@@ -58,6 +58,7 @@
 
   /** Stan pytania dla klienta: pytanie o pola – stan pierwszego pola, pozostałe – konfiguracja.pytania (domyślnie klient odpowiada). */
   function stanPytania(p, konf) {
+    if (p.tylkoWdrozeniowiec) return 'ukryte';
     var pola = AN.polaPytania(p);
     if (pola.length) return konf.pola[pola[0]] || 'ukryte';
     return (konf.pytania || {})[p.id] || 'edycja';
@@ -79,17 +80,31 @@
     d.ankieta.wersja = ANKIETA.wersja;
   }
 
-  /** Czy klient widzi pytanie: warunki ankiety, konfiguracja wdrożeniowca, a pytanie o pola – gdy któreś pole jest aktywne. */
-  function pokazanePytanie(p, d, k) {
-    if (KLIENT && stanPytania(p, KONF) === 'ukryte') return false;
+  /**
+   * Czy pokazać pytanie: warunki ankiety, konfiguracja wdrożeniowca, a pytanie o pola – gdy któreś pole jest aktywne.
+   * Pytanie szczegółowe ukryte przez wdrożeniowca klient i tak zobaczy, gdy odpowiedź „Inaczej” wskazała jego pola.
+   */
+  function pokazanePytanie(p, d, k, w) {
     var pola = AN.polaPytania(p);
+    if (KLIENT && stanPytania(p, KONF) === 'ukryte'
+      && !(!p.tylkoWdrozeniowiec && AN.szczegolowe(p) && pola.some(function (s) { return w.szczegoly.indexOf(s) >= 0; }))) return false;
     return !pola.length || pola.some(function (s) { return k.stan(s).aktywne; });
   }
 
-  /** Rozdziały z pytaniami do pokazania: [{ r, pytania }]. */
+  /**
+   * Rozdziały z pytaniami do pokazania: [{ r, pytania }]. Pytanie szczegółowe o pola ustawiane przez pokazane pytanie ogólne
+   * pojawia się dopiero po „Inaczej” albo gdy pole już zmieniono – inaczej klient odpowiadałby dwa razy na to samo.
+   */
   function rozdzialyAnkiety(d) {
     var k = new W.Kontekst(SCHEMAT, d, stan.ustawienia);
-    var widoczne = AN.widocznePytania(ANKIETA, d.ankieta.odpowiedzi).filter(function (p) { return pokazanePytanie(p, d, k); });
+    var w = wynikAnkiety(d);
+    var reczne = d.ankieta.reczne || {};
+    var kandydaci = AN.widocznePytania(ANKIETA, d.ankieta.odpowiedzi).filter(function (p) { return pokazanePytanie(p, d, k, w); });
+    var zOgolnych = {};
+    kandydaci.forEach(function (p) { if (AN.typ(p) === 'wybor') AN.polaUstawiane(p).forEach(function (s) { zOgolnych[s] = true; }); });
+    var widoczne = kandydaci.filter(function (p) {
+      return !AN.szczegolowe(p) || AN.polaPytania(p).some(function (s) { return !zOgolnych[s] || reczne[s] || w.szczegoly.indexOf(s) >= 0; });
+    });
     return ANKIETA.rozdzialy.map(function (r) {
       return { r: r, pytania: widoczne.filter(function (p) { return p.rozdzial === r.id; }) };
     }).filter(function (x) { return x.pytania.length; });
@@ -104,6 +119,49 @@
 
   function tylkoDoWgladu(p) {
     return KLIENT && stanPytania(p, KONF) === 'wglad';
+  }
+
+  /** Pytanie o pola „Klient musi odpowiedzieć”, którego klient jeszcze nie potwierdził (podpowiedź programu się nie liczy). */
+  function doPotwierdzenia(p, d) {
+    return KLIENT && stanPytania(p, KONF) === 'wymagane' && AN.polaPytania(p).length > 0
+      && d.ankieta.odpowiedzi[p.id] === undefined && !AN.polaPytania(p).some(function (s) { return d.ankieta.reczne[s]; });
+  }
+
+  function niepotwierdzone(d) {
+    var wynik = [];
+    rozdzialyAnkiety(d).forEach(function (x) { x.pytania.forEach(function (p) { if (doPotwierdzenia(p, d)) wynik.push(p); }); });
+    return wynik;
+  }
+
+  /**
+   * Zmiana odpowiedzi ogólnej: pola zmienione wcześniej przez klienta, którym nowa odpowiedź nadałaby inną wartość.
+   * Zwraca ścieżki (pusta lista = brak konfliktu).
+   */
+  function konfliktyOdpowiedzi(d, p) {
+    var bez = AN.zastosuj(ANKIETA, SCHEMAT, { wartosci: d.wartosci, ankieta: { odpowiedzi: d.ankieta.odpowiedzi, reczne: {} } });
+    return Object.keys(d.ankieta.reczne || {}).filter(function (s) {
+      return bez.pochodzenie[s] === p.id && JSON.stringify(bez.wartosci[s]) !== JSON.stringify(d.wartosci[s]);
+    });
+  }
+
+  function wybierzOdpowiedz(d, p, id) {
+    var odp = d.ankieta.odpowiedzi;
+    var poprzednia = odp[p.id];
+    odp[p.id] = id;
+    var konflikty = poprzednia === id ? [] : konfliktyOdpowiedzi(d, p);
+    if (!konflikty.length) { przelicz(d); zmieniono(true); return; }
+    zapytaj('Zmieniona odpowiedź a Twoje wcześniejsze ustawienia', [
+      'Nowa odpowiedź na „' + p.pytanie + '” ustawia inaczej ' + konflikty.length + (konflikty.length === 1 ? ' pole ustawione wcześniej ręcznie:' : ' pola ustawione wcześniej ręcznie:'),
+      el('ul', null, konflikty.map(function (s) {
+        var pole = SCHEMAT.pola[s];
+        var q = ANKIETA.pytania.filter(function (x) { return AN.polaPytania(x).indexOf(s) >= 0; })[0];
+        return el('li', { tekst: (q ? q.pytanie : pole.etykieta) + ' – teraz: ' + (wartoscTekst(s, d.wartosci[s]) || 'puste') });
+      })),
+      'Zastosować nową odpowiedź także do tych ustawień?'
+    ], [{ tekst: 'Zostaw moje ustawienia', wartosc: 'zostaw' }, { tekst: 'Zastosuj nową odpowiedź', wartosc: 'zastosuj', glowny: true }]).then(function (o) {
+      if (o === 'zastosuj') konflikty.forEach(function (s) { delete d.ankieta.reczne[s]; });
+      przelicz(d); zmieniono(true);
+    });
   }
 
   /** Odpowiedzi ankiety ustawiają wartości definicji (szablon → odpowiedzi → pola z ankiety → zmiany ręczne). */
@@ -149,6 +207,7 @@
     var ul = el('ul', { klasa: 'ankieta-uwagi' });
     var tekst = function (id) { return '„' + pytanieAnkiety(id).pytanie + '”'; };
     w.brak.forEach(function (id) { ul.appendChild(el('li', { klasa: 'komunikat blad', tekst: 'Brak odpowiedzi: ' + tekst(id) })); });
+    niepotwierdzone(d).forEach(function (p) { ul.appendChild(el('li', { klasa: 'komunikat blad', tekst: 'Do potwierdzenia: ' + tekst(p.id) })); });
     w.nieWiem.forEach(function (id) { ul.appendChild(el('li', { tekst: 'Do ustalenia z wdrożeniowcem: ' + tekst(id) })); });
     w.doPotwierdzenia.forEach(function (id) { ul.appendChild(el('li', { tekst: 'Wdrożeniowiec potwierdzi zgodność z przepisami: ' + tekst(id) })); });
     w.wdrozeniowiec.forEach(function (x) { ul.appendChild(el('li', { tekst: 'Dla wdrożeniowca: ' + x.powod })); });
@@ -173,7 +232,7 @@
     opcje.forEach(function (o) {
       var wyb = wybrana === o.id;
       lista.appendChild(el('label', { klasa: 'odpowiedz' + (wyb ? ' wybrana' : '') + (o.nieWiem ? ' nie-wiem' : '') + (wylaczone ? ' wylaczona' : '') },
-        el('input', { type: 'radio', name: nazwa, value: o.id, checked: wyb, disabled: wylaczone, 'data-klucz': nazwa + '_' + o.id, onchange: function () { wybierz(o.id); } }),
+        el('input', { type: 'radio', name: nazwa, value: o.id, checked: wyb, disabled: wylaczone, 'data-klucz': nazwa + '_' + o.id, onclick: function () { if (!wylaczone) wybierz(o.id); } }),
         el('span', null, el('strong', { tekst: o.etykieta }), o.opis ? el('small', { tekst: o.opis }) : null)));
     });
     return lista;
@@ -187,7 +246,8 @@
     var typ = AN.typ(p);
     var wglad = tylkoDoWgladu(p);
     var mozeNieWiem = !wglad && p.nieWiem !== false && !(KLIENT && stanPytania(p, KONF) === 'wymagane');
-    var karta = el('div', { klasa: 'pytanie' + (wglad ? ' wglad' : ''), 'data-pytanie': p.id });
+    var potwierdz = doPotwierdzenia(p, d);
+    var karta = el('div', { klasa: 'pytanie' + (wglad ? ' wglad' : '') + (potwierdz ? ' do-potwierdzenia' : ''), 'data-pytanie': p.id });
     var naglowek = el('div', { klasa: 'pytanie-naglowek' }, el('h3', { tekst: p.pytanie }));
     if (typ === 'pole') naglowek.appendChild(el('button', { type: 'button', klasa: 'pomoc', tekst: '?', title: 'Więcej o tym pytaniu', onclick: function () { pokazPomoc(p.pole, k); } }));
     karta.appendChild(naglowek);
@@ -196,7 +256,7 @@
     if (typ === 'wybor') {
       var opcje = p.odpowiedzi.slice();
       if (mozeNieWiem) opcje.push(OPCJA_NIE_WIEM);
-      karta.appendChild(kafelki('odp_' + p.id, p.pytanie, opcje, odp[p.id], function (id) { odp[p.id] = id; przelicz(d); zmieniono(true); }, wglad));
+      karta.appendChild(kafelki('odp_' + p.id, p.pytanie, opcje, odp[p.id], function (id) { wybierzOdpowiedz(d, p, id); }, wglad));
     } else if (typ === 'uwagi') {
       karta.appendChild(el('div', { klasa: 'kontrolka' }, el('textarea', {
         'data-klucz': '__uwagi', value: d.uwagi || '', 'aria-label': p.pytanie,
@@ -210,6 +270,12 @@
           if (k.stan(s).aktywne) karta.appendChild(renderPole(d, k, s, typ === 'pole' ? { kafelki: true, bezEtykiety: true, etykiety: p.etykiety, wylacz: wglad } : { wylacz: wglad }));
         });
       } finally { wKreatorze = false; }
+      if (potwierdz) karta.appendChild(el('div', { klasa: 'potwierdzenie' },
+        el('span', { tekst: 'Podpowiedź programu – sprawdź ją. Jeśli jest dobra, potwierdź; jeśli nie, zmień odpowiedź.' }),
+        el('button', { type: 'button', 'data-klucz': 'potwierdz_' + p.id, tekst: 'Potwierdzam', onclick: function () {
+          AN.polaPytania(p).forEach(function (s) { if (k.stan(s).aktywne) d.ankieta.reczne[s] = true; });
+          zmieniono(true);
+        } })));
       if (mozeNieWiem) karta.appendChild(el('label', { klasa: 'bool nie-wiem-pole' }, el('input', {
         type: 'checkbox', checked: nieWiem, 'data-klucz': 'niewiem_' + p.id,
         onchange: function (e) { if (e.target.checked) odp[p.id] = AN.NIE_WIEM; else delete odp[p.id]; zmieniono(true); }
@@ -251,6 +317,7 @@
       gotowe = function () {
         if (x.pytania.some(function (p) { return wynik.brak.indexOf(p.id) >= 0; })) return 'Odpowiedz na wszystkie pytania (możesz wybrać „Nie wiem”).';
         if ((bledy()[d.id] || []).some(function (b) { return b.poziom === 'blad' && pola[b.sciezka]; })) return 'Uzupełnij pola zaznaczone na czerwono.';
+        if (x.pytania.some(function (p) { return doPotwierdzenia(p, d); })) return 'Potwierdź albo zmień odpowiedzi oznaczone „Podpowiedź programu”.';
         return true;
       };
     }
@@ -267,10 +334,11 @@
             if (g !== true) { odswiezKomunikaty(); info.textContent = g; return; }
             a.krok++; zmieniono(true); window.scrollTo(0, 0);
           } })
-        : el('button', { type: 'button', klasa: 'glowny', id: 'btnZakonczAnkiete', tekst: 'Zakończ ankietę', disabled: wynik.brak.length > 0,
+        : el('button', { type: 'button', klasa: 'glowny', id: 'btnZakonczAnkiete', tekst: 'Zakończ ankietę', disabled: wynik.brak.length > 0 || niepotwierdzone(d).length > 0,
           onclick: function () { a.zakonczona = true; stan.zakladka = null; zmieniono(true); } })));
     box.appendChild(info);
     if (!x && wynik.brak.length) info.textContent = 'Odpowiedz na wszystkie pytania (możesz wybrać „Nie wiem”).';
+    else if (!x && niepotwierdzone(d).length) info.textContent = 'Potwierdź albo zmień odpowiedzi oznaczone „Podpowiedź programu”.';
     kont.appendChild(box);
   }
 
@@ -1110,6 +1178,7 @@
   }
 
   function ustawStanPytania(p, v) {
+    if (p.tylkoWdrozeniowiec) return;
     var pola = AN.polaPytania(p);
     if (pola.length) pola.forEach(function (s) { ustawDlaKlienta(s, v); });
     else if (v === 'edycja') delete stan.klient.pytania[p.id];
@@ -1124,9 +1193,24 @@
     ANKIETA.pytania.forEach(function (p) { licz[stanPytania(p, kl)]++; });
     tresc.appendChild(el('p', { klasa: 'opis-zakladki', tekst: 'Klient przechodzi ankietę rozdział po rozdziale i widzi tylko pytania, które tu pokażesz. Pytania ogólne (z kafelkami odpowiedzi) ustawiają naraz wiele pól – na pytania ukryte odpowiadasz sam na definicjach przed wysłaniem formularza. Pytanie o pole pojawi się klientowi tylko wtedy, gdy pole ma znaczenie przy jego wcześniejszych odpowiedziach. „Klient musi odpowiedzieć” = bez opcji „Nie wiem” (pole wymagane).' }));
     tresc.appendChild(el('div', { klasa: 'konf-liczniki', tekst: 'Pytań: ' + ANKIETA.pytania.length + ' · ' + STANY_PYTAN.map(function (x) { return x.etykieta + ': ' + licz[x.id]; }).join(' · ') }));
+    // zestaw: pytania pokazywane klientowi (reszta ukryta); „musi odpowiedzieć” i „do wglądu” zostają
+    var zestaw = function (nazwa) {
+      ANKIETA.pytania.forEach(function (p) {
+        var pokaz = !AN.szczegolowe(p) || nazwa === 'pelna' || (nazwa === 'rozszerzona' && p.zestaw === 'rozszerzona');
+        var obecny = stanPytania(p, kl);
+        ustawStanPytania(p, !pokaz ? 'ukryte' : obecny === 'wymagane' || obecny === 'wglad' ? obecny : 'edycja');
+      });
+      odswiez();
+    };
+    tresc.appendChild(el('div', { klasa: 'konf-zestawy' }, el('span', { tekst: 'Zestaw pytań:' }),
+      [['podstawowa', 'Podstawowy'], ['rozszerzona', 'Rozszerzony'], ['pelna', 'Pełny']].map(function (z) {
+        return el('button', { type: 'button', 'data-zestaw': z[0], tekst: z[1], title: ANKIETA.zestawy[z[0]], onclick: function () { zestaw(z[0]); } });
+      }),
+      el('small', { tekst: 'Ustawia stany pytań – potem możesz je zmieniać pojedynczo. Pytania szczegółowe o to, co ustawia pytanie ogólne, klient zobaczy i tak dopiero po odpowiedzi „Inaczej”.' })));
     var opisTypu = function (p) {
       var pola = AN.polaPytania(p);
-      if (pola.length) return 'Pole: ' + pola.map(function (s) { return SCHEMAT.pola[s].etykieta; }).join(', ');
+      var zest = p.zestaw === 'rozszerzona' ? ' · zestaw rozszerzony' : '';
+      if (pola.length) return 'Pole: ' + pola.map(function (s) { return SCHEMAT.pola[s].etykieta; }).join(', ') + zest;
       return AN.typ(p) === 'uwagi' ? 'Uwagi dla wdrożeniowca' : 'Pytanie ogólne – ustawia kilka pól naraz';
     };
     ANKIETA.rozdzialy.forEach(function (r) {
@@ -1144,7 +1228,9 @@
           el('div', { klasa: 'etykieta' },
             el('label', null, p.pytanie, el('small', { klasa: 'konf-typ', tekst: opisTypu(p) })),
             p.pole ? el('button', { type: 'button', klasa: 'pomoc', tekst: '?', title: 'Opis pola', onclick: function () { pokazPomoc(p.pole, new W.Kontekst(SCHEMAT, { wartosci: {} }, stan.ustawienia)); } }) : null),
-          el('div', { klasa: 'kontrolka' }, selectStanu(s, function (v) { ustawStanPytania(p, v); odswiez(); }, p.pytanie, STANY_PYTAN))));
+          el('div', { klasa: 'kontrolka' }, p.tylkoWdrozeniowiec
+            ? el('span', { klasa: 'konf-typ', tekst: 'Tylko wdrożeniowiec – klient tego pytania nie widzi' })
+            : selectStanu(s, function (v) { ustawStanPytania(p, v); odswiez(); }, p.pytanie, STANY_PYTAN))));
       });
       tresc.appendChild(fs);
     });
