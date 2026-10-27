@@ -23,10 +23,10 @@ public class CechaMetryczki
     public string Opis { get; init; }
     /// <summary>Kolumna "Zakres danych" metryczki (na widokach zamiast opisu).</summary>
     public string ZakresDanych { get; init; }
-    /// <summary>Tekst wartości; null = nieuzupełniona (cecha nieustawiona, liczba 0, pusty tekst, pusta data/miesiąc); Bool: Tak/Nie.</summary>
+    /// <summary>Tekst wartości; Bool zawsze Tak/Nie (nieustawiony = Nie); null = brak (liczba 0, pusty tekst, pusta data/miesiąc).</summary>
     public string Wartosc { get; init; }
-    /// <summary>Jedyny warunek "uzupełniona" - używa go karta i podsumowanie kafelka.</summary>
-    public bool Uzupelniona => Wartosc != null;
+    /// <summary>Jedyny warunek "uzupełniona" (wartość zapisana) - używa go karta i podsumowanie kafelka.</summary>
+    public bool Uzupelniona { get; init; }
 }
 
 /// <summary>
@@ -46,17 +46,22 @@ public class MetryczkaKlienta
         session.Global.Table.FeatureDefinitions.Where(fd => fd.Name.StartsWith(DefinicjeCech.Prefiks, StringComparison.Ordinal));
 
     public static List<CechaMetryczki> Cechy(Session session) => DefinicjeTST(session)
-        .Select(fd => new CechaMetryczki {
-            Kategoria = string.IsNullOrEmpty(fd.Category) ? "Inne" : fd.Category,
-            Nazwa = fd.Name,
-            Opis = fd.Description,
-            ZakresDanych = DefinicjeCech.Etykieta(fd.Name) ?? fd.Description,
-            Wartosc = Tekst(session.Global.Features, fd.Name),
+        .Select(fd => {
+            string tekst = Tekst(session.Global.Features, fd.Name);
+            return new CechaMetryczki {
+                Kategoria = string.IsNullOrEmpty(fd.Category) ? "Inne" : fd.Category,
+                Nazwa = fd.Name,
+                Opis = fd.Description,
+                ZakresDanych = DefinicjeCech.Etykieta(fd.Name) ?? fd.Description,
+                // Nieustawiony Tak/Nie pokazujemy jako Nie (decyzja 27.10), ale w liczniku zostaje nieuzupełniony.
+                Wartosc = tekst ?? (fd.TypeNumber == FeatureTypeNumber.Bool ? "Nie" : null),
+                Uzupelniona = tekst != null,
+            };
         })
         .ToList();
 
-    // Nieustawiona cecha nie ma wiersza w Features (Exists = false) - brak; odznaczony Bool zostaje zapisany jako 0 - Nie.
-    // Liczba 0 to też brak (decyzja 27.10).
+    // Nieustawiona cecha nie ma wiersza w Features (Exists = false); odznaczony Bool zostaje zapisany jako 0 - Nie.
+    // Liczba 0 to brak (decyzja 27.10).
     static string Tekst(FeatureCollection cechy, string nazwa) => !cechy.Exists(nazwa) ? null : cechy[nazwa] switch {
         bool b => b ? "Tak" : "Nie",
         int i when i == 0 => null,

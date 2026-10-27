@@ -26,9 +26,9 @@ Cechy globalne z metryczki klienta (`Pobrane/metryczka.xlsx`, 42 pozycje) z pref
   arkusza, z plakietkami ✓ Tak / Nie / brak. Budowana przy każdym odczycie z definicji `TST_*`, więc nowa cecha
   dodana w Opcjach pojawia się sama. Przeglądarka enova nie obsługuje zmiennych CSS ani atrybutu `style` –
   kolory tylko w klasach `<style>`.
-- „Brak” = cecha nieustawiona (brak wiersza w `Features`, `FeatureCollection.Exists` = false), liczba 0, pusty tekst lub pusta
-  data/miesiąc. Odznaczony Tak/Nie zostaje zapisany jako 0 → „Nie” (liczy się jako uzupełnione). Warunek w jednym miejscu:
-  `CechaMetryczki.Uzupelniona`.
+- Tak/Nie zawsze jako „Tak”/„Nie” – także nieustawiony (decyzja 27.10). „Brak” = liczba 0, pusty tekst, pusta data/miesiąc.
+  Licznik „Uzupełniono X z Y” liczy tylko wartości zapisane (`FeatureCollection.Exists`): odznaczony Tak/Nie (wiersz z 0) – tak,
+  nigdy nieustawiony – nie, mimo że pokazuje „Nie”. Warunek w jednym miejscu: `CechaMetryczki.Uzupelniona`.
 - Kafelek i karta czytają cechy w świeżej sesji (`MetryczkaKlienta.CechyAktualne`) – sesja ekranu modułu/okna nie widzi
   zmian z Opcji ani skutków czynności Utwórz/Usuń.
 - „Usuń cechy testowe” sprząta też pozostałości po usuniętych funkcjach: aktualności „Metryczka klienta – …” i węzeł
