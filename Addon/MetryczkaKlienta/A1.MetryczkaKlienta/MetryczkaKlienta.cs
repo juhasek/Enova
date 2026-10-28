@@ -11,6 +11,8 @@ using Soneta.Types;
 // Sekcja na ekranie modułu Kadry i płace to FolderMenu-KadryIPlace.form.xml + MetryczkaKafelekExtender.
 [assembly: FolderView("Ogólne/Metryczka klienta (TST_)",
     ObjectType = typeof(MetryczkaKlienta),
+    // Wymagane przez klienta okienkowego: ObjectView robi CalcObjectPages(...).FirstOrDefault() bez sprawdzenia null.
+    ObjectPage = "MetryczkaKlienta.Metryczka.pageform.xml",
     Description = "Cechy globalne TST_ z metryczki klienta: podgląd, tworzenie i usuwanie definicji")]
 
 namespace A1.Metryczka;
