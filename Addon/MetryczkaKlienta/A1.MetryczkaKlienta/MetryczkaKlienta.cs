@@ -35,12 +35,18 @@ public class CechaMetryczki
 /// </summary>
 public class MetryczkaKlienta
 {
+    // Klient okienkowy tworzy obiekt folderu konstruktorem bezparametrowym i wstrzykuje [Context] (jak LogFolder).
+    public MetryczkaKlienta()
+    {
+    }
+
     public MetryczkaKlienta(Session session)
     {
         Session = session;
     }
 
-    public Session Session { get; }
+    [Context]
+    public Session Session { get; set; }
 
     public static IEnumerable<FeatureDefinition> DefinicjeTST(Session session) =>
         session.Global.Table.FeatureDefinitions.Where(fd => fd.Name.StartsWith(DefinicjeCech.Prefiks, StringComparison.Ordinal));
