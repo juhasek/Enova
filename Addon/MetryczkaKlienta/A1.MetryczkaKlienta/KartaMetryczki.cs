@@ -25,8 +25,9 @@ static class KartaMetryczki
 .hero{display:flex;flex-wrap:wrap;align-items:center;background:linear-gradient(120deg,#00704a,#0a8f63);color:#fff;border-radius:14px;padding:18px 22px}
 .hero h1{margin:0;font-size:22px;font-weight:600}
 .sub{opacity:.85;font-size:13px}
-.kpis{display:flex;flex-basis:100%;margin-top:12px}
-.kpi{flex:0 0 auto;margin-right:10px;background:rgba(255,255,255,.14);border-radius:10px;padding:8px 14px;min-width:96px}
+.kpis{flex-basis:100%;margin-top:12px}
+.kpis table{width:auto;border-collapse:separate;border-spacing:10px 0;margin-left:-10px}
+.kpi{width:auto;background:rgba(255,255,255,.14);border-radius:10px;padding:8px 14px;min-width:96px;text-align:left;vertical-align:top}
 .kpi b{display:block;font-size:20px;font-weight:600}
 .kpi span{font-size:11px;text-transform:uppercase;letter-spacing:.04em;opacity:.85}
 .prog{flex-basis:100%;display:flex;align-items:center;margin-top:16px;font-size:12px}
@@ -70,9 +71,9 @@ static class KartaMetryczki
 
         sb.Append($"<div class=\"hero\"><div><h1>{W("NazwaKlienta") ?? "Klient"}</h1><div class=\"sub\">")
           .Append($"Nr klienta {W("NrKlienta") ?? "<i>brak</i>"} · baza SQL: {W("NazwaBazySQL") ?? "<i>brak</i>"}")
-          .Append($" · JG SAP: {W("JGSAP") ?? "<i>brak</i>"}</div></div><div class=\"kpis\">")
+          .Append($" · JG SAP: {W("JGSAP") ?? "<i>brak</i>"}</div></div><div class=\"kpis\"><table><tr>")
           .Append(Kpi(W("FTE"), "FTE")).Append(Kpi(W("LiczbaKartotek"), "Kartotek")).Append(Kpi(W("Specjalista"), "Specjalista"))
-          .Append($"</div><div class=\"prog\">Uzupełniono {uzupelnione} z {cechy.Count} pozycji <div class=\"bar\"><i></i></div> {procent}%</div></div>");
+          .Append($"</tr></table></div><div class=\"prog\">Uzupełniono {uzupelnione} z {cechy.Count} pozycji <div class=\"bar\"><i></i></div> {procent}%</div></div>");
 
         sb.Append("<div class=\"grid\">");
         for (int i = 0; i < kategorie.Count; i++)
@@ -88,7 +89,7 @@ static class KartaMetryczki
         return sb.ToString();
     }
 
-    static string Kpi(string wartosc, string opis) => $"<div class=\"kpi\"><b>{wartosc ?? "–"}</b><span>{opis}</span></div>";
+    static string Kpi(string wartosc, string opis) => $"<td class=\"kpi\"><b>{wartosc ?? "–"}</b><span>{opis}</span></td>";
 
     static string Wartosc(string v) => v switch {
         null => "<span class=\"brak\">brak</span>",
