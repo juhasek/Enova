@@ -35,7 +35,7 @@ Orzeczenia: kod używa `OrzeczeniaPFRON`/`OrzeczeniaZUS` z enova **2610** — w 
 ## Widok
 
 Kolumny: Kod, Nazwisko i imię, Wydział, Najbliższy termin, Czego dotyczy, Dni + kolumna na każdy termin.
-Sortowanie wg `Features.DniDoTerminu` (pilne na górze, bez terminu na dole). Kolor wiersza (`Appearance`):
+Sortowanie po Kod — sortowanie po cesze z algorytmem enova blokuje komunikatem „kliknij TUTAJ” (posortować można ręcznie kolumną Dni). Kolor wiersza (`Appearance`):
 czerwony < 0, pomarańczowy 0–7, żółty 8–30; 9999 wyszarzone. Filtry: standardowe filtry listy Pracownicy.
 Strona startowa (web/SonetaFrame): Ulubione → „Startowy” = ten widok.
 

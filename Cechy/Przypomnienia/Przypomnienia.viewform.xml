@@ -6,7 +6,8 @@
     <Field CaptionHtml="Okres" Width="22" EditValue="{KadryPracownicyViewInfo+PrParams.Okres}" Important="true" />
     <Field CaptionHtml="Data" Width="15" EditValue="{KadryPracownicyViewInfo+PrParams.Aktualny}" Important="true" />
   </Flow>
-  <Grid Name="List" OrderBy="Features.DniDoTerminu" AutoColumnWidthState="Off" PreviewControlLocation="0">
+  <!-- OrderBy po cesze z algorytmem = komunikat "kliknij TUTAJ" zamiast listy, więc sortowanie po Kod -->
+  <Grid Name="List" OrderBy="Kod"AutoColumnWidthState="Off" PreviewControlLocation="0">
     <!-- kolor wiersza wg pilności: po terminie / do 7 dni / do 30 dni -->
     <Appearance Condition="{?[Features.DniDoTerminu] &lt; 0}" BackColor="#FEE2E2" ForeColor="#B91C1C" />
     <Appearance Condition="{?[Features.DniDoTerminu] &gt;= 0 and [Features.DniDoTerminu] &lt;= 7}" BackColor="#FFEDD5" ForeColor="#C2410C" />
