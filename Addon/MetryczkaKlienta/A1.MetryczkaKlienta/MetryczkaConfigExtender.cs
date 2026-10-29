@@ -23,6 +23,25 @@ public class MetryczkaConfigExtender
 
     public IEnumerable<PoleMetryczki> PolaTekstowe => KonfiguracjaMetryczki.Pola(Session).Where(p => p.Typ == TypPola.Tekst);
 
+    public string Podsumowanie
+    {
+        get {
+            var pola = KonfiguracjaMetryczki.Pola(Session);
+            return pola.Count == 0
+                ? "Brak pól – kliknij „Wczytaj brakujące pola z metryczki” albo „+ Dodaj pole”."
+                : $"Uzupełniono {pola.Count(p => p.Uzupelnione)} z {pola.Count} pól ({pola.Select(p => p.Kategoria).Distinct().Count()} kategorii).";
+        }
+    }
+
+    /// <summary>Przycisk "Wczytaj" tylko, gdy brakuje któregoś pola z arkusza metryczki.</summary>
+    public bool SaBrakujacePola
+    {
+        get {
+            var klucze = KonfiguracjaMetryczki.Pola(Session).Select(p => p.Klucz).ToHashSet();
+            return DefinicjeCech.Wszystkie.Any(d => !klucze.Contains(d.Nazwa.Substring(DefinicjeCech.Prefiks.Length)));
+        }
+    }
+
     public object DodajPole()
     {
         var p = new DodajPoleParams(Context.Empty.Clone(Session));

@@ -12,8 +12,8 @@ Cechy globalne były nieczytelne, więc pola przeniesiono na własną stronę Op
   `Root → A1Testy → Metryczka klienta → <klucz>`. Atrybuty liścia to `Nazwa`, `Kategoria`, `Typ` (`TakNie`/`Tekst`), `Kolejnosc`
   i `Wartosc`. Kod: `KonfiguracjaMetryczki.cs`.
 - Strona (`Formularze/Config.MetryczkaKlienta.pageform.xml`, `MetryczkaConfigExtender.cs`) ma dwie siatki z edycją
-  w miejscu: **Pola Tak/Nie** z checkboxem i **Pola tekstowe** z wartością. Obie są pogrupowane po kategorii, a nazwę i kategorię
-  można poprawić w siatce. Wzorzec standardu: Systemowe/Zmiany ustawienia (`ChangeInfosConfig.TableInfos`), czyli setter
+  w miejscu, obok siebie: **Tak / Nie** z checkboxem i **Wartości tekstowe**. Obie są pogrupowane po kategorii (kategoria ustawiana w „Dodaj pole”), nad nimi stan „Uzupełniono X z Y”, a nazwę pola
+  można poprawić w siatce. Przycisk „Wczytaj brakujące pola z metryczki” widać tylko, gdy brakuje pozycji z arkusza. Wzorzec standardu: Systemowe/Zmiany ustawienia (`ChangeInfosConfig.TableInfos`), czyli setter
   zapisuje atrybut w `Session.Logout(true)` + `CommitUI()`. Całość utrwala przycisk Zapisz okna Opcji.
 - Przyciski:
   - **Dodaj pole** otwiera okno z polami nazwa, kategoria (lista istniejących) i typ (Tak/Nie, Tekst). Nowe pole dostaje klucz `PoleN` i trafia na koniec.
