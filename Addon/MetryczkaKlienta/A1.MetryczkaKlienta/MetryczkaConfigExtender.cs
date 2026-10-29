@@ -40,7 +40,7 @@ public class MetryczkaConfigExtender
             var grupa = (ContainerElement)root.Elements.FirstOrDefault(g => kategoria == (string)g.TagObject);
             if (grupa == null)
             {
-                grupa = new GroupContainer { CaptionHtml = kategoria.HtmlEncode(), TagObject = kategoria, LabelWidth = "45" };
+                grupa = new GroupContainer { CaptionHtml = kategoria.HtmlEncode(), TagObject = kategoria, LabelWidth = "65" };
                 root.Elements.Add(grupa);
             }
             grupa.Elements.Add(new FieldElement
@@ -94,6 +94,19 @@ public class MetryczkaConfigExtender
         var p = new UsunPoleParams(Context.Empty.Clone(Session));
         return new QueryContextInformation(p) { Caption = "Usuń pole metryczki", AcceptHandler = () => {
             KonfiguracjaMetryczki.Pola(Session).FirstOrDefault(x => x.Nazwa == p.Pole)?.Usun();
+            return null;
+        } };
+    }
+
+    public object ZmienNazwe()
+    {
+        var p = new ZmienNazweParams(Context.Empty.Clone(Session));
+        return new QueryContextInformation(p) { Caption = "Zmień nazwę pola metryczki", AcceptHandler = () => {
+            if (string.IsNullOrWhiteSpace(p.NowaNazwa))
+                return "Nie zmieniono nazwy - nowa nazwa jest wymagana.";
+            PoleMetryczki pole = KonfiguracjaMetryczki.Pola(Session).FirstOrDefault(x => x.Nazwa == p.Pole);
+            if (pole != null)
+                pole.Nazwa = p.NowaNazwa;
             return null;
         } };
     }
@@ -159,6 +172,22 @@ public class UsunPoleParams : ContextBase
 
     [Caption("Pole do usunięcia")]
     public string Pole { get; set; }
+
+    public IEnumerable<string> GetListPole() => KonfiguracjaMetryczki.Pola(Session).Select(p => p.Nazwa);
+}
+
+[Caption("Zmień nazwę pola metryczki")]
+public class ZmienNazweParams : ContextBase
+{
+    public ZmienNazweParams(Context cx) : base(cx)
+    {
+    }
+
+    [Caption("Pole")]
+    public string Pole { get; set; }
+
+    [Caption("Nowa nazwa")]
+    public string NowaNazwa { get; set; }
 
     public IEnumerable<string> GetListPole() => KonfiguracjaMetryczki.Pola(Session).Select(p => p.Nazwa);
 }

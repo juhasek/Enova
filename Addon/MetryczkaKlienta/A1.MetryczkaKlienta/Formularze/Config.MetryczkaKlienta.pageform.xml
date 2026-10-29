@@ -14,6 +14,7 @@
       <Label CaptionHtml="Zaznacz pola Tak/Nie i wpisz wartości poniżej, potem kliknij Zapisz. Karta metryczki: Ogólne → Metryczka klienta oraz kafelek nad Kadrami." Width="*" />
       <Row>
         <Command CaptionHtml="+ Dodaj pole" Width="18" MethodName="DodajPole" />
+        <Command CaptionHtml="Zmień nazwę" Width="18" MethodName="ZmienNazwe" />
         <Command CaptionHtml="Usuń pole" Width="18" MethodName="UsunPole" />
         <Command CaptionHtml="Wczytaj brakujące pola z metryczki" Width="32" MethodName="WczytajZMetryczki" Visibility="{SaBrakujacePola}" />
       </Row>
