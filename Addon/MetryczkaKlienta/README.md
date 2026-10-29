@@ -86,4 +86,12 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 | Okno z kartą: kolory, plakietki, pełne etykiety, pasek 30/42 | OK 27.10 (zrzut) |
 | Utworzenie 42 cech, 8 kategorii, zestaw `TST_Metryczka` w Opcjach, bez duplikatów | OK 26.10 |
 | Usuwanie cech TST_ | NIE SPRAWDZONE |
-| Strona Opcje → A1Testy → Metryczka klienta: Dodaj/Usuń pole, Wczytaj, edycja w siatkach, karta z konfiguracji (29.10) | NIE SPRAWDZONE |
+| Strona Opcje (wersja 3484ffc): pasek „Uzupełniono X z Y”, siatki obok siebie, Wczytaj ukryty przy kompletnych polach | OK 29.10 (zrzut) |
+| Edycja w siatkach (tekst, Tak/Nie), licznik odświeża się od razu | OK 29.10 |
+| Dodaj pole (43. pole w wybranej kategorii) → Zapisz → karta i kafelek „21 z 43” | OK 29.10 |
+| Usuń pole → licznik wraca do 42 | OK 29.10 |
+| Wczytaj brakujące pola z metryczki | NIE SPRAWDZONE (wszystkie pola są) |
+
+Uwagi z testu 29.10: okna Dodaj/Usuń mają tytuł „Dodaj pole params” / „Usun pole params” (web bierze nazwę klasy, nie `Caption`).
+Przez MCP okna nie da się zatwierdzić (`accept_subform` zamyka bez `AcceptHandler`) – OK klika operator.
+Zapisane „Nie” w polu Tak/Nie liczy się do „Uzupełniono” (decyzja 27.10), więc po teście ING RPS ma zapisane „Nie” (licznik 19 zamiast 18).
