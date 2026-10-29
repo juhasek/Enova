@@ -91,7 +91,11 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 | Dodaj pole (43. pole w wybranej kategorii) → Zapisz → karta i kafelek „21 z 43” | OK 29.10 |
 | Usuń pole → licznik wraca do 42 | OK 29.10 |
 | Wczytaj brakujące pola z metryczki | NIE SPRAWDZONE (wszystkie pola są) |
+| Strona Opcji jak standardowa (8b5ed6e): sekcja na kategorię, etykieta + checkbox/pole tekstowe | OK 29.10 (zrzut) |
+| Dodaj pole → nowe pole od razu w swojej sekcji (RenderKey), Usuń → znika | OK 29.10 |
+| Edycja w polach nowej strony | NIE SPRAWDZONE przez MCP (nie obsługuje ścieżek `Pola[i]`) – do sprawdzenia ręcznie |
+| Tytuł okien przez `[Caption]` na klasie | zbudowane, NIE WGRANE |
 
-Uwagi z testu 29.10: okna Dodaj/Usuń mają tytuł „Dodaj pole params” / „Usun pole params” (web bierze nazwę klasy, nie `Caption`).
+Uwagi z testu 29.10: okna Dodaj/Usuń miały tytuł „Dodaj pole params” (web bierze nazwę klasy); `ToString` dał „Dodaj pole params: Dodaj pole metryczki”, stąd `[Caption]` na klasie.
 Przez MCP okna nie da się zatwierdzić (`accept_subform` zamyka bez `AcceptHandler`) – OK klika operator.
 Zapisane „Nie” w polu Tak/Nie liczy się do „Uzupełniono” (decyzja 27.10), więc po teście ING RPS ma zapisane „Nie” (licznik 19 zamiast 18).
