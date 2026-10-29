@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+  <!-- Okno "Dodaj pole" (MetryczkaConfigExtender.DodajPole). Web nie buduje formularza z samych właściwości
+       obiektu QueryContextInformation - bez strony: "Brak praw do formularza danych" (ObjectWindow). -->
+  <Page Name="Dodaj" CaptionHtml="Dodaj pole metryczki" DataContext="{DataSource}">
+    <Group CaptionHtml="Nowe pole" LabelWidth="20">
+      <Field CaptionHtml="Nazwa pola" Width="50" EditValue="{Nazwa}" />
+      <Field CaptionHtml="Kategoria (karta)" Width="30" EditValue="{Kategoria}" />
+      <Field CaptionHtml="Typ pola" Width="15" EditValue="{Typ}" />
+    </Group>
+  </Page>
+</DataForm>
