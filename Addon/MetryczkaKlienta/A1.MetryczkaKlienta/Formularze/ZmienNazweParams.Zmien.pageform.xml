@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+  <!-- Okno "Zmień nazwę" (MetryczkaConfigExtender.ZmienNazwe). -->
+  <Page Name="Zmien" CaptionHtml="Zmień nazwę pola metryczki" DataContext="{DataSource}">
+    <Group CaptionHtml="Zmiana nazwy" LabelWidth="20">
+      <Field CaptionHtml="Pole" Width="60" EditValue="{Pole}" />
+      <Field CaptionHtml="Nowa nazwa" Width="60" EditValue="{NowaNazwa}" />
+    </Group>
+  </Page>
+</DataForm>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ekran modułu Kadry i płace (web). FolderMenuWindow ładuje najpierw "FolderMenu-<NormalizedPath>.form.xml",
+     a dopiero gdy go nie ma - standardowy FolderMenu.form.xml (Soneta.Net.Business). Ten sam mechanizm ma
+     standardowy FolderMenu-Ustawienia.form.xml. Poniżej kopia standardowego układu + sekcja aktualności nad
+     sekcjami generowanymi z szablonów (klony szablonów wstawiane są w miejscu szablonu, czyli pod sekcją).
+     Pierwszy element to Row z grupą MainGroup jak w standardzie - klient web (isFirstChildHasMainGroup)
+     tylko wtedy rysuje sekcje modułu na pełną szerokość; elementy MainGroup są kafelkami. -->
+<DataForm xmlns="http://www.enova.pl/schema/form.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          Mode="Folder" ViewType="Folder">
+
+  <Stack Name="FolderMenuList" Class="MainPage">
+
+    <!-- Ekran modułu rysuje tylko kafelki (Html, Grid, lista aktualności - nie), więc karta metryczki otwiera się
+         z kafelka w osobnym oknie. Poprzednie warianty: pola-paski 0eb9129, kafelki per informacja 845ebe8. -->
+    <Row DataContext="{new MetryczkaKafelekExtender}">
+      <Group Name="MetryczkaKafelek" Class="MainGroup" CaptionHtml="Metryczka klienta">
+        <Command Name="MetryczkaOtworz" Class="MainCommand" CaptionHtml="Metryczka klienta"
+                 DescriptionHtml="{Podsumowanie}" MethodName="OtworzMetryczke" />
+      </Group>
+    </Row>
+
+    <Template Name="ItemTemplate">
+      <Command Name="MenuItem" Class="MainCommand"/>
+    </Template>
+
+    <Template Name="GroupTemplate">
+      <Group Name="MenuGroup" Class="MainGroup" />
+    </Template>
+
+    <Template Name="RowTemplate">
+      <Row />
+    </Template>
+
+  </Stack>
+
+</DataForm>
