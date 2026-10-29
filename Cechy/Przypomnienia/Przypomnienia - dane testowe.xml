@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dane testowe dla bazy Claude (pracownicy testowe NG/LZ), dzień testu 29.10.2026.
+     Etaty na czas określony / próbny (NG-03, LZ-01) ustawiane osobno - patrz Przypomnienia.md. -->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <!-- NG-01: badanie okresowe ważne do 21.10.2026 -> po terminie -->
+  <Pracownik guid="C2000000-0000-0000-0000-000000000001">
+    <BadaniaLekarskie addnew="true">
+      <BadanieLekarskie>
+        <Definicja>00000000-0005-0008-0002-000000000000</Definicja>
+        <Termin>2024-10-21</Termin>
+        <Data>2024-10-21</Data>
+        <WazneDo>2026-10-21</WazneDo>
+      </BadanieLekarskie>
+    </BadaniaLekarskie>
+  </Pracownik>
+  <!-- NG-02: zaplanowane szkolenie BHP 25.10.2026 -> po terminie -->
+  <Pracownik guid="C2000000-0000-0000-0000-000000000002">
+    <SzkoleniaBHP addnew="true">
+      <SzkolenieBHP>
+        <Definicja>00000000-0005-0009-0002-000000000000</Definicja>
+        <Termin>2026-10-25</Termin>
+      </SzkolenieBHP>
+    </SzkoleniaBHP>
+  </Pracownik>
+  <!-- NG-04: zaplanowane badanie 02.11.2026 -> do 7 dni -->
+  <Pracownik guid="C2000000-0000-0000-0000-000000000004">
+    <BadaniaLekarskie addnew="true">
+      <BadanieLekarskie>
+        <Definicja>00000000-0005-0008-0002-000000000000</Definicja>
+        <Termin>2026-11-02</Termin>
+      </BadanieLekarskie>
+    </BadaniaLekarskie>
+  </Pracownik>
+  <!-- NG-05: aneks czasowy do 05.11.2026 (cecha ręczna) -> do 7 dni -->
+  <Pracownik guid="C2000000-0000-0000-0000-000000000005">
+    <features>
+      <feature name="AneksCzasowyDo">2026-11-05</feature>
+    </features>
+  </Pracownik>
+  <!-- NG-06: zaplanowane szkolenie BHP 09.11.2026 -> do 30 dni -->
+  <Pracownik guid="C2000000-0000-0000-0000-000000000006">
+    <SzkoleniaBHP addnew="true">
+      <SzkolenieBHP>
+        <Definicja>00000000-0005-0009-0002-000000000000</Definicja>
+        <Termin>2026-11-09</Termin>
+      </SzkolenieBHP>
+    </SzkoleniaBHP>
+  </Pracownik>
+  <!-- LZ-02: orzeczenie PFRON do 24.11.2026 -> do 30 dni -->
+  <Pracownik guid="C4000000-0000-0000-0000-000000000002">
+    <OrzeczeniaPFRON addnew="true">
+      <OrzeczeniePFRON>
+        <ObowiazujeOd>2025-11-25</ObowiazujeOd>
+        <Stopien>Lekki</Stopien>
+        <StopienPFRON>Lekki</StopienPFRON>
+        <Okres>2025-11-25...2026-11-24</Okres>
+      </OrzeczeniePFRON>
+    </OrzeczeniaPFRON>
+  </Pracownik>
+  <!-- LZ-03: badanie ważne do 27.11.2026 (do 30 dni) + zaplanowane BHP w 2027 -->
+  <Pracownik guid="C4000000-0000-0000-0000-000000000003">
+    <BadaniaLekarskie addnew="true">
+      <BadanieLekarskie>
+        <Definicja>00000000-0005-0008-0002-000000000000</Definicja>
+        <Termin>2025-11-27</Termin>
+        <Data>2025-11-27</Data>
+        <WazneDo>2026-11-27</WazneDo>
+      </BadanieLekarskie>
+    </BadaniaLekarskie>
+    <SzkoleniaBHP addnew="true">
+      <SzkolenieBHP>
+        <Definicja>00000000-0005-0009-0002-000000000000</Definicja>
+        <Termin>2027-03-14</Termin>
+      </SzkolenieBHP>
+    </SzkoleniaBHP>
+  </Pracownik>
+  <!-- LZ-04: badanie ważne do 01.05.2027 -> poza 30 dniami (bez koloru) -->
+  <Pracownik guid="C4000000-0000-0000-0000-000000000004">
+    <BadaniaLekarskie addnew="true">
+      <BadanieLekarskie>
+        <Definicja>00000000-0005-0008-0002-000000000000</Definicja>
+        <Termin>2025-05-01</Termin>
+        <Data>2025-05-01</Data>
+        <WazneDo>2027-05-01</WazneDo>
+      </BadanieLekarskie>
+    </BadaniaLekarskie>
+  </Pracownik>
+</session>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd" xmlns="http://www.enova.pl/schema/form.xsd">
+  <Flow Name="FilterPanel">
+    <Field CaptionHtml="Jednostka organizacyjna" Width="30" EditValue="{KadryPracownicyViewInfo+PrParams.Wydział}" Important="true" />
+    <Field CaptionHtml="Z zależnymi" Width="7" EditValue="{KadryPracownicyViewInfo+PrParams.Pośrednio}" Important="true" />
+    <Field CaptionHtml="Okres" Width="22" EditValue="{KadryPracownicyViewInfo+PrParams.Okres}" Important="true" />
+    <Field CaptionHtml="Data" Width="15" EditValue="{KadryPracownicyViewInfo+PrParams.Aktualny}" Important="true" />
+  </Flow>
+  <Grid Name="List" OrderBy="Features.DniDoTerminu" AutoColumnWidthState="Off" PreviewControlLocation="0">
+    <!-- kolor wiersza wg pilności: po terminie / do 7 dni / do 30 dni -->
+    <Appearance Condition="{?[Features.DniDoTerminu] &lt; 0}" BackColor="#FEE2E2" ForeColor="#B91C1C" />
+    <Appearance Condition="{?[Features.DniDoTerminu] &gt;= 0 and [Features.DniDoTerminu] &lt;= 7}" BackColor="#FFEDD5" ForeColor="#C2410C" />
+    <Appearance Condition="{?[Features.DniDoTerminu] &gt; 7 and [Features.DniDoTerminu] &lt;= 30}" BackColor="#FEF9C3" ForeColor="#854D0E" />
+    <Field CaptionHtml="Kod" Width="9" EditValue="{Kod}" Footer="None" />
+    <Field CaptionHtml="Nazwisko i imię" Width="25" EditValue="{NazwiskoImię}" Footer="None" />
+    <Field CaptionHtml="Wydział" Width="18" EditValue="{Workers.Info.Historia.Etat.Wydzial}" Footer="None" />
+    <Field CaptionHtml="Najbliższy termin" Width="12" EditValue="{Features.NajblizszyTermin}" Footer="None">
+      <Appearance Condition="{?[Features.DniDoTerminu] &lt;= 30}" FontBold="true" />
+    </Field>
+    <Field CaptionHtml="Czego dotyczy" Width="26" EditValue="{Features.TerminCzego}" Footer="None" />
+    <Field CaptionHtml="Dni" Width="6" EditValue="{Features.DniDoTerminu}" Footer="None">
+      <Appearance Condition="{?[Features.DniDoTerminu] &lt;= 30}" FontBold="true" />
+      <!-- 9999 = brak terminu (int nie może być pusty) -->
+      <Appearance Condition="{?[Features.DniDoTerminu] = 9999}" ForeColor="#C0C0C0" />
+    </Field>
+    <Field CaptionHtml="Koniec umowy" Width="12" EditValue="{Features.KoniecUmowy}" Footer="None" />
+    <Field CaptionHtml="Koniec umowy cywilnej" Width="12" EditValue="{Features.KoniecUmowyCywilnej}" Footer="None" />
+    <Field CaptionHtml="Badanie ważne do" Width="12" EditValue="{Features.BadanieWazneDo}" Footer="None" />
+    <Field CaptionHtml="Szkolenie BHP" Width="12" EditValue="{Features.SzkolenieBHPTermin}" Footer="None" />
+    <Field CaptionHtml="Uprawnienia do" Width="12" EditValue="{Features.UprawnienieWazneDo}" Footer="None" />
+    <Field CaptionHtml="Orzeczenie do" Width="12" EditValue="{Features.OrzeczenieDo}" Footer="None" />
+    <Field CaptionHtml="Aneks czasowy do" Width="12" EditValue="{Features.AneksCzasowyDo}" Footer="None" />
+  </Grid>
+</DataForm>

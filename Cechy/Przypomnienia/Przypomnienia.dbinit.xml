@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Przypomnienia (wariant bez DLL): kod wspólny + cechy kategorii "Przypomnienia" na Pracownicy. Opis: Przypomnienia.md -->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <CodeFile guid="6f1c2a7e-3b84-4c59-9d0e-a1b2c3d4e5f6">
+    <Name>A1Przypomnienia</Name>
+    <Text><![CDATA[
+using System;
+using Soneta.Types;
+using Soneta.Business;
+using Soneta.Kadry;
+using Soneta.HR;
+
+// Dodatkowy kod do kompilacji "A1Przypomnienia" - wspólny kod cech kategorii "Przypomnienia" (Pracownicy).
+// Każda cecha woła jedną metodę, np.:
+//   return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.KoniecUmowy(Row);
+// Brak terminu = Date.Empty (pusta komórka na liście).
+namespace Soneta.Runtime.Database.Business.TblCodeFiles {
+
+    public static class Przypomnienia {
+
+        // Brak terminu w DniDoTerminu - duża liczba, żeby filtr "Dni <= 30" pomijał takich pracowników.
+        public const int BrakTerminu = 9999;
+
+        // Ręczna cecha (bez algorytmu) - aneks czasowy nie ma jednoznacznego oznaczenia w historii etatu.
+        public const string CechaAneksu = "AneksCzasowyDo";
+
+        // ---------------- terminy źródłowe ----------------
+
+        // Koniec umowy o pracę na czas określony / okres próbny (etat na dziś).
+        public static Date KoniecUmowy(Pracownik pracownik) {
+            PracHistoria historia = pracownik[Date.Today];
+            if (historia == null)
+                return Date.Empty;
+            return BezNieskonczonosci(historia.Etat.Okres.To);
+        }
+
+        public static string OpisKoncaUmowy(Pracownik pracownik) {
+            PracHistoria historia = pracownik[Date.Today];
+            if (historia != null && (historia.Etat.TypUmowy == TypUmowyOPrace.NaOkresPróbny
+                || historia.Etat.TypUmowy == TypUmowyOPrace.NaOkresPróbnyDoDniaPorodu))
+                return "Koniec umowy (okres próbny)";
+            return "Koniec umowy o pracę";
+        }
+
+        // Najbliższy koniec nieanulowanej umowy cywilnoprawnej, która jeszcze trwa.
+        public static Date KoniecUmowyCywilnej(Pracownik pracownik) {
+            Date wynik = Date.Empty;
+            foreach (Umowa umowa in pracownik.Umowy) {
+                if (umowa.Anulowana)
+                    continue;
+                Date koniec = BezNieskonczonosci(umowa.Okres.To);
+                if (koniec != Date.Empty && koniec >= Date.Today)
+                    wynik = Wczesniejsza(wynik, koniec);
+            }
+            return wynik;
+        }
+
+        // Badanie lekarskie: zaplanowane (bez daty wykonania) -> Termin;
+        // wykonane -> WazneDo, o ile nie ma późniejszego wykonanego badania tej samej definicji.
+        public static Date BadanieWazneDo(Pracownik pracownik) {
+            Date wynik = Date.Empty;
+            foreach (BadanieLekarskie badanie in pracownik.BadaniaLekarskie) {
+                if (badanie.Anulowany)
+                    continue;
+                Date termin;
+                if (badanie.Data == Date.Empty)
+                    termin = badanie.Termin;
+                else if (JestPozniejszeBadanie(pracownik, badanie))
+                    continue;
+                else
+                    termin = badanie.WazneDo;
+                wynik = Wczesniejsza(wynik, BezNieskonczonosci(termin));
+            }
+            return wynik;
+        }
+
+        // Szkolenie BHP: enova planuje następne szkolenie jako wpis z Terminem, bez daty wykonania.
+        public static Date SzkolenieBHPTermin(Pracownik pracownik) {
+            Date wynik = Date.Empty;
+            foreach (SzkolenieBHP szkolenie in pracownik.SzkoleniaBHP) {
+                if (!szkolenie.Anulowany && szkolenie.Data == Date.Empty)
+                    wynik = Wczesniejsza(wynik, BezNieskonczonosci(szkolenie.Termin));
+            }
+            return wynik;
+        }
+
+        // Uprawnienia: termin ważności nieutraconych uprawnień, bez zastąpionych nowszym tej samej definicji.
+        public static Date UprawnienieWazneDo(Pracownik pracownik) {
+            Date wynik = Date.Empty;
+            foreach (UprawnieniePracownika uprawnienie in pracownik.Uprawnienia) {
+                if (uprawnienie.DataUtraty != Date.Empty || JestPozniejszeUprawnienie(pracownik, uprawnienie))
+                    continue;
+                wynik = Wczesniejsza(wynik, BezNieskonczonosci(uprawnienie.TerminWaznosci));
+            }
+            return wynik;
+        }
+
+        // Orzeczenie o niepełnosprawności (PFRON i ZUS): koniec ciągłości orzeczeń obowiązujących dziś
+        // lub później; orzeczenie bezterminowe -> brak terminu.
+        public static Date OrzeczenieDo(Pracownik pracownik) {
+            Date wynik = Date.Empty;
+            foreach (OrzeczeniePFRON orzeczenie in pracownik.OrzeczeniaPFRON) {
+                if (orzeczenie.OkresExt.To < Date.Today)
+                    continue;
+                if (orzeczenie.OkresExt.To == Date.MaxValue)
+                    return Date.Empty;
+                wynik = Pozniejsza(wynik, orzeczenie.OkresExt.To);
+            }
+            foreach (OrzeczenieZUS orzeczenie in pracownik.OrzeczeniaZUS) {
+                if (orzeczenie.OkresExt.To < Date.Today)
+                    continue;
+                if (orzeczenie.OkresExt.To == Date.MaxValue)
+                    return Date.Empty;
+                wynik = Pozniejsza(wynik, orzeczenie.OkresExt.To);
+            }
+            return wynik;
+        }
+
+        public static Date AneksCzasowyDo(Pracownik pracownik) {
+            return BezNieskonczonosci(pracownik.Features.GetDate(CechaAneksu));
+        }
+
+        // ---------------- podsumowanie ----------------
+
+        public static Date NajblizszyTermin(Pracownik pracownik) {
+            Date data;
+            string opis;
+            Najblizszy(pracownik, out data, out opis);
+            return data;
+        }
+
+        public static string TerminCzego(Pracownik pracownik) {
+            Date data;
+            string opis;
+            Najblizszy(pracownik, out data, out opis);
+            return opis;
+        }
+
+        public static int DniDoTerminu(Pracownik pracownik) {
+            Date data = NajblizszyTermin(pracownik);
+            return data == Date.Empty ? BrakTerminu : data - Date.Today;
+        }
+
+        private static void Najblizszy(Pracownik pracownik, out Date data, out string opis) {
+            data = Date.Empty;
+            opis = "";
+            Sprawdz(KoniecUmowy(pracownik), OpisKoncaUmowy(pracownik), ref data, ref opis);
+            Sprawdz(KoniecUmowyCywilnej(pracownik), "Koniec umowy cywilnoprawnej", ref data, ref opis);
+            Sprawdz(BadanieWazneDo(pracownik), "Badanie lekarskie", ref data, ref opis);
+            Sprawdz(SzkolenieBHPTermin(pracownik), "Szkolenie BHP", ref data, ref opis);
+            Sprawdz(UprawnienieWazneDo(pracownik), "Uprawnienia", ref data, ref opis);
+            Sprawdz(OrzeczenieDo(pracownik), "Orzeczenie o niepełnosprawności", ref data, ref opis);
+            Sprawdz(AneksCzasowyDo(pracownik), "Aneks czasowy", ref data, ref opis);
+        }
+
+        private static void Sprawdz(Date termin, string nazwa, ref Date data, ref string opis) {
+            if (termin != Date.Empty && (data == Date.Empty || termin < data)) {
+                data = termin;
+                opis = nazwa;
+            }
+        }
+
+        // ---------------- pomocnicze ----------------
+
+        private static bool JestPozniejszeBadanie(Pracownik pracownik, BadanieLekarskie badanie) {
+            foreach (BadanieLekarskie inne in pracownik.BadaniaLekarskie)
+                if (!inne.Anulowany && inne.Definicja == badanie.Definicja && inne.Data > badanie.Data)
+                    return true;
+            return false;
+        }
+
+        private static bool JestPozniejszeUprawnienie(Pracownik pracownik, UprawnieniePracownika uprawnienie) {
+            foreach (UprawnieniePracownika inne in pracownik.Uprawnienia)
+                if (inne.DataUtraty == Date.Empty && inne.Definicja == uprawnienie.Definicja
+                    && inne.DataUzyskania > uprawnienie.DataUzyskania)
+                    return true;
+            return false;
+        }
+
+        private static Date BezNieskonczonosci(Date data) {
+            return data == Date.MaxValue ? Date.Empty : data;
+        }
+
+        private static Date Wczesniejsza(Date wynik, Date data) {
+            if (data == Date.Empty)
+                return wynik;
+            return wynik == Date.Empty || data < wynik ? data : wynik;
+        }
+
+        private static Date Pozniejsza(Date wynik, Date data) {
+            return wynik == Date.Empty || data > wynik ? data : wynik;
+        }
+    }
+}
+]]></Text>
+  </CodeFile>
+
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e01">
+    <TableName>Pracownicy</TableName>
+    <Name>KoniecUmowy</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Koniec umowy o pracę na czas określony / okres próbny (etat na dziś)</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public Date Feature_KoniecUmowy {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.KoniecUmowy(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e02">
+    <TableName>Pracownicy</TableName>
+    <Name>KoniecUmowyCywilnej</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Najbliższy koniec trwającej umowy cywilnoprawnej</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public Date Feature_KoniecUmowyCywilnej {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.KoniecUmowyCywilnej(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e03">
+    <TableName>Pracownicy</TableName>
+    <Name>BadanieWazneDo</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Ważność ostatniego badania lekarskiego lub termin zaplanowanego</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public Date Feature_BadanieWazneDo {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.BadanieWazneDo(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e04">
+    <TableName>Pracownicy</TableName>
+    <Name>SzkolenieBHPTermin</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Termin zaplanowanego szkolenia BHP</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public Date Feature_SzkolenieBHPTermin {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.SzkolenieBHPTermin(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e05">
+    <TableName>Pracownicy</TableName>
+    <Name>UprawnienieWazneDo</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Najbliższy termin ważności uprawnień pracownika</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public Date Feature_UprawnienieWazneDo {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.UprawnienieWazneDo(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e06">
+    <TableName>Pracownicy</TableName>
+    <Name>OrzeczenieDo</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Koniec orzeczenia o niepełnosprawności (PFRON/ZUS), puste gdy bezterminowe</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public Date Feature_OrzeczenieDo {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.OrzeczenieDo(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e07">
+    <TableName>Pracownicy</TableName>
+    <Name>AneksCzasowyDo</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Koniec aneksu czasowego - wpisywany ręcznie</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>DB</Algorithm>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e08">
+    <TableName>Pracownicy</TableName>
+    <Name>NajblizszyTermin</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Najwcześniejszy z terminów kategorii Przypomnienia</Description>
+    <TypeNumber>Date</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public Date Feature_NajblizszyTermin {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.NajblizszyTermin(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e09">
+    <TableName>Pracownicy</TableName>
+    <Name>TerminCzego</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Czego dotyczy najbliższy termin</Description>
+    <TypeNumber>String</TypeNumber>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public string Feature_TerminCzego {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.TerminCzego(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e0a">
+    <TableName>Pracownicy</TableName>
+    <Name>DniDoTerminu</Name>
+    <Category>Przypomnienia</Category>
+    <Description>Dni do najbliższego terminu (ujemne = po terminie, 9999 = brak terminu)</Description>
+    <TypeNumber>Int</TypeNumber>
+    <AllowNegative>True</AllowNegative>
+    <Algorithm>Get</Algorithm>
+    <Code><![CDATA[
+public int Feature_DniDoTerminu {
+    get {
+        // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+        return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.DniDoTerminu(Row);
+    }
+}
+]]></Code>
+  </FeatureDefinition>
+</session>
