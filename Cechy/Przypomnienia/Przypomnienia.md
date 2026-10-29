@@ -39,4 +39,10 @@ Sortowanie po Kod — sortowanie po cesze z algorytmem enova blokuje komunikatem
 czerwony < 0, pomarańczowy 0–7, żółty 8–30; 9999 wyszarzone. Filtry: standardowe filtry listy Pracownicy.
 Strona startowa (web/SonetaFrame): Ulubione → „Startowy” = ten widok.
 
-Po założeniu widoku SQL-em serwer nie widzi go do restartu procesów 2610 (cache konfiguracji).
+Po założeniu lub zmianie widoku SQL-em serwer nie widzi zmiany do restartu procesów 2610 (cache konfiguracji).
+
+## Test (baza Claude, web 2610, 29.10.2026)
+
+TEST LIVE OK: 10 scenariuszy z danych testowych — wartości cech zgodne, kolory wierszy (czerwony NG-01/NG-02,
+pomarańczowy NG-03/NG-04/NG-05, żółty NG-06/LZ-01/LZ-02/LZ-03, bez koloru LZ-04 = 184 dni), 9999 wyszarzone.
+Niesprawdzone: klient okienkowy.
