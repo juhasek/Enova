@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Narzędzia → Opcje → A1Testy → Metryczka klienta. Zasób "Config.<Nazwa>.pageform.xml" = strona okna Opcji (typ Session),
-     jak Config.A1RaportPlacowy.pageform.xml. Siatki z edycją w miejscu na zwykłych obiektach (PoleMetryczki),
-     jak standardowa strona Systemowe/Zmiany ustawienia (ChangeInfosConfig.TableInfos).
-     Układ: pasek stanu + przyciski, pod spodem dwie siatki obok siebie (Tak/Nie wąska, teksty szeroka). -->
+     jak Config.A1RaportPlacowy.pageform.xml. Układ: pasek stanu + przyciski, pod spodem sekcja na kategorię
+     z wierszami etykieta + pole (jak standardowe strony Opcji). -->
 <DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
           xmlns="http://www.enova.pl/schema/form.xsd"
@@ -12,7 +11,7 @@
 
     <Group CaptionHtml="Metryczka klienta">
       <Label CaptionHtml="{Podsumowanie}" Width="*" Class="BoldLabel" />
-      <Label CaptionHtml="Zaznacz pola Tak/Nie i wpisz wartości w siatkach poniżej, potem kliknij Zapisz. Karta metryczki: Ogólne → Metryczka klienta oraz kafelek nad Kadrami." Width="*" />
+      <Label CaptionHtml="Zaznacz pola Tak/Nie i wpisz wartości poniżej, potem kliknij Zapisz. Karta metryczki: Ogólne → Metryczka klienta oraz kafelek nad Kadrami." Width="*" />
       <Row>
         <Command CaptionHtml="+ Dodaj pole" Width="18" MethodName="DodajPole" />
         <Command CaptionHtml="Usuń pole" Width="18" MethodName="UsunPole" />
@@ -20,22 +19,9 @@
       </Row>
     </Group>
 
-    <Row Height="*">
-      <Group CaptionHtml="Tak / Nie" Width="60" Height="*">
-        <Grid Width="*" Height="*" EditValue="{PolaTakNie}" EditInPlace="true" OrderBy="Kolejnosc">
-          <GroupBy CaptionHtml="Kategoria" EditValue="{Kategoria}" />
-          <Field CaptionHtml="Pole" Width="40" EditValue="{Nazwa}" />
-          <Field CaptionHtml="Tak" Width="6" EditValue="{Zaznaczone}" />
-        </Grid>
-      </Group>
-      <Group CaptionHtml="Wartości tekstowe" Width="*" Height="*">
-        <Grid Width="*" Height="*" EditValue="{PolaTekstowe}" EditInPlace="true" OrderBy="Kolejnosc">
-          <GroupBy CaptionHtml="Kategoria" EditValue="{Kategoria}" />
-          <Field CaptionHtml="Pole" Width="40" EditValue="{Nazwa}" />
-          <Field CaptionHtml="Wartość" Width="40" EditValue="{Tekst}" />
-        </Grid>
-      </Group>
-    </Row>
+    <!-- Sekcje kategorii z polami generuje MetryczkaConfigExtender.RenderPola (jak Ogólne → Cechy globalne);
+         RenderKey przebudowuje układ po Dodaj/Usuń pole. -->
+    <Stack RenderKey="{RenderKey}" RenderMethodName="RenderPola" />
 
   </Page>
 </DataForm>

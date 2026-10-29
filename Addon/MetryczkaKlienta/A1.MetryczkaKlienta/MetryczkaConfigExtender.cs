@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using A1.Metryczka;
 using Soneta.Business;
+using Soneta.Business.UI;
+using Soneta.Tools;
 using Soneta.Types;
 
 // DataContext="{New MetryczkaConfigExtender}" w Config.MetryczkaKlienta.pageform.xml (extender bez typu danych, jak A1RaportPlacConfigExtender).
@@ -19,9 +21,37 @@ public class MetryczkaConfigExtender
     [Context]
     public Session Session { get; set; }
 
-    public IEnumerable<PoleMetryczki> PolaTakNie => KonfiguracjaMetryczki.Pola(Session).Where(p => p.Typ == TypPola.TakNie);
+    /// <summary>Pola w kolejności; pole strony wiąże się po indeksie ({Pola[i].Tekst}), zapis idzie wprost do węzła.</summary>
+    public List<PoleMetryczki> Pola => KonfiguracjaMetryczki.Pola(Session);
 
-    public IEnumerable<PoleMetryczki> PolaTekstowe => KonfiguracjaMetryczki.Pola(Session).Where(p => p.Typ == TypPola.Tekst);
+    /// <summary>Klucz układu strony: zmiana listy pól (Dodaj/Usuń, nazwa, kategoria, typ) przebudowuje wygenerowane sekcje.</summary>
+    public string RenderKey => string.Join("|", Pola.Select(p => $"{p.Klucz}/{p.Typ}/{p.Kategoria}/{p.Nazwa}"));
+
+    /// <summary>
+    /// Sekcja na kategorię, w niej etykieta + pole (Tak/Nie = checkbox, tekst = pole edycji) -
+    /// jak standardowa strona Ogólne → Cechy globalne (DefineItemsExtender.RenderElements).
+    /// </summary>
+    public void RenderPola(ContainerElement root)
+    {
+        List<PoleMetryczki> pola = Pola;
+        for (int i = 0; i < pola.Count; i++)
+        {
+            string kategoria = pola[i].Kategoria;
+            var grupa = (ContainerElement)root.Elements.FirstOrDefault(g => kategoria == (string)g.TagObject);
+            if (grupa == null)
+            {
+                grupa = new GroupContainer { CaptionHtml = kategoria.HtmlEncode(), TagObject = kategoria, LabelWidth = "45" };
+                root.Elements.Add(grupa);
+            }
+            grupa.Elements.Add(new FieldElement
+            {
+                Name = "Pole" + i,
+                CaptionHtml = pola[i].Nazwa.HtmlEncode(),
+                EditValue = pola[i].Typ == TypPola.TakNie ? $"{{Pola[{i}].Zaznaczone}}" : $"{{Pola[{i}].Tekst}}",
+                Width = pola[i].Typ == TypPola.TakNie ? null : "50",
+            });
+        }
+    }
 
     public string Podsumowanie
     {
@@ -99,6 +129,8 @@ public class MetryczkaConfigExtender
     }
 }
 
+// Caption klasy = tytuł okna ("Edycja: ..."); bez niego web pokazuje nazwę klasy.
+[Caption("Dodaj pole metryczki")]
 public class DodajPoleParams : ContextBase
 {
     public DodajPoleParams(Context cx) : base(cx)
@@ -118,6 +150,7 @@ public class DodajPoleParams : ContextBase
         KonfiguracjaMetryczki.Pola(Session).Select(p => p.Kategoria).Distinct();
 }
 
+[Caption("Usuń pole metryczki")]
 public class UsunPoleParams : ContextBase
 {
     public UsunPoleParams(Context cx) : base(cx)
