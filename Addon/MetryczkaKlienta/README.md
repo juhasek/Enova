@@ -94,6 +94,7 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 | Strona Opcji jak standardowa (8b5ed6e): sekcja na kategorię, etykieta + checkbox/pole tekstowe | OK 29.10 (zrzut) |
 | Dodaj pole → nowe pole od razu w swojej sekcji (RenderKey), Usuń → znika | OK 29.10 |
 | Edycja w polach nowej strony (wartości, checkboxy) → Zapisz | OK 29.10 (ręcznie, użytkownik) |
+| Klient okienkowy (karta, strona Opcji) | OK 29.10 (ręcznie, użytkownik) |
 | Tytuł okien przez `[Caption]` na klasie („Zmień nazwę pola metryczki”) | OK 29.10 |
 | Zmień nazwę (d67cc01): okno, nowa etykieta po Zapisz | OK 29.10 |
 | Szersze etykiety (LabelWidth 65) – długie pytania w całości | OK 29.10 (zrzut) |
