@@ -81,7 +81,8 @@ public class MetryczkaConfigExtender
             var pola = KonfiguracjaMetryczki.Pola(Session);
             using (ITransaction t = Session.Logout(true))
             {
-                KonfiguracjaMetryczki.Dodaj(Session, KonfiguracjaMetryczki.NowyKlucz(Session), p.Nazwa.Trim(), p.Kategoria, p.Typ,
+                string kategoria = string.IsNullOrWhiteSpace(p.NowaKategoria) ? p.Kategoria : p.NowaKategoria;
+                KonfiguracjaMetryczki.Dodaj(Session, KonfiguracjaMetryczki.NowyKlucz(Session), p.Nazwa.Trim(), kategoria, p.Typ,
                     pola.Count == 0 ? 1 : pola.Max(x => x.Kolejnosc == int.MaxValue ? 0 : x.Kolejnosc) + 1);
                 t.CommitUI();
             }
@@ -156,6 +157,10 @@ public class DodajPoleParams : ContextBase
 
     [Caption("Kategoria (karta)")]
     public string Kategoria { get; set; }
+
+    /// <summary>Nowa kategoria powstaje z pierwszym polem; wypełniona ma pierwszeństwo przed wyborem z listy.</summary>
+    [Caption("Nowa kategoria")]
+    public string NowaKategoria { get; set; }
 
     [Caption("Typ pola")]
     public TypPola Typ { get; set; }
