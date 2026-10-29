@@ -74,9 +74,34 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 - SDK .NET 10 (`~/.dotnet10`). Referencje do DLL-i serwera 2610 (`SonetaDir`), jak w `KalkulatorPodstawyZasilku`:
   paczki Soneta.Sdk 2610 z NuGet nie mieszczą się na dysku tej maszyny.
 - `dotnet build A1.MetryczkaKlienta -c Release` → `A1.MetryczkaKlienta/bin/Release/A1.MetryczkaKlienta.dll`.
+- **Visual Studio:** otworzyć `A1.MetryczkaKlienta.sln`. Wymaga VS z obsługą .NET 10 (Visual Studio 2026) i zainstalowanego
+  systemowo SDK .NET 10 (`~/.dotnet10` VS nie znajdzie; na tej maszynie w `Program Files\dotnet` jest tylko SDK 8).
+  Referencje wskazują `C:\enovaServer\2610\Soneta.Products.Server.Standard`; na innym komputerze ustawić `SonetaDir`
+  (właściwość w `.csproj` albo zmienna środowiskowa `SonetaDir`) na katalog serwera enova 2610.
 - Zatrzymać procesy 2610 (orchestrator i dotnet), `dbmgr extupdate Claude <dll> --common --server`, uruchomić orchestrator.
   Przy działającym serwerze krok „Compiling database” kończy się timeoutem SQL. Po starcie zalogować się ręcznie w SonetaFrame.
 - Wycofanie: `dbmgr extremove Claude A1.MetryczkaKlienta.dll` (węzeł konfiguracji `A1Testy/Metryczka klienta` zostaje; stare cechy: Czynności → Usuń stare cechy TST_ przed usunięciem DLL). Dawniej: `dbmgr extremove Claude A1.MetryczkaKlienta.dll`.
+
+## Odczyt pola metryczki w cesze / kodzie
+
+Pole = węzeł `A1Testy → Metryczka klienta → <klucz>` w konfiguracji (CfgNodes), wartość w atrybucie `Wartosc`
+(Tak/Nie = `bool`, reszta = `string`). Klucz nie zmienia się przy zmianie nazwy pola: dla pól z arkusza to nazwa bez
+`TST_` (`NrKlienta`, `FTE`, `INGRPS`, … – lista w `DefinicjeCech.cs`), dla pól z „Dodaj pole” `Pole1`, `Pole2`, …
+Nie wymaga referencji do DLL dodatku:
+
+```csharp
+public string Feature_NrKlienta {
+    get {
+        Soneta.Config.CfgNode pole = new Soneta.Config.CfgManager(Row.Session).Root
+            ?.FindSubNode("A1Testy", false)?.FindSubNode("Metryczka klienta", false)?.FindSubNode("NrKlienta", false);
+        return pole?.FindAttribute("Wartosc", false)?.Value as string ?? "";
+    }
+}
+```
+
+Tak/Nie: `pole?.FindAttribute("Wartosc", false)?.Value is bool b && b`. Liczby (FTE, liczba kartotek) są zapisane
+jako tekst – parsować (`decimal.TryParse`). Przy kilku cechach wspólną metodę odczytu dać do Dodatkowego kodu
+kompilacji, nie kopiować.
 
 ## Test (baza Claude)
 
@@ -95,6 +120,7 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 | Dodaj pole → nowe pole od razu w swojej sekcji (RenderKey), Usuń → znika | OK 29.10 |
 | Edycja w polach nowej strony (wartości, checkboxy) → Zapisz | OK 29.10 (ręcznie, użytkownik) |
 | Klient okienkowy (karta, strona Opcji) | OK 29.10 (ręcznie, użytkownik) |
+| Usuń pola (0b0a0c0): siatka z checkboxem, 2 pola testowe usunięte naraz → Zapisz, w bazie 42 pola | OK 29.10 |
 | Tytuł okien przez `[Caption]` na klasie („Zmień nazwę pola metryczki”) | OK 29.10 |
 | Zmień nazwę (d67cc01): okno, nowa etykieta po Zapisz | OK 29.10 |
 | Szersze etykiety (LabelWidth 65) – długie pytania w całości | OK 29.10 (zrzut) |

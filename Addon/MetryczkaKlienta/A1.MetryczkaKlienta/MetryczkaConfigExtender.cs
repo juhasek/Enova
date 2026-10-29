@@ -81,7 +81,8 @@ public class MetryczkaConfigExtender
             var pola = KonfiguracjaMetryczki.Pola(Session);
             using (ITransaction t = Session.Logout(true))
             {
-                KonfiguracjaMetryczki.Dodaj(Session, KonfiguracjaMetryczki.NowyKlucz(Session), p.Nazwa.Trim(), p.Kategoria, p.Typ,
+                string kategoria = string.IsNullOrWhiteSpace(p.NowaKategoria) ? p.Kategoria : p.NowaKategoria;
+                KonfiguracjaMetryczki.Dodaj(Session, KonfiguracjaMetryczki.NowyKlucz(Session), p.Nazwa.Trim(), kategoria, p.Typ,
                     pola.Count == 0 ? 1 : pola.Max(x => x.Kolejnosc == int.MaxValue ? 0 : x.Kolejnosc) + 1);
                 t.CommitUI();
             }
@@ -92,8 +93,9 @@ public class MetryczkaConfigExtender
     public object UsunPole()
     {
         var p = new UsunPoleParams(Context.Empty.Clone(Session));
-        return new QueryContextInformation(p) { Caption = "Usuń pole metryczki", AcceptHandler = () => {
-            KonfiguracjaMetryczki.Pola(Session).FirstOrDefault(x => x.Nazwa == p.Pole)?.Usun();
+        return new QueryContextInformation(p) { Caption = "Usuń pola metryczki", AcceptHandler = () => {
+            foreach (WyborPola w in p.Pola.Where(w => w.Usun))
+                w.Pole.Usun();
             return null;
         } };
     }
@@ -156,6 +158,10 @@ public class DodajPoleParams : ContextBase
     [Caption("Kategoria (karta)")]
     public string Kategoria { get; set; }
 
+    /// <summary>Nowa kategoria powstaje z pierwszym polem; wypełniona ma pierwszeństwo przed wyborem z listy.</summary>
+    [Caption("Nowa kategoria")]
+    public string NowaKategoria { get; set; }
+
     [Caption("Typ pola")]
     public TypPola Typ { get; set; }
 
@@ -163,17 +169,37 @@ public class DodajPoleParams : ContextBase
         KonfiguracjaMetryczki.Pola(Session).Select(p => p.Kategoria).Distinct();
 }
 
-[Caption("Usuń pole metryczki")]
+[Caption("Usuń pola metryczki")]
 public class UsunPoleParams : ContextBase
 {
     public UsunPoleParams(Context cx) : base(cx)
     {
     }
 
-    [Caption("Pole do usunięcia")]
-    public string Pole { get; set; }
+    List<WyborPola> pola;
 
-    public IEnumerable<string> GetListPole() => KonfiguracjaMetryczki.Pola(Session).Select(p => p.Nazwa);
+    /// <summary>Siatka z checkboxem "Usuń"; stała instancja, inaczej zaznaczenia przepadają między odświeżeniami.</summary>
+    public List<WyborPola> Pola => pola ??= KonfiguracjaMetryczki.Pola(Session).Select(p => new WyborPola(p)).ToList();
+}
+
+/// <summary>Wiersz siatki okna "Usuń pola": pole metryczki + zaznaczenie do usunięcia.</summary>
+public class WyborPola
+{
+    public WyborPola(PoleMetryczki pole)
+    {
+        Pole = pole;
+    }
+
+    public PoleMetryczki Pole { get; }
+
+    [Caption("Usuń")]
+    public bool Usun { get; set; }
+
+    [Caption("Pole")]
+    public string Nazwa => Pole.Nazwa;
+
+    [Caption("Kategoria")]
+    public string Kategoria => Pole.Kategoria;
 }
 
 [Caption("Zmień nazwę pola metryczki")]
