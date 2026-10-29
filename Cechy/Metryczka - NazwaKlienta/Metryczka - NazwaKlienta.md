@@ -23,4 +23,4 @@ Inne pole = ten sam kod z innym kluczem (lista kluczy: `Addon/MetryczkaKlienta/R
 |---|---|
 | Import, kompilacja bazy | OK (FeatureDefs ID 2165) |
 | Lista pracowników, kolumna cechy przy pustym polu | OK – pusto |
-| Wartość po wpisaniu nazwy klienta w Opcjach | do sprawdzenia |
+| Wartość po wpisaniu nazwy klienta w Opcjach i Zapisz | OK – „Nowy klient” u każdego pracownika |
