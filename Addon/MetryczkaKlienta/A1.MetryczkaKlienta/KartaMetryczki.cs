@@ -6,15 +6,15 @@ using static System.Net.WebUtility;
 namespace A1.Metryczka;
 
 /// <summary>
-/// Karta klienta z cech TST_ jako HTML (element Html formularza): pasek z danymi klienta i kartami kategorii.
+/// Karta klienta z pól metryczki (Opcje → A1Testy) jako HTML (element Html formularza): pasek z danymi klienta i kartami kategorii.
 /// Przeglądarka enova nie obsługuje zmiennych CSS (var(--x)) ani atrybutu style - kolory tylko w klasach &lt;style&gt;.
 /// Okienkowa rysuje Html kontrolką WebBrowser (IE): meta X-UA-Compatible = tryb IE11, bez gap we flex, grid tylko w @supports.
 /// </summary>
 static class KartaMetryczki
 {
-    // Cechy pokazane w pasku nagłówka zamiast na karcie "Klient".
+    // Klucze pól (wczytanych z metryczki) pokazanych w pasku nagłówka zamiast na karcie "Klient".
     static readonly string[] WNaglowku =
-        { "TST_NazwaKlienta", "TST_NrKlienta", "TST_NazwaBazySQL", "TST_JGSAP", "TST_FTE", "TST_LiczbaKartotek", "TST_Specjalista" };
+        { "NazwaKlienta", "NrKlienta", "NazwaBazySQL", "JGSAP", "FTE", "LiczbaKartotek", "Specjalista" };
 
     // Kolory kart w kolejności kategorii arkusza; od 9. kategorii kolory powtarzają się od początku listy.
     static readonly string[] Kolory = { "#00704a", "#1565c0", "#6a1b9a", "#c2185b", "#ef6c00", "#00838f", "#5d4037", "#455a64" };
@@ -53,14 +53,13 @@ static class KartaMetryczki
     public static string Html(IList<CechaMetryczki> cechy)
     {
         if (cechy.Count == 0)
-            return "<p>Brak cech globalnych z prefiksem TST_ – Ogólne → Metryczka klienta (TST_) → Czynności → Utwórz cechy testowe.</p>";
+            return "<p>Brak pól metryczki – Narzędzia → Opcje → A1Testy → Metryczka klienta → Dodaj pole / Wczytaj pola z metryczki.</p>";
 
-        // Kolejność wierszy arkusza metryczki; cechy dodane ręcznie na końcu.
-        var wgArkusza = cechy.OrderBy(c => DefinicjeCech.Kolejnosc(c.Nazwa)).ToList();
         var wartosci = cechy.ToDictionary(c => c.Nazwa, c => c.Wartosc);
         string W(string nazwa) => wartosci.TryGetValue(nazwa, out string v) && v != null ? HtmlEncode(v) : null;
 
-        var kategorie = wgArkusza.Where(c => !WNaglowku.Contains(c.Nazwa)).GroupBy(c => c.Kategoria).ToList();
+        // Pola są już w kolejności z konfiguracji; karty w kolejności pierwszego pola kategorii.
+        var kategorie = cechy.Where(c => !WNaglowku.Contains(c.Nazwa)).GroupBy(c => c.Kategoria).ToList();
         int uzupelnione = cechy.Count(c => c.Uzupelniona);
         int procent = 100 * uzupelnione / cechy.Count;
 
@@ -69,10 +68,10 @@ static class KartaMetryczki
             sb.Append($".c{i}{{border-top-color:{Kolory[i % Kolory.Length]}}}.c{i} h2{{color:{Kolory[i % Kolory.Length]}}}\n");
         sb.Append($".bar i{{width:{procent}%}}\n</style><div class=\"mk\">");
 
-        sb.Append($"<div class=\"hero\"><div><h1>{W("TST_NazwaKlienta") ?? "Klient"}</h1><div class=\"sub\">")
-          .Append($"Nr klienta {W("TST_NrKlienta") ?? "<i>brak</i>"} · baza SQL: {W("TST_NazwaBazySQL") ?? "<i>brak</i>"}")
-          .Append($" · JG SAP: {W("TST_JGSAP") ?? "<i>brak</i>"}</div></div><div class=\"kpis\">")
-          .Append(Kpi(W("TST_FTE"), "FTE")).Append(Kpi(W("TST_LiczbaKartotek"), "Kartotek")).Append(Kpi(W("TST_Specjalista"), "Specjalista"))
+        sb.Append($"<div class=\"hero\"><div><h1>{W("NazwaKlienta") ?? "Klient"}</h1><div class=\"sub\">")
+          .Append($"Nr klienta {W("NrKlienta") ?? "<i>brak</i>"} · baza SQL: {W("NazwaBazySQL") ?? "<i>brak</i>"}")
+          .Append($" · JG SAP: {W("JGSAP") ?? "<i>brak</i>"}</div></div><div class=\"kpis\">")
+          .Append(Kpi(W("FTE"), "FTE")).Append(Kpi(W("LiczbaKartotek"), "Kartotek")).Append(Kpi(W("Specjalista"), "Specjalista"))
           .Append($"</div><div class=\"prog\">Uzupełniono {uzupelnione} z {cechy.Count} pozycji <div class=\"bar\"><i></i></div> {procent}%</div></div>");
 
         sb.Append("<div class=\"grid\">");

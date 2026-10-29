@@ -1,7 +1,30 @@
 # Dodatek A1.MetryczkaKlienta (enova365 2610)
 
-Cechy globalne z metryczki klienta (`Pobrane/metryczka.xlsx`, 42 pozycje) z prefiksem `TST_` oraz sekcja
-„Metryczka klienta” w module **Kadry i płace**, wyświetlana jako pierwsza, nad sekcją „Kadry”.
+Metryczka klienta (`Pobrane/metryczka.xlsx`, 42 pozycje + pola dodane przez użytkownika) z konfiguracją w
+**Narzędzia → Opcje → A1Testy → Metryczka klienta**, kartą w oknie **Ogólne → Metryczka klienta** i kafelkiem
+w module **Kadry i płace**, wyświetlanym jako pierwszy, nad sekcją „Kadry”.
+
+## Od 2026-10-29: pola w Opcjach zamiast cech globalnych
+
+Cechy globalne były nieczytelne, więc pola przeniesiono na własną stronę Opcji, obok „A1Testy/Konfiguracja raportu płacowego”.
+
+- Zapis jest w drzewie konfiguracji (`CfgNodes`/`CfgAttributes`):
+  `Root → A1Testy → Metryczka klienta → <klucz>`. Atrybuty liścia to `Nazwa`, `Kategoria`, `Typ` (`TakNie`/`Tekst`), `Kolejnosc`
+  i `Wartosc`. Kod: `KonfiguracjaMetryczki.cs`.
+- Strona (`Formularze/Config.MetryczkaKlienta.pageform.xml`, `MetryczkaConfigExtender.cs`) ma dwie siatki z edycją
+  w miejscu: **Pola Tak/Nie** z checkboxem i **Pola tekstowe** z wartością. Obie są pogrupowane po kategorii, a nazwę i kategorię
+  można poprawić w siatce. Wzorzec standardu: Systemowe/Zmiany ustawienia (`ChangeInfosConfig.TableInfos`), czyli setter
+  zapisuje atrybut w `Session.Logout(true)` + `CommitUI()`. Całość utrwala przycisk Zapisz okna Opcji.
+- Przyciski:
+  - **Dodaj pole** otwiera okno z polami nazwa, kategoria (lista istniejących) i typ (Tak/Nie, Tekst). Nowe pole dostaje klucz `PoleN` i trafia na koniec.
+  - **Usuń pole** usuwa pole wybrane z listy nazw.
+  - **Wczytaj pola z metryczki** zakłada brakujące pozycje arkusza (`DefinicjeCech.cs`; klucz = nazwa cechy bez `TST_`)
+    z wartościami starych cech `TST_`, jeśli są. Liczba, miesiąc i słownik przechodzą jako tekst. Istniejących pól nie zmienia.
+- Karta i kafelek czytają pola z konfiguracji. Pasek nagłówka szuka kluczy `NazwaKlienta`, `NrKlienta`, `NazwaBazySQL`,
+  `JGSAP`, `FTE`, `LiczbaKartotek` i `Specjalista`. Kolejność kart wynika z kolejności pierwszego pola każdej kategorii.
+- „Uzupełnione”: dla Tak/Nie wartość zapisana (także odznaczona), dla tekstu wartość niepusta. Nieustawiony Tak/Nie pokazuje „Nie”.
+- Okno Ogólne → Metryczka klienta: czynność „Utwórz cechy testowe” usunięta, a **„Usuń stare cechy TST_”** zostaje do
+  sprzątnięcia po wczytaniu wartości. Poniższe ustalenia o cechach globalnych dotyczą poprzedniej wersji.
 
 ## Ustalenia (2026-10-26)
 
@@ -34,7 +57,7 @@ Cechy globalne z metryczki klienta (`Pobrane/metryczka.xlsx`, 42 pozycje) z pref
 - „Usuń cechy testowe” sprząta też pozostałości po usuniętych funkcjach: aktualności „Metryczka klienta – …” i węzeł
   konfiguracji `A1MetryczkaKlienta` (Ukryj/Pokaż).
 
-## Okno „Metryczka klienta” (Ogólne → Metryczka klienta (TST_))
+## Okno „Metryczka klienta” (wersja do 28.10, Ogólne → Metryczka klienta (TST_))
 
 | Element | Działanie |
 |---|---|
@@ -53,7 +76,7 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 - `dotnet build A1.MetryczkaKlienta -c Release` → `A1.MetryczkaKlienta/bin/Release/A1.MetryczkaKlienta.dll`.
 - Zatrzymać procesy 2610 (orchestrator i dotnet), `dbmgr extupdate Claude <dll> --common --server`, uruchomić orchestrator.
   Przy działającym serwerze krok „Compiling database” kończy się timeoutem SQL. Po starcie zalogować się ręcznie w SonetaFrame.
-- Wycofanie: Czynności → Usuń cechy testowe, potem `dbmgr extremove Claude A1.MetryczkaKlienta.dll`.
+- Wycofanie: `dbmgr extremove Claude A1.MetryczkaKlienta.dll` (węzeł konfiguracji `A1Testy/Metryczka klienta` zostaje; stare cechy: Czynności → Usuń stare cechy TST_ przed usunięciem DLL). Dawniej: `dbmgr extremove Claude A1.MetryczkaKlienta.dll`.
 
 ## Test (baza Claude)
 
@@ -63,3 +86,4 @@ bo okno folderu ma sesję tylko do odczytu. Generator aktualności i przycisk Uk
 | Okno z kartą: kolory, plakietki, pełne etykiety, pasek 30/42 | OK 27.10 (zrzut) |
 | Utworzenie 42 cech, 8 kategorii, zestaw `TST_Metryczka` w Opcjach, bez duplikatów | OK 26.10 |
 | Usuwanie cech TST_ | NIE SPRAWDZONE |
+| Strona Opcje → A1Testy → Metryczka klienta: Dodaj/Usuń pole, Wczytaj, edycja w siatkach, karta z konfiguracji (29.10) | NIE SPRAWDZONE |

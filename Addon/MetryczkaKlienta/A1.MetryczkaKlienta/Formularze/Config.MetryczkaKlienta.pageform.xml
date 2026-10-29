@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Narzędzia → Opcje → A1Testy → Metryczka klienta. Zasób "Config.<Nazwa>.pageform.xml" = strona okna Opcji (typ Session),
+     jak Config.A1RaportPlacowy.pageform.xml. Siatki z edycją w miejscu na zwykłych obiektach (PoleMetryczki),
+     jak standardowa strona Systemowe/Zmiany ustawienia (ChangeInfosConfig.TableInfos). -->
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+
+  <Page Name="MetryczkaKlientaPage" CaptionHtml="A1Testy/Metryczka klienta" DataContext="{New MetryczkaConfigExtender}">
+
+    <Row>
+      <Command CaptionHtml="Dodaj pole" Width="16" MethodName="DodajPole" />
+      <Command CaptionHtml="Usuń pole" Width="16" MethodName="UsunPole" />
+      <Command CaptionHtml="Wczytaj pola z metryczki" Width="24" MethodName="WczytajZMetryczki" />
+    </Row>
+
+    <Group CaptionHtml="Pola Tak/Nie">
+      <Grid Width="*" Height="*" EditValue="{PolaTakNie}" EditInPlace="true" OrderBy="Kolejnosc">
+        <GroupBy CaptionHtml="Kategoria" EditValue="{Kategoria}" />
+        <Field CaptionHtml="Nazwa" Width="50" EditValue="{Nazwa}" />
+        <Field CaptionHtml="Tak/Nie" Width="8" EditValue="{Zaznaczone}" />
+        <Field CaptionHtml="Kategoria" Width="20" EditValue="{Kategoria}" />
+      </Grid>
+    </Group>
+
+    <Group CaptionHtml="Pola tekstowe">
+      <Grid Width="*" Height="*" EditValue="{PolaTekstowe}" EditInPlace="true" OrderBy="Kolejnosc">
+        <GroupBy CaptionHtml="Kategoria" EditValue="{Kategoria}" />
+        <Field CaptionHtml="Nazwa" Width="50" EditValue="{Nazwa}" />
+        <Field CaptionHtml="Wartość" Width="40" EditValue="{Tekst}" />
+        <Field CaptionHtml="Kategoria" Width="20" EditValue="{Kategoria}" />
+      </Grid>
+    </Group>
+
+    <Label CaptionHtml="Zmiany utrwala przycisk Zapisz okna Opcji. Karta: Ogólne → Metryczka klienta i kafelek nad Kadrami." Width="*" />
+  </Page>
+</DataForm>
