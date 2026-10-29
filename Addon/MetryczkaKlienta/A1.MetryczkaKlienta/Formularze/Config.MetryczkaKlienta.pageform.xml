@@ -15,7 +15,7 @@
       <Row>
         <Command CaptionHtml="+ Dodaj pole" Width="18" MethodName="DodajPole" />
         <Command CaptionHtml="Zmień nazwę" Width="18" MethodName="ZmienNazwe" />
-        <Command CaptionHtml="Usuń pole" Width="18" MethodName="UsunPole" />
+        <Command CaptionHtml="Usuń pola" Width="18" MethodName="UsunPole" />
         <Command CaptionHtml="Wczytaj brakujące pola z metryczki" Width="32" MethodName="WczytajZMetryczki" Visibility="{SaBrakujacePola}" />
       </Row>
     </Group>

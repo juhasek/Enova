@@ -3,10 +3,14 @@
           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
           xmlns="http://www.enova.pl/schema/form.xsd"
           xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
-  <!-- Okno "Usuń pole" (MetryczkaConfigExtender.UsunPole). -->
-  <Page Name="Usun" CaptionHtml="Usuń pole metryczki" DataContext="{DataSource}">
-    <Group CaptionHtml="Pole do usunięcia" LabelWidth="20">
-      <Field CaptionHtml="Pole" Width="50" EditValue="{Pole}" />
+  <!-- Okno "Usuń pola" (MetryczkaConfigExtender.UsunPole): zaznaczone pola usuwa OK. -->
+  <Page Name="Usun" CaptionHtml="Usuń pola metryczki" DataContext="{DataSource}">
+    <Group CaptionHtml="Zaznacz pola do usunięcia" Height="*">
+      <Grid Width="*" Height="*" EditValue="{Pola}" EditInPlace="true">
+        <Field CaptionHtml="Usuń" Width="6" EditValue="{Usun}" />
+        <Field CaptionHtml="Pole" Width="60" EditValue="{Nazwa}" />
+        <Field CaptionHtml="Kategoria" Width="20" EditValue="{Kategoria}" />
+      </Grid>
     </Group>
   </Page>
 </DataForm>
