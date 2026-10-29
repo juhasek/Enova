@@ -36,7 +36,15 @@ i swoje notatki. Zadanie: przygotować materiały tak jak po dniach 1–3.
 - Nagłe nieobecności – wniosek za pracownika w pulpicie kierownika (do przygotowania).
 - Nieomówione: rezerwa urlopowa i pora nocna kierowców (zapowiadane na ten dzień) – otwarte.
 
-## 4. Dalej
+## 4. Uwagi do warsztatu
+
+- Wstęp do tabeli kierunków wymiany w notatce D4 zmieniony z „do potwierdzenia” na neutralny opis – zgodnie z zasadą,
+  że notatka dla klienta nie zawiera sformułowań „do potwierdzenia” (zostało tylko standardowe zdanie o priorytetach,
+  jak w D3).
+- Lp. w dopisanych wierszach arkusza zapisane jako tekst (konsolówka ustawia `Value` stringiem) – wpływa tylko
+  na sortowanie; przy kolejnym dopisywaniu warto parsować liczby.
+
+## 5. Dalej
 
 - Przed wysłaniem notatki D4: uczestnicy, link do nagrania, ryczałt za porę nocną, czy rezerwę omówiono poza nagraniem.
 - AltOne: dokumentacja WebAPI, potwierdzenie z IT (REST, architektura, aplikacja mobilna), metody dla danych płacowych,
