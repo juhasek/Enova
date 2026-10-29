@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ https://www.enova.pl/schema/form.xsd"
+          Priority="10">
+  <!-- Karta metryczki (KartaMetryczki); pola w Opcje → A1Testy → Metryczka klienta; Czynności: Usuń stare cechy TST_. -->
+  <Page CaptionHtml="Metryczka klienta" DataContext="{DataSource}">
+    <Html Name="KartaMetryczki" EditValue="{KartaHtml}" Width="*" Height="*" ScrollBarsEnabled="true" />
+  </Page>
+</DataForm>
