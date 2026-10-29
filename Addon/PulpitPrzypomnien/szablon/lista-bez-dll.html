@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Przypomnienia – wariant bez DLL</title>
+<!--
+  MAKIETA wariantu bez DLL (dane fikcyjne): własny widok listy Pracownicy (viewform w CfgNodes)
+  z kolumnami cech + kolorowanie <Appearance>. Tak wyglądałaby lista w enova web – to nie jest HTML
+  wyświetlany klientowi, tylko podgląd układu. Ograniczenia przeglądarki enovy jak w pulpit.html.
+-->
+<style>
+  body { margin:0; padding:16px; background:#f3f5f8; font-family:"Segoe UI",Arial,sans-serif; font-size:13px; color:#1f2937; }
+  table { border-collapse:collapse; }
+  .w100 { width:100%; }
+  .crumb { font-size:12px; color:#6b7280; padding-bottom:4px; }
+  .title { font-size:19px; font-weight:600; padding-bottom:10px; }
+
+  /* panel filtrów listy */
+  .flt { background:#fff; border:1px solid #e5e7eb; border-radius:6px; padding:8px 12px; margin-bottom:8px; }
+  .flt td { padding:2px 14px 2px 0; vertical-align:middle; white-space:nowrap; }
+  .fl { font-size:12px; color:#6b7280; padding-right:6px !important; }
+  .fv { display:inline-block; border:1px solid #cbd5e1; border-radius:4px; padding:3px 8px; min-width:70px; background:#fff; }
+  .fv-on { border-color:#15803d; background:#f0fdf4; color:#166534; font-weight:600; }
+  .btn { display:inline-block; border:1px solid #cbd5e1; border-radius:4px; padding:3px 10px; background:#f8fafc; }
+
+  /* siatka */
+  .grid { background:#fff; border:1px solid #e5e7eb; border-radius:6px; }
+  .grid th { background:#f8fafc; text-align:left; font-weight:600; font-size:12px; color:#374151; padding:7px 8px; border-bottom:2px solid #e5e7eb; white-space:nowrap; }
+  .grid th.grp { text-align:center; background:#eef2f7; color:#475569; font-size:11px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid #e5e7eb; }
+  .grid td { padding:6px 8px; border-bottom:1px solid #f1f3f6; white-space:nowrap; }
+  .grid tr.sel td { background:#e8f1fb; }
+  .r { text-align:right; }
+  .c { text-align:center; }
+  .b { font-weight:700; }
+  .mut { color:#9ca3af; }
+  .sep { border-left:2px solid #e5e7eb; }
+
+  /* Appearance – kolory komórek/wierszy (w viewform: BackColor/ForeColor/FontBold) */
+  .a-red { background:#fee2e2; color:#b91c1c; font-weight:700; }
+  .a-org { background:#ffedd5; color:#c2410c; font-weight:600; }
+  .a-yel { background:#fef9c3; color:#854d0e; }
+  .row-red td.k { border-left:4px solid #dc2626; }
+  .row-org td.k { border-left:4px solid #ea580c; }
+  .row-yel td.k { border-left:4px solid #ca8a04; }
+  .row-non td.k { border-left:4px solid #ffffff; }
+
+  .foot td { background:#f8fafc; font-size:12px; color:#374151; padding:6px 8px; border-top:2px solid #e5e7eb; }
+
+  /* opis pod makietą */
+  .cols { border-collapse:separate; border-spacing:0 12px; }
+  .card { background:#fff; border-radius:8px; padding:10px 14px; vertical-align:top; }
+  .card-t { font-size:14px; font-weight:600; padding-bottom:6px; border-bottom:1px solid #e5e7eb; margin-bottom:6px; }
+  .mini td { padding:4px 8px 4px 0; border-bottom:1px solid #f1f3f6; font-size:12px; vertical-align:top; }
+  .mini th { text-align:left; font-size:11px; color:#6b7280; padding:2px 8px 4px 0; }
+  .code { font-family:Consolas,monospace; font-size:12px; color:#1e3a5f; }
+  .ok { color:#15803d; font-weight:700; }
+  .no { color:#b91c1c; font-weight:700; }
+  .leg span { display:inline-block; padding:1px 8px; border-radius:3px; margin-right:6px; font-size:12px; }
+</style>
+</head>
+<body>
+
+<div class="crumb">Kadry i płace › Kadry › Pracownicy ›</div>
+<div class="title">Przypomnienia</div>
+
+<!-- PANEL FILTRÓW: standardowe filtry listy + filtr kolumny zapisany w widoku -->
+<table class="w100 flt"><tr>
+  <td><span class="fl">Aktualność</span><span class="fv">29.10.2026</span></td>
+  <td><span class="fl">Wydział</span><span class="fv">Produkcja</span></td>
+  <td><span class="fl">Dni do terminu ≤</span><span class="fv fv-on">30</span></td>
+  <td><span class="fl">Pokaż</span><span class="fv">z terminem w okresie</span></td>
+  <td class="r w100"><span class="btn">Odśwież</span>&nbsp;<span class="btn">Eksport do Excela</span></td>
+</tr></table>
+
+<table class="w100 grid">
+  <tr>
+    <th colspan="6"></th>
+    <th class="grp sep" colspan="5">Terminy (cechy pracownika)</th>
+  </tr>
+  <tr>
+    <th>Kod</th><th>Nazwisko i imię</th><th>Wydział</th>
+    <th>Najbliższy termin</th><th>Czego dotyczy</th><th class="r">Dni</th>
+    <th class="sep">Koniec umowy</th><th>Badanie ważne do</th><th>BHP ważne do</th><th>Orzeczenie do</th><th>Aneks czasowy do</th>
+  </tr>
+
+  <tr class="row-red"><td class="k">PR-014</td><td>Pracownik 014</td><td>Produkcja</td>
+    <td class="a-red">21.10.2026</td><td>Badanie okresowe</td><td class="r a-red">-8</td>
+    <td class="sep mut">—</td><td class="a-red">21.10.2026</td><td>14.03.2027</td><td class="mut">—</td><td class="mut">—</td></tr>
+  <tr class="row-red sel"><td class="k">PR-027</td><td>Pracownik 027</td><td>Produkcja</td>
+    <td class="a-red">25.10.2026</td><td>Szkolenie BHP</td><td class="r a-red">-4</td>
+    <td class="sep">31.12.2026</td><td>02.06.2027</td><td class="a-red">25.10.2026</td><td class="mut">—</td><td class="mut">—</td></tr>
+  <tr class="row-org"><td class="k">PR-031</td><td>Pracownik 031</td><td>Produkcja</td>
+    <td class="a-org">30.10.2026</td><td>Koniec umowy (próbna)</td><td class="r a-org">1</td>
+    <td class="sep a-org">30.10.2026</td><td>15.01.2027</td><td>30.07.2027</td><td class="mut">—</td><td class="mut">—</td></tr>
+  <tr class="row-org"><td class="k">PR-003</td><td>Pracownik 003</td><td>Produkcja</td>
+    <td class="a-org">02.11.2026</td><td>Badanie okresowe</td><td class="r a-org">4</td>
+    <td class="sep mut">—</td><td class="a-org">02.11.2026</td><td>11.11.2026</td><td class="mut">—</td><td class="mut">—</td></tr>
+  <tr class="row-org"><td class="k">PR-044</td><td>Pracownik 044</td><td>Produkcja</td>
+    <td class="a-org">05.11.2026</td><td>Aneks czasowy</td><td class="r a-org">7</td>
+    <td class="sep mut">—</td><td>20.08.2027</td><td>01.02.2027</td><td class="mut">—</td><td class="a-org">05.11.2026</td></tr>
+  <tr class="row-yel"><td class="k">PR-011</td><td>Pracownik 011</td><td>Produkcja</td>
+    <td class="a-yel">09.11.2026</td><td>Szkolenie BHP</td><td class="r a-yel">11</td>
+    <td class="sep mut">—</td><td>10.04.2027</td><td class="a-yel">09.11.2026</td><td class="mut">—</td><td class="mut">—</td></tr>
+  <tr class="row-yel"><td class="k">PR-019</td><td>Pracownik 019</td><td>Produkcja</td>
+    <td class="a-yel">15.11.2026</td><td>Koniec umowy (określony)</td><td class="r a-yel">17</td>
+    <td class="sep a-yel">15.11.2026</td><td>03.03.2027</td><td>19.05.2027</td><td class="mut">—</td><td class="mut">—</td></tr>
+  <tr class="row-yel"><td class="k">PR-036</td><td>Pracownik 036</td><td>Produkcja</td>
+    <td class="a-yel">24.11.2026</td><td>Orzeczenie niepełnospr.</td><td class="r a-yel">26</td>
+    <td class="sep mut">—</td><td>12.12.2026</td><td>08.09.2027</td><td class="a-yel">24.11.2026</td><td class="mut">—</td></tr>
+  <tr class="row-yel"><td class="k">PR-022</td><td>Pracownik 022</td><td>Produkcja</td>
+    <td class="a-yel">27.11.2026</td><td>Badanie okresowe</td><td class="r a-yel">29</td>
+    <td class="sep mut">—</td><td class="a-yel">27.11.2026</td><td>30.01.2027</td><td class="mut">—</td><td class="mut">—</td></tr>
+
+  <tr class="foot"><td colspan="5">Liczba pracowników: <b>9</b></td><td class="r">po terminie: <b>2</b></td><td colspan="5" class="sep"></td></tr>
+</table>
+
+<table class="cols w100"><tr>
+  <td class="card">
+    <div class="card-t">Z czego to jest zbudowane (wszystko w bazie)</div>
+    <table class="w100 mini">
+      <tr><th>Cecha pracownika</th><th>Typ</th><th>Skąd wartość</th></tr>
+      <tr><td class="code">KoniecUmowy</td><td>Data</td><td>algorytm: koniec etatu na czas określony / próbny</td></tr>
+      <tr><td class="code">BadanieWazneDo</td><td>Data</td><td>algorytm albo ręcznie</td></tr>
+      <tr><td class="code">BHPWazneDo</td><td>Data</td><td>algorytm albo ręcznie</td></tr>
+      <tr><td class="code">OrzeczenieDo</td><td>Data</td><td>algorytm: orzeczenie obowiązujące dziś</td></tr>
+      <tr><td class="code">AneksCzasowyDo</td><td>Data</td><td>algorytm: zapis historii oznaczony jako aneks</td></tr>
+      <tr><td class="code">NajblizszyTermin</td><td>Data</td><td>algorytm: najmniejsza z dat powyżej</td></tr>
+      <tr><td class="code">TerminCzego</td><td>Tekst</td><td>algorytm: nazwa najbliższego terminu</td></tr>
+      <tr><td class="code">DniDoTerminu</td><td>Liczba</td><td>algorytm: NajblizszyTermin − dziś</td></tr>
+    </table>
+    <div class="mini">&nbsp;</div>
+    Widok „Przypomnienia” pod listą Pracownicy: kolumny <span class="code">{Features.…}</span>,
+    kolory <span class="code">&lt;Appearance Condition="{?…}"&gt;</span> (czerwony &lt; 0, pomarańczowy ≤ 7, żółty ≤ 30),
+    filtr „Dni do terminu ≤ 30” zapisany w widoku. Start: Ulubione → „Startowy” (web/SonetaFrame).
+  </td></tr><tr>
+  <td class="card">
+    <div class="card-t">Bez DLL a z DLL</div>
+    <table class="w100 mini">
+      <tr><th></th><th>Bez DLL (lista)</th><th>Z DLL (pulpit)</th></tr>
+      <tr><td>Wiersz</td><td>pracownik (najbliższy termin + kolumny)</td><td>pojedynczy termin</td></tr>
+      <tr><td>Kafelki KPI, oś czasu</td><td class="no">nie</td><td class="ok">tak</td></tr>
+      <tr><td>Kolory pilności</td><td class="ok">tak (Appearance)</td><td class="ok">tak</td></tr>
+      <tr><td>Nowy termin</td><td>cecha + kolumna w widoku</td><td>cecha + reguła w Opcjach</td></tr>
+      <tr><td>Okres</td><td>filtr kolumny „Dni”</td><td>pole Okres</td></tr>
+      <tr><td>Notatki działu</td><td class="no">nie</td><td class="ok">tak</td></tr>
+      <tr><td>Start po zalogowaniu</td><td>web/ramka: „Startowy”</td><td>„Startowy” + okienkowa z kodu</td></tr>
+      <tr><td>Eksport, sortowanie, wejście w kartotekę</td><td class="ok">od razu</td><td>czynność „Pokaż listę”</td></tr>
+      <tr><td>Aktualizacje enovy</td><td class="ok">bez kompilacji</td><td>DLL pod wersję klienta</td></tr>
+    </table>
+  </td>
+</tr></table>
+
+</body>
+</html>

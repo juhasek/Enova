@@ -72,6 +72,17 @@ kolumną/filtrem na liście pracowników, a pulpit tylko ją czyta.
 - **Koniec aneksu czasowego** — w enova aneks to zapis historii pracownika z datą końca. Do ustalenia u klienta,
   po czym poznać aneks czasowy (rodzaj/przyczyna zmiany, opis), żeby nie łapać zwykłych zmian warunków.
 
+## Wariant bez DLL (gdy klient nie zgodzi się na dodatek)
+
+Makieta: [`szablon/lista-bez-dll.html`](szablon/lista-bez-dll.html). Wszystko w bazie:
+- cechy pracownika z datami (jak wyżej) + cechy z algorytmem `NajblizszyTermin`, `TerminCzego`, `DniDoTerminu`;
+- własny widok „Przypomnienia” pod Kadry → Pracownicy (viewform w konfiguracji): kolumny `{Features.…}`,
+  kolory `<Appearance Condition="{?…}">` (czerwony < 0, pomarańczowy ≤ 7, żółty ≤ 30), filtr „Dni ≤ 30” zapisany w widoku;
+- start: Ulubione → „Startowy” (web/SonetaFrame); w okienkowej — ręcznie z Ulubionych.
+
+Ograniczenia: wiersz = pracownik (nie pojedynczy termin), brak kafelków KPI, osi czasu i notatek, nowy termin
+wymaga też dopisania kolumny w widoku. Do sprawdzenia na żywo: `Appearance` i filtr na cesze z algorytmem.
+
 ## Ograniczenia HTML w enovie (zastosowane w szablonie)
 
 - bez `var(--x)` i bez `style=` — tylko klasy w `<style>`, kolory na stałe (kolor reguły = jedna z gotowych klas);
