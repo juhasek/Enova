@@ -25,6 +25,7 @@ Wersja 2 pulpitu przypomnień bez dodatku DLL: wszystko w bazie. Propozycja z DL
 | NajblizszyTermin | Data | najwcześniejsza z dat powyżej |
 | TerminCzego | Tekst | nazwa najbliższego terminu |
 | DniDoTerminu | Liczba | NajblizszyTermin − dziś; ujemne = po terminie; **9999 = brak terminu** |
+| WOkresie | Liczba | 1 = najbliższy termin do końca okresu z filtra „Okres” listy (zaległe też), 0 = nie; bez okresu 30 dni — filtr widoku |
 
 Nowy termin u klienta: cecha (ręczna albo z algorytmem w kodzie wspólnym) + dopisanie do metody
 `Najblizszy` w A1Przypomnienia + kolumna w widoku.
@@ -36,7 +37,7 @@ Orzeczenia: kod używa `OrzeczeniaPFRON`/`OrzeczeniaZUS` z enova **2610** — w 
 
 Kolumny: Kod, Nazwisko i imię, Wydział, Najbliższy termin, Czego dotyczy, Dni + kolumna na każdy termin.
 Sortowanie po Kod — sortowanie po cesze z algorytmem enova blokuje komunikatem „kliknij TUTAJ” (posortować można ręcznie kolumną Dni). Kolor wiersza (`Appearance`):
-czerwony < 0, pomarańczowy 0–7, żółty 8–30; 9999 wyszarzone. Filtry: standardowe filtry listy Pracownicy.
+czerwony < 0, pomarańczowy 0–7, żółty 8–30; 9999 wyszarzone. Filtry: standardowe filtry listy Pracownicy; **„Okres” wyznacza okres przypomnień** — domyślny `<UserFilter Value="[Features.WOkresie] = 1"/>` (bez CaptionHtml = włączany przy otwarciu, GridController.InitFilters) zostawia tylko pracowników z terminem do końca okresu, łącznie z zaległymi.
 Strona startowa (web/SonetaFrame): Ulubione → „Startowy” = ten widok.
 
 Po założeniu lub zmianie widoku SQL-em serwer nie widzi zmiany do restartu procesów 2610 (cache konfiguracji).

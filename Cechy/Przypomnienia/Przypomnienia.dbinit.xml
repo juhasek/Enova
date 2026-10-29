@@ -141,6 +141,14 @@ namespace Soneta.Runtime.Database.Business.TblCodeFiles {
             return data == Date.Empty ? BrakTerminu : data - Date.Today;
         }
 
+        // Czy pracownik ma termin do końca okresu z filtra listy (po terminie też się liczy).
+        // Bez okresu w filtrze - 30 dni od dziś.
+        public static bool WOkresie(Pracownik pracownik, FromTo okres) {
+            Date koniec = okres == FromTo.Empty || okres.To == Date.MaxValue ? Date.Today + 30 : okres.To;
+            Date termin = NajblizszyTermin(pracownik);
+            return termin != Date.Empty && termin <= koniec;
+        }
+
         private static void Najblizszy(Pracownik pracownik, out Date data, out string opis) {
             data = Date.Empty;
             opis = "";
@@ -345,6 +353,26 @@ public int Feature_DniDoTerminu {
         // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
         return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.DniDoTerminu(Row);
     }
+}
+]]></Code>
+  </FeatureDefinition>
+  <FeatureDefinition guid="0b7e5a11-6c2d-4f3a-8e91-1a2b3c4d5e0b">
+    <TableName>Pracownicy</TableName>
+    <Name>WOkresie</Name>
+    <Category>Przypomnienia</Category>
+    <Description>1 = termin do końca okresu z filtra listy (lub po terminie), 0 = brak; bez okresu - 30 dni</Description>
+    <TypeNumber>Int</TypeNumber>
+    <Algorithm>GetArgs</Algorithm>
+    <Code><![CDATA[
+public int Get_Feature_WOkresie(Context cx) {
+    // okres z filtra "Okres" listy pracowników (obiekt parametrów widoku dziedziczy po OkresContext)
+    OkresContext parametryListy;
+    FromTo okres = FromTo.Empty;
+    if (cx.Get<OkresContext>(out parametryListy) && parametryListy != null)
+        okres = parametryListy.Okres;
+    // kod wspólny: Dodatkowy kod kompilacji "A1Przypomnienia"
+    // Int zamiast Bool: filtr widoku "[Features.WOkresie] = 1" (porównanie liczb jak w kolorach)
+    return Soneta.Runtime.Database.Business.TblCodeFiles.Przypomnienia.WOkresie(Row, okres) ? 1 : 0;
 }
 ]]></Code>
   </FeatureDefinition>
