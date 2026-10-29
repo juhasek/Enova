@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cecha na Pracownikach: wartość pola "Nazwa klienta" z metryczki (Narzędzia → Opcje → A1Testy → Metryczka klienta).
+     Import: dbmgr importxml <baza> "Metryczka - NazwaKlienta.dbinit.xml". Opis: Metryczka - NazwaKlienta.md -->
+<session xmlns="http://www.soneta.pl/schema/business">
+  <FeatureDefinition guid="df83c9d7-50d8-487e-a662-489f962aa6bb">
+    <TableName>Pracownicy</TableName>
+    <Name>MetryczkaNazwaKlienta</Name>
+    <Category>Metryczka klienta</Category>
+    <Description>Nazwa klienta z metryczki (Opcje → A1Testy → Metryczka klienta)</Description>
+    <TypeNumber>String</TypeNumber>
+    <Algorithm>GetArgs</Algorithm>
+    <Code><![CDATA[
+public string Get_Feature_MetryczkaNazwaKlienta(Context cx) {
+    // Pole metryczki = węzeł konfiguracji A1Testy → Metryczka klienta → <klucz>, wartość w atrybucie "Wartosc".
+    // Klucz nie zmienia się przy zmianie nazwy pola w Opcjach.
+    Soneta.Config.CfgNode pole = new Soneta.Config.CfgManager(Row.Session).Root
+        ?.FindSubNode("A1Testy", false)?.FindSubNode("Metryczka klienta", false)?.FindSubNode("NazwaKlienta", false);
+    return pole?.FindAttribute("Wartosc", false)?.Value as string ?? "";
+}
+]]></Code>
+  </FeatureDefinition>
+</session>
