@@ -26,7 +26,7 @@ static class KartaMetryczki
 .hero h1{margin:0;font-size:22px;font-weight:600}
 .sub{opacity:.85;font-size:13px}
 .kpis{display:flex;flex-basis:100%;margin-top:12px}
-.kpi{margin-right:10px;background:rgba(255,255,255,.14);border-radius:10px;padding:8px 14px;min-width:96px}
+.kpi{flex:0 0 auto;margin-right:10px;background:rgba(255,255,255,.14);border-radius:10px;padding:8px 14px;min-width:96px}
 .kpi b{display:block;font-size:20px;font-weight:600}
 .kpi span{font-size:11px;text-transform:uppercase;letter-spacing:.04em;opacity:.85}
 .prog{flex-basis:100%;display:flex;align-items:center;margin-top:16px;font-size:12px}
