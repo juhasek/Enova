@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Narzędzia → Opcje → A1Testy → Metryczka klienta. Zasób "Config.<Nazwa>.pageform.xml" = strona okna Opcji (typ Session),
+     jak Config.A1RaportPlacowy.pageform.xml. Układ: pasek stanu + przyciski, pod spodem sekcja na kategorię
+     z wierszami etykieta + pole (jak standardowe strony Opcji). -->
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd">
+
+  <Page Name="MetryczkaKlientaPage" CaptionHtml="A1Testy/Metryczka klienta" DataContext="{New MetryczkaConfigExtender}">
+
+    <Group CaptionHtml="Metryczka klienta">
+      <Label CaptionHtml="{Podsumowanie}" Width="*" Class="BoldLabel" />
+      <Label CaptionHtml="Zaznacz pola Tak/Nie i wpisz wartości poniżej, potem kliknij Zapisz. Karta metryczki: Ogólne → Metryczka klienta oraz kafelek nad Kadrami." Width="*" />
+      <Row>
+        <Command CaptionHtml="+ Dodaj pole" Width="18" MethodName="DodajPole" />
+        <Command CaptionHtml="Zmień nazwę" Width="18" MethodName="ZmienNazwe" />
+        <Command CaptionHtml="Usuń pole" Width="18" MethodName="UsunPole" />
+        <Command CaptionHtml="Wczytaj brakujące pola z metryczki" Width="32" MethodName="WczytajZMetryczki" Visibility="{SaBrakujacePola}" />
+      </Row>
+    </Group>
+
+    <!-- Sekcje kategorii z polami generuje MetryczkaConfigExtender.RenderPola (jak Ogólne → Cechy globalne);
+         RenderKey przebudowuje układ po Dodaj/Usuń pole. -->
+    <Stack RenderKey="{RenderKey}" RenderMethodName="RenderPola" />
+
+  </Page>
+</DataForm>
