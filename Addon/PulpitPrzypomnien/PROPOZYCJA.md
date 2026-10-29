@@ -54,6 +54,24 @@ Szablon widoku: [`szablon/pulpit.html`](szablon/pulpit.html) — dane fikcyjne, 
    Uwaga: zasób `FolderMenu-KadryIPlace.form.xml` ma już Metryczka klienta — jeden zasób na ekran, więc kafelek
    dopisać w tym samym miejscu (albo przenieść układ ekranu do wspólnego dodatku).
 
+## Nowy termin u klienta (np. koniec aneksu czasowego, koniec orzeczenia)
+
+Dodatek nie musi znać miejsca, w którym leży data — czyta ją z **cechy typu Data**. Trzy poziomy:
+
+| Gdzie jest data | Co robimy | Kod w dodatku |
+|---|---|---|
+| Klient wpisuje ją ręcznie | zwykła cecha Data + reguła | nie |
+| Jest w danych enovy (historia etatu, orzeczenia) | **cecha z algorytmem** zwracająca datę + reguła | nie — kilkanaście linii w algorytmie cechy |
+| Potrzebna u wielu klientów | przeniesienie do źródeł wbudowanych dodatku | tak |
+
+Zalety cechy z algorytmem: różnice wersji schowane w jednym miejscu (orzeczenie: w 2512 na zapisie historii
+`StopienNiepelnosp`/`PFRON`, w 2610 `OrzeczeniaPFRON`/`OrzeczeniaZUS` z okresem obowiązywania), cecha jest też
+kolumną/filtrem na liście pracowników, a pulpit tylko ją czyta.
+
+- **Koniec orzeczenia** — algorytm: orzeczenie obowiązujące dziś (lub najbliższe), zwraca datę końca; brak → pusta.
+- **Koniec aneksu czasowego** — w enova aneks to zapis historii pracownika z datą końca. Do ustalenia u klienta,
+  po czym poznać aneks czasowy (rodzaj/przyczyna zmiany, opis), żeby nie łapać zwykłych zmian warunków.
+
 ## Ograniczenia HTML w enovie (zastosowane w szablonie)
 
 - bez `var(--x)` i bez `style=` — tylko klasy w `<style>`, kolory na stałe (kolor reguły = jedna z gotowych klas);
