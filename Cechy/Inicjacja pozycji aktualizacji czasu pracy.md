@@ -13,7 +13,8 @@ jednym na każdy dzień okresu, tworzonych w tabeli `PozAktCzasu`.
 Dla każdego dnia okresu:
 
 - jeśli dla danego dnia istnieje już wcześniejsza aktualizacja (`DzienPracyAktualizacja`) albo dzień
-  z kalendarza pracownika z niezerowym czasem pracy — dzień jest **kopiowany** (`Copy`) razem ze
+  z kalendarza pracownika z niezerowym czasem pracy lub ze strefą inną niż „NB” (np. rozliczeniową)
+  — dzień jest **kopiowany** (`Copy`) razem ze
   swoimi strefami pracy,
 - w przeciwnym razie dzień jest **przeliczany od zera** przez
   `Row.ZrodloPlanu.PrzeliczDzieńPracyAktualizacja`.
@@ -99,7 +100,32 @@ pętli po `defStrefy.Distinct().Count()` dodawany jest **dokładnie jeden** wier
 `StrefaPracyAktualizacja` ze strefą „NB” na dzień nieobecności bez źródła. Pracownik uzupełnia
 Projekt/Task ręcznie w gridzie, tak jak przy normalnym wypełnianiu czasu pracy.
 
-## 4. Do potwierdzenia / obserwacji na przyszłość
+## 4. Zgłoszony błąd i poprawka (30.10.2026) — strefa rozliczeniowa nie przechodzi na dokument
+
+**Zgłoszenie klienta:** gdy w czasie pracy pracownika dzień ma tylko jedną strefę „Rozliczenie
+nadgodzin (firma)”, informacja ta nie przechodzi na dokument aktualizacji. Dzień z dwiema strefami
+(np. „Praca w normie” + „Rozliczenie nadgodzin”) przechodzi poprawnie.
+
+**Przyczyna:** kopiowanie dnia było warunkowane `d.Praca != FromTimes.Empty`, a `Dzien.Praca` składa
+się tylko ze stref `Wchodzi && Typ == Zwieksza`. Strefy rozliczeniowe mają `Wchodzi = false`, więc
+dzień z samą taką strefą wyglądał jak pusty i szedł do `PrzeliczDzieńPracyAktualizacja`, które
+kopiuje na dokument **plan** dnia. Strefa rozliczeniowa znikała, a na jej miejsce wchodził plan.
+
+**Poprawka:** dzień jest kopiowany także wtedy, gdy ma dowolną strefę inną niż „NB”
+(`d.Any(s => s.Definicja.Kod != "NB")`). Dni z samą strefą „NB” i dni bez stref działają jak
+dotąd, czyli przez przeliczenie, więc poprawki z punktów 2 i 3 pozostają bez zmian.
+
+**Testy:** warunek skompilowany na DLL 2610; działanie na dokumencie potwierdził użytkownik
+(30.10.2026). Scenariusze:
+
+| Dzień w czasie pracy | Oczekiwany wynik na dokumencie |
+|---|---|
+| Sama strefa „Rozliczenie nadgodzin (firma)” | ta strefa, bez planu |
+| „Praca w normie” + „Rozliczenie nadgodzin” | obie strefy, jak dotąd |
+| Nieobecność bez stref pracy | jeden wiersz „Nieobecność” |
+| Dzień bez zapisów | plan dnia |
+
+## 5. Do potwierdzenia / obserwacji na przyszłość
 
 - Kod zawiera zakomentowany fragment diagnostyczny (log dla konkretnego pracownika/daty) — pozostał
   bez zmian, nieaktywny.
