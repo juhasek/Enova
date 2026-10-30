@@ -31,17 +31,18 @@ Arkusz bierze wyniki z `Generator/wyniki.json` (przebieg newman z 30.10.2026).
 | Zmienna | Znaczenie |
 |---|---|
 | `baseUrl` | Adres WebAPI bez prefiksu, np. `http://localhost:9010` |
-| `testMode` | `true`: serwer sprawdza dane i wycofuje zapis. `false`: zapisuje. |
 | `appToken` | Token aplikacji (tylko Dynamic API) |
 | `sessionToken` | Ustawia go żądanie Logowanie |
 | `database`, `operator`, `password` | Tylko MethodInvoker |
-| `stanowisko`, `wydzial` | Wartości z bazy, na której testujesz. `wydzial` to kod wydziału. |
-| `cecha` | Nazwa cechy z dostępem przez WebAPI (scenariusz Z-06) |
 
 Uzupełnionego środowiska nie commitować.
 
-Grupy 2 i 7 zawsze idą w trybie próbnym (poza C-04 w grupie 6 sterowanym zmienną). Grupy 3–6 trzeba uruchomić z
-`testMode=false` na bazie testowej, bo przedłużenia i zwolnienia działają na pracownikach założonych w grupie 3.
+Dane żądań (stanowisko, wydział, `TestMode` itd.) są wpisane wprost w każde żądanie, bo klient wywołuje API poza Postmanem.
+Zmienne dotyczą tylko połączenia. Na innej bazie podmień `Stanowisko`, `JednostkaOrg` i `NAZWA_CECHY` (Z-06).
+
+`TestMode = true`: serwer sprawdza dane i wycofuje zapis. Grupy 1, 2 i 7 są próbne. **Grupy 3–6 mają `TestMode = false` i zapisują dane**,
+bo przedłużenia i zwolnienia działają na pracownikach założonych w grupie 3: uruchamiaj je tylko na bazie testowej.
+W kreatorze tryb próbny jest domyślnie włączony (pole wyboru).
 
 ## Sposoby wywołania
 

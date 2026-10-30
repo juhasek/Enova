@@ -19,6 +19,7 @@ label { display:block; font-size:13px; color:var(--szary); margin-bottom:8px; }
 input, select, textarea { width:100%; padding:7px 8px; margin-top:2px; font:inherit; color:var(--tekst); background:var(--tlo); border:1px solid var(--linia); border-radius:5px; }
 textarea { resize:vertical; }
 .siatka { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0 10px; }
+.wybor input { width:auto; margin-right:6px; }
 fieldset { border:1px solid var(--linia); border-radius:6px; margin:0 0 10px; padding:8px 10px 2px; }
 legend { font-size:13px; color:var(--szary); padding:0 4px; }
 button { font:inherit; padding:7px 12px; border-radius:5px; border:1px solid var(--akcent); background:var(--akcent); color:var(--karta); cursor:pointer; }
@@ -55,6 +56,8 @@ ul { margin:6px 0 0; padding-left:18px; }
           <option value="zmien">Zmień dane</option>
           <option value="odczytaj">Odczytaj pracownika</option>
         </select>
+
+        <label class="wybor"><input id="proba" type="checkbox" checked> Tryb próbny: TestMode = true, serwer nie zapisuje zmian</label>
 
         <fieldset><legend>Pracownik</legend><div class="siatka">
           <label>Kod<input id="kod"></label>
@@ -134,7 +137,6 @@ const SERWISY = {
   KadryPlace: { kontroler: 'KadryPlaceWebAPI', serwis: 'AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core' },
   Operacje: { kontroler: 'OperationFunctionsWebAPI', serwis: 'AltOne.WCF.Core.Interfaces.IOperationFunctions2, AltOne.WCF.Core' }
 };
-const TEST_MODE = '{{testMode}}';
 
 const dataDTO = s => { const [Year, Month, Day] = s.split('-').map(Number); return { Year, Month, Day }; };
 const dataCzas = s => s + 'T00:00:00';
@@ -201,7 +203,7 @@ function zbudujZapytanie(f) {
       cialo: bezPustych({ Kod: f.kod, DataAktualnosci: f.dataZmiany ? dataCzas(f.dataZmiany) : undefined, Zatrudnienie: true, AdresDoKorespondencji: true, Rachunki: true })
     };
   }
-  const cialo = { TestMode: TEST_MODE, ...daneOsoby(f) };
+  const cialo = { TestMode: f.proba !== false, ...daneOsoby(f) };
   if (f.operacja === 'zatrudnij') {
     cialo.Zatrudnienie = zatrudnienie(f, true);
   } else {
@@ -257,7 +259,7 @@ function sprawdzWynik(oczekiwanyWynik, tekst) {
 
 function doPostmana(z, tryb) {
   const s = SERWISY[z.usluga];
-  const json = o => JSON.stringify(o, null, 2).replaceAll(`"${TEST_MODE}"`, TEST_MODE);
+  const json = o => JSON.stringify(o, null, 2);
   const naglowki = [{ key: 'Content-Type', value: 'application/json' }];
   const raw = { mode: 'raw', options: { raw: { language: 'json' } } };
   const request = tryb === 'invoker'
@@ -298,7 +300,7 @@ function kolekcja(nazwa, grupy, tryb) {
   return {
     info: {
       name: nazwa,
-      description: 'Wygenerowano Kreatorem Postman. testMode=true w środowisku: serwer nie zapisuje zmian. Scenariusze przedłużeń, zwolnień i zmian korzystają z pracowników z grupy Zatrudnienie, więc wymagają testMode=false na bazie testowej.',
+      description: 'Wygenerowano Kreatorem Postman. Wartości są wpisane w każdym żądaniu. Grupy Zatrudnienie, Przedłużenie, Zwolnienie i Zmiana danych mają TestMode = false i ZAPISUJĄ dane: uruchamiaj je tylko na bazie testowej.',
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
     },
     item: tryb === 'invoker' ? foldery : [...logowanie(), ...foldery, ...wylogowanie()]
@@ -310,27 +312,27 @@ function srodowisko() {
   return {
     name: 'Kadry - TEST (szablon)',
     values: [
-      v('baseUrl', 'http://localhost:9010'), v('testMode', 'true'),
+      v('baseUrl', 'http://localhost:9010'),
       v('appToken', '', 'secret'), v('sessionToken', '', 'secret'),
-      v('database', 'NAZWA-BAZY'), v('operator', 'Administrator'), v('password', '', 'secret'),
-      v('stanowisko', 'UZUPELNIJ'), v('wydzial', 'UZUPELNIJ'), v('cecha', 'UZUPELNIJ')
+      v('database', 'NAZWA-BAZY'), v('operator', 'Administrator'), v('password', '', 'secret')
     ],
     _postman_variable_scope: 'environment'
   };
 }
 
 const OSOBA = { imie: 'Jan', nazwisko: 'Testowy' };
-const UMOWA = { od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', licznik: '1', mianownik: '1', stanowisko: '{{stanowisko}}', wydzial: '{{wydzial}}' };
+const UMOWA = { od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', licznik: '1', mianownik: '1', stanowisko: 'Specjalista', wydzial: 'ADM' };
 const TEST = 'test 30.10.2026', DOKUMENT = 'dokumentacja';
 
 // sonda(): żądanie zbudowane wprost i zawsze próbne, żeby M-xx mogły świadomie pominąć wymagane pola.
 const sonda = cialo => ({ metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: true, ...cialo } });
-const zatr = (f) => zbudujZapytanie({ operacja: 'zatrudnij', ...OSOBA, ...f });
-const akt = (operacja, f) => zbudujZapytanie({ operacja, ...OSOBA, ...f });
+// Grupy 3-6 budują na sobie, więc muszą zapisywać: TestMode = false wprost w żądaniu.
+const zatr = (f) => zbudujZapytanie({ operacja: 'zatrudnij', proba: false, ...OSOBA, ...f });
+const akt = (operacja, f) => zbudujZapytanie({ operacja, proba: false, ...OSOBA, ...f });
 const odczyt = (kod, data) => zbudujZapytanie({ operacja: 'odczytaj', kod, dataZmiany: data });
 const OS = { Imie: 'Jan', Nazwisko: 'Testowy' };
 const okres = { OkresOd: dataDTO('2026-11-01'), OkresDo: dataDTO('2027-10-31') };
-const stanowisko = { Stanowisko: '{{stanowisko}}' }, wydzial = { JednostkaOrg: '{{wydzial}}' };
+const stanowisko = { Stanowisko: 'Specjalista' }, wydzial = { JednostkaOrg: 'ADM' };
 
 const SCENARIUSZE = [
   { grupa: '1 Diagnostyka', id: 'D-01', nazwa: 'Połączenie i wersje', z: { metoda: 'GetWebServiceInfo', usluga: 'Operacje', cialo: {} }, oczekiwane: 'Success = true, wersje biblioteki i enova, nazwa bazy.', podstawa: TEST },
@@ -350,7 +352,7 @@ const SCENARIUSZE = [
   { grupa: '3 Zatrudnienie', id: 'Z-03', nazwa: 'Okres próbny', z: zatr({ kod: 'API-Z03', ...UMOWA, do: '2027-01-31', typUmowy: 'NaOkresPróbny' }), oczekiwane: 'Etat do 2027-01-31, typ: na okres próbny.', podstawa: TEST },
   { grupa: '3 Zatrudnienie', id: 'Z-04', nazwa: 'Pół etatu', z: zatr({ kod: 'API-Z04', ...UMOWA, licznik: '1', mianownik: '2' }), oczekiwane: 'Wymiar etatu 1/2.', podstawa: TEST },
   { grupa: '3 Zatrudnienie', id: 'Z-05', nazwa: 'Z adresem, kontaktem i rachunkiem', z: zatr({ kod: 'API-Z05', ...UMOWA, ulica: 'Testowa', nrDomu: '1', kodPocztowy: '00-001', miejscowosc: 'Warszawa', email: 'jan.testowy@example.com', rachunek: '12105000000000000000000001' }), oczekiwane: 'Adres, e-mail i rachunek w kartotece.', podstawa: TEST },
-  { grupa: '3 Zatrudnienie', id: 'Z-06', nazwa: 'Z cechą (pole dodatkowe)', z: zatr({ kod: 'API-Z06', ...UMOWA, cechy: '{{cecha}}=Test' }), oczekiwane: 'Cecha zapisana. Wymaga zmiennej cecha z nazwą cechy z dostępem przez WebAPI; bez niej błąd braku definicji.', podstawa: DOKUMENT },
+  { grupa: '3 Zatrudnienie', id: 'Z-06', nazwa: 'Z cechą (pole dodatkowe)', z: zatr({ kod: 'API-Z06', ...UMOWA, cechy: 'NAZWA_CECHY=Test' }), oczekiwane: 'Cecha zapisana. Podmień NAZWA_CECHY na cechę z dostępem przez WebAPI; bez niej błąd braku definicji.', podstawa: DOKUMENT },
 
   { grupa: '4 Przedłużenie', id: 'P-01', nazwa: 'Przedłużenie umowy określonej', z: akt('przedluz', { kod: 'API-Z02', do: '2028-10-31', dataZmiany: '2027-11-01', powod: 'Przedłużenie umowy' }), oczekiwane: 'Nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31. Wystarczy OkresDo.', podstawa: TEST },
   { grupa: '4 Przedłużenie', id: 'P-02', nazwa: 'Kontrola po przedłużeniu', z: odczyt('API-Z02', '2027-12-01'), oczekiwane: 'OkresDo = 2028-10-31.', podstawa: TEST },
@@ -361,10 +363,10 @@ const SCENARIUSZE = [
   { grupa: '5 Zwolnienie', id: 'R-02', nazwa: 'Kontrola po zwolnieniu', z: odczyt('API-Z01', '2027-03-31'), oczekiwane: 'Zwolniony = true, OkresDo = 2027-03-31. Na wcześniejszą datę Zwolniony = false.', podstawa: TEST },
   { grupa: '5 Zwolnienie', id: 'R-03', nazwa: 'Zmiana adresu po zwolnieniu', z: akt('zmien', { kod: 'API-Z01', ulica: 'Nowa', nrDomu: '2', dataZmiany: '2027-04-15', powod: 'Zmiana adresu' }), oczekiwane: 'Zwolnienie zostaje w historii, ale nowy zapis po końcu umowy nie ma etatu.', podstawa: TEST },
 
-  { grupa: '6 Zmiana danych', id: 'C-01', nazwa: 'Zmiana nazwiska', z: zbudujZapytanie({ operacja: 'zmien', kod: 'API-Z05', imie: 'Jan', nazwisko: 'Testowy-Nowak', dataZmiany: '2027-01-01', powod: 'Zmiana nazwiska' }), oczekiwane: 'Nowy zapis historii z nowym nazwiskiem.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-01', nazwa: 'Zmiana nazwiska', z: zbudujZapytanie({ operacja: 'zmien', proba: false, kod: 'API-Z05', imie: 'Jan', nazwisko: 'Testowy-Nowak', dataZmiany: '2027-01-01', powod: 'Zmiana nazwiska' }), oczekiwane: 'Nowy zapis historii z nowym nazwiskiem.', podstawa: TEST },
   { grupa: '6 Zmiana danych', id: 'C-02', nazwa: 'Częściowa aktualizacja', z: akt('zmien', { kod: 'API-Z05', email: 'nowy.adres@example.com', dataZmiany: '2027-02-01', powod: 'Zmiana e-mail' }), oczekiwane: 'E-mail zmieniony od daty, adres i rachunek bez zmian.', podstawa: TEST },
-  { grupa: '6 Zmiana danych', id: 'C-03', nazwa: 'Zmiana stanowiska i wymiaru od daty', z: akt('zmien', { kod: 'API-Z02', stanowisko: 'Kierownik', wydzial: '{{wydzial}}', licznik: '3', mianownik: '4', dataZmiany: '2027-02-01', powod: 'Aneks' }), oczekiwane: 'Nowy zapis od daty, okres Etatu bez zmian. Późniejsze zapisy nie są nadpisywane.', podstawa: TEST },
-  { grupa: '6 Zmiana danych', id: 'C-04', nazwa: 'Zmiana bez znacznika Aktualizuj', z: { metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: TEST_MODE, Kod: 'API-Z05', Imie: 'Janek', Nazwisko: 'Testowy' } }, oczekiwane: 'Nadpisuje bieżący zapis historii bez nowego wpisu.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-03', nazwa: 'Zmiana stanowiska i wymiaru od daty', z: akt('zmien', { kod: 'API-Z02', stanowisko: 'Kierownik', wydzial: 'ADM', licznik: '3', mianownik: '4', dataZmiany: '2027-02-01', powod: 'Aneks' }), oczekiwane: 'Nowy zapis od daty, okres Etatu bez zmian. Późniejsze zapisy nie są nadpisywane.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-04', nazwa: 'Zmiana bez znacznika Aktualizuj', z: { metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: false, Kod: 'API-Z05', Imie: 'Janek', Nazwisko: 'Testowy' } }, oczekiwane: 'Nadpisuje bieżący zapis historii bez nowego wpisu.', podstawa: TEST },
 
   { grupa: '7 Błędy', id: 'N-01', nazwa: 'Nieistniejący wydział', z: sonda({ Kod: 'API-N01', ...OS, Zatrudnienie: { ...okres, ...stanowisko, JednostkaOrg: 'NIE-MA-TAKIEGO' } }), sukces: false, komunikat: 'Nie znaleziono Wydziału', oczekiwane: 'Odrzucenie: nie znaleziono wydziału.', podstawa: TEST },
   { grupa: '7 Błędy', id: 'N-02', nazwa: 'Nieistniejący pracownik w odczycie', z: odczyt('NIE-MA-TAKIEGO'), sukces: false, komunikat: 'Nie znaleziono pracownika', oczekiwane: 'Odrzucenie: nie znaleziono pracownika.', podstawa: TEST },
@@ -412,7 +414,7 @@ function parsujPolecenie(tekst) {
 const pola = ['operacja', 'kod', 'imie', 'nazwisko', 'plec', 'dataUrodzenia', 'pesel', 'od', 'do', 'typUmowy', 'licznik', 'mianownik', 'stanowisko', 'wydzial', 'dataZmiany', 'powod', 'ulica', 'nrDomu', 'kodPocztowy', 'miejscowosc', 'email', 'telefon', 'rachunek', 'cechy'];
 const el = id => document.getElementById(id);
 const koszyk = [];
-const czytaj = () => Object.fromEntries(pola.map(p => [p, el(p).value.trim()]));
+const czytaj = () => ({ ...Object.fromEntries(pola.map(p => [p, el(p).value.trim()])), proba: el('proba').checked });
 
 function lista(miejsce, wpisy) {
   miejsce.replaceChildren();
@@ -426,7 +428,7 @@ function odswiez() {
   const f = czytaj(), { bledy, uwagi } = sprawdz(f);
   lista(el('bledy'), bledy);
   lista(el('uwagi'), uwagi);
-  el('podglad').textContent = JSON.stringify(zbudujZapytanie(f).cialo, null, 2).replaceAll(`"${TEST_MODE}"`, TEST_MODE);
+  el('podglad').textContent = JSON.stringify(zbudujZapytanie(f).cialo, null, 2);
   el('dodaj').disabled = bledy.length > 0;
 }
 

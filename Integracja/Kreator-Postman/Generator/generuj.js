@@ -23,6 +23,7 @@ assert.strictEqual(zatrudnij.metoda, 'UpdateEmployee');
 assert.deepStrictEqual(r(zatrudnij.cialo.Zatrudnienie.OkresOd), { Year: 2026, Month: 11, Day: 1 });
 assert.deepStrictEqual(r(zatrudnij.cialo.Zatrudnienie.OkresDo), { Year: 9999, Month: 12, Day: 31 });
 assert.strictEqual(zatrudnij.cialo.Aktualizuj, undefined);
+assert.strictEqual(zatrudnij.cialo.TestMode, true);
 const zwolnij = k.zbudujZapytanie({ operacja: 'zwolnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', do: '2027-03-31', powod: 'P' });
 assert.strictEqual(zwolnij.cialo.Aktualizuj, true);
 assert.strictEqual(zwolnij.cialo.Zatrudnienie.Zwolniony, true);
@@ -51,19 +52,22 @@ for (const tryb of ['dynamic', 'invoker']) {
   assert.strictEqual(zadania.length, k.SCENARIUSZE.length + (tryb === 'dynamic' ? 2 : 0));
   for (const z of zadania) {
     assert.ok(z.request.url.startsWith('{{baseUrl}}/api/'), z.name);
-    if (z.request.body) JSON.parse(z.request.body.raw.replaceAll('{{testMode}}', 'true'));
+    if (!z.request.body) continue;
+    JSON.parse(z.request.body.raw);
+    const dane = JSON.parse(z.request.body.raw).MethodArgs?.pars ?? JSON.parse(z.request.body.raw);
+    assert.ok(!JSON.stringify(dane).includes('{{'), `zmienna w danych: ${z.name}`);
   }
   const pierwszy = zadania.find(z => z.name.startsWith('Z-01'));
-  const cialo = JSON.parse(pierwszy.request.body.raw.replaceAll('{{testMode}}', 'true'));
+  const cialo = JSON.parse(pierwszy.request.body.raw);
   if (tryb === 'dynamic') {
     assert.ok(pierwszy.request.url.endsWith('/api/KadryPlaceWebAPI/UpdateEmployee'));
-    assert.strictEqual(cialo.TestMode, true);
+    assert.strictEqual(cialo.TestMode, false);
     assert.strictEqual(zadania[0].request.url, '{{baseUrl}}/api/LoginApi');
   } else {
     assert.ok(pierwszy.request.url.endsWith('/api/MethodInvoker/InvokeServiceMethod'));
     assert.strictEqual(cialo.ServiceName, 'AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core');
     assert.strictEqual(cialo.MethodName, 'UpdateEmployee');
-    assert.strictEqual(cialo.MethodArgs.pars.TestMode, true);
+    assert.strictEqual(cialo.MethodArgs.pars.TestMode, false);
   }
 }
 assert.strictEqual(new Set(k.SCENARIUSZE.map(s => s.id)).size, k.SCENARIUSZE.length);

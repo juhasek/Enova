@@ -124,7 +124,7 @@
     "Grupa": "3 Zatrudnienie",
     "Nazwa": "Z cechą (pole dodatkowe)",
     "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Cecha zapisana. Wymaga zmiennej cecha z nazwą cechy z dostępem przez WebAPI; bez niej błąd braku definicji.",
+    "Oczekiwane": "Cecha zapisana. Podmień NAZWA_CECHY na cechę z dostępem przez WebAPI; bez niej błąd braku definicji.",
     "Podstawa": "dokumentacja"
   },
   {
