@@ -1,10 +1,8 @@
 public decimal Get_Feature_SumaDodatkow(Context cx) {
-    // okres z filtra "Okres" listy pracowników; bez filtra - stan na dziś
-    OkresContext parametryListy;
+    // okres z filtra "Okres" listy pracowników; bez filtra - dziś
     Date dzis = ActualDate.Today(cx);
-    FromTo okres = new FromTo(dzis, dzis);
-    if (cx.Get<OkresContext>(out parametryListy) && parametryListy != null && !parametryListy.Okres.IsEmpty)
-        okres = parametryListy.Okres;
+    OkresContext filtr;
+    FromTo okres = cx.Get(out filtr) ? filtr.Okres : new FromTo(dzis, dzis);
     Date data = okres.To;
 
     decimal kwota = 0;
