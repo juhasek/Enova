@@ -1,8 +1,8 @@
-# Kreator Postman: metody kadrowe WebAPI
+# Kreator Postman: metody kadrowe dodatku klienta
 
 Narzędzie do budowania żądań kadrowych (zatrudnienie, zwolnienie, przedłużenie umowy, zmiana danych)
-i kolekcji Postman. Podstawa: dokumentacja WebAPI v. 5.1 oraz testy 30.10.2026 na serwerze 2610, baza `Integracja`,
-`AltOne.WCF.Core` 2606.0.1, wywołania przez MethodInvoker.
+i kolekcji Postman. Klient korzysta z API dodatku klienta: `IStaff.UpsertEmployee` i `IStaff.UpsertTermination`.
+Podstawa: kod dodatku w wersji 2512.9.11 oraz testy 30.10.2026 na serwerze 2610, baza `Integracja`, wywołania przez MethodInvoker.
 
 ## Jak używać
 
@@ -12,7 +12,7 @@ i kolekcji Postman. Podstawa: dokumentacja WebAPI v. 5.1 oraz testy 30.10.2026 n
 3. Popraw pola, kliknij **Dodaj do kolekcji**, potem **Pobierz kolekcję** i **Pobierz środowisko**.
 4. W Postmanie: Import obu plików, wybór środowiska, uzupełnienie zmiennych.
 
-Gotowy pakiet 35 scenariuszy: [Postman/](Postman/). Arkusz z wynikami testów:
+Gotowy pakiet 47 scenariuszy: [Postman/](Postman/). Arkusz z wynikami testów:
 [Scenariusze testowe.xlsx](Scenariusze%20testowe.xlsx).
 
 Regeneracja po zmianie `Kreator.html` (testy logiki + pliki Postman + lista scenariuszy, potem arkusz):
@@ -24,113 +24,93 @@ dotnet build -c Release -o bin\out
 dotnet bin\out\GenArkusz.dll ..
 ```
 
-Arkusz bierze wyniki z `Generator/wyniki.json` (przebieg newman z 30.10.2026).
-
 ## Zmienne środowiska
 
 | Zmienna | Znaczenie |
 |---|---|
 | `baseUrl` | Adres WebAPI bez prefiksu, np. `http://localhost:9010` |
-| `appToken` | Token aplikacji (tylko Dynamic API) |
-| `sessionToken` | Ustawia go żądanie Logowanie |
-| `database`, `operator`, `password` | Tylko MethodInvoker |
+| `database`, `operator`, `password` | Logowanie MethodInvoker |
+| `serviceStaff` | Pełna nazwa usługi `IStaff` dodatku |
+| `serviceWydzialy` | Pełna nazwa usługi `IStrukturaWydzialowa` dodatku |
 
-Uzupełnionego środowiska nie commitować.
+Uzupełnionego środowiska nie commitować. Nazwa dodatku jest zmienną, żeby nie trafiła do repo.
 
-Dane żądań (stanowisko, wydział, `TestMode` itd.) są wpisane wprost w każde żądanie, bo klient wywołuje API poza Postmanem.
-Zmienne dotyczą tylko połączenia. Na innej bazie podmień `Stanowisko`, `JednostkaOrg` i `NAZWA_CECHY` (Z-06).
+Dane żądań są wpisane wprost w każde żądanie, bo klient wywołuje API poza Postmanem. Na innej bazie podmień `Stanowisko`,
+`JednostkaOrg` i przyczynę rozwiązania.
 
-`TestMode = true`: serwer sprawdza dane i wycofuje zapis. Grupy 1, 2 i 7 są próbne. **Grupy 3–6 mają `TestMode = false` i zapisują dane**,
-bo przedłużenia i zwolnienia działają na pracownikach założonych w grupie 3: uruchamiaj je tylko na bazie testowej.
-W kreatorze tryb próbny jest domyślnie włączony (pole wyboru).
+`TestMode = true`: serwer sprawdza dane i wycofuje zapis. Grupy 1, 2 i 8 są próbne. **Grupy 3–7 mają `TestMode = false` i zapisują dane**,
+bo pracują na pracownikach z grupy 3: uruchamiaj je tylko na bazie testowej i tylko na pustych kodach. W kreatorze tryb próbny jest domyślnie włączony.
 
-## Sposoby wywołania
+## Wymagania po stronie enova
 
-**MethodInvoker** (`POST /api/MethodInvoker/InvokeServiceMethod`, sprawdzone): wymaga
-`WebApi:LegacyControllers:MethodInvoker = true` i operatora z hasłem. `ServiceName` =
-`AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core`, parametr `pars`. Enova oznacza tę metodę jako przestarzałą.
-
-Operator do API potrzebuje dokładnie jednej roli i włączonego `AllowEnova365` (dostęp do wersji multi).
-
-**Dynamic API** (wg dokumentacji, nieprzetestowane end-to-end). Logowania dokumentacja nie opisuje. Z kodu `webapi.dll` 2610:
-
-1. W enova utwórz token aplikacji typu WebApi (lista tokenów w **Narzędzia → Opcje**), dodaj usługi
-   `KadryPlaceWebAPI` i `OperationFunctionsWebAPI`, użyj **Generuj token**.
-2. `POST /api/LoginApi` z tokenem aplikacji jako Bearer zwraca `Token` (token sesji).
-3. Pozostałe wywołania idą z tokenem sesji. Sesja wygasa po 5 minutach bezczynności.
-
-Licencja: oprócz `AltOne.Integracje` (dla `WCF.Core`) potrzebny jest moduł `Soneta.WebApi` albo `Soneta.HarmZadan`.
-Tryb demo pomija obie kontrole.
+- Dodatek dostępny tylko przez MethodInvoker: `WebApi:LegacyControllers:MethodInvoker = true`.
+- Licencja: `AltOne.Integracje` oraz `Soneta.WebApi` albo `Soneta.HarmZadan`.
+- Operator: dokładnie jedna rola i włączone `AllowEnova365`.
+- Cechy: `Numer koncernowy` (tabela Pracownicy) i `Typ pracownika` (tabela PracHistorie), typ tekstowy, przechowywane w bazie (algorytm `DB`).
+  Dodatek zapisuje je bezpośrednio, więc nie potrzebują flagi dostępu przez WebAPI.
+- Definicje stanowisk: `Zatrudnienie.Stanowisko` to **nazwa definicji**, nie wolny tekst.
+- Przyczyny rozwiązania: `TerminationReason` to nazwa ze słownika przyczyn.
 
 ## Minimalne dane (potwierdzone)
+
+Atrybuty `Required` w DTO nie są egzekwowane przy wywołaniu przez MethodInvoker. O wymaganiach decyduje enova:
 
 | Cel | Wymagane pola |
 |---|---|
 | Kartoteka bez umowy | `Imie`, `Nazwisko` |
-| Umowa | jak wyżej + `Zatrudnienie`: `OkresOd`, `OkresDo`, `Stanowisko`, `JednostkaOrg` (kod wydziału) |
-| Czas nieokreślony | jak umowa + `TypUmowy`, a `OkresDo` = `{9999,12,31}` (w bazie 2099-12-31) |
-| Przedłużenie | `Kod`, `Aktualizuj: true`, `DataAktualizacji`, `Zatrudnienie.OkresDo` |
-| Zwolnienie | jak przedłużenie + `Zatrudnienie.Zwolniony: true` |
-| Zmiana danych | `Kod`, `Aktualizuj: true`, `DataAktualizacji` + zmieniane pola |
-| Zmiana rachunku | `Kod`, `Rachunki: [{ Numer, Domyslne: true }]`, bez aktualizacji |
+| Umowa | + `Zatrudnienie`: `OkresZatrudnieniaOd`, `JednostkaOrg`, `TypUmowy`, `Stanowisko` |
+| Umowa na czas określony | + `OkresZatrudnieniaDo` |
+| Przedłużenie | `Kod`, `DataAktualizacji.From`, `Zatrudnienie`: `OkresZatrudnieniaOd`, nowy `OkresZatrudnieniaDo`, `TypUmowy` |
+| Zmiana danych | `Kod`, `DataAktualizacji.From` + zmieniane pola; przy sekcji `Zatrudnienie` także `TypUmowy` |
+| Zmiana rachunku | `Kod`, `DataAktualizacji.From`, `Rachunki: [{ Numer, Domyslne: true }]` |
+| Zwolnienie | `UpsertTermination`: `PracownikKod`, `TerminationDate`, `OkresUmowyOd`, `TerminationReason` |
 
-Bez `OkresDo` serwer zwraca „Błędny zakres dat”, także dla umowy na czas nieokreślony. Bez `TypUmowy` i `Wymiar` zapis
-przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły enova na etacie.
+`pars` to pojedynczy obiekt. `Kod` jest opcjonalny przy zatrudnieniu: bez niego enova nadaje numer zgodnie ze schematem,
+a kod spoza bazy trafia do nowej kartoteki. Aktualizacja wymaga kodu z bazy. Czas nieokreślony: kreator wysyła `OkresZatrudnieniaDo` = 9999-12-31.
 
-## Zachowanie (potwierdzone)
+**Różnica względem `UpdateEmployee`:** w dodatku zmiana rachunku też wymaga daty i tworzy zapis historii. Bez `DataAktualizacji.From`
+wynik to „No employee updated/added”. Nie ma tu pola `Aktualizuj`: aktualizację wyznacza istniejący `Kod`.
 
-- **`Kod`:** brak kodu albo kod spoza bazy zakłada nową kartotekę. Enova nadaje numer zgodnie ze schematem albo przepisuje kod z żądania.
-  Aktualizacja pracownika musi mieć kod z bazy.
-- **Aktualizacja:** przedłużenie umowy i każda zmiana danych oprócz rachunku idą z `Aktualizuj: true` i `DataAktualizacji`.
-  Schemat wymaga `Imie` i `Nazwisko`, ale serwer nie: przy aktualizacji można je pominąć i zostają bez zmian. Podane nadpisują dane.
-- **Rachunek:** zmiana nie wymaga aktualizacji i nie tworzy zapisu historii. Rachunek jest dopisywany, poprzednie zostają, a ponowne
-  wysłanie tego samego numeru nie tworzy duplikatu. `Domyslne: true` ustawia go jako główny, bez tego główny pozostaje stary.
-- **`TestMode`** działa: `Success` i komunikaty jak przy zapisie, w bazie bez zmian. Ponieważ zapis jest wycofywany,
-  aktualizacje nie widzą pracownika założonego wcześniejszym żądaniem próbnym.
-- **Przedłużenie:** powstaje nowy zapis historii od `DataAktualizacji`. Wcześniejszy zapis zachowuje stary koniec umowy.
-- **Nowa umowa po przerwie:** `OkresOd` + `OkresDo` w aktualizacji działają, stara umowa zostaje w historii.
-- **Częściowa aktualizacja:** pominięte pola i całe sekcje zostają bez zmian.
-- **Zmiana z datą wsteczną** nie nadpisuje późniejszych zapisów historii (inaczej niż w poprzednim dodatku WebAPI). Późniejszy
-  zapis zachowuje stare wartości, więc aneks działa tylko do następnej zmiany.
-- **Bez `Aktualizuj`** zmiana nadpisuje bieżący zapis historii, bez nowego wpisu (dotyczy to też `Imie` i `Nazwisko` wysłanych przy zmianie rachunku).
-- **Zwolnienie:** `OkresDo` kończy etat, a `Zwolniony: true` ustawia znacznik od `DataAktualizacji`. Bez `Zwolniony`
-  etat też się kończy, ale znacznik zostaje `false`.
+## Ryzyka (potwierdzone testami)
 
-## Pułapki
+1. **Aktualizacja z sekcją `Zatrudnienie` cofa zwolnienie** (R-05). Czyści dane rozwiązania i nadpisuje okres etatu. Zwolnienie znika bez komunikatu.
+2. **Zmiana bez `DataAktualizacji.To` nadpisuje późniejsze zapisy historii** (C-07, S-01). Zmiana stanowiska z datą wsteczną cofnęła przedłużenie
+   umowy, gdy `OkresZatrudnieniaDo` nie był aktualny. `To` ogranicza zmianę (C-08).
+3. **Przyczyna spoza słownika** daje `Success = true`, ale nie zapisuje się (R-03).
+4. **Adres bez województwa** ustawia „nieokreślone” (C-04).
+5. **Zmiana po końcu umowy tworzy zapis bez etatu** (R-04). Zwolnienie zostaje w historii.
+6. **Rachunek jest dopisywany**, poprzednie zostają. `Domyslne: true` ustawia go jako domyślny.
+7. **Nieznane pole w JSON jest ignorowane**, więc literówka w nazwie pola nie daje błędu.
+8. **Tytuł ubezpieczenia jest zawsze ustawiany na 0110** przy każdej aktualizacji etatu (kod dodatku, nietestowane na innych tytułach).
+9. **Zapis trwał lokalnie 2–20 s.** Kilka razy pojawił się timeout SQL albo „Wystąpił błąd podczas modyfikacji zapisu w bazie”, a ponowienie przechodziło.
+   Blokady SQL nie zaobserwowano, przyczyna nieznana. System wywołujący powinien ponawiać takie żądania.
 
-1. **Zmiana po końcu umowy tworzy zapis bez etatu** (R-03). Zwolnienie zostaje w historii, ale nowy zapis ma puste
-   zatrudnienie i `Zwolniony = false`.
-2. **API nie zapisuje przyczyny rozwiązania ani kodu zwolnienia.** Pola zostają puste, DTO ich nie ma. Nie sprawdzano
-   wyrejestrowania ZUS.
-3. **Nieznane pole w JSON nie powoduje błędu**, więc literówka w nazwie pola przejdzie po cichu. Cecha bez nazwy też (N-04).
-4. **`ZatrudnienieDTO` nie ma stawki ani zaszeregowania.** `UpsertDodatkiPracownika` obsługuje tylko dodatki.
+`GetEmployee` (biblioteka `WCF.Core`) pokazuje `Zwolniony = false` po `UpsertTermination`: koniec umowy widać w `OkresDo`.
+
+## Testy klienta a ten DLL
+
+Kolekcja klienta (9 żądań) **nie pasuje do dostarczonego DLL**:
+
+- ma `pars` jako tablicę, a DLL przyjmuje obiekt (N-04);
+- używa angielskich nazw pól (`EmployeeCode`, `FirstName`, `EffectiveDate`, `EmploymentContract`, `BankAccount`, `ContactData`), a DLL polskich
+  (`Kod`, `Imie`, `DataAktualizacji`, `Zatrudnienie`, `Rachunki`, `DaneKontaktowe`). Nieznane pola są ignorowane, więc żądanie wygląda na puste;
+- zawiera pola, których w tym DLL nie ma: `FunctionalCode`, `BaseOfEmployment` (w DTO `ZatrudnienieNaPodstawie`), `TypeOfEmployment` (w DTO `RodzajZatrudnienia`).
+
+Kreator buduje żądania wg DLL, bo tylko to da się sprawdzić. Testy klienta pochodzą z innej wersji dodatku.
+
+## Definicje stanowisk niehistoryczne
+
+Klient ma wersję, w której definicje stanowisk nie są historyczne, a baza testowa 2610 ma definicje historyczne. Dodatek szuka definicji po nazwie,
+więc scenariusze grupy 7 obejmują: zmianę stanowiska od daty, kontrolę przed i po zmianie, nieistniejącą definicję i inną wielkość liter.
+Na wersji niehistorycznej nie były uruchamiane.
 
 ## Nieustalone
 
-- **Cechy (pola dodatkowe):** baza demo nie ma definicji cechy pracownika, więc zapisu cech nie sprawdzono (Z-06).
-  Potwierdzono tylko błąd braku definicji (N-05). Plik testów klienta był pusty, lista pól nie jest znana.
-- **Dynamic API:** pełne logowanie tokenem nieprzetestowane.
-- **Wolne zapisy:** zapis trwał lokalnie 2–20 s. Kilka razy pojawił się timeout SQL albo „Wystąpił błąd podczas modyfikacji zapisu w bazie”, a ponowienie przechodziło.
-  Blokady SQL nie zaobserwowano, przyczyna nieznana. System wywołujący powinien ponawiać takie żądania.
-- **Serwer 2606.2.3:** testy przeszły na 2610.
+- Zachowanie na wersji klienta (niehistoryczne definicje stanowisk, angielskie nazwy pól, tablica `pars`).
+- Pola `BaseOfEmployment`, `TypeOfEmployment` i `FunctionalCode` z testów klienta.
+- Wyrejestrowanie z ZUS przy `UpsertTermination` nie było sprawdzane.
 
-## Testy klienta (inna metoda)
+## Biblioteka `WCF.Core`
 
-Kolekcja klienta (9 żądań) nie używa `UpdateEmployee`, tylko `IStaff.UpsertEmployee` z dodatku klienta (2512.9.11 Alfa).
-Dodatek uruchamia się na 2610 i na `WCF.Core` 2606: odczyt `GetOddzialy` działa. Wynik żądań klienta w trybie próbnym (baza `Integracja`):
-
-- `pars` jako tablica: błąd konwersji do `EmployeeDTO`. Ta wersja dodatku przyjmuje pojedynczy obiekt.
-- Nowy pracownik (`pars` jako obiekt): błąd braku cechy `Numer koncernowy`. Dodatek wymaga jej i cechy `Typ pracownika`.
-- Pozostałe żądania działają na pracowniku z pierwszego, więc zatrzymują się na braku pracownika.
-- Żądanie z polskimi nazwami pól: wartość `Zatrudnienie.TypUmowy` nie pasuje do enuma.
-
-Pola klienta bez odpowiednika w `UpdateEmployee`: `PKID`, `EmployeeType`, `FunctionalCode`, `TypeOfEmployment`, `BaseOfEmployment`.
-
-## Rozbieżności w dokumentacji
-
-- Wstęp pokazuje `UpdateDate` cechy jako `{Rok,Miesiac,Dzien}`, a schemat `DataDTO` jako `{Year,Month,Day}`.
-  Kreator używa schematu.
-- Lista bibliotek zawiera `AltOne.WebAPI.ObslugaKadrowa`, której nie ma w dostarczonych plikach
-  (dodatki, podzielniki, dokumenty dodatkowe; kreator z niej nie korzysta).
-- Dostarczony `AltOne.WCF.Core` to wersja `2606.0.1.80200-Alfa`, a dokumentacja opisuje `2606.0.1.80001`.
-  Biblioteka zawiera też tekst „Biblioteka przeznaczona tylko na środowisko testowe".
+Metoda `KadryPlaceWebAPI/UpdateEmployee` z dokumentacji WebAPI v. 5.1 działa na tej samej bazie, ale klient z niej nie korzysta. Kreator używa z biblioteki
+tylko `GetEmployee` do kontroli i `GetWebServiceInfo` do diagnostyki. Dokumentacja nie opisuje dodatku klienta.

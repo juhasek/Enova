@@ -8,106 +8,122 @@
     "Podstawa": "test 30.10.2026"
   },
   {
+    "Id": "D-02",
+    "Grupa": "1 Diagnostyka",
+    "Nazwa": "Dodatek odpowiada",
+    "Metoda": "GetOddzialy",
+    "Oczekiwane": "Success = true, lista oddziałów.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
     "Id": "M-01",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Kartoteka: imię i nazwisko",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: kartoteka bez umowy, kod nadany z numeratora.",
+    "Nazwa": "MINIMUM: umowa na czas nieokreślony",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Sukces: imię, nazwisko i cztery pola umowy.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-02",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Kartoteka: plus kod",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: kartoteka z własnym kodem, bez umowy.",
+    "Nazwa": "MINIMUM: umowa na czas określony",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Sukces: jak wyżej + data końca.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-03",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Umowa bez OkresDo",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Błąd: etat musi mieć datę końca.",
+    "Nazwa": "Kartoteka bez umowy",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Sukces: kartoteka bez zatrudnienia.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-04",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Umowa bez OkresOd",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Błąd: wymagana data początku.",
+    "Nazwa": "Bez kodu",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Sukces: numer nadany zgodnie ze schematem.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-05",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Umowa bez stanowiska",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Błąd: wymagane stanowisko.",
+    "Nazwa": "Z polami dodatkowymi",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Sukces: wymaga cech Numer koncernowy i Typ pracownika.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-06",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Umowa bez wydziału",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Błąd: wymagany wydział.",
+    "Nazwa": "Bez imienia",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: wymagane imię.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-07",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "MINIMUM: umowa na czas określony",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: tylko cztery pola umowy. Bez typu umowy i wymiaru serwer nadaje wartości domyślne.",
+    "Nazwa": "Bez nazwiska",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: wymagane nazwisko.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-08",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "MINIMUM: umowa na czas nieokreślony",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: OkresDo = 9999-12-31 zapisuje się w bazie jako 2099-12-31.",
+    "Nazwa": "Umowa bez początku",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: pole etatu tylko do odczytu, bo etat nie ma okresu.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-09",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Z danymi do ZUS i PIT",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: pełniejsze dane osobowe.",
+    "Nazwa": "Umowa bez typu",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: wymagany typ umowy.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "M-10",
     "Grupa": "2 Minimum danych",
-    "Nazwa": "Umowa bez kodu",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: nowa kartoteka, numer nadany zgodnie ze schematem.",
+    "Nazwa": "Umowa bez stanowiska",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: wymagane stanowisko.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "M-11",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Umowa bez wydziału",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: pole etatu tylko do odczytu, bo etat nie ma wydziału.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "Z-01",
     "Grupa": "3 Zatrudnienie",
     "Nazwa": "Czas nieokreślony, pełny etat",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Nowy pracownik, Etat od 2026-11-01 bez końca.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Nowy pracownik, etat bez końca.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "Z-02",
     "Grupa": "3 Zatrudnienie",
     "Nazwa": "Czas określony",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Etat 2026-11-01 do 2027-10-31, typ: na czas określony.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Etat do 2027-10-31.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "Z-03",
     "Grupa": "3 Zatrudnienie",
     "Nazwa": "Okres próbny",
-    "Metoda": "UpdateEmployee",
+    "Metoda": "UpsertEmployee",
     "Oczekiwane": "Etat do 2027-01-31, typ: na okres próbny.",
     "Podstawa": "test 30.10.2026"
   },
@@ -115,32 +131,32 @@
     "Id": "Z-04",
     "Grupa": "3 Zatrudnienie",
     "Nazwa": "Pół etatu",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Wymiar etatu 1/2.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Wymiar 1/2.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "Z-05",
     "Grupa": "3 Zatrudnienie",
     "Nazwa": "Z adresem, kontaktem i rachunkiem",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Adres, e-mail i rachunek w kartotece.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Dane w kartotece, płeć wyliczona z PESEL.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "Z-06",
     "Grupa": "3 Zatrudnienie",
-    "Nazwa": "Z cechą (pole dodatkowe)",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Cecha zapisana. Podmień NAZWA_CECHY na cechę z dostępem przez WebAPI; bez niej błąd braku definicji.",
-    "Podstawa": "dokumentacja"
+    "Nazwa": "Z polami dodatkowymi",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Cechy Numer koncernowy i Typ pracownika zapisane.",
+    "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "P-01",
     "Grupa": "4 Przedłużenie",
     "Nazwa": "Przedłużenie umowy określonej",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31. Wystarczy OkresDo.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Nowy zapis historii od daty zmiany, koniec etatu 2028-10-31.",
     "Podstawa": "test 30.10.2026"
   },
   {
@@ -155,93 +171,181 @@
     "Id": "P-03",
     "Grupa": "4 Przedłużenie",
     "Nazwa": "Zamiana na czas nieokreślony",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Typ zmieniony, OkresDo = 9999-12-31.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Typ zmieniony, koniec etatu usunięty.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "P-04",
     "Grupa": "4 Przedłużenie",
     "Nazwa": "Nowa umowa po przerwie",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Nowy zapis z nowym okresem umowy. Wcześniejsza umowa zostaje w historii.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Nowy okres umowy, wcześniejsza umowa zostaje w historii.",
+    "Podstawa": "kod dodatku"
+  },
+  {
+    "Id": "P-05",
+    "Grupa": "4 Przedłużenie",
+    "Nazwa": "Przedłużenie bez typu umowy",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: każda aktualizacja umowy musi mieć typ.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "R-01",
     "Grupa": "5 Zwolnienie",
-    "Nazwa": "Koniec umowy i Zwolniony",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Nowy zapis od 2027-03-31, koniec Etatu 2027-03-31. Przyczyna i kod zwolnienia zostają puste.",
-    "Podstawa": "test 30.10.2026"
+    "Nazwa": "Rozwiązanie umowy",
+    "Metoda": "UpsertTermination",
+    "Oczekiwane": "Koniec etatu 2027-03-31, przyczyna zapisana.",
+    "Podstawa": "kod dodatku"
   },
   {
     "Id": "R-02",
     "Grupa": "5 Zwolnienie",
     "Nazwa": "Kontrola po zwolnieniu",
     "Metoda": "GetEmployee",
-    "Oczekiwane": "Zwolniony = true, OkresDo = 2027-03-31. Na wcześniejszą datę Zwolniony = false.",
+    "Oczekiwane": "OkresDo = 2027-03-31.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "R-03",
     "Grupa": "5 Zwolnienie",
+    "Nazwa": "Przyczyna spoza słownika",
+    "Metoda": "UpsertTermination",
+    "Oczekiwane": "RYZYKO: Success = true, a przyczyna zostaje pusta.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "R-04",
+    "Grupa": "5 Zwolnienie",
     "Nazwa": "Zmiana adresu po zwolnieniu",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Zwolnienie zostaje w historii, ale nowy zapis po końcu umowy nie ma etatu.",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Zwolnienie zostaje: żądanie nie ma sekcji Zatrudnienie.",
+    "Podstawa": "kod dodatku"
+  },
+  {
+    "Id": "R-05",
+    "Grupa": "5 Zwolnienie",
+    "Nazwa": "Aktualizacja umowy cofa zwolnienie",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "RYZYKO: etat wraca do stanu bez końca, zwolnienie znika.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "C-01",
     "Grupa": "6 Zmiana danych",
     "Nazwa": "Zmiana nazwiska",
-    "Metoda": "UpdateEmployee",
+    "Metoda": "UpsertEmployee",
     "Oczekiwane": "Nowy zapis historii z nowym nazwiskiem.",
-    "Podstawa": "test 30.10.2026"
+    "Podstawa": "kod dodatku"
   },
   {
     "Id": "C-02",
     "Grupa": "6 Zmiana danych",
-    "Nazwa": "Częściowa aktualizacja",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "E-mail zmieniony od daty, adres i rachunek bez zmian.",
-    "Podstawa": "test 30.10.2026"
+    "Nazwa": "Zmiana e-maila",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Nowy e-mail od daty zmiany.",
+    "Podstawa": "kod dodatku"
   },
   {
     "Id": "C-03",
     "Grupa": "6 Zmiana danych",
-    "Nazwa": "Zmiana stanowiska i wymiaru od daty",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Nowy zapis od daty, okres Etatu bez zmian. Późniejsze zapisy nie są nadpisywane.",
+    "Nazwa": "Zmiana adresu z województwem",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Adres zmieniony, województwo zachowane.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "C-04",
     "Grupa": "6 Zmiana danych",
-    "Nazwa": "Zmiana bez znacznika Aktualizuj",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Nie używać przy zmianie danych: nadpisuje bieżący zapis historii bez nowego wpisu.",
+    "Nazwa": "Zmiana adresu bez województwa",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "RYZYKO: województwo zmienia się na nieokreślone.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "C-05",
     "Grupa": "6 Zmiana danych",
-    "Nazwa": "Zmiana rachunku bankowego",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Rachunek dopisany i główny, bez aktualizacji i bez zapisu historii. Poprzednie rachunki zostają.",
+    "Nazwa": "Zmiana rachunku",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Rachunek dopisany i domyślny. Tworzy zapis historii.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "C-06",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Zmiana rachunku bez daty",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: ta wersja dodatku wymaga DataAktualizacji przy każdej zmianie.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "C-07",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Zmiana z datą wsteczną",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "RYZYKO: wymiar 1/2 przechodzi też na późniejsze zapisy historii.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "C-08",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Zmiana ograniczona datą końca",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "DataAktualizacji.To ogranicza zmianę: zapis od 2027-06-01 zostaje bez zmian.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "S-01",
+    "Grupa": "7 Stanowiska",
+    "Nazwa": "Zmiana stanowiska od daty",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Definicja stanowiska zmieniona od daty, także w późniejszych zapisach. OkresDo musi być aktualny, inaczej zmiana cofa przedłużenie. Wymaga definicji Kierownik.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "S-02",
+    "Grupa": "7 Stanowiska",
+    "Nazwa": "Kontrola stanowiska przed zmianą",
+    "Metoda": "GetEmployee",
+    "Oczekiwane": "Stanowisko = Specjalista.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "S-03",
+    "Grupa": "7 Stanowiska",
+    "Nazwa": "Kontrola stanowiska po zmianie",
+    "Metoda": "GetEmployee",
+    "Oczekiwane": "Stanowisko = Kierownik.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "S-04",
+    "Grupa": "7 Stanowiska",
+    "Nazwa": "Nieistniejąca definicja",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Błąd: stanowisko musi istnieć w definicjach.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "S-05",
+    "Grupa": "7 Stanowiska",
+    "Nazwa": "Inna wielkość liter",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Sukces: wyszukiwanie po nazwie nie rozróżnia wielkości liter.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "N-01",
-    "Grupa": "7 Błędy",
+    "Grupa": "8 Błędy",
     "Nazwa": "Nieistniejący wydział",
-    "Metoda": "UpdateEmployee",
+    "Metoda": "UpsertEmployee",
     "Oczekiwane": "Odrzucenie: nie znaleziono wydziału.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "N-02",
-    "Grupa": "7 Błędy",
+    "Grupa": "8 Błędy",
     "Nazwa": "Nieistniejący pracownik w odczycie",
     "Metoda": "GetEmployee",
     "Oczekiwane": "Odrzucenie: nie znaleziono pracownika.",
@@ -249,34 +353,26 @@
   },
   {
     "Id": "N-03",
-    "Grupa": "7 Błędy",
-    "Nazwa": "Odczyt bez klucza",
-    "Metoda": "GetEmployee",
-    "Oczekiwane": "Odrzucenie: brak klucza pracownika.",
-    "Podstawa": "test 30.10.2026"
+    "Grupa": "8 Błędy",
+    "Nazwa": "Kod spoza bazy przy aktualizacji",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Sukces: nowa kartoteka z kodem z żądania.",
+    "Podstawa": "kod dodatku"
   },
   {
     "Id": "N-04",
-    "Grupa": "7 Błędy",
-    "Nazwa": "Cecha bez nazwy",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: cecha bez nazwy jest pomijana bez ostrzeżenia.",
+    "Grupa": "8 Błędy",
+    "Nazwa": "pars jako tablica",
+    "Metoda": "UpsertEmployee",
+    "Oczekiwane": "Wyjątek: ta wersja dodatku przyjmuje pojedynczy obiekt.",
     "Podstawa": "test 30.10.2026"
   },
   {
     "Id": "N-05",
-    "Grupa": "7 Błędy",
-    "Nazwa": "Nieistniejąca cecha",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Odrzucenie: brak definicji cechy.",
-    "Podstawa": "test 30.10.2026"
-  },
-  {
-    "Id": "N-06",
-    "Grupa": "7 Błędy",
-    "Nazwa": "Kod spoza bazy",
-    "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Sukces: kod spoza bazy zakłada nową kartotekę z kodem z żądania.",
-    "Podstawa": "test 30.10.2026"
+    "Grupa": "8 Błędy",
+    "Nazwa": "Zwolnienie nieistniejącego pracownika",
+    "Metoda": "UpsertTermination",
+    "Oczekiwane": "Odrzucenie: nie znaleziono pracownika.",
+    "Podstawa": "kod dodatku"
   }
 ]

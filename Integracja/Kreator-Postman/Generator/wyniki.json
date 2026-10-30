@@ -3,69 +3,81 @@
     "Wynik": "OK",
     "Odpowiedz": "Success=true. Pomyślnie przygotwano stan usługi"
   },
+  "D-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Pomyślnie odczytano paczkę rekordów z tabeli 'OddzialyFirmy'"
+  },
   "M-01": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "M-02": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M02"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "M-03": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=false. Błędny zakres dat (1.11.2026..)"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "M-04": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=false. Wartość pola \"Etat.Data\" jest wymagana Etat: Specjalista"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "M-05": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=false. Wartość pola \"Etat.Stanowisko\" jest wymagana Etat:"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "M-06": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=false. Wartość pola \"Etat.Jednostka organizacyjna\" jest wymagana Etat: Specjalista"
+    "Odpowiedz": "Success=false. Wartość pola \"Imie\" jest wymagana PracHistoria: Testowy (K-M06), (wszystko)"
   },
   "M-07": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M07"
+    "Odpowiedz": "Success=false. Wartość pola \"Nazwisko\" jest wymagana PracHistoria: Jan (K-M07), (wszystko)"
   },
   "M-08": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M08"
+    "Odpowiedz": "Success=false. Próba zmiany wartości pola 'Etat.Jednostka organizacyjna' - pole w trybie 'tylko do odczytu' (Testowy Jan (K-M08), (wszystko))"
   },
   "M-09": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M09"
+    "Odpowiedz": "Success=false. Wymagane jest wprowadzenie wartości pola 'Etat.Typ umowy' (Testowy Jan (K-M09), (wszystko))"
+  },
+  "M-10": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Wartość pola \"Etat.Stanowisko\" jest wymagana Etat:"
+  },
+  "M-11": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Próba zmiany wartości pola 'Etat.Definicja stanowiska' - pole w trybie 'tylko do odczytu' (Testowy Jan (K-M11), (wszystko))"
   },
   "Z-01": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z01"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "Z-02": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z02"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "Z-03": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z03"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "Z-04": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z04"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "Z-05": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z05"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "Z-06": {
-    "Wynik": "BŁĄD",
-    "Odpowiedz": "Success=false. W tabeli 'Pracownicy' nie znaleziono definicji cechy o nazwie 'UZUPELNIJ'."
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "P-01": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z02"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "P-02": {
     "Wynik": "OK",
@@ -73,15 +85,19 @@
   },
   "P-03": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z03"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "P-04": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z04"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
+  },
+  "P-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Wymagane jest wprowadzenie wartości pola 'Etat.Typ umowy' (Testowy Jan (K-Z02), 1.11.2028...)"
   },
   "R-01": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z01"
+    "Odpowiedz": "Success=true. The employee's contract has been updated successfully"
   },
   "R-02": {
     "Wynik": "OK",
@@ -89,27 +105,67 @@
   },
   "R-03": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z01"
+    "Odpowiedz": "Success=true. The employee's contract has been updated successfully"
+  },
+  "R-04": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
+  },
+  "R-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "C-01": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "C-02": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "C-03": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z02"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "C-04": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true przy ponowieniu. Dwie pierwsze próby: timeout SQL i błąd modyfikacji zapisu (przyczyna nieustalona)."
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
+  },
+  "C-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
+  },
+  "C-06": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. No employee updated/added"
+  },
+  "C-07": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
+  },
+  "S-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
+  },
+  "S-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Pomyślny odczyt"
+  },
+  "S-03": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Pomyślny odczyt"
+  },
+  "S-04": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Nie udało się pobrać definicji stanowiska o nazwie NIE-MA-TAKIEGO"
+  },
+  "S-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "N-01": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=false. Nie znaleziono Wydziału (Jednostki organizacyjnej) o kodzie: NIE-MA-TAKIEGO"
+    "Odpowiedz": "Success=false. Nie udało się pobrać wydziału o kodzie NIE-MA-TAKIEGO"
   },
   "N-02": {
     "Wynik": "OK",
@@ -117,26 +173,18 @@
   },
   "N-03": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=false. Nie wprowadzono żadnego klucza po który można wyszukać pracownika (Kod, ID lub Guid)"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   },
   "N-04": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-N04"
+    "Odpowiedz": "Success=undefined. The JSON value could not be converted to dodatek.Models.Dtos.EmployeeDTO. Path: $ | LineNumber: 0 | BytePositionInLine: 1."
   },
   "N-05": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=false. W tabeli 'Pracownicy' nie znaleziono definicji cechy o nazwie 'NIE_MA_TAKIEJ_CECHY'."
+    "Odpowiedz": "Success=false. Employee code (PersonID) not found: NIE-MA-TAKIEGO"
   },
-  "M-10": {
+  "C-08": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik"
-  },
-  "N-06": {
-    "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-NOWY"
-  },
-  "C-05": {
-    "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
+    "Odpowiedz": "Success=true. Employee was successfully added/updated"
   }
 }

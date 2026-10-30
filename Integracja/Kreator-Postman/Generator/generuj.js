@@ -6,84 +6,66 @@ const katalog = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(katalog, 'Kreator.html'), 'utf8');
 const kod = html.match(/<script id="logika">([\s\S]*?)<\/script>/)[1];
 const k = {};
-vm.runInNewContext(`${kod}; Object.assign(wynik, { zbudujZapytanie, sprawdz, parsujPolecenie, parsujCechy, fikcyjnyPesel, doPostmana, kolekcja, pakiet, srodowisko, SCENARIUSZE });`, { wynik: k });
+vm.runInNewContext(`${kod}; Object.assign(wynik, { zbudujZapytanie, sprawdz, parsujPolecenie, fikcyjnyPesel, kolekcja, pakiet, srodowisko, SCENARIUSZE });`, { wynik: k });
 const r = o => JSON.parse(JSON.stringify(o));
+const blad = (f, tekst) => assert.ok(k.sprawdz(f).bledy.some(b => b.includes(tekst)), tekst);
+const umowa = { od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', stanowisko: 'S', wydzial: 'X' };
 
 // Polecenie tekstowe
 let f = k.parsujPolecenie('zatrudnij Jan Testowy, kod API-01, od 2026-11-01 do 31.10.2027, na czas określony, stanowisko Główny Specjalista, wydział 01, 1/2');
 assert.deepStrictEqual(r(f), { operacja: 'zatrudnij', imie: 'Jan', nazwisko: 'Testowy', kod: 'API-01', od: '2026-11-01', do: '2027-10-31', stanowisko: 'Główny Specjalista', wydzial: '01', licznik: '1', mianownik: '2', typUmowy: 'NaCzasOkreślony' });
 assert.strictEqual(k.parsujPolecenie('zatrudnij Anna Nowak na czas nieokreślony od 1.12.2026').typUmowy, 'NaCzasNieokreślony');
-assert.strictEqual(k.parsujPolecenie('zwolnij pracownika Jan Testowy kod A1 do 2027-03-31').operacja, 'zwolnij');
+assert.strictEqual(k.parsujPolecenie('zwolnij pracownika Jan Testowy kod A1 od 2026-01-01 do 2027-03-31, przyczyna porzucenie pracy').przyczyna, 'porzucenie pracy');
 assert.strictEqual(k.parsujPolecenie('przedłuż umowę Jan Testowy kod A1 do 2028-01-31').nazwisko, 'Testowy');
 assert.strictEqual(k.parsujPolecenie('zmień dane Jan Testowy kod A1 z dniem 2027-01-01').dataZmiany, '2027-01-01');
-
-// Budowa żądań
-const zatrudnij = k.zbudujZapytanie({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', licznik: '1', mianownik: '1', wydzial: 'X', stanowisko: 'S' });
-assert.strictEqual(zatrudnij.metoda, 'UpdateEmployee');
-assert.deepStrictEqual(r(zatrudnij.cialo.Zatrudnienie.OkresOd), { Year: 2026, Month: 11, Day: 1 });
-assert.deepStrictEqual(r(zatrudnij.cialo.Zatrudnienie.OkresDo), { Year: 9999, Month: 12, Day: 31 });
-assert.strictEqual(zatrudnij.cialo.Aktualizuj, undefined);
-assert.strictEqual(zatrudnij.cialo.TestMode, true);
-const zwolnij = k.zbudujZapytanie({ operacja: 'zwolnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', do: '2027-03-31', powod: 'P' });
-assert.strictEqual(zwolnij.cialo.Aktualizuj, true);
-assert.strictEqual(zwolnij.cialo.Zatrudnienie.Zwolniony, true);
-assert.strictEqual(zwolnij.cialo.DataAktualizacji, '2027-03-31T00:00:00');
-
-// Aktualizacja bez imienia i nazwiska, rachunek bez aktualizacji
-assert.strictEqual(k.sprawdz({ operacja: 'przedluz', kod: 'A', do: '2028-01-31', dataZmiany: '2027-01-01' }).bledy.length, 0);
-assert.strictEqual(k.zbudujZapytanie({ operacja: 'przedluz', kod: 'A', do: '2028-01-31', dataZmiany: '2027-01-01' }).cialo.Aktualizuj, true);
-const rachunek = k.zbudujZapytanie({ operacja: 'rachunek', kod: 'A', rachunek: '1', dataZmiany: '2027-01-01' }).cialo;
-assert.deepStrictEqual(r(rachunek), { TestMode: true, Kod: 'A', Rachunki: [{ Numer: '1', Domyslne: true }] });
-assert.ok(k.sprawdz({ operacja: 'rachunek', kod: 'A' }).bledy.some(b => b.includes('rachunku')));
-assert.ok(k.sprawdz({ operacja: 'rachunek', rachunek: '1' }).bledy.some(b => b.includes('Kod')));
 f = k.parsujPolecenie('zmień rachunek kod A1 na 12 1050 0000 0000 0000 0000 0001');
 assert.strictEqual(f.operacja, 'rachunek');
 assert.strictEqual(f.rachunek, '12105000000000000000000001');
 assert.strictEqual(k.parsujPolecenie('zatrudnij Jan Testowy od 2026-11-01 rachunek 12105000000000000000000001').operacja, 'zatrudnij');
 
-// Cechy
-assert.deepStrictEqual(r(k.parsujCechy('A=1\nB=x@2026-02-10\nzly')), [{ Name: 'A', Value: '1' }, { Name: 'B', Value: 'x', UpdateDate: { Year: 2026, Month: 2, Day: 10 } }, { blad: 'zly' }]);
+// Budowa żądań wg DTO dodatku
+const z = k.zbudujZapytanie({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', ...umowa, licznik: '1', mianownik: '2', pkid: 'P', typPracownika: 'U' });
+assert.strictEqual(z.metoda, 'UpsertEmployee');
+assert.strictEqual(z.cialo.TestMode, true);
+assert.deepStrictEqual(r(z.cialo.DataAktualizacji), { From: { Year: 2026, Month: 11, Day: 1 } });
+assert.deepStrictEqual(r(z.cialo.Zatrudnienie.OkresZatrudnieniaDo), { Year: 9999, Month: 12, Day: 31 });
+assert.strictEqual(z.cialo.Zatrudnienie.JednostkaOrg, 'X');
+assert.strictEqual(z.cialo.PKID, 'P');
+assert.strictEqual(z.cialo.Zatrudnienie.TypPracownika, 'U');
+const zw = k.zbudujZapytanie({ operacja: 'zwolnij', kod: 'A', od: '2026-11-01', do: '2027-03-31', przyczyna: 'P' });
+assert.strictEqual(zw.metoda, 'UpsertTermination');
+assert.strictEqual(zw.cialo.PracownikKod, 'A');
+assert.strictEqual(zw.cialo.TerminationReason, 'P');
+assert.deepStrictEqual(r(k.zbudujZapytanie({ operacja: 'rachunek', kod: 'A', rachunek: '1', dataZmiany: '2027-01-01' }).cialo), { TestMode: true, DataAktualizacji: { From: { Year: 2027, Month: 1, Day: 1 } }, Kod: 'A', Rachunki: [{ Numer: '1', Domyslne: true }] });
+const adres = k.zbudujZapytanie({ operacja: 'zmien', kod: 'A', ulica: 'U', wojewodztwo: 'mazowieckie', dataZmiany: '2027-01-01' }).cialo;
+assert.strictEqual(adres.AdresZamieszkania.Wojewodztwo, 'mazowieckie');
+assert.strictEqual(adres.Zatrudnienie, undefined);
+assert.strictEqual(adres.Imie, undefined);
 
-// PESEL i walidacja
+// Walidacja
+assert.strictEqual(k.sprawdz({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', ...umowa }).bledy.length, 0);
+blad({ operacja: 'zmien', dataZmiany: '2027-01-01' }, 'Kod');
+blad({ operacja: 'zmien', kod: 'A' }, 'datę zmiany');
+blad({ operacja: 'rachunek', kod: 'A' }, 'datę zmiany');
+blad({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', od: '2026-11-01', wydzial: 'X', stanowisko: 'S' }, 'typ umowy');
+blad({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', od: '2026-11-01', typUmowy: 'NaCzasOkreślony' }, 'stanowiska');
+blad({ operacja: 'przedluz', kod: 'A', do: '2028-01-31', dataZmiany: '2027-01-01' }, 'typu umowy');
+blad({ operacja: 'zmien', kod: 'A', dataZmiany: '2027-01-01', stanowisko: 'S' }, 'typu umowy');
+blad({ operacja: 'zwolnij', kod: 'A', od: '2026-11-01', do: '2027-03-31' }, 'przyczynę');
+assert.ok(k.sprawdz({ operacja: 'zmien', kod: 'A', ulica: 'U', dataZmiany: '2027-01-01' }).uwagi.some(u => u.includes('województwa')));
 const pesel = k.fikcyjnyPesel('1990-05-15', 'Mężczyzna', 6);
-assert.strictEqual(pesel.length, 11);
-assert.strictEqual(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', stanowisko: 'S', wydzial: 'X', pesel }).bledy.length, 0);
-assert.ok(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', pesel: '90051500061' }).bledy.some(b => b.includes('PESEL')));
-assert.ok(!k.sprawdz({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', od: '2026-11-01' }).bledy.some(b => b.includes('Kod')));
-assert.ok(k.sprawdz({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', od: '2026-11-01' }).uwagi.some(u => u.includes('schematem')));
-assert.ok(k.sprawdz({ operacja: 'zmien', imie: 'J', nazwisko: 'T', dataZmiany: '2027-01-01' }).bledy.some(b => b.includes('Kod')));
-assert.strictEqual(k.zbudujZapytanie({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', od: '2026-11-01', stanowisko: 'S', wydzial: 'X' }).cialo.Kod, undefined);
-assert.ok(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', typUmowy: 'NaCzasOkreślony' }).bledy.some(b => b.includes('końca')));
-assert.ok(k.sprawdz({ operacja: 'zwolnij', kod: 'A', imie: 'J', nazwisko: 'T' }).bledy.length > 0);
-assert.ok(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01' }).bledy.some(b => b.includes('stanowiska')));
-assert.ok(k.sprawdz({ operacja: 'zmien', kod: 'A', imie: 'J', nazwisko: 'T' }).bledy.some(b => b.includes('datę zmiany')));
-assert.strictEqual(k.zbudujZapytanie({ operacja: 'przedluz', kod: 'A', imie: 'J', nazwisko: 'T', do: '2028-01-31', dataZmiany: '2027-01-01' }).cialo.Zatrudnienie.OkresOd, undefined);
+assert.strictEqual(k.sprawdz({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', ...umowa, pesel }).bledy.length, 0);
+blad({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', ...umowa, pesel: '90051500061' }, 'PESEL');
 
-// Postman: oba tryby, poprawny JSON po podstawieniu testMode
-for (const tryb of ['dynamic', 'invoker']) {
-  const kol = r(k.pakiet(tryb));
-  const zadania = kol.item.flatMap(i => i.item || [i]);
-  assert.ok(kol.info.schema.includes('v2.1.0'));
-  assert.strictEqual(zadania.length, k.SCENARIUSZE.length + (tryb === 'dynamic' ? 2 : 0));
-  for (const z of zadania) {
-    assert.ok(z.request.url.startsWith('{{baseUrl}}/api/'), z.name);
-    if (!z.request.body) continue;
-    JSON.parse(z.request.body.raw);
-    const dane = JSON.parse(z.request.body.raw).MethodArgs?.pars ?? JSON.parse(z.request.body.raw);
-    assert.ok(!JSON.stringify(dane).includes('{{'), `zmienna w danych: ${z.name}`);
-  }
-  const pierwszy = zadania.find(z => z.name.startsWith('Z-01'));
-  const cialo = JSON.parse(pierwszy.request.body.raw);
-  if (tryb === 'dynamic') {
-    assert.ok(pierwszy.request.url.endsWith('/api/KadryPlaceWebAPI/UpdateEmployee'));
-    assert.strictEqual(cialo.TestMode, false);
-    assert.strictEqual(zadania[0].request.url, '{{baseUrl}}/api/LoginApi');
-  } else {
-    assert.ok(pierwszy.request.url.endsWith('/api/MethodInvoker/InvokeServiceMethod'));
-    assert.strictEqual(cialo.ServiceName, 'AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core');
-    assert.strictEqual(cialo.MethodName, 'UpdateEmployee');
-    assert.strictEqual(cialo.MethodArgs.pars.TestMode, false);
-  }
+// Postman: wartości wpisane wprost, zmienne tylko dla połączenia i nazw usług
+const kol = r(k.pakiet());
+const zadania = kol.item.flatMap(i => i.item);
+assert.ok(kol.info.schema.includes('v2.1.0'));
+assert.strictEqual(zadania.length, k.SCENARIUSZE.length);
+for (const q of zadania) {
+  assert.ok(q.request.url.endsWith('/api/MethodInvoker/InvokeServiceMethod'), q.name);
+  const b = JSON.parse(q.request.body.raw);
+  assert.ok(!JSON.stringify(b.MethodArgs.pars).includes('{{'), `zmienna w danych: ${q.name}`);
 }
 assert.strictEqual(new Set(k.SCENARIUSZE.map(s => s.id)).size, k.SCENARIUSZE.length);
 
@@ -91,8 +73,7 @@ const zapisz = (plik, o) => {
   fs.mkdirSync(path.dirname(path.join(katalog, plik)), { recursive: true });
   fs.writeFileSync(path.join(katalog, plik), JSON.stringify(o, null, 2) + '\n');
 };
-zapisz('Postman/Kadry-scenariusze-DynamicAPI.postman_collection.json', k.pakiet('dynamic'));
-zapisz('Postman/Kadry-scenariusze-MethodInvoker.postman_collection.json', k.pakiet('invoker'));
+zapisz('Postman/Kadry-dodatek.postman_collection.json', k.pakiet());
 zapisz('Postman/Kadry-TEST.postman_environment.json', k.srodowisko());
 zapisz('Generator/scenariusze.json', k.SCENARIUSZE.map(s => ({ Id: s.id, Grupa: s.grupa, Nazwa: s.nazwa, Metoda: s.z.metoda, Oczekiwane: s.oczekiwane, Podstawa: s.podstawa })));
 console.log(`OK: ${k.SCENARIUSZE.length} scenariuszy`);
