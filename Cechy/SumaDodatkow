@@ -12,12 +12,12 @@ public decimal Get_Feature_SumaDodatkow(Context cx) {
     if (historia != null && historia.Etat.Okres.From <= okres.To && historia.Etat.Okres.To >= okres.From)
         kwota += historia.Etat.Zaszeregowanie.Stawka.Value;
 
-    // dodatki do etatu obowiązujące w okresie
+    // dodatki do etatu, których okres obowiązywania (nie aktualność zapisu) nachodzi na okres z filtra
     foreach (Dodatek dodatek in Row.Dodatki) {
         DodHistoria dh = dodatek.Historia[data];
         if (dh == null || dh.Element == null || !dh.Element.Dodatkowe.DodatekDoEtatu)
             continue;
-        if (dh.Aktualnosc.From <= okres.To && dh.Aktualnosc.To >= okres.From)
+        if (dh.Okres.From <= okres.To && dh.Okres.To >= okres.From)
             kwota += dh.Podstawa.Value;
     }
 
