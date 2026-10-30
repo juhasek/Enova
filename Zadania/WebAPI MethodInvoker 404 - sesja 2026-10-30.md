@@ -20,11 +20,16 @@ oraz błędu 404 na `http://localhost:9010/Login/webApi/api/MethodInvoker/Invoke
 
 ## Rozwiązanie
 
+W nakładce `-c` dopisać do sekcji `WebApi` w korzeniu pliku (nie do
+`Orchestrator:Process:Composition:WebApi`):
+
 ```json
-{ "WebApi": { "LegacyControllers": { "MethodInvoker": true, "Token": true } } }
+"LegacyControllers": { "MethodInvoker": true }
 ```
 
-`Token` tylko, gdy klient pobiera token z `/api/Token`. Po zmianie restart WebApi, potem
+`Token` nie jest potrzebny: kontroler nie ma `[Authorize]`, a dane logowania bierze z ciała żądania
+(`DatabaseHandle`, `Operator`, `Password`) albo, gdy `Operator` i `Password` są puste, z sekcji
+`WebApi:Invokers` po `InvokerName` = `ServiceName`. Po zmianie restart, potem
 `POST http://localhost:9010/api/MethodInvoker/InvokeServiceMethod`.
 
 ## Otwarte punkty
