@@ -1,0 +1,1151 @@
+{
+  "info": {
+    "name": "Kadry - scenariusze",
+    "description": "Wygenerowano Kreatorem Postman. testMode=true w środowisku: serwer nie zapisuje zmian. Zmień na false dopiero po sprawdzeniu wyników.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 Diagnostyka",
+      "item": [
+        {
+          "name": "D-01 Połączenie i wersje",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IOperationFunctions2, AltOne.WCF.Core\",\n  \"MethodName\": \"GetWebServiceInfo\",\n  \"MethodArgs\": {\n    \"pars\": {}\n  }\n}"
+            },
+            "description": "Oczekiwane: Success = true, wersje biblioteki i enova, nazwa bazy. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D-02 Czy cechy mają dostęp przez API",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"GetEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"Kod\": \"API-Z01\",\n      \"Zatrudnienie\": true\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Po Z-01: lista Features pokazuje cechy dostępne przez API. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 Minimum danych",
+      "item": [
+        {
+          "name": "M-01 Tylko imię i nazwisko",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\"\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: czy wystarcza minimum ze schematu. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-02 Plus kod",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-M02\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\"\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: czy powstaje kartoteka bez umowy. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-03 Plus sam początek umowy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-M03\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: czy wymagany jest typ umowy i wymiar. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-04 Plus typ umowy i wymiar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-M04\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: czy wymagane są stanowisko i wydział. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-05 Plus stanowisko i wydział",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-M05\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\"\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: czy to komplet dla umowy o pracę. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-06 Plus dane do ZUS i PIT",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-M06\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Plec\": \"Mężczyzna\",\n      \"DataUrodzenia\": \"1990-05-15T00:00:00\",\n      \"PESEL\": \"90051500611\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Komplet: pracownik gotowy do naliczeń; porównać z kartoteką w enova. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 Zatrudnienie",
+      "item": [
+        {
+          "name": "Z-01 Czas nieokreślony, pełny etat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z01\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Nowy pracownik, Etat od 2026-11-01 bez końca. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Z-02 Czas określony",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z02\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"OkresDo\": {\n          \"Year\": 2027,\n          \"Month\": 10,\n          \"Day\": 31\n        },\n        \"TypUmowy\": \"NaCzasOkreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Etat 2026-11-01 do 2027-10-31, typ: na czas określony. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Z-03 Okres próbny",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z03\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"OkresDo\": {\n          \"Year\": 2027,\n          \"Month\": 1,\n          \"Day\": 31\n        },\n        \"TypUmowy\": \"NaOkresPróbny\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Etat do 2027-01-31, typ: na okres próbny. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Z-04 Pół etatu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z04\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 2\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Wymiar etatu 1/2. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Z-05 Z adresem, kontaktem i rachunkiem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z05\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"AdresZamieszkania\": {\n        \"Ulica\": \"Testowa\",\n        \"NrDomu\": \"1\",\n        \"KodPocztowyS\": \"00-001\",\n        \"Miejscowosc\": \"Warszawa\"\n      },\n      \"Kontakt\": {\n        \"EMAIL\": \"jan.testowy@example.com\"\n      },\n      \"Rachunki\": [\n        {\n          \"Numer\": \"12105000000000000000000001\"\n        }\n      ],\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Adres, e-mail i rachunek w kartotece. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Z-06 Z cechą (pole dodatkowe)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z06\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Features\": [\n        {\n          \"Name\": \"UZUPELNIJ_NAZWA_CECHY\",\n          \"Value\": \"Test\"\n        }\n      ],\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"{{wydzial}}\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Cecha zapisana. Wymaga wpisania nazwy cechy z włączonym dostępem przez API. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 Przedłużenie",
+      "item": [
+        {
+          "name": "P-01 Przedłużenie umowy określonej",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z02\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-11-01T00:00:00\",\n      \"PowodAktualizacji\": \"Przedłużenie umowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"OkresDo\": {\n          \"Year\": 2028,\n          \"Month\": 10,\n          \"Day\": 31\n        },\n        \"TypUmowy\": \"NaCzasOkreślony\"\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "P-02 Kontrola po przedłużeniu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"GetEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"Kod\": \"API-Z02\",\n      \"Zatrudnienie\": true,\n      \"AdresDoKorespondencji\": true,\n      \"Rachunki\": true\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: OkresDo = 2028-10-31. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "P-03 Zamiana na czas nieokreślony",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z03\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Umowa na czas nieokreślony\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\"\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: typ zmieniony, koniec Etatu pusty. Brak OkresDo może nie czyścić daty końca. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5 Zwolnienie",
+      "item": [
+        {
+          "name": "R-01 Koniec umowy i Zwolniony",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z01\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-03-31T00:00:00\",\n      \"PowodAktualizacji\": \"Rozwiązanie umowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"OkresDo\": {\n          \"Year\": 2027,\n          \"Month\": 3,\n          \"Day\": 31\n        },\n        \"Zwolniony\": true\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: koniec Etatu 2027-03-31, status zwolnienia w enova. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "R-02 Kontrola po zwolnieniu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"GetEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"Kod\": \"API-Z01\",\n      \"Zatrudnienie\": true,\n      \"AdresDoKorespondencji\": true,\n      \"Rachunki\": true\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Zwolniony = true, OkresDo = 2027-03-31. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "R-03 Zmiana adresu po zwolnieniu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z01\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"AdresZamieszkania\": {\n        \"Ulica\": \"Nowa\",\n        \"NrDomu\": \"2\"\n      },\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-04-15T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana adresu\"\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: zwolnienie NIE może zniknąć (w poprzednim dodatku WebAPI aktualizacja je cofała). Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6 Zmiana danych",
+      "item": [
+        {
+          "name": "C-01 Zmiana nazwiska",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z04\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy-Nowak\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana nazwiska\"\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Nowy zapis historii z nowym nazwiskiem. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-02 Częściowa aktualizacja",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z05\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Kontakt\": {\n        \"EMAIL\": \"nowy.adres@example.com\"\n      },\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana e-mail\"\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: e-mail zmieniony, a adres i rachunek z Z-05 zostają. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-03 Zmiana stanowiska i wymiaru od daty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z01\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Aneks\",\n      \"Zatrudnienie\": {\n        \"Wymiar\": {\n          \"Numerator\": 3,\n          \"Denominator\": 4\n        },\n        \"Stanowisko\": \"{{stanowisko}}\"\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: nowy zapis historii od 2027-02-01, wymiar 3/4, okres Etatu bez zmian. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-04 Zmiana bez znacznika Aktualizuj",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-Z04\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Bez-Historii\"\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Ustalić: czy zmiana nadpisuje bieżący zapis bez historii. Podstawa: hipoteza."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7 Błędy",
+      "item": [
+        {
+          "name": "N-01 Nieistniejący wydział",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-N01\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\",\n        \"Wymiar\": {\n          \"Numerator\": 1,\n          \"Denominator\": 1\n        },\n        \"Stanowisko\": \"{{stanowisko}}\",\n        \"JednostkaOrg\": \"NIE-MA-TAKIEGO\",\n        \"DataZawarcia\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        },\n        \"DataRozpPracy\": {\n          \"Year\": 2026,\n          \"Month\": 11,\n          \"Day\": 1\n        }\n      }\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Odrzucenie: nie znaleziono wydziału. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"Nie znaleziono Wydziału\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "N-02 Nieistniejący pracownik w odczycie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"GetEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"Kod\": \"NIE-MA-TAKIEGO\",\n      \"Zatrudnienie\": true,\n      \"AdresDoKorespondencji\": true,\n      \"Rachunki\": true\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Odrzucenie: nie znaleziono pracownika. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"Nie znaleziono pracownika\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "N-03 Odczyt bez klucza",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"GetEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {}\n  }\n}"
+            },
+            "description": "Oczekiwane: Odrzucenie: brak klucza pracownika. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"Nie wprowadzono\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "N-04 Cecha bez nazwy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-N04\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Features\": [\n        {\n          \"Name\": \"\",\n          \"Value\": \"x\"\n        }\n      ]\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Odrzucenie: cecha musi mieć nazwę. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"'Name'\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "N-05 Cecha historyczna bez daty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": {{testMode}},\n      \"Kod\": \"API-N05\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Features\": [\n        {\n          \"Name\": \"UZUPELNIJ_CECHA_HISTORYCZNA\",\n          \"Value\": \"x\"\n        }\n      ]\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Odrzucenie: cecha historyczna wymaga UpdateDate. Podstawa: dokumentacja."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"datę aktualizacji\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

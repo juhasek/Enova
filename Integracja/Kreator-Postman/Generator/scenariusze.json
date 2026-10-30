@@ -1,0 +1,234 @@
+[
+  {
+    "Id": "D-01",
+    "Grupa": "1 Diagnostyka",
+    "Nazwa": "Połączenie i wersje",
+    "Metoda": "GetWebServiceInfo",
+    "Oczekiwane": "Success = true, wersje biblioteki i enova, nazwa bazy.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "D-02",
+    "Grupa": "1 Diagnostyka",
+    "Nazwa": "Czy cechy mają dostęp przez API",
+    "Metoda": "GetEmployee",
+    "Oczekiwane": "Po Z-01: lista Features pokazuje cechy dostępne przez API.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "M-01",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Tylko imię i nazwisko",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: czy wystarcza minimum ze schematu.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "M-02",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Plus kod",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: czy powstaje kartoteka bez umowy.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "M-03",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Plus sam początek umowy",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: czy wymagany jest typ umowy i wymiar.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "M-04",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Plus typ umowy i wymiar",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: czy wymagane są stanowisko i wydział.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "M-05",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Plus stanowisko i wydział",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: czy to komplet dla umowy o pracę.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "M-06",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Plus dane do ZUS i PIT",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Komplet: pracownik gotowy do naliczeń; porównać z kartoteką w enova.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "Z-01",
+    "Grupa": "3 Zatrudnienie",
+    "Nazwa": "Czas nieokreślony, pełny etat",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Nowy pracownik, Etat od 2026-11-01 bez końca.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "Z-02",
+    "Grupa": "3 Zatrudnienie",
+    "Nazwa": "Czas określony",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Etat 2026-11-01 do 2027-10-31, typ: na czas określony.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "Z-03",
+    "Grupa": "3 Zatrudnienie",
+    "Nazwa": "Okres próbny",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Etat do 2027-01-31, typ: na okres próbny.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "Z-04",
+    "Grupa": "3 Zatrudnienie",
+    "Nazwa": "Pół etatu",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Wymiar etatu 1/2.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "Z-05",
+    "Grupa": "3 Zatrudnienie",
+    "Nazwa": "Z adresem, kontaktem i rachunkiem",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Adres, e-mail i rachunek w kartotece.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "Z-06",
+    "Grupa": "3 Zatrudnienie",
+    "Nazwa": "Z cechą (pole dodatkowe)",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Cecha zapisana. Wymaga wpisania nazwy cechy z włączonym dostępem przez API.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "P-01",
+    "Grupa": "4 Przedłużenie",
+    "Nazwa": "Przedłużenie umowy określonej",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "P-02",
+    "Grupa": "4 Przedłużenie",
+    "Nazwa": "Kontrola po przedłużeniu",
+    "Metoda": "GetEmployee",
+    "Oczekiwane": "OkresDo = 2028-10-31.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "P-03",
+    "Grupa": "4 Przedłużenie",
+    "Nazwa": "Zamiana na czas nieokreślony",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: typ zmieniony, koniec Etatu pusty. Brak OkresDo może nie czyścić daty końca.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "R-01",
+    "Grupa": "5 Zwolnienie",
+    "Nazwa": "Koniec umowy i Zwolniony",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: koniec Etatu 2027-03-31, status zwolnienia w enova.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "R-02",
+    "Grupa": "5 Zwolnienie",
+    "Nazwa": "Kontrola po zwolnieniu",
+    "Metoda": "GetEmployee",
+    "Oczekiwane": "Zwolniony = true, OkresDo = 2027-03-31.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "R-03",
+    "Grupa": "5 Zwolnienie",
+    "Nazwa": "Zmiana adresu po zwolnieniu",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: zwolnienie NIE może zniknąć (w poprzednim dodatku WebAPI aktualizacja je cofała).",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "C-01",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Zmiana nazwiska",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Nowy zapis historii z nowym nazwiskiem.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "C-02",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Częściowa aktualizacja",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: e-mail zmieniony, a adres i rachunek z Z-05 zostają.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "C-03",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Zmiana stanowiska i wymiaru od daty",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: nowy zapis historii od 2027-02-01, wymiar 3/4, okres Etatu bez zmian.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "C-04",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Zmiana bez znacznika Aktualizuj",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Ustalić: czy zmiana nadpisuje bieżący zapis bez historii.",
+    "Podstawa": "hipoteza"
+  },
+  {
+    "Id": "N-01",
+    "Grupa": "7 Błędy",
+    "Nazwa": "Nieistniejący wydział",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Odrzucenie: nie znaleziono wydziału.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "N-02",
+    "Grupa": "7 Błędy",
+    "Nazwa": "Nieistniejący pracownik w odczycie",
+    "Metoda": "GetEmployee",
+    "Oczekiwane": "Odrzucenie: nie znaleziono pracownika.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "N-03",
+    "Grupa": "7 Błędy",
+    "Nazwa": "Odczyt bez klucza",
+    "Metoda": "GetEmployee",
+    "Oczekiwane": "Odrzucenie: brak klucza pracownika.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "N-04",
+    "Grupa": "7 Błędy",
+    "Nazwa": "Cecha bez nazwy",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Odrzucenie: cecha musi mieć nazwę.",
+    "Podstawa": "dokumentacja"
+  },
+  {
+    "Id": "N-05",
+    "Grupa": "7 Błędy",
+    "Nazwa": "Cecha historyczna bez daty",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Odrzucenie: cecha historyczna wymaga UpdateDate.",
+    "Podstawa": "dokumentacja"
+  }
+]

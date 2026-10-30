@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kreator Postman</title>
+<style>
+:root { --tlo:#f4f5f7; --karta:#fff; --tekst:#1c2430; --szary:#5b6675; --linia:#d5dae1; --akcent:#0b5cad; --blad:#b3261e; --ostrz:#8a5a00; }
+@media (prefers-color-scheme: dark) { :root { --tlo:#14181e; --karta:#1d232b; --tekst:#e7ebf0; --szary:#a3adba; --linia:#38424e; --akcent:#7db8f5; --blad:#ff8a80; --ostrz:#ffc766; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--tlo); color:var(--tekst); font:15px/1.45 "Segoe UI",Roboto,Arial,sans-serif; }
+main { max-width:1180px; margin:0 auto; padding:16px; }
+h1 { font-size:22px; margin:4px 0; } h2 { font-size:16px; margin:0 0 10px; }
+.opis { color:var(--szary); margin:0 0 14px; }
+.uklad { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start; }
+@media (max-width:860px) { .uklad { grid-template-columns:minmax(0,1fr); } }
+section { background:var(--karta); border:1px solid var(--linia); border-radius:8px; padding:14px; margin-bottom:14px; }
+label { display:block; font-size:13px; color:var(--szary); margin-bottom:8px; }
+input, select, textarea { width:100%; padding:7px 8px; margin-top:2px; font:inherit; color:var(--tekst); background:var(--tlo); border:1px solid var(--linia); border-radius:5px; }
+textarea { resize:vertical; }
+.siatka { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0 10px; }
+fieldset { border:1px solid var(--linia); border-radius:6px; margin:0 0 10px; padding:8px 10px 2px; }
+legend { font-size:13px; color:var(--szary); padding:0 4px; }
+button { font:inherit; padding:7px 12px; border-radius:5px; border:1px solid var(--akcent); background:var(--akcent); color:var(--karta); cursor:pointer; }
+button.drugi { background:transparent; color:var(--akcent); }
+.przyciski { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+pre { background:var(--tlo); border:1px solid var(--linia); border-radius:5px; padding:10px; margin:0; max-height:380px; overflow:auto; font:12.5px/1.4 Consolas,monospace; }
+ul { margin:6px 0 0; padding-left:18px; }
+#bledy { color:var(--blad); } #uwagi { color:var(--ostrz); }
+#koszyk li { margin-bottom:3px; }
+#koszyk button { padding:0 7px; margin-left:6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kreator Postman</h1>
+  <p class="opis">Metody kadrowe AltOne.WCF.Core. Wpisz, co chcesz zrobić, sprawdź pola i pobierz kolekcję do zaimportowania w Postmanie.</p>
+
+  <div class="uklad">
+    <div>
+      <section>
+        <h2>Co chcesz zrobić?</h2>
+        <label for="polecenie">Polecenie</label>
+        <textarea id="polecenie" rows="3" placeholder="zatrudnij Jan Testowy, kod API-01, od 2026-11-01 do 2027-10-31, na czas określony, stanowisko Specjalista, wydział 01, 1/2"></textarea>
+        <div class="przyciski"><button id="rozpoznaj" type="button">Uzupełnij pola</button></div>
+      </section>
+
+      <section>
+        <h2>Dane</h2>
+        <label for="operacja">Operacja</label>
+        <select id="operacja">
+          <option value="zatrudnij">Zatrudnij</option>
+          <option value="przedluz">Przedłuż umowę</option>
+          <option value="zwolnij">Zwolnij</option>
+          <option value="zmien">Zmień dane</option>
+          <option value="odczytaj">Odczytaj pracownika</option>
+        </select>
+
+        <fieldset><legend>Pracownik</legend><div class="siatka">
+          <label>Kod<input id="kod"></label>
+          <label>Imię<input id="imie"></label>
+          <label>Nazwisko<input id="nazwisko"></label>
+          <label>Płeć<select id="plec"><option value=""></option><option>Kobieta</option><option>Mężczyzna</option></select></label>
+          <label>Data urodzenia<input id="dataUrodzenia" type="date"></label>
+          <label>PESEL<input id="pesel"></label>
+        </div>
+        <div class="przyciski"><button id="losujPesel" type="button" class="drugi">Fikcyjny PESEL</button></div><br>
+        </fieldset>
+
+        <fieldset><legend>Umowa</legend><div class="siatka">
+          <label>Okres od<input id="od" type="date"></label>
+          <label>Okres do<input id="do" type="date"></label>
+          <label>Typ umowy<select id="typUmowy">
+            <option value=""></option><option>NaCzasNieokreślony</option><option>NaOkresPróbny</option><option>NaCzasOkreślony</option><option>NaOkresZastępstwa</option><option>NaCzasWykonywniaPracy</option>
+          </select></label>
+          <label>Etat: licznik<input id="licznik" inputmode="numeric"></label>
+          <label>Etat: mianownik<input id="mianownik" inputmode="numeric"></label>
+          <label>Stanowisko<input id="stanowisko"></label>
+          <label>Wydział (kod)<input id="wydzial"></label>
+        </div></fieldset>
+
+        <fieldset><legend>Aktualizacja (przedłużenie, zwolnienie, zmiana)</legend><div class="siatka">
+          <label>Data zmiany<input id="dataZmiany" type="date"></label>
+          <label>Powód<input id="powod"></label>
+        </div></fieldset>
+
+        <fieldset><legend>Dane dodatkowe</legend><div class="siatka">
+          <label>Ulica<input id="ulica"></label>
+          <label>Nr domu<input id="nrDomu"></label>
+          <label>Kod pocztowy<input id="kodPocztowy"></label>
+          <label>Miejscowość<input id="miejscowosc"></label>
+          <label>E-mail<input id="email"></label>
+          <label>Telefon<input id="telefon"></label>
+          <label>Rachunek<input id="rachunek"></label>
+        </div>
+        <label for="cechy">Cechy, po jednej w wierszu: Nazwa=Wartość albo Nazwa=Wartość@RRRR-MM-DD (cecha historyczna)</label>
+        <textarea id="cechy" rows="3"></textarea>
+        </fieldset>
+      </section>
+    </div>
+
+    <div>
+      <section>
+        <h2>Żądanie</h2>
+        <div id="bledy"></div><div id="uwagi"></div>
+        <pre id="podglad"></pre>
+        <div class="przyciski">
+          <button id="dodaj" type="button">Dodaj do kolekcji</button>
+          <button id="kopiuj" type="button" class="drugi">Kopiuj JSON</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Kolekcja</h2>
+        <label for="tryb">Sposób wywołania</label>
+        <select id="tryb">
+          <option value="dynamic">Dynamic API: token (wg dokumentacji)</option>
+          <option value="invoker">MethodInvoker: operator i hasło</option>
+        </select>
+        <ul id="koszyk"></ul>
+        <div class="przyciski">
+          <button id="pobierz" type="button">Pobierz kolekcję</button>
+          <button id="pakiet" type="button" class="drugi">Pobierz gotowy pakiet scenariuszy</button>
+          <button id="srodowisko" type="button" class="drugi">Pobierz środowisko</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script id="logika">
+// Logika bez dostępu do strony: testuje ją i wykorzystuje też Generator/generuj.js.
+const SERWISY = {
+  KadryPlace: { kontroler: 'KadryPlaceWebAPI', serwis: 'AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core' },
+  Operacje: { kontroler: 'OperationFunctionsWebAPI', serwis: 'AltOne.WCF.Core.Interfaces.IOperationFunctions2, AltOne.WCF.Core' }
+};
+const TEST_MODE = '{{testMode}}';
+
+const dataDTO = s => { const [Year, Month, Day] = s.split('-').map(Number); return { Year, Month, Day }; };
+const dataCzas = s => s + 'T00:00:00';
+const bezPustych = o => Object.fromEntries(Object.entries(o).filter(([, w]) => w !== undefined && w !== null && w !== ''));
+const niePuste = o => Object.keys(o).length ? o : undefined;
+
+function fikcyjnyPesel(dataUrodzenia, plec, numer) {
+  const [r, m, d] = dataUrodzenia.split('-').map(Number);
+  const miesiac = m + (r >= 2000 ? 20 : 0);
+  const seria = String(numer % 1000).padStart(3, '0');
+  const cyfraPlci = plec === 'Mężczyzna' ? 1 : 0;
+  const c = `${String(r % 100).padStart(2, '0')}${String(miesiac).padStart(2, '0')}${String(d).padStart(2, '0')}${seria}${cyfraPlci}`;
+  const suma = [...c].reduce((s, z, i) => s + Number(z) * [1, 3, 7, 9][i % 4], 0);
+  return c + (10 - suma % 10) % 10;
+}
+
+function parsujCechy(tekst) {
+  return (tekst || '').split('\n').map(w => w.trim()).filter(Boolean).map(w => {
+    const i = w.indexOf('=');
+    if (i < 1) return { blad: w };
+    const nazwa = w.slice(0, i).trim();
+    const dopasowanie = w.slice(i + 1).trim().match(/^(.*)@(\d{4}-\d{2}-\d{2})$/);
+    return dopasowanie
+      ? { Name: nazwa, Value: dopasowanie[1], UpdateDate: dataDTO(dopasowanie[2]) }
+      : { Name: nazwa, Value: w.slice(i + 1).trim() };
+  });
+}
+
+function zatrudnienie(f, pelne) {
+  const z = bezPustych({
+    OkresOd: f.od ? dataDTO(f.od) : undefined,
+    OkresDo: f.do ? dataDTO(f.do) : undefined,
+    TypUmowy: f.typUmowy,
+    Wymiar: f.licznik && f.mianownik ? { Numerator: Number(f.licznik), Denominator: Number(f.mianownik) } : undefined,
+    Stanowisko: f.stanowisko,
+    JednostkaOrg: f.wydzial,
+    Zwolniony: f.zwolniony ? true : undefined
+  });
+  if (pelne && f.od) { z.DataZawarcia = dataDTO(f.dataZawarcia || f.od); z.DataRozpPracy = dataDTO(f.od); }
+  return niePuste(z);
+}
+
+function daneOsoby(f) {
+  const adres = bezPustych({ Ulica: f.ulica, NrDomu: f.nrDomu, KodPocztowyS: f.kodPocztowy, Miejscowosc: f.miejscowosc });
+  const kontakt = bezPustych({ EMAIL: f.email, TelefonKomorkowy: f.telefon });
+  const cechy = parsujCechy(f.cechy).filter(c => !c.blad);
+  return bezPustych({
+    Kod: f.kod, Imie: f.imie, Nazwisko: f.nazwisko, Plec: f.plec,
+    DataUrodzenia: f.dataUrodzenia ? dataCzas(f.dataUrodzenia) : undefined,
+    PESEL: f.pesel,
+    AdresZamieszkania: niePuste(adres),
+    Kontakt: niePuste(kontakt),
+    Rachunki: f.rachunek ? [{ Numer: f.rachunek }] : undefined,
+    Features: cechy.length ? cechy : undefined
+  });
+}
+
+function zbudujZapytanie(f) {
+  if (f.operacja === 'odczytaj') {
+    return {
+      metoda: 'GetEmployee', usluga: 'KadryPlace',
+      cialo: bezPustych({ Kod: f.kod, DataAktualnosci: f.dataZmiany ? dataCzas(f.dataZmiany) : undefined, Zatrudnienie: true, AdresDoKorespondencji: true, Rachunki: true })
+    };
+  }
+  const cialo = { TestMode: TEST_MODE, ...daneOsoby(f) };
+  if (f.operacja === 'zatrudnij') {
+    cialo.Zatrudnienie = zatrudnienie(f, true);
+  } else {
+    const dane = f.operacja === 'zwolnij' ? { ...f, zwolniony: true } : f;
+    Object.assign(cialo, bezPustych({
+      Aktualizuj: true,
+      DataAktualizacji: dataCzas(f.dataZmiany || f.do || f.od),
+      PowodAktualizacji: f.powod,
+      Zatrudnienie: zatrudnienie(dane, false)
+    }));
+  }
+  return { metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: bezPustych(cialo) };
+}
+
+function sprawdz(f) {
+  const bledy = [], uwagi = [];
+  const zmienna = s => /^\{\{.+\}\}$/.test(s || '');
+  if (!f.kod) bledy.push('Podaj Kod: to po nim metoda znajduje pracownika.');
+  if (f.operacja === 'odczytaj') return { bledy, uwagi };
+  if (!f.imie || !f.nazwisko) bledy.push('Imię i nazwisko są wymagane przez schemat PracownikDTO, także przy aktualizacji.');
+  parsujCechy(f.cechy).filter(c => c.blad).forEach(c => bledy.push(`Niepoprawny wiersz cechy: ${c.blad}`));
+  if (f.od && f.do && f.do < f.od) bledy.push('Okres do jest wcześniejszy niż okres od.');
+  if (f.pesel && !zmienna(f.pesel)) {
+    const c = [...f.pesel].map(Number);
+    const ok = f.pesel.length === 11 && !c.some(isNaN) && (10 - c.slice(0, 10).reduce((s, z, i) => s + z * [1, 3, 7, 9][i % 4], 0) % 10) % 10 === c[10];
+    if (!ok) bledy.push('PESEL ma niepoprawną cyfrę kontrolną.');
+  }
+  if (f.typUmowy === 'NaCzasNieokreślony' && f.do && f.operacja === 'zatrudnij') bledy.push('Umowa na czas nieokreślony nie ma daty końca.');
+  if (['NaCzasOkreślony', 'NaOkresPróbny'].includes(f.typUmowy) && !f.do) bledy.push('Ta umowa wymaga daty końca (Okres do).');
+  if (f.operacja === 'zatrudnij' && !f.od) bledy.push('Podaj datę początku umowy.');
+  if (f.operacja === 'zatrudnij' && !(f.stanowisko && f.wydzial)) uwagi.push('Bez stanowiska lub wydziału wynik zależy od serwera: sprawdź w sondach M-04 i M-05.');
+  if (f.operacja === 'przedluz' && !(f.od && f.do)) bledy.push('Przedłużenie wymaga pierwotnego początku umowy i nowej daty końca.');
+  if (f.operacja === 'zwolnij' && !f.do) bledy.push('Podaj ostatni dzień umowy (Okres do).');
+  if (f.operacja === 'zwolnij') uwagi.push('DTO nie ma przyczyny ani trybu rozwiązania. Skutek pola Zwolniony nie jest opisany w dokumentacji: sprawdź w R-01.');
+  if (['przedluz', 'zmien'].includes(f.operacja) && !f.dataZmiany) uwagi.push('Bez daty zmiany przyjęto datę z umowy.');
+  if (f.operacja === 'zmien') uwagi.push('Nie wiadomo, czy pominięte pola są czyszczone: sprawdź w C-02 przed użyciem na prawdziwych danych.');
+  return { bledy, uwagi };
+}
+
+function sprawdzWynik(oczekiwanyWynik, tekst) {
+  const linie = [
+    "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+    'const odp = pm.response.json();',
+    "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+    'const wynik = odp.ResultInstance || odp;',
+    `pm.test('Success = ${oczekiwanyWynik}', () => pm.expect(wynik.Success, wynik.Description).to.eql(${oczekiwanyWynik}));`
+  ];
+  if (tekst) linie.push(`pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(${JSON.stringify(tekst)}));`);
+  return [{ listen: 'test', script: { type: 'text/javascript', exec: linie } }];
+}
+
+function doPostmana(z, tryb) {
+  const s = SERWISY[z.usluga];
+  const json = o => JSON.stringify(o, null, 2).replaceAll(`"${TEST_MODE}"`, TEST_MODE);
+  const naglowki = [{ key: 'Content-Type', value: 'application/json' }];
+  const raw = { mode: 'raw', options: { raw: { language: 'json' } } };
+  const request = tryb === 'invoker'
+    ? {
+        method: 'POST', header: naglowki, url: '{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod',
+        body: { ...raw, raw: json({ DatabaseHandle: '{{database}}', Operator: '{{operator}}', Password: '{{password}}', ServiceName: s.serwis, MethodName: z.metoda, MethodArgs: { pars: z.cialo } }) }
+      }
+    : {
+        method: 'POST', header: naglowki, url: `{{baseUrl}}/api/${s.kontroler}/${z.metoda}`,
+        auth: { type: 'bearer', bearer: [{ key: 'token', value: '{{sessionToken}}', type: 'string' }] },
+        body: { ...raw, raw: json(z.cialo) }
+      };
+  return { name: z.nazwa, request: { ...request, description: z.opis || '' }, event: sprawdzWynik(z.sukces !== false, z.komunikat) };
+}
+
+function logowanie() {
+  return [{
+    name: 'Logowanie (zapisuje sessionToken)',
+    request: {
+      method: 'POST', url: '{{baseUrl}}/api/LoginApi',
+      auth: { type: 'bearer', bearer: [{ key: 'token', value: '{{appToken}}', type: 'string' }] }
+    },
+    event: [{ listen: 'test', script: { type: 'text/javascript', exec: [
+      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+      "const token = pm.response.json().Token || (pm.response.headers.get('Authorization') || '').replace(/^Bearer /, '');",
+      "pm.test('Jest token sesji', () => pm.expect(token).to.not.be.empty);",
+      "pm.environment.set('sessionToken', token);"
+    ] } }]
+  }];
+}
+
+function wylogowanie() {
+  return [{ name: 'Wylogowanie', request: { method: 'POST', url: '{{baseUrl}}/api/LogoutApi', auth: { type: 'bearer', bearer: [{ key: 'token', value: '{{sessionToken}}', type: 'string' }] } } }];
+}
+
+function kolekcja(nazwa, grupy, tryb) {
+  const foldery = grupy.map(g => ({ name: g.nazwa, item: g.zapytania.map(z => doPostmana(z, tryb)) }));
+  return {
+    info: {
+      name: nazwa,
+      description: 'Wygenerowano Kreatorem Postman. testMode=true w środowisku: serwer nie zapisuje zmian. Zmień na false dopiero po sprawdzeniu wyników.',
+      schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
+    },
+    item: tryb === 'invoker' ? foldery : [...logowanie(), ...foldery, ...wylogowanie()]
+  };
+}
+
+function srodowisko() {
+  const v = (key, value, type = 'default') => ({ key, value, type, enabled: true });
+  return {
+    name: 'Kadry - TEST (szablon)',
+    values: [
+      v('baseUrl', 'http://localhost:9010'), v('testMode', 'true'),
+      v('appToken', '', 'secret'), v('sessionToken', '', 'secret'),
+      v('database', 'NAZWA-BAZY'), v('operator', 'Administrator'), v('password', '', 'secret'),
+      v('stanowisko', 'UZUPELNIJ'), v('wydzial', 'UZUPELNIJ')
+    ],
+    _postman_variable_scope: 'environment'
+  };
+}
+
+const OSOBA = { imie: 'Jan', nazwisko: 'Testowy' };
+const UMOWA = { od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', licznik: '1', mianownik: '1', stanowisko: '{{stanowisko}}', wydzial: '{{wydzial}}' };
+const DOKUMENT = 'dokumentacja', HIPOTEZA = 'hipoteza';
+
+// sonda(): żądanie zbudowane wprost, żeby M-xx mogły świadomie pominąć pola wymagane przez kreator.
+const sonda = cialo => ({ metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: TEST_MODE, ...cialo } });
+const zatr = (f) => zbudujZapytanie({ operacja: 'zatrudnij', ...OSOBA, ...f });
+const akt = (operacja, f) => zbudujZapytanie({ operacja, ...OSOBA, ...f });
+const odczyt = kod => zbudujZapytanie({ operacja: 'odczytaj', kod });
+const umowaMin = { OkresOd: dataDTO('2026-11-01'), TypUmowy: 'NaCzasNieokreślony', Wymiar: { Numerator: 1, Denominator: 1 } };
+
+const SCENARIUSZE = [
+  { grupa: '1 Diagnostyka', id: 'D-01', nazwa: 'Połączenie i wersje', z: { metoda: 'GetWebServiceInfo', usluga: 'Operacje', cialo: {} }, oczekiwane: 'Success = true, wersje biblioteki i enova, nazwa bazy.', podstawa: DOKUMENT },
+  { grupa: '1 Diagnostyka', id: 'D-02', nazwa: 'Czy cechy mają dostęp przez API', z: { metoda: 'GetEmployee', usluga: 'KadryPlace', cialo: { Kod: 'API-Z01', Zatrudnienie: true } }, oczekiwane: 'Po Z-01: lista Features pokazuje cechy dostępne przez API.', podstawa: DOKUMENT },
+
+  { grupa: '2 Minimum danych', id: 'M-01', nazwa: 'Tylko imię i nazwisko', z: sonda({ Imie: 'Jan', Nazwisko: 'Testowy' }), oczekiwane: 'Ustalić: czy wystarcza minimum ze schematu.', podstawa: HIPOTEZA },
+  { grupa: '2 Minimum danych', id: 'M-02', nazwa: 'Plus kod', z: sonda({ Kod: 'API-M02', Imie: 'Jan', Nazwisko: 'Testowy' }), oczekiwane: 'Ustalić: czy powstaje kartoteka bez umowy.', podstawa: HIPOTEZA },
+  { grupa: '2 Minimum danych', id: 'M-03', nazwa: 'Plus sam początek umowy', z: sonda({ Kod: 'API-M03', Imie: 'Jan', Nazwisko: 'Testowy', Zatrudnienie: { OkresOd: dataDTO('2026-11-01') } }), oczekiwane: 'Ustalić: czy wymagany jest typ umowy i wymiar.', podstawa: HIPOTEZA },
+  { grupa: '2 Minimum danych', id: 'M-04', nazwa: 'Plus typ umowy i wymiar', z: sonda({ Kod: 'API-M04', Imie: 'Jan', Nazwisko: 'Testowy', Zatrudnienie: umowaMin }), oczekiwane: 'Ustalić: czy wymagane są stanowisko i wydział.', podstawa: HIPOTEZA },
+  { grupa: '2 Minimum danych', id: 'M-05', nazwa: 'Plus stanowisko i wydział', z: sonda({ Kod: 'API-M05', Imie: 'Jan', Nazwisko: 'Testowy', Zatrudnienie: { ...umowaMin, Stanowisko: '{{stanowisko}}', JednostkaOrg: '{{wydzial}}' } }), oczekiwane: 'Ustalić: czy to komplet dla umowy o pracę.', podstawa: HIPOTEZA },
+  { grupa: '2 Minimum danych', id: 'M-06', nazwa: 'Plus dane do ZUS i PIT', z: zatr({ kod: 'API-M06', ...UMOWA, plec: 'Mężczyzna', dataUrodzenia: '1990-05-15', pesel: fikcyjnyPesel('1990-05-15', 'Mężczyzna', 6) }), oczekiwane: 'Komplet: pracownik gotowy do naliczeń; porównać z kartoteką w enova.', podstawa: HIPOTEZA },
+
+  { grupa: '3 Zatrudnienie', id: 'Z-01', nazwa: 'Czas nieokreślony, pełny etat', z: zatr({ kod: 'API-Z01', ...UMOWA }), oczekiwane: 'Nowy pracownik, Etat od 2026-11-01 bez końca.', podstawa: DOKUMENT },
+  { grupa: '3 Zatrudnienie', id: 'Z-02', nazwa: 'Czas określony', z: zatr({ kod: 'API-Z02', ...UMOWA, do: '2027-10-31', typUmowy: 'NaCzasOkreślony' }), oczekiwane: 'Etat 2026-11-01 do 2027-10-31, typ: na czas określony.', podstawa: DOKUMENT },
+  { grupa: '3 Zatrudnienie', id: 'Z-03', nazwa: 'Okres próbny', z: zatr({ kod: 'API-Z03', ...UMOWA, do: '2027-01-31', typUmowy: 'NaOkresPróbny' }), oczekiwane: 'Etat do 2027-01-31, typ: na okres próbny.', podstawa: DOKUMENT },
+  { grupa: '3 Zatrudnienie', id: 'Z-04', nazwa: 'Pół etatu', z: zatr({ kod: 'API-Z04', ...UMOWA, licznik: '1', mianownik: '2' }), oczekiwane: 'Wymiar etatu 1/2.', podstawa: DOKUMENT },
+  { grupa: '3 Zatrudnienie', id: 'Z-05', nazwa: 'Z adresem, kontaktem i rachunkiem', z: zatr({ kod: 'API-Z05', ...UMOWA, ulica: 'Testowa', nrDomu: '1', kodPocztowy: '00-001', miejscowosc: 'Warszawa', email: 'jan.testowy@example.com', rachunek: '12105000000000000000000001' }), oczekiwane: 'Adres, e-mail i rachunek w kartotece.', podstawa: DOKUMENT },
+  { grupa: '3 Zatrudnienie', id: 'Z-06', nazwa: 'Z cechą (pole dodatkowe)', z: zatr({ kod: 'API-Z06', ...UMOWA, cechy: 'UZUPELNIJ_NAZWA_CECHY=Test' }), oczekiwane: 'Cecha zapisana. Wymaga wpisania nazwy cechy z włączonym dostępem przez API.', podstawa: DOKUMENT },
+
+  { grupa: '4 Przedłużenie', id: 'P-01', nazwa: 'Przedłużenie umowy określonej', z: akt('przedluz', { kod: 'API-Z02', od: '2026-11-01', do: '2028-10-31', typUmowy: 'NaCzasOkreślony', dataZmiany: '2027-11-01', powod: 'Przedłużenie umowy' }), oczekiwane: 'Ustalić: nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31.', podstawa: HIPOTEZA },
+  { grupa: '4 Przedłużenie', id: 'P-02', nazwa: 'Kontrola po przedłużeniu', z: odczyt('API-Z02'), oczekiwane: 'OkresDo = 2028-10-31.', podstawa: DOKUMENT },
+  { grupa: '4 Przedłużenie', id: 'P-03', nazwa: 'Zamiana na czas nieokreślony', z: akt('przedluz', { kod: 'API-Z03', od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', dataZmiany: '2027-02-01', powod: 'Umowa na czas nieokreślony' }), oczekiwane: 'Ustalić: typ zmieniony, koniec Etatu pusty. Brak OkresDo może nie czyścić daty końca.', podstawa: HIPOTEZA },
+
+  { grupa: '5 Zwolnienie', id: 'R-01', nazwa: 'Koniec umowy i Zwolniony', z: akt('zwolnij', { kod: 'API-Z01', od: '2026-11-01', do: '2027-03-31', dataZmiany: '2027-03-31', powod: 'Rozwiązanie umowy' }), oczekiwane: 'Ustalić: koniec Etatu 2027-03-31, status zwolnienia w enova.', podstawa: HIPOTEZA },
+  { grupa: '5 Zwolnienie', id: 'R-02', nazwa: 'Kontrola po zwolnieniu', z: odczyt('API-Z01'), oczekiwane: 'Zwolniony = true, OkresDo = 2027-03-31.', podstawa: HIPOTEZA },
+  { grupa: '5 Zwolnienie', id: 'R-03', nazwa: 'Zmiana adresu po zwolnieniu', z: akt('zmien', { kod: 'API-Z01', ulica: 'Nowa', nrDomu: '2', dataZmiany: '2027-04-15', powod: 'Zmiana adresu' }), oczekiwane: 'Ustalić: zwolnienie NIE może zniknąć (w poprzednim dodatku WebAPI aktualizacja je cofała).', podstawa: HIPOTEZA },
+
+  { grupa: '6 Zmiana danych', id: 'C-01', nazwa: 'Zmiana nazwiska', z: zbudujZapytanie({ operacja: 'zmien', kod: 'API-Z04', imie: 'Jan', nazwisko: 'Testowy-Nowak', dataZmiany: '2027-01-01', powod: 'Zmiana nazwiska' }), oczekiwane: 'Nowy zapis historii z nowym nazwiskiem.', podstawa: DOKUMENT },
+  { grupa: '6 Zmiana danych', id: 'C-02', nazwa: 'Częściowa aktualizacja', z: akt('zmien', { kod: 'API-Z05', email: 'nowy.adres@example.com', dataZmiany: '2027-01-01', powod: 'Zmiana e-mail' }), oczekiwane: 'Ustalić: e-mail zmieniony, a adres i rachunek z Z-05 zostają.', podstawa: HIPOTEZA },
+  { grupa: '6 Zmiana danych', id: 'C-03', nazwa: 'Zmiana stanowiska i wymiaru od daty', z: akt('zmien', { kod: 'API-Z01', stanowisko: '{{stanowisko}}', licznik: '3', mianownik: '4', dataZmiany: '2027-02-01', powod: 'Aneks' }), oczekiwane: 'Ustalić: nowy zapis historii od 2027-02-01, wymiar 3/4, okres Etatu bez zmian.', podstawa: HIPOTEZA },
+  { grupa: '6 Zmiana danych', id: 'C-04', nazwa: 'Zmiana bez znacznika Aktualizuj', z: sonda({ Kod: 'API-Z04', Imie: 'Jan', Nazwisko: 'Bez-Historii' }), oczekiwane: 'Ustalić: czy zmiana nadpisuje bieżący zapis bez historii.', podstawa: HIPOTEZA },
+
+  { grupa: '7 Błędy', id: 'N-01', nazwa: 'Nieistniejący wydział', z: zatr({ kod: 'API-N01', ...UMOWA, wydzial: 'NIE-MA-TAKIEGO' }), sukces: false, komunikat: 'Nie znaleziono Wydziału', oczekiwane: 'Odrzucenie: nie znaleziono wydziału.', podstawa: DOKUMENT },
+  { grupa: '7 Błędy', id: 'N-02', nazwa: 'Nieistniejący pracownik w odczycie', z: odczyt('NIE-MA-TAKIEGO'), sukces: false, komunikat: 'Nie znaleziono pracownika', oczekiwane: 'Odrzucenie: nie znaleziono pracownika.', podstawa: DOKUMENT },
+  { grupa: '7 Błędy', id: 'N-03', nazwa: 'Odczyt bez klucza', z: { metoda: 'GetEmployee', usluga: 'KadryPlace', cialo: {} }, sukces: false, komunikat: 'Nie wprowadzono', oczekiwane: 'Odrzucenie: brak klucza pracownika.', podstawa: DOKUMENT },
+  { grupa: '7 Błędy', id: 'N-04', nazwa: 'Cecha bez nazwy', z: sonda({ Kod: 'API-N04', Imie: 'Jan', Nazwisko: 'Testowy', Features: [{ Name: '', Value: 'x' }] }), sukces: false, komunikat: "'Name'", oczekiwane: 'Odrzucenie: cecha musi mieć nazwę.', podstawa: DOKUMENT },
+  { grupa: '7 Błędy', id: 'N-05', nazwa: 'Cecha historyczna bez daty', z: sonda({ Kod: 'API-N05', Imie: 'Jan', Nazwisko: 'Testowy', Features: [{ Name: 'UZUPELNIJ_CECHA_HISTORYCZNA', Value: 'x' }] }), sukces: false, komunikat: 'datę aktualizacji', oczekiwane: 'Odrzucenie: cecha historyczna wymaga UpdateDate.', podstawa: DOKUMENT }
+];
+
+function pakiet(tryb) {
+  const grupy = [...new Set(SCENARIUSZE.map(s => s.grupa))].map(nazwa => ({
+    nazwa,
+    zapytania: SCENARIUSZE.filter(s => s.grupa === nazwa).map(s => ({
+      ...s.z, nazwa: `${s.id} ${s.nazwa}`, opis: `Oczekiwane: ${s.oczekiwane} Podstawa: ${s.podstawa}.`,
+      sukces: s.sukces, komunikat: s.komunikat
+    }))
+  }));
+  return kolekcja('Kadry - scenariusze', grupy, tryb);
+}
+
+function parsujPolecenie(tekst) {
+  const t = tekst.trim(), n = t.toLowerCase(), f = {};
+  const iso = s => { const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/); return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : s; };
+  const data = '(\\d{4}-\\d{2}-\\d{2}|\\d{1,2}\\.\\d{1,2}\\.\\d{4})';
+  const wez = wzor => { const m = t.match(wzor); return m ? m[1].trim() : undefined; };
+
+  f.operacja = /zwoln|rozwi[ąa]/.test(n) ? 'zwolnij' : /przed[łl]u/.test(n) ? 'przedluz' : /zmie[nńi]/.test(n) ? 'zmien' : /odczyt|pobierz|poka[żz]/.test(n) ? 'odczytaj' : 'zatrudnij';
+  const osoba = t.match(/(?:zatrudnij|zwolnij|przedłuż|przedluz|zmień|zmien|odczytaj|pobierz|pokaż)(?:\s+(?:umow\p{L}*|dane|pracownika|pracownik))*\s+(\p{Lu}[\p{L}-]+)\s+(\p{Lu}[\p{L}-]+)/u);
+  if (osoba) { f.imie = osoba[1]; f.nazwisko = osoba[2]; }
+  f.kod = wez(/\bkod\w*\s*:?\s*([^\s,;]+)/i);
+  const od = wez(new RegExp(`\\bod\\s+${data}`, 'i')), dok = wez(new RegExp(`\\bdo\\s+${data}`, 'i')), z = wez(new RegExp(`\\bz\\s+dniem\\s+${data}`, 'i'));
+  if (od) f.od = iso(od);
+  if (dok) f.do = iso(dok);
+  if (z) f.dataZmiany = iso(z);
+  f.stanowisko = wez(/\bstanowisk\w*\s*:?\s*(.+?)(?=\s+w\s+wydzia|\s+wydzia|\s+od\s|\s+do\s|\s+kod|[,;]|$)/i);
+  f.wydzial = wez(/\bwydzia\p{L}*\s*:?\s*([^\s,;]+)/iu);
+  const wymiar = t.match(/\b(\d+)\s*\/\s*(\d+)\b/);
+  if (wymiar) { f.licznik = wymiar[1]; f.mianownik = wymiar[2]; }
+  f.typUmowy = /nieokre[śs]l/.test(n) ? 'NaCzasNieokreślony' : /pr[óo]bn/.test(n) ? 'NaOkresPróbny' : /zast[ęe]pstw/.test(n) ? 'NaOkresZastępstwa' : /okre[śs]lon/.test(n) ? 'NaCzasOkreślony' : undefined;
+  return Object.fromEntries(Object.entries(f).filter(([, w]) => w));
+}
+</script>
+
+<script>
+const pola = ['operacja', 'kod', 'imie', 'nazwisko', 'plec', 'dataUrodzenia', 'pesel', 'od', 'do', 'typUmowy', 'licznik', 'mianownik', 'stanowisko', 'wydzial', 'dataZmiany', 'powod', 'ulica', 'nrDomu', 'kodPocztowy', 'miejscowosc', 'email', 'telefon', 'rachunek', 'cechy'];
+const el = id => document.getElementById(id);
+const koszyk = [];
+const czytaj = () => Object.fromEntries(pola.map(p => [p, el(p).value.trim()]));
+
+function lista(miejsce, wpisy) {
+  miejsce.replaceChildren();
+  if (!wpisy.length) return;
+  const ul = document.createElement('ul');
+  wpisy.forEach(w => { const li = document.createElement('li'); li.textContent = w; ul.append(li); });
+  miejsce.append(ul);
+}
+
+function odswiez() {
+  const f = czytaj(), { bledy, uwagi } = sprawdz(f);
+  lista(el('bledy'), bledy);
+  lista(el('uwagi'), uwagi);
+  el('podglad').textContent = JSON.stringify(zbudujZapytanie(f).cialo, null, 2).replaceAll(`"${TEST_MODE}"`, TEST_MODE);
+  el('dodaj').disabled = bledy.length > 0;
+}
+
+function pokazKoszyk() {
+  el('koszyk').replaceChildren(...koszyk.map((z, i) => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    li.textContent = z.nazwa;
+    b.type = 'button'; b.className = 'drugi'; b.textContent = 'usuń';
+    b.onclick = () => { koszyk.splice(i, 1); pokazKoszyk(); };
+    li.append(b);
+    return li;
+  }));
+}
+
+function zapisz(nazwa, obiekt) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(obiekt, null, 2)], { type: 'application/json' }));
+  a.download = nazwa;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+el('rozpoznaj').onclick = () => {
+  const f = parsujPolecenie(el('polecenie').value);
+  pola.filter(p => p !== 'operacja').forEach(p => { el(p).value = f[p] || ''; });
+  el('operacja').value = f.operacja;
+  odswiez();
+};
+el('losujPesel').onclick = () => {
+  const f = czytaj();
+  if (!f.dataUrodzenia) f.dataUrodzenia = el('dataUrodzenia').value = '1990-05-15';
+  el('pesel').value = fikcyjnyPesel(f.dataUrodzenia, f.plec, Math.floor(Math.random() * 1000));
+  odswiez();
+};
+el('dodaj').onclick = () => {
+  const f = czytaj();
+  koszyk.push({ ...zbudujZapytanie(f), nazwa: `${el('operacja').selectedOptions[0].textContent}: ${f.kod}` });
+  pokazKoszyk();
+};
+el('kopiuj').onclick = () => navigator.clipboard.writeText(el('podglad').textContent);
+el('pobierz').onclick = () => {
+  if (!koszyk.length) return alert('Najpierw dodaj żądanie do kolekcji.');
+  zapisz('Kadry-moje.postman_collection.json', kolekcja('Kadry - moje', [{ nazwa: 'Moje', zapytania: koszyk }], el('tryb').value));
+};
+el('pakiet').onclick = () => zapisz('Kadry-scenariusze.postman_collection.json', pakiet(el('tryb').value));
+el('srodowisko').onclick = () => zapisz('Kadry-TEST.postman_environment.json', srodowisko());
+document.querySelectorAll('input,select,textarea').forEach(e => { if (e.id !== 'polecenie' && e.id !== 'tryb') e.oninput = odswiez; });
+odswiez();
+</script>
+</body>
+</html>
