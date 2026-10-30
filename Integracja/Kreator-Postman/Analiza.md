@@ -114,6 +114,18 @@ przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły en
   Blokady SQL nie zaobserwowano, przyczyna nieznana. System wywołujący powinien ponawiać takie żądania.
 - **Serwer 2606.2.3:** testy przeszły na 2610.
 
+## Testy klienta (inna metoda)
+
+Kolekcja klienta (9 żądań) nie używa `UpdateEmployee`, tylko `IStaff.UpsertEmployee` z dodatku klienta (2512.9.11 Alfa).
+Dodatek uruchamia się na 2610 i na `WCF.Core` 2606: odczyt `GetOddzialy` działa. Wynik żądań klienta w trybie próbnym (baza `Integracja`):
+
+- `pars` jako tablica: błąd konwersji do `EmployeeDTO`. Ta wersja dodatku przyjmuje pojedynczy obiekt.
+- Nowy pracownik (`pars` jako obiekt): błąd braku cechy `Numer koncernowy`. Dodatek wymaga jej i cechy `Typ pracownika`.
+- Pozostałe żądania działają na pracowniku z pierwszego, więc zatrzymują się na braku pracownika.
+- Żądanie z polskimi nazwami pól: wartość `Zatrudnienie.TypUmowy` nie pasuje do enuma.
+
+Pola klienta bez odpowiednika w `UpdateEmployee`: `PKID`, `EmployeeType`, `FunctionalCode`, `TypeOfEmployment`, `BaseOfEmployment`.
+
 ## Rozbieżności w dokumentacji
 
 - Wstęp pokazuje `UpdateDate` cechy jako `{Rok,Miesiac,Dzien}`, a schemat `DataDTO` jako `{Year,Month,Day}`.
