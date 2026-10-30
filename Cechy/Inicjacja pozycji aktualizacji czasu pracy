@@ -35,7 +35,11 @@ public object GetInitValueInicjacja() {
 						dzienakt.Copy(da);
 						skopiowanoZeZrodla = true;
 					}
-					else if (dzienPracy is Dzien d && d.Praca != FromTimes.Empty)
+					// Poprawka 30.10.2026 - zgłoszenie klienta: dzień z samą strefą rozliczeniową
+					// (np. "Rozliczenie nadgodzin (firma)") ma pustą Praca, bo liczą się do niej tylko
+					// strefy wchodzące do czasu pracy, i był zastępowany planem. Strefę "NB" pomijamy,
+					// bo dzień z samą nieobecnością obsługuje gałąź przeliczenia poniżej.
+					else if (dzienPracy is Dzien d && (d.Praca != FromTimes.Empty || d.Any(s => s.Definicja.Kod != "NB")))
 					{
 						dzienakt.Copy(d);
 						skopiowanoZeZrodla = true;
