@@ -222,7 +222,7 @@ function zbudujZapytanie(f) {
 function sprawdz(f) {
   const bledy = [], uwagi = [];
   const zmienna = s => /^\{\{.+\}\}$/.test(s || '');
-  if (!f.kod) bledy.push('Podaj Kod: to po nim metoda znajduje pracownika.');
+  if (!f.kod && f.operacja !== 'zatrudnij') bledy.push('Podaj Kod: to po nim metoda znajduje pracownika.');
   if (f.operacja === 'odczytaj') return { bledy, uwagi };
   if (!f.imie || !f.nazwisko) bledy.push('Imię i nazwisko są wymagane przez schemat PracownikDTO, także przy aktualizacji.');
   parsujCechy(f.cechy).filter(c => c.blad).forEach(c => bledy.push(`Niepoprawny wiersz cechy: ${c.blad}`));
@@ -240,7 +240,8 @@ function sprawdz(f) {
   if (f.operacja === 'zwolnij' && !f.do) bledy.push('Podaj ostatni dzień umowy (Okres do).');
   if (f.operacja === 'zwolnij') uwagi.push('API nie zapisuje przyczyny ani kodu zwolnienia: trzeba je uzupełnić w enova.');
   if (['przedluz', 'zmien'].includes(f.operacja) && !f.dataZmiany) bledy.push('Podaj datę zmiany: od niej powstaje nowy zapis historii.');
-  if (f.operacja !== 'zatrudnij') uwagi.push('Kod musi istnieć w enova: nieznany kod założy nowego pracownika zamiast zgłosić błąd.');
+  if (f.operacja === 'zatrudnij') uwagi.push(f.kod ? 'Enova przepisze kod do nowej kartoteki. Jeśli kod już istnieje, zaktualizuje tę kartotekę.' : 'Bez kodu enova założy kartotekę i nada numer zgodnie ze schematem.');
+  else uwagi.push('Kod spoza bazy założy nową kartotekę z tym kodem.');
   if (f.operacja === 'zmien') uwagi.push('Pominięte pola zostają bez zmian. Data zmiany po końcu umowy tworzy zapis historii bez etatu.');
   return { bledy, uwagi };
 }
@@ -346,6 +347,7 @@ const SCENARIUSZE = [
   { grupa: '2 Minimum danych', id: 'M-07', nazwa: 'MINIMUM: umowa na czas określony', z: sonda({ Kod: 'API-M07', ...OS, Zatrudnienie: { ...okres, ...stanowisko, ...wydzial } }), oczekiwane: 'Sukces: tylko cztery pola umowy. Bez typu umowy i wymiaru serwer nadaje wartości domyślne.', podstawa: TEST },
   { grupa: '2 Minimum danych', id: 'M-08', nazwa: 'MINIMUM: umowa na czas nieokreślony', z: sonda({ Kod: 'API-M08', ...OS, Zatrudnienie: { OkresOd: okres.OkresOd, OkresDo: dataDTO('9999-12-31'), TypUmowy: 'NaCzasNieokreślony', ...stanowisko, ...wydzial } }), oczekiwane: 'Sukces: OkresDo = 9999-12-31 zapisuje się w bazie jako 2099-12-31.', podstawa: TEST },
   { grupa: '2 Minimum danych', id: 'M-09', nazwa: 'Z danymi do ZUS i PIT', z: sonda({ Kod: 'API-M09', ...OS, Plec: 'Mężczyzna', DataUrodzenia: dataCzas('1990-05-15'), PESEL: fikcyjnyPesel('1990-05-15', 'Mężczyzna', 9), Zatrudnienie: { ...okres, ...stanowisko, ...wydzial } }), oczekiwane: 'Sukces: pełniejsze dane osobowe.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-10', nazwa: 'Umowa bez kodu', z: sonda({ ...OS, Zatrudnienie: { ...okres, ...stanowisko, ...wydzial } }), komunikat: 'dodany nowy pracownik', oczekiwane: 'Sukces: nowa kartoteka, numer nadany zgodnie ze schematem.', podstawa: TEST },
 
   { grupa: '3 Zatrudnienie', id: 'Z-01', nazwa: 'Czas nieokreślony, pełny etat', z: zatr({ kod: 'API-Z01', ...UMOWA }), oczekiwane: 'Nowy pracownik, Etat od 2026-11-01 bez końca.', podstawa: TEST },
   { grupa: '3 Zatrudnienie', id: 'Z-02', nazwa: 'Czas określony', z: zatr({ kod: 'API-Z02', ...UMOWA, do: '2027-10-31', typUmowy: 'NaCzasOkreślony' }), oczekiwane: 'Etat 2026-11-01 do 2027-10-31, typ: na czas określony.', podstawa: TEST },
@@ -373,7 +375,7 @@ const SCENARIUSZE = [
   { grupa: '7 Błędy', id: 'N-03', nazwa: 'Odczyt bez klucza', z: { metoda: 'GetEmployee', usluga: 'KadryPlace', cialo: {} }, sukces: false, komunikat: 'Nie wprowadzono', oczekiwane: 'Odrzucenie: brak klucza pracownika.', podstawa: TEST },
   { grupa: '7 Błędy', id: 'N-04', nazwa: 'Cecha bez nazwy', z: sonda({ Kod: 'API-N04', ...OS, Features: [{ Name: '', Value: 'x' }] }), oczekiwane: 'Sukces: cecha bez nazwy jest pomijana bez ostrzeżenia.', podstawa: TEST },
   { grupa: '7 Błędy', id: 'N-05', nazwa: 'Nieistniejąca cecha', z: sonda({ Kod: 'API-N05', ...OS, Features: [{ Name: 'NIE_MA_TAKIEJ_CECHY', Value: 'x' }] }), sukces: false, komunikat: 'nie znaleziono definicji cechy', oczekiwane: 'Odrzucenie: brak definicji cechy.', podstawa: TEST },
-  { grupa: '7 Błędy', id: 'N-06', nazwa: 'Aktualizacja nieistniejącego kodu', z: sonda({ Kod: 'API-LITEROWKA', ...OS, Aktualizuj: true, DataAktualizacji: dataCzas('2027-01-01'), PowodAktualizacji: 'Literówka' }), komunikat: 'dodany nowy pracownik', oczekiwane: 'RYZYKO: zamiast błędu powstaje nowy pracownik. Przed aktualizacją sprawdź Kod przez GetEmployee.', podstawa: TEST }
+  { grupa: '7 Błędy', id: 'N-06', nazwa: 'Kod spoza bazy', z: sonda({ Kod: 'API-NOWY', ...OS, Aktualizuj: true, DataAktualizacji: dataCzas('2027-01-01'), PowodAktualizacji: 'Kod spoza bazy' }), komunikat: 'dodany nowy pracownik', oczekiwane: 'Sukces: kod spoza bazy zakłada nową kartotekę z kodem z żądania.', podstawa: TEST }
 ];
 
 function pakiet(tryb) {
@@ -465,7 +467,7 @@ el('losujPesel').onclick = () => {
 };
 el('dodaj').onclick = () => {
   const f = czytaj();
-  koszyk.push({ ...zbudujZapytanie(f), nazwa: `${el('operacja').selectedOptions[0].textContent}: ${f.kod}` });
+  koszyk.push({ ...zbudujZapytanie(f), nazwa: `${el('operacja').selectedOptions[0].textContent}: ${f.kod || 'bez kodu'}` });
   pokazKoszyk();
 };
 el('kopiuj').onclick = () => navigator.clipboard.writeText(el('podglad').textContent);

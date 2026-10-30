@@ -80,6 +80,14 @@
     "Podstawa": "test 30.10.2026"
   },
   {
+    "Id": "M-10",
+    "Grupa": "2 Minimum danych",
+    "Nazwa": "Umowa bez kodu",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Sukces: nowa kartoteka, numer nadany zgodnie ze schematem.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
     "Id": "Z-01",
     "Grupa": "3 Zatrudnienie",
     "Nazwa": "Czas nieokreślony, pełny etat",
@@ -258,9 +266,9 @@
   {
     "Id": "N-06",
     "Grupa": "7 Błędy",
-    "Nazwa": "Aktualizacja nieistniejącego kodu",
+    "Nazwa": "Kod spoza bazy",
     "Metoda": "UpdateEmployee",
-    "Oczekiwane": "RYZYKO: zamiast błędu powstaje nowy pracownik. Przed aktualizacją sprawdź Kod przez GetEmployee.",
+    "Oczekiwane": "Sukces: kod spoza bazy zakłada nową kartotekę z kodem z żądania.",
     "Podstawa": "test 30.10.2026"
   }
 ]

@@ -527,6 +527,55 @@
               }
             }
           ]
+        },
+        {
+          "name": "M-10 Umowa bez kodu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"TestMode\": true,\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"Stanowisko\": \"Specjalista\",\n    \"JednostkaOrg\": \"ADM\"\n  }\n}"
+            },
+            "description": "Oczekiwane: Sukces: nowa kartoteka, numer nadany zgodnie ze schematem. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"dodany nowy pracownik\"));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1614,7 +1663,7 @@
           ]
         },
         {
-          "name": "N-06 Aktualizacja nieistniejącego kodu",
+          "name": "N-06 Kod spoza bazy",
           "request": {
             "method": "POST",
             "header": [
@@ -1641,9 +1690,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-LITEROWKA\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n  \"PowodAktualizacji\": \"Literówka\"\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-NOWY\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n  \"PowodAktualizacji\": \"Kod spoza bazy\"\n}"
             },
-            "description": "Oczekiwane: RYZYKO: zamiast błędu powstaje nowy pracownik. Przed aktualizacją sprawdź Kod przez GetEmployee. Podstawa: test 30.10.2026."
+            "description": "Oczekiwane: Sukces: kod spoza bazy zakłada nową kartotekę z kodem z żądania. Podstawa: test 30.10.2026."
           },
           "event": [
             {

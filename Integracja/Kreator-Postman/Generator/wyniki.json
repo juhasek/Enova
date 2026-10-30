@@ -127,8 +127,12 @@
     "Wynik": "OK",
     "Odpowiedz": "Success=false. W tabeli 'Pracownicy' nie znaleziono definicji cechy o nazwie 'NIE_MA_TAKIEJ_CECHY'."
   },
+  "M-10": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik"
+  },
   "N-06": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-LITEROWKA"
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-NOWY"
   }
 }

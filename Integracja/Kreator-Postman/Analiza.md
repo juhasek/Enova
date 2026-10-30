@@ -12,7 +12,7 @@ i kolekcji Postman. Podstawa: dokumentacja WebAPI v. 5.1 oraz testy 30.10.2026 n
 3. Popraw pola, kliknij **Dodaj do kolekcji**, potem **Pobierz kolekcję** i **Pobierz środowisko**.
 4. W Postmanie: Import obu plików, wybór środowiska, uzupełnienie zmiennych.
 
-Gotowy pakiet 33 scenariuszy: [Postman/](Postman/). Arkusz z wynikami testów:
+Gotowy pakiet 34 scenariuszy: [Postman/](Postman/). Arkusz z wynikami testów:
 [Scenariusze testowe.xlsx](Scenariusze%20testowe.xlsx).
 
 Regeneracja po zmianie `Kreator.html` (testy logiki + pliki Postman + lista scenariuszy, potem arkusz):
@@ -66,7 +66,7 @@ Tryb demo pomija obie kontrole.
 
 | Cel | Wymagane pola |
 |---|---|
-| Kartoteka bez umowy | `Imie`, `Nazwisko` (bez `Kod` serwer nadaje kod z numeratora) |
+| Kartoteka bez umowy | `Imie`, `Nazwisko` |
 | Umowa | jak wyżej + `Zatrudnienie`: `OkresOd`, `OkresDo`, `Stanowisko`, `JednostkaOrg` (kod wydziału) |
 | Czas nieokreślony | jak umowa + `TypUmowy`, a `OkresDo` = `{9999,12,31}` (w bazie 2099-12-31) |
 | Przedłużenie | `Kod`, `Imie`, `Nazwisko`, `Aktualizuj: true`, `DataAktualizacji`, `Zatrudnienie.OkresDo` |
@@ -78,6 +78,8 @@ przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły en
 
 ## Zachowanie (potwierdzone)
 
+- **`Kod`:** brak kodu albo kod spoza bazy zakłada nową kartotekę. Enova nadaje numer zgodnie ze schematem albo przepisuje kod z żądania.
+  Kod istniejący aktualizuje kartotekę.
 - **`TestMode`** działa: `Success` i komunikaty jak przy zapisie, w bazie bez zmian. Ponieważ zapis jest wycofywany,
   aktualizacje nie widzą pracownika założonego wcześniejszym żądaniem próbnym.
 - **Przedłużenie:** powstaje nowy zapis historii od `DataAktualizacji`. Wcześniejszy zapis zachowuje stary koniec umowy.
@@ -91,14 +93,12 @@ przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły en
 
 ## Pułapki
 
-1. **Nieistniejący `Kod` przy aktualizacji zakłada nowego pracownika** i zwraca `Success = true` (N-06). Literówka w kodzie
-   da duplikat, a nie błąd. System zewnętrzny powinien najpierw sprawdzić `Kod` przez `GetEmployee`.
-2. **Zmiana po końcu umowy tworzy zapis bez etatu** (R-03). Zwolnienie zostaje w historii, ale nowy zapis ma puste
+1. **Zmiana po końcu umowy tworzy zapis bez etatu** (R-03). Zwolnienie zostaje w historii, ale nowy zapis ma puste
    zatrudnienie i `Zwolniony = false`.
-3. **API nie zapisuje przyczyny rozwiązania ani kodu zwolnienia.** Pola zostają puste, DTO ich nie ma. Nie sprawdzano
+2. **API nie zapisuje przyczyny rozwiązania ani kodu zwolnienia.** Pola zostają puste, DTO ich nie ma. Nie sprawdzano
    wyrejestrowania ZUS.
-4. **Nieznane pole w JSON nie powoduje błędu**, więc literówka w nazwie pola przejdzie po cichu. Cecha bez nazwy też (N-04).
-5. **`ZatrudnienieDTO` nie ma stawki ani zaszeregowania.** `UpsertDodatkiPracownika` obsługuje tylko dodatki.
+3. **Nieznane pole w JSON nie powoduje błędu**, więc literówka w nazwie pola przejdzie po cichu. Cecha bez nazwy też (N-04).
+4. **`ZatrudnienieDTO` nie ma stawki ani zaszeregowania.** `UpsertDodatkiPracownika` obsługuje tylko dodatki.
 
 ## Nieustalone
 
