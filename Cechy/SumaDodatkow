@@ -1,0 +1,25 @@
+public decimal Get_Feature_SumaDodatkow(Context cx) {
+    // okres z filtra "Okres" listy pracowników; bez filtra - dziś
+    Date dzis = ActualDate.Today(cx);
+    OkresContext filtr;
+    FromTo okres = cx.Get(out filtr) ? filtr.Okres : new FromTo(dzis, dzis);
+    Date data = okres.To;
+
+    decimal kwota = 0;
+
+    // wynagrodzenie zasadnicze z umowy o pracę (etat) obowiązującej w okresie
+    PracHistoria historia = Row.Historia[data];
+    if (historia != null && historia.Etat.Okres.From <= okres.To && historia.Etat.Okres.To >= okres.From)
+        kwota += historia.Etat.Zaszeregowanie.Stawka.Value;
+
+    // dodatki do etatu, których okres obowiązywania (nie aktualność zapisu) nachodzi na okres z filtra
+    foreach (Dodatek dodatek in Row.Dodatki) {
+        DodHistoria dh = dodatek.Historia[data];
+        if (dh == null || dh.Element == null || !dh.Element.Dodatkowe.DodatekDoEtatu)
+            continue;
+        if (dh.Okres.From <= okres.To && dh.Okres.To >= okres.From)
+            kwota += dh.Podstawa.Value;
+    }
+
+    return kwota;
+}
