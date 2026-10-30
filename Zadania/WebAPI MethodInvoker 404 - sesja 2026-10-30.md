@@ -32,8 +32,14 @@ W nakładce `-c` dopisać do sekcji `WebApi` w korzeniu pliku (nie do
 `WebApi:Invokers` po `InvokerName` = `ServiceName`. Po zmianie restart, potem
 `POST http://localhost:9010/api/MethodInvoker/InvokeServiceMethod`.
 
+## Wynik
+
+Operator potwierdził, że wywołanie działa, po włączeniu kontrolera i usunięciu prefiksu z adresu
+(wcześniej logi WebApi pokazywały 404 na `/Login/webApi/api/...`, `/Login/api/...` i `/Login//api/...`).
+Pełna konfiguracja: `Zadania/Konfiguracja serwera 2606.2.3/appsettings.json`.
+
 ## Otwarte punkty
 
-- Kod sprawdzony na DLL 2610, serwer ma 2606.2.3: nie zweryfikowano, czy zachowanie jest identyczne.
-- Nie testowano na żywym serwerze.
-- Nie wiadomo, skąd klient bierze prefiks `/Login/webApi`.
+- CommHub (Garnet) nasłuchuje na `tcp://+:4000` bez uwierzytelniania: przy serwerze dostępnym z sieci
+  zablokować port albo ustawić uwierzytelnianie.
+- Web ma `h2` na `http://+:80`: bez proxy przeglądarka może nie otworzyć strony (niesprawdzone).
