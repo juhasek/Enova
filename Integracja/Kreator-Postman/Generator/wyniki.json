@@ -1,0 +1,134 @@
+{
+  "D-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Pomyślnie przygotwano stan usługi"
+  },
+  "M-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik"
+  },
+  "M-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M02"
+  },
+  "M-03": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Błędny zakres dat (1.11.2026..)"
+  },
+  "M-04": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Wartość pola \"Etat.Data\" jest wymagana Etat: Specjalista"
+  },
+  "M-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Wartość pola \"Etat.Stanowisko\" jest wymagana Etat:"
+  },
+  "M-06": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Wartość pola \"Etat.Jednostka organizacyjna\" jest wymagana Etat: Specjalista"
+  },
+  "M-07": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M07"
+  },
+  "M-08": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M08"
+  },
+  "M-09": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-M09"
+  },
+  "Z-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z01"
+  },
+  "Z-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z02"
+  },
+  "Z-03": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z03"
+  },
+  "Z-04": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z04"
+  },
+  "Z-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-Z05"
+  },
+  "Z-06": {
+    "Wynik": "BŁĄD",
+    "Odpowiedz": "Success=false. W tabeli 'Pracownicy' nie znaleziono definicji cechy o nazwie 'UZUPELNIJ'."
+  },
+  "P-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z02"
+  },
+  "P-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Pomyślny odczyt"
+  },
+  "P-03": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z03"
+  },
+  "P-04": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z04"
+  },
+  "R-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z01"
+  },
+  "R-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Pomyślny odczyt"
+  },
+  "R-03": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z01"
+  },
+  "C-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
+  },
+  "C-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
+  },
+  "C-03": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z02"
+  },
+  "C-04": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
+  },
+  "N-01": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Nie znaleziono Wydziału (Jednostki organizacyjnej) o kodzie: NIE-MA-TAKIEGO"
+  },
+  "N-02": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Nie znaleziono pracownika o podanym kluczu: 'Kod: NIE-MA-TAKIEGO'"
+  },
+  "N-03": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. Nie wprowadzono żadnego klucza po który można wyszukać pracownika (Kod, ID lub Guid)"
+  },
+  "N-04": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-N04"
+  },
+  "N-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=false. W tabeli 'Pracownicy' nie znaleziono definicji cechy o nazwie 'NIE_MA_TAKIEJ_CECHY'."
+  },
+  "N-06": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-LITEROWKA"
+  }
+}

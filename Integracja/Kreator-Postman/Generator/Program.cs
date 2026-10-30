@@ -4,6 +4,8 @@ using DevExpress.Spreadsheet;
 var katalog = args.Length > 0 ? args[0] : "..";
 var scenariusze = JsonDocument.Parse(File.ReadAllText(Path.Combine(katalog, "Generator", "scenariusze.json"))).RootElement;
 
+var wyniki = JsonDocument.Parse(File.ReadAllText(Path.Combine(katalog, "Generator", "wyniki.json"))).RootElement;
+
 using var skoroszyt = new Workbook();
 var arkusz = skoroszyt.Worksheets[0];
 arkusz.Name = "Scenariusze";
@@ -27,6 +29,13 @@ foreach (var s in scenariusze.EnumerateArray())
         arkusz.Cells[w, k].Value = s.GetProperty(wartosci[k]).GetString();
         arkusz.Cells[w, k].Alignment.WrapText = true;
         arkusz.Cells[w, k].Alignment.Vertical = SpreadsheetVerticalAlignment.Top;
+    }
+    if (wyniki.TryGetProperty(s.GetProperty("Id").GetString(), out var wynik))
+    {
+        arkusz.Cells[w, 6].Value = wynik.GetProperty("Wynik").GetString();
+        arkusz.Cells[w, 7].Value = wynik.GetProperty("Odpowiedz").GetString();
+        arkusz.Cells[w, 7].Alignment.WrapText = true;
+        arkusz.Cells[w, 7].Alignment.Vertical = SpreadsheetVerticalAlignment.Top;
     }
     w++;
 }

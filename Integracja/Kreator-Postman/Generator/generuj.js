@@ -21,7 +21,7 @@ assert.strictEqual(k.parsujPolecenie('zmień dane Jan Testowy kod A1 z dniem 202
 const zatrudnij = k.zbudujZapytanie({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', licznik: '1', mianownik: '1', wydzial: 'X', stanowisko: 'S' });
 assert.strictEqual(zatrudnij.metoda, 'UpdateEmployee');
 assert.deepStrictEqual(r(zatrudnij.cialo.Zatrudnienie.OkresOd), { Year: 2026, Month: 11, Day: 1 });
-assert.strictEqual(zatrudnij.cialo.Zatrudnienie.OkresDo, undefined);
+assert.deepStrictEqual(r(zatrudnij.cialo.Zatrudnienie.OkresDo), { Year: 9999, Month: 12, Day: 31 });
 assert.strictEqual(zatrudnij.cialo.Aktualizuj, undefined);
 const zwolnij = k.zbudujZapytanie({ operacja: 'zwolnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', do: '2027-03-31', powod: 'P' });
 assert.strictEqual(zwolnij.cialo.Aktualizuj, true);
@@ -34,11 +34,14 @@ assert.deepStrictEqual(r(k.parsujCechy('A=1\nB=x@2026-02-10\nzly')), [{ Name: 'A
 // PESEL i walidacja
 const pesel = k.fikcyjnyPesel('1990-05-15', 'Mężczyzna', 6);
 assert.strictEqual(pesel.length, 11);
-assert.strictEqual(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', pesel }).bledy.length, 0);
+assert.strictEqual(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', stanowisko: 'S', wydzial: 'X', pesel }).bledy.length, 0);
 assert.ok(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', pesel: '90051500061' }).bledy.some(b => b.includes('PESEL')));
 assert.ok(k.sprawdz({ operacja: 'zatrudnij', imie: 'J', nazwisko: 'T', od: '2026-11-01' }).bledy.some(b => b.includes('Kod')));
 assert.ok(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01', typUmowy: 'NaCzasOkreślony' }).bledy.some(b => b.includes('końca')));
 assert.ok(k.sprawdz({ operacja: 'zwolnij', kod: 'A', imie: 'J', nazwisko: 'T' }).bledy.length > 0);
+assert.ok(k.sprawdz({ operacja: 'zatrudnij', kod: 'A', imie: 'J', nazwisko: 'T', od: '2026-11-01' }).bledy.some(b => b.includes('stanowiska')));
+assert.ok(k.sprawdz({ operacja: 'zmien', kod: 'A', imie: 'J', nazwisko: 'T' }).bledy.some(b => b.includes('datę zmiany')));
+assert.strictEqual(k.zbudujZapytanie({ operacja: 'przedluz', kod: 'A', imie: 'J', nazwisko: 'T', do: '2028-01-31', dataZmiany: '2027-01-01' }).cialo.Zatrudnienie.OkresOd, undefined);
 
 // Postman: oba tryby, poprawny JSON po podstawieniu testMode
 for (const tryb of ['dynamic', 'invoker']) {

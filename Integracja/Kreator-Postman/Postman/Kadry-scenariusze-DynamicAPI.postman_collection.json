@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Kadry - scenariusze",
-    "description": "Wygenerowano Kreatorem Postman. testMode=true w środowisku: serwer nie zapisuje zmian. Zmień na false dopiero po sprawdzeniu wyników.",
+    "description": "Wygenerowano Kreatorem Postman. testMode=true w środowisku: serwer nie zapisuje zmian. Scenariusze przedłużeń, zwolnień i zmian korzystają z pracowników z grupy Zatrudnienie, więc wymagają testMode=false na bazie testowej.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -69,55 +69,7 @@
               },
               "raw": "{}"
             },
-            "description": "Oczekiwane: Success = true, wersje biblioteki i enova, nazwa bazy. Podstawa: dokumentacja."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-                  "const odp = pm.response.json();",
-                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
-                  "const wynik = odp.ResultInstance || odp;",
-                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "D-02 Czy cechy mają dostęp przez API",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/GetEmployee",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              },
-              "raw": "{\n  \"Kod\": \"API-Z01\",\n  \"Zatrudnienie\": true\n}"
-            },
-            "description": "Oczekiwane: Po Z-01: lista Features pokazuje cechy dostępne przez API. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Success = true, wersje biblioteki i enova, nazwa bazy. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -141,7 +93,7 @@
       "name": "2 Minimum danych",
       "item": [
         {
-          "name": "M-01 Tylko imię i nazwisko",
+          "name": "M-01 Kartoteka: imię i nazwisko",
           "request": {
             "method": "POST",
             "header": [
@@ -168,9 +120,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\"\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\"\n}"
             },
-            "description": "Oczekiwane: Ustalić: czy wystarcza minimum ze schematu. Podstawa: hipoteza."
+            "description": "Oczekiwane: Sukces: kartoteka bez umowy, kod nadany z numeratora. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -189,7 +141,7 @@
           ]
         },
         {
-          "name": "M-02 Plus kod",
+          "name": "M-02 Kartoteka: plus kod",
           "request": {
             "method": "POST",
             "header": [
@@ -216,9 +168,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-M02\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\"\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M02\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\"\n}"
             },
-            "description": "Oczekiwane: Ustalić: czy powstaje kartoteka bez umowy. Podstawa: hipoteza."
+            "description": "Oczekiwane: Sukces: kartoteka z własnym kodem, bez umowy. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -237,7 +189,7 @@
           ]
         },
         {
-          "name": "M-03 Plus sam początek umowy",
+          "name": "M-03 Umowa bez OkresDo",
           "request": {
             "method": "POST",
             "header": [
@@ -264,9 +216,205 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-M03\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M03\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
             },
-            "description": "Oczekiwane: Ustalić: czy wymagany jest typ umowy i wymiar. Podstawa: hipoteza."
+            "description": "Oczekiwane: Błąd: etat musi mieć datę końca. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"Błędny zakres dat\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-04 Umowa bez OkresOd",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
+            },
+            "description": "Oczekiwane: Błąd: wymagana data początku. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"Etat.Data\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-05 Umowa bez stanowiska",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
+            },
+            "description": "Oczekiwane: Błąd: wymagane stanowisko. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"Etat.Stanowisko\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-06 Umowa bez wydziału",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M06\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"Stanowisko\": \"{{stanowisko}}\"\n  }\n}"
+            },
+            "description": "Oczekiwane: Błąd: wymagany wydział. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"Jednostka organizacyjna\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "M-07 MINIMUM: umowa na czas określony",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M07\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
+            },
+            "description": "Oczekiwane: Sukces: tylko cztery pola umowy. Bez typu umowy i wymiaru serwer nadaje wartości domyślne. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -285,7 +433,7 @@
           ]
         },
         {
-          "name": "M-04 Plus typ umowy i wymiar",
+          "name": "M-08 MINIMUM: umowa na czas nieokreślony",
           "request": {
             "method": "POST",
             "header": [
@@ -312,9 +460,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-M04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    }\n  }\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M08\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 9999,\n      \"Month\": 12,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
             },
-            "description": "Oczekiwane: Ustalić: czy wymagane są stanowisko i wydział. Podstawa: hipoteza."
+            "description": "Oczekiwane: Sukces: OkresDo = 9999-12-31 zapisuje się w bazie jako 2099-12-31. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -333,7 +481,7 @@
           ]
         },
         {
-          "name": "M-05 Plus stanowisko i wydział",
+          "name": "M-09 Z danymi do ZUS i PIT",
           "request": {
             "method": "POST",
             "header": [
@@ -360,57 +508,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-M05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-M09\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Plec\": \"Mężczyzna\",\n  \"DataUrodzenia\": \"1990-05-15T00:00:00\",\n  \"PESEL\": \"90051500918\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
             },
-            "description": "Oczekiwane: Ustalić: czy to komplet dla umowy o pracę. Podstawa: hipoteza."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-                  "const odp = pm.response.json();",
-                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
-                  "const wynik = odp.ResultInstance || odp;",
-                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "M-06 Plus dane do ZUS i PIT",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-M06\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Plec\": \"Mężczyzna\",\n  \"DataUrodzenia\": \"1990-05-15T00:00:00\",\n  \"PESEL\": \"90051500611\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
-            },
-            "description": "Oczekiwane: Komplet: pracownik gotowy do naliczeń; porównać z kartoteką w enova. Podstawa: hipoteza."
+            "description": "Oczekiwane: Sukces: pełniejsze dane osobowe. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -461,9 +561,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 9999,\n      \"Month\": 12,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Nowy pracownik, Etat od 2026-11-01 bez końca. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Nowy pracownik, Etat od 2026-11-01 bez końca. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -511,7 +611,7 @@
               },
               "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z02\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasOkreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Etat 2026-11-01 do 2027-10-31, typ: na czas określony. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Etat 2026-11-01 do 2027-10-31, typ: na czas określony. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -559,7 +659,7 @@
               },
               "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z03\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 1,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaOkresPróbny\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Etat do 2027-01-31, typ: na okres próbny. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Etat do 2027-01-31, typ: na okres próbny. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -605,9 +705,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 2\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 9999,\n      \"Month\": 12,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 2\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Wymiar etatu 1/2. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Wymiar etatu 1/2. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -653,9 +753,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"AdresZamieszkania\": {\n    \"Ulica\": \"Testowa\",\n    \"NrDomu\": \"1\",\n    \"KodPocztowyS\": \"00-001\",\n    \"Miejscowosc\": \"Warszawa\"\n  },\n  \"Kontakt\": {\n    \"EMAIL\": \"jan.testowy@example.com\"\n  },\n  \"Rachunki\": [\n    {\n      \"Numer\": \"12105000000000000000000001\"\n    }\n  ],\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"AdresZamieszkania\": {\n    \"Ulica\": \"Testowa\",\n    \"NrDomu\": \"1\",\n    \"KodPocztowyS\": \"00-001\",\n    \"Miejscowosc\": \"Warszawa\"\n  },\n  \"Kontakt\": {\n    \"EMAIL\": \"jan.testowy@example.com\"\n  },\n  \"Rachunki\": [\n    {\n      \"Numer\": \"12105000000000000000000001\"\n    }\n  ],\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 9999,\n      \"Month\": 12,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Adres, e-mail i rachunek w kartotece. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Adres, e-mail i rachunek w kartotece. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -701,9 +801,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z06\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Features\": [\n    {\n      \"Name\": \"UZUPELNIJ_NAZWA_CECHY\",\n      \"Value\": \"Test\"\n    }\n  ],\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z06\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Features\": [\n    {\n      \"Name\": \"{{cecha}}\",\n      \"Value\": \"Test\"\n    }\n  ],\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 9999,\n      \"Month\": 12,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"{{wydzial}}\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Cecha zapisana. Wymaga wpisania nazwy cechy z włączonym dostępem przez API. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Cecha zapisana. Wymaga zmiennej cecha z nazwą cechy z dostępem przez WebAPI; bez niej błąd braku definicji. Podstawa: dokumentacja."
           },
           "event": [
             {
@@ -754,9 +854,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z02\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-11-01T00:00:00\",\n  \"PowodAktualizacji\": \"Przedłużenie umowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2028,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasOkreślony\"\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z02\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-11-01T00:00:00\",\n  \"PowodAktualizacji\": \"Przedłużenie umowy\",\n  \"Zatrudnienie\": {\n    \"OkresDo\": {\n      \"Year\": 2028,\n      \"Month\": 10,\n      \"Day\": 31\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Ustalić: nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31. Podstawa: hipoteza."
+            "description": "Oczekiwane: Nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31. Wystarczy OkresDo. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -802,9 +902,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"Kod\": \"API-Z02\",\n  \"Zatrudnienie\": true,\n  \"AdresDoKorespondencji\": true,\n  \"Rachunki\": true\n}"
+              "raw": "{\n  \"Kod\": \"API-Z02\",\n  \"DataAktualnosci\": \"2027-12-01T00:00:00\",\n  \"Zatrudnienie\": true,\n  \"AdresDoKorespondencji\": true,\n  \"Rachunki\": true\n}"
             },
-            "description": "Oczekiwane: OkresDo = 2028-10-31. Podstawa: dokumentacja."
+            "description": "Oczekiwane: OkresDo = 2028-10-31. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -850,9 +950,57 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z03\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n  \"PowodAktualizacji\": \"Umowa na czas nieokreślony\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\"\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z03\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n  \"PowodAktualizacji\": \"Umowa na czas nieokreślony\",\n  \"Zatrudnienie\": {\n    \"OkresDo\": {\n      \"Year\": 9999,\n      \"Month\": 12,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\"\n  }\n}"
             },
-            "description": "Oczekiwane: Ustalić: typ zmieniony, koniec Etatu pusty. Brak OkresDo może nie czyścić daty końca. Podstawa: hipoteza."
+            "description": "Oczekiwane: Typ zmieniony, OkresDo = 9999-12-31. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "P-04 Nowa umowa po przerwie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-06-01T00:00:00\",\n  \"PowodAktualizacji\": \"Ponowne zatrudnienie\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2027,\n      \"Month\": 6,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2028,\n      \"Month\": 5,\n      \"Day\": 31\n    },\n    \"TypUmowy\": \"NaCzasOkreślony\"\n  }\n}"
+            },
+            "description": "Oczekiwane: Nowy zapis z nowym okresem umowy. Wcześniejsza umowa zostaje w historii. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -903,9 +1051,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-03-31T00:00:00\",\n  \"PowodAktualizacji\": \"Rozwiązanie umowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 3,\n      \"Day\": 31\n    },\n    \"Zwolniony\": true\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-03-31T00:00:00\",\n  \"PowodAktualizacji\": \"Rozwiązanie umowy\",\n  \"Zatrudnienie\": {\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 3,\n      \"Day\": 31\n    },\n    \"Zwolniony\": true\n  }\n}"
             },
-            "description": "Oczekiwane: Ustalić: koniec Etatu 2027-03-31, status zwolnienia w enova. Podstawa: hipoteza."
+            "description": "Oczekiwane: Nowy zapis od 2027-03-31, koniec Etatu 2027-03-31. Przyczyna i kod zwolnienia zostają puste. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -951,9 +1099,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"Kod\": \"API-Z01\",\n  \"Zatrudnienie\": true,\n  \"AdresDoKorespondencji\": true,\n  \"Rachunki\": true\n}"
+              "raw": "{\n  \"Kod\": \"API-Z01\",\n  \"DataAktualnosci\": \"2027-03-31T00:00:00\",\n  \"Zatrudnienie\": true,\n  \"AdresDoKorespondencji\": true,\n  \"Rachunki\": true\n}"
             },
-            "description": "Oczekiwane: Zwolniony = true, OkresDo = 2027-03-31. Podstawa: hipoteza."
+            "description": "Oczekiwane: Zwolniony = true, OkresDo = 2027-03-31. Na wcześniejszą datę Zwolniony = false. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1001,7 +1149,7 @@
               },
               "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"AdresZamieszkania\": {\n    \"Ulica\": \"Nowa\",\n    \"NrDomu\": \"2\"\n  },\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-04-15T00:00:00\",\n  \"PowodAktualizacji\": \"Zmiana adresu\"\n}"
             },
-            "description": "Oczekiwane: Ustalić: zwolnienie NIE może zniknąć (w poprzednim dodatku WebAPI aktualizacja je cofała). Podstawa: hipoteza."
+            "description": "Oczekiwane: Zwolnienie zostaje w historii, ale nowy zapis po końcu umowy nie ma etatu. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1052,9 +1200,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy-Nowak\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n  \"PowodAktualizacji\": \"Zmiana nazwiska\"\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy-Nowak\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n  \"PowodAktualizacji\": \"Zmiana nazwiska\"\n}"
             },
-            "description": "Oczekiwane: Nowy zapis historii z nowym nazwiskiem. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Nowy zapis historii z nowym nazwiskiem. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1100,9 +1248,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Kontakt\": {\n    \"EMAIL\": \"nowy.adres@example.com\"\n  },\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n  \"PowodAktualizacji\": \"Zmiana e-mail\"\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Kontakt\": {\n    \"EMAIL\": \"nowy.adres@example.com\"\n  },\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n  \"PowodAktualizacji\": \"Zmiana e-mail\"\n}"
             },
-            "description": "Oczekiwane: Ustalić: e-mail zmieniony, a adres i rachunek z Z-05 zostają. Podstawa: hipoteza."
+            "description": "Oczekiwane: E-mail zmieniony od daty, adres i rachunek bez zmian. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1148,9 +1296,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n  \"PowodAktualizacji\": \"Aneks\",\n  \"Zatrudnienie\": {\n    \"Wymiar\": {\n      \"Numerator\": 3,\n      \"Denominator\": 4\n    },\n    \"Stanowisko\": \"{{stanowisko}}\"\n  }\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z02\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n  \"PowodAktualizacji\": \"Aneks\",\n  \"Zatrudnienie\": {\n    \"Wymiar\": {\n      \"Numerator\": 3,\n      \"Denominator\": 4\n    },\n    \"Stanowisko\": \"Kierownik\",\n    \"JednostkaOrg\": \"{{wydzial}}\"\n  }\n}"
             },
-            "description": "Oczekiwane: Ustalić: nowy zapis historii od 2027-02-01, wymiar 3/4, okres Etatu bez zmian. Podstawa: hipoteza."
+            "description": "Oczekiwane: Nowy zapis od daty, okres Etatu bez zmian. Późniejsze zapisy nie są nadpisywane. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1196,9 +1344,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Bez-Historii\"\n}"
+              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-Z05\",\n  \"Imie\": \"Janek\",\n  \"Nazwisko\": \"Testowy\"\n}"
             },
-            "description": "Oczekiwane: Ustalić: czy zmiana nadpisuje bieżący zapis bez historii. Podstawa: hipoteza."
+            "description": "Oczekiwane: Nadpisuje bieżący zapis historii bez nowego wpisu. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1249,9 +1397,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-N01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"TypUmowy\": \"NaCzasNieokreślony\",\n    \"Wymiar\": {\n      \"Numerator\": 1,\n      \"Denominator\": 1\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"NIE-MA-TAKIEGO\",\n    \"DataZawarcia\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"DataRozpPracy\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    }\n  }\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-N01\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Zatrudnienie\": {\n    \"OkresOd\": {\n      \"Year\": 2026,\n      \"Month\": 11,\n      \"Day\": 1\n    },\n    \"OkresDo\": {\n      \"Year\": 2027,\n      \"Month\": 10,\n      \"Day\": 31\n    },\n    \"Stanowisko\": \"{{stanowisko}}\",\n    \"JednostkaOrg\": \"NIE-MA-TAKIEGO\"\n  }\n}"
             },
-            "description": "Oczekiwane: Odrzucenie: nie znaleziono wydziału. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Odrzucenie: nie znaleziono wydziału. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1300,7 +1448,7 @@
               },
               "raw": "{\n  \"Kod\": \"NIE-MA-TAKIEGO\",\n  \"Zatrudnienie\": true,\n  \"AdresDoKorespondencji\": true,\n  \"Rachunki\": true\n}"
             },
-            "description": "Oczekiwane: Odrzucenie: nie znaleziono pracownika. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Odrzucenie: nie znaleziono pracownika. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1349,7 +1497,7 @@
               },
               "raw": "{}"
             },
-            "description": "Oczekiwane: Odrzucenie: brak klucza pracownika. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Odrzucenie: brak klucza pracownika. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1396,9 +1544,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-N04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Features\": [\n    {\n      \"Name\": \"\",\n      \"Value\": \"x\"\n    }\n  ]\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-N04\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Features\": [\n    {\n      \"Name\": \"\",\n      \"Value\": \"x\"\n    }\n  ]\n}"
             },
-            "description": "Oczekiwane: Odrzucenie: cecha musi mieć nazwę. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Sukces: cecha bez nazwy jest pomijana bez ostrzeżenia. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1410,15 +1558,14 @@
                   "const odp = pm.response.json();",
                   "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
                   "const wynik = odp.ResultInstance || odp;",
-                  "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
-                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"'Name'\"));"
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "N-05 Cecha historyczna bez daty",
+          "name": "N-05 Nieistniejąca cecha",
           "request": {
             "method": "POST",
             "header": [
@@ -1445,9 +1592,9 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"TestMode\": {{testMode}},\n  \"Kod\": \"API-N05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Features\": [\n    {\n      \"Name\": \"UZUPELNIJ_CECHA_HISTORYCZNA\",\n      \"Value\": \"x\"\n    }\n  ]\n}"
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-N05\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Features\": [\n    {\n      \"Name\": \"NIE_MA_TAKIEJ_CECHY\",\n      \"Value\": \"x\"\n    }\n  ]\n}"
             },
-            "description": "Oczekiwane: Odrzucenie: cecha historyczna wymaga UpdateDate. Podstawa: dokumentacja."
+            "description": "Oczekiwane: Odrzucenie: brak definicji cechy. Podstawa: test 30.10.2026."
           },
           "event": [
             {
@@ -1460,7 +1607,56 @@
                   "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
                   "const wynik = odp.ResultInstance || odp;",
                   "pm.test('Success = false', () => pm.expect(wynik.Success, wynik.Description).to.eql(false));",
-                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"datę aktualizacji\"));"
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"nie znaleziono definicji cechy\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "N-06 Aktualizacja nieistniejącego kodu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/KadryPlaceWebAPI/UpdateEmployee",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"TestMode\": true,\n  \"Kod\": \"API-LITEROWKA\",\n  \"Imie\": \"Jan\",\n  \"Nazwisko\": \"Testowy\",\n  \"Aktualizuj\": true,\n  \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n  \"PowodAktualizacji\": \"Literówka\"\n}"
+            },
+            "description": "Oczekiwane: RYZYKO: zamiast błędu powstaje nowy pracownik. Przed aktualizacją sprawdź Kod przez GetEmployee. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));",
+                  "pm.test('Komunikat', () => pm.expect(JSON.stringify(wynik)).to.include(\"dodany nowy pracownik\"));"
                 ]
               }
             }

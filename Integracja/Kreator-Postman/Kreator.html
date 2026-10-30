@@ -71,7 +71,7 @@ ul { margin:6px 0 0; padding-left:18px; }
           <label>Okres od<input id="od" type="date"></label>
           <label>Okres do<input id="do" type="date"></label>
           <label>Typ umowy<select id="typUmowy">
-            <option value=""></option><option>NaCzasNieokreślony</option><option>NaOkresPróbny</option><option>NaCzasOkreślony</option><option>NaOkresZastępstwa</option><option>NaCzasWykonywniaPracy</option>
+            <option value=""></option><option>NaCzasNieokreślony</option><option>NaCzasOkreślony</option><option>NaOkresPróbny</option><option>NaOkresZastępstwa</option><option>NaCzasWykonywniaPracy</option>
           </select></label>
           <label>Etat: licznik<input id="licznik" inputmode="numeric"></label>
           <label>Etat: mianownik<input id="mianownik" inputmode="numeric"></label>
@@ -164,9 +164,11 @@ function parsujCechy(tekst) {
 }
 
 function zatrudnienie(f, pelne) {
+  // Serwer odrzuca etat bez daty końca: czas nieokreślony to 9999-12-31 (w bazie 2099-12-31).
+  const koniec = f.do || (pelne || f.typUmowy === 'NaCzasNieokreślony' ? '9999-12-31' : undefined);
   const z = bezPustych({
     OkresOd: f.od ? dataDTO(f.od) : undefined,
-    OkresDo: f.do ? dataDTO(f.do) : undefined,
+    OkresDo: koniec ? dataDTO(koniec) : undefined,
     TypUmowy: f.typUmowy,
     Wymiar: f.licznik && f.mianownik ? { Numerator: Number(f.licznik), Denominator: Number(f.mianownik) } : undefined,
     Stanowisko: f.stanowisko,
@@ -204,9 +206,10 @@ function zbudujZapytanie(f) {
     cialo.Zatrudnienie = zatrudnienie(f, true);
   } else {
     const dane = f.operacja === 'zwolnij' ? { ...f, zwolniony: true } : f;
+    const data = f.dataZmiany || f.do;
     Object.assign(cialo, bezPustych({
       Aktualizuj: true,
-      DataAktualizacji: dataCzas(f.dataZmiany || f.do || f.od),
+      DataAktualizacji: data ? dataCzas(data) : undefined,
       PowodAktualizacji: f.powod,
       Zatrudnienie: zatrudnienie(dane, false)
     }));
@@ -230,12 +233,13 @@ function sprawdz(f) {
   if (f.typUmowy === 'NaCzasNieokreślony' && f.do && f.operacja === 'zatrudnij') bledy.push('Umowa na czas nieokreślony nie ma daty końca.');
   if (['NaCzasOkreślony', 'NaOkresPróbny'].includes(f.typUmowy) && !f.do) bledy.push('Ta umowa wymaga daty końca (Okres do).');
   if (f.operacja === 'zatrudnij' && !f.od) bledy.push('Podaj datę początku umowy.');
-  if (f.operacja === 'zatrudnij' && !(f.stanowisko && f.wydzial)) uwagi.push('Bez stanowiska lub wydziału wynik zależy od serwera: sprawdź w sondach M-04 i M-05.');
-  if (f.operacja === 'przedluz' && !(f.od && f.do)) bledy.push('Przedłużenie wymaga pierwotnego początku umowy i nowej daty końca.');
+  if (f.operacja === 'zatrudnij' && !(f.stanowisko && f.wydzial)) bledy.push('Umowa wymaga stanowiska i kodu wydziału.');
+  if (f.operacja === 'przedluz' && !f.do && f.typUmowy !== 'NaCzasNieokreślony') bledy.push('Przedłużenie wymaga nowej daty końca.');
   if (f.operacja === 'zwolnij' && !f.do) bledy.push('Podaj ostatni dzień umowy (Okres do).');
-  if (f.operacja === 'zwolnij') uwagi.push('DTO nie ma przyczyny ani trybu rozwiązania. Skutek pola Zwolniony nie jest opisany w dokumentacji: sprawdź w R-01.');
-  if (['przedluz', 'zmien'].includes(f.operacja) && !f.dataZmiany) uwagi.push('Bez daty zmiany przyjęto datę z umowy.');
-  if (f.operacja === 'zmien') uwagi.push('Nie wiadomo, czy pominięte pola są czyszczone: sprawdź w C-02 przed użyciem na prawdziwych danych.');
+  if (f.operacja === 'zwolnij') uwagi.push('API nie zapisuje przyczyny ani kodu zwolnienia: trzeba je uzupełnić w enova.');
+  if (['przedluz', 'zmien'].includes(f.operacja) && !f.dataZmiany) bledy.push('Podaj datę zmiany: od niej powstaje nowy zapis historii.');
+  if (f.operacja !== 'zatrudnij') uwagi.push('Kod musi istnieć w enova: nieznany kod założy nowego pracownika zamiast zgłosić błąd.');
+  if (f.operacja === 'zmien') uwagi.push('Pominięte pola zostają bez zmian. Data zmiany po końcu umowy tworzy zapis historii bez etatu.');
   return { bledy, uwagi };
 }
 
@@ -294,7 +298,7 @@ function kolekcja(nazwa, grupy, tryb) {
   return {
     info: {
       name: nazwa,
-      description: 'Wygenerowano Kreatorem Postman. testMode=true w środowisku: serwer nie zapisuje zmian. Zmień na false dopiero po sprawdzeniu wyników.',
+      description: 'Wygenerowano Kreatorem Postman. testMode=true w środowisku: serwer nie zapisuje zmian. Scenariusze przedłużeń, zwolnień i zmian korzystają z pracowników z grupy Zatrudnienie, więc wymagają testMode=false na bazie testowej.',
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
     },
     item: tryb === 'invoker' ? foldery : [...logowanie(), ...foldery, ...wylogowanie()]
@@ -309,7 +313,7 @@ function srodowisko() {
       v('baseUrl', 'http://localhost:9010'), v('testMode', 'true'),
       v('appToken', '', 'secret'), v('sessionToken', '', 'secret'),
       v('database', 'NAZWA-BAZY'), v('operator', 'Administrator'), v('password', '', 'secret'),
-      v('stanowisko', 'UZUPELNIJ'), v('wydzial', 'UZUPELNIJ')
+      v('stanowisko', 'UZUPELNIJ'), v('wydzial', 'UZUPELNIJ'), v('cecha', 'UZUPELNIJ')
     ],
     _postman_variable_scope: 'environment'
   };
@@ -317,51 +321,57 @@ function srodowisko() {
 
 const OSOBA = { imie: 'Jan', nazwisko: 'Testowy' };
 const UMOWA = { od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', licznik: '1', mianownik: '1', stanowisko: '{{stanowisko}}', wydzial: '{{wydzial}}' };
-const DOKUMENT = 'dokumentacja', HIPOTEZA = 'hipoteza';
+const TEST = 'test 30.10.2026', DOKUMENT = 'dokumentacja';
 
-// sonda(): żądanie zbudowane wprost, żeby M-xx mogły świadomie pominąć pola wymagane przez kreator.
-const sonda = cialo => ({ metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: TEST_MODE, ...cialo } });
+// sonda(): żądanie zbudowane wprost i zawsze próbne, żeby M-xx mogły świadomie pominąć wymagane pola.
+const sonda = cialo => ({ metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: true, ...cialo } });
 const zatr = (f) => zbudujZapytanie({ operacja: 'zatrudnij', ...OSOBA, ...f });
 const akt = (operacja, f) => zbudujZapytanie({ operacja, ...OSOBA, ...f });
-const odczyt = kod => zbudujZapytanie({ operacja: 'odczytaj', kod });
-const umowaMin = { OkresOd: dataDTO('2026-11-01'), TypUmowy: 'NaCzasNieokreślony', Wymiar: { Numerator: 1, Denominator: 1 } };
+const odczyt = (kod, data) => zbudujZapytanie({ operacja: 'odczytaj', kod, dataZmiany: data });
+const OS = { Imie: 'Jan', Nazwisko: 'Testowy' };
+const okres = { OkresOd: dataDTO('2026-11-01'), OkresDo: dataDTO('2027-10-31') };
+const stanowisko = { Stanowisko: '{{stanowisko}}' }, wydzial = { JednostkaOrg: '{{wydzial}}' };
 
 const SCENARIUSZE = [
-  { grupa: '1 Diagnostyka', id: 'D-01', nazwa: 'Połączenie i wersje', z: { metoda: 'GetWebServiceInfo', usluga: 'Operacje', cialo: {} }, oczekiwane: 'Success = true, wersje biblioteki i enova, nazwa bazy.', podstawa: DOKUMENT },
-  { grupa: '1 Diagnostyka', id: 'D-02', nazwa: 'Czy cechy mają dostęp przez API', z: { metoda: 'GetEmployee', usluga: 'KadryPlace', cialo: { Kod: 'API-Z01', Zatrudnienie: true } }, oczekiwane: 'Po Z-01: lista Features pokazuje cechy dostępne przez API.', podstawa: DOKUMENT },
+  { grupa: '1 Diagnostyka', id: 'D-01', nazwa: 'Połączenie i wersje', z: { metoda: 'GetWebServiceInfo', usluga: 'Operacje', cialo: {} }, oczekiwane: 'Success = true, wersje biblioteki i enova, nazwa bazy.', podstawa: TEST },
 
-  { grupa: '2 Minimum danych', id: 'M-01', nazwa: 'Tylko imię i nazwisko', z: sonda({ Imie: 'Jan', Nazwisko: 'Testowy' }), oczekiwane: 'Ustalić: czy wystarcza minimum ze schematu.', podstawa: HIPOTEZA },
-  { grupa: '2 Minimum danych', id: 'M-02', nazwa: 'Plus kod', z: sonda({ Kod: 'API-M02', Imie: 'Jan', Nazwisko: 'Testowy' }), oczekiwane: 'Ustalić: czy powstaje kartoteka bez umowy.', podstawa: HIPOTEZA },
-  { grupa: '2 Minimum danych', id: 'M-03', nazwa: 'Plus sam początek umowy', z: sonda({ Kod: 'API-M03', Imie: 'Jan', Nazwisko: 'Testowy', Zatrudnienie: { OkresOd: dataDTO('2026-11-01') } }), oczekiwane: 'Ustalić: czy wymagany jest typ umowy i wymiar.', podstawa: HIPOTEZA },
-  { grupa: '2 Minimum danych', id: 'M-04', nazwa: 'Plus typ umowy i wymiar', z: sonda({ Kod: 'API-M04', Imie: 'Jan', Nazwisko: 'Testowy', Zatrudnienie: umowaMin }), oczekiwane: 'Ustalić: czy wymagane są stanowisko i wydział.', podstawa: HIPOTEZA },
-  { grupa: '2 Minimum danych', id: 'M-05', nazwa: 'Plus stanowisko i wydział', z: sonda({ Kod: 'API-M05', Imie: 'Jan', Nazwisko: 'Testowy', Zatrudnienie: { ...umowaMin, Stanowisko: '{{stanowisko}}', JednostkaOrg: '{{wydzial}}' } }), oczekiwane: 'Ustalić: czy to komplet dla umowy o pracę.', podstawa: HIPOTEZA },
-  { grupa: '2 Minimum danych', id: 'M-06', nazwa: 'Plus dane do ZUS i PIT', z: zatr({ kod: 'API-M06', ...UMOWA, plec: 'Mężczyzna', dataUrodzenia: '1990-05-15', pesel: fikcyjnyPesel('1990-05-15', 'Mężczyzna', 6) }), oczekiwane: 'Komplet: pracownik gotowy do naliczeń; porównać z kartoteką w enova.', podstawa: HIPOTEZA },
+  { grupa: '2 Minimum danych', id: 'M-01', nazwa: 'Kartoteka: imię i nazwisko', z: sonda(OS), oczekiwane: 'Sukces: kartoteka bez umowy, kod nadany z numeratora.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-02', nazwa: 'Kartoteka: plus kod', z: sonda({ Kod: 'API-M02', ...OS }), oczekiwane: 'Sukces: kartoteka z własnym kodem, bez umowy.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-03', nazwa: 'Umowa bez OkresDo', z: sonda({ Kod: 'API-M03', ...OS, Zatrudnienie: { OkresOd: okres.OkresOd, ...stanowisko, ...wydzial } }), sukces: false, komunikat: 'Błędny zakres dat', oczekiwane: 'Błąd: etat musi mieć datę końca.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-04', nazwa: 'Umowa bez OkresOd', z: sonda({ Kod: 'API-M04', ...OS, Zatrudnienie: { OkresDo: okres.OkresDo, ...stanowisko, ...wydzial } }), sukces: false, komunikat: 'Etat.Data', oczekiwane: 'Błąd: wymagana data początku.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-05', nazwa: 'Umowa bez stanowiska', z: sonda({ Kod: 'API-M05', ...OS, Zatrudnienie: { ...okres, ...wydzial } }), sukces: false, komunikat: 'Etat.Stanowisko', oczekiwane: 'Błąd: wymagane stanowisko.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-06', nazwa: 'Umowa bez wydziału', z: sonda({ Kod: 'API-M06', ...OS, Zatrudnienie: { ...okres, ...stanowisko } }), sukces: false, komunikat: 'Jednostka organizacyjna', oczekiwane: 'Błąd: wymagany wydział.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-07', nazwa: 'MINIMUM: umowa na czas określony', z: sonda({ Kod: 'API-M07', ...OS, Zatrudnienie: { ...okres, ...stanowisko, ...wydzial } }), oczekiwane: 'Sukces: tylko cztery pola umowy. Bez typu umowy i wymiaru serwer nadaje wartości domyślne.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-08', nazwa: 'MINIMUM: umowa na czas nieokreślony', z: sonda({ Kod: 'API-M08', ...OS, Zatrudnienie: { OkresOd: okres.OkresOd, OkresDo: dataDTO('9999-12-31'), TypUmowy: 'NaCzasNieokreślony', ...stanowisko, ...wydzial } }), oczekiwane: 'Sukces: OkresDo = 9999-12-31 zapisuje się w bazie jako 2099-12-31.', podstawa: TEST },
+  { grupa: '2 Minimum danych', id: 'M-09', nazwa: 'Z danymi do ZUS i PIT', z: sonda({ Kod: 'API-M09', ...OS, Plec: 'Mężczyzna', DataUrodzenia: dataCzas('1990-05-15'), PESEL: fikcyjnyPesel('1990-05-15', 'Mężczyzna', 9), Zatrudnienie: { ...okres, ...stanowisko, ...wydzial } }), oczekiwane: 'Sukces: pełniejsze dane osobowe.', podstawa: TEST },
 
-  { grupa: '3 Zatrudnienie', id: 'Z-01', nazwa: 'Czas nieokreślony, pełny etat', z: zatr({ kod: 'API-Z01', ...UMOWA }), oczekiwane: 'Nowy pracownik, Etat od 2026-11-01 bez końca.', podstawa: DOKUMENT },
-  { grupa: '3 Zatrudnienie', id: 'Z-02', nazwa: 'Czas określony', z: zatr({ kod: 'API-Z02', ...UMOWA, do: '2027-10-31', typUmowy: 'NaCzasOkreślony' }), oczekiwane: 'Etat 2026-11-01 do 2027-10-31, typ: na czas określony.', podstawa: DOKUMENT },
-  { grupa: '3 Zatrudnienie', id: 'Z-03', nazwa: 'Okres próbny', z: zatr({ kod: 'API-Z03', ...UMOWA, do: '2027-01-31', typUmowy: 'NaOkresPróbny' }), oczekiwane: 'Etat do 2027-01-31, typ: na okres próbny.', podstawa: DOKUMENT },
-  { grupa: '3 Zatrudnienie', id: 'Z-04', nazwa: 'Pół etatu', z: zatr({ kod: 'API-Z04', ...UMOWA, licznik: '1', mianownik: '2' }), oczekiwane: 'Wymiar etatu 1/2.', podstawa: DOKUMENT },
-  { grupa: '3 Zatrudnienie', id: 'Z-05', nazwa: 'Z adresem, kontaktem i rachunkiem', z: zatr({ kod: 'API-Z05', ...UMOWA, ulica: 'Testowa', nrDomu: '1', kodPocztowy: '00-001', miejscowosc: 'Warszawa', email: 'jan.testowy@example.com', rachunek: '12105000000000000000000001' }), oczekiwane: 'Adres, e-mail i rachunek w kartotece.', podstawa: DOKUMENT },
-  { grupa: '3 Zatrudnienie', id: 'Z-06', nazwa: 'Z cechą (pole dodatkowe)', z: zatr({ kod: 'API-Z06', ...UMOWA, cechy: 'UZUPELNIJ_NAZWA_CECHY=Test' }), oczekiwane: 'Cecha zapisana. Wymaga wpisania nazwy cechy z włączonym dostępem przez API.', podstawa: DOKUMENT },
+  { grupa: '3 Zatrudnienie', id: 'Z-01', nazwa: 'Czas nieokreślony, pełny etat', z: zatr({ kod: 'API-Z01', ...UMOWA }), oczekiwane: 'Nowy pracownik, Etat od 2026-11-01 bez końca.', podstawa: TEST },
+  { grupa: '3 Zatrudnienie', id: 'Z-02', nazwa: 'Czas określony', z: zatr({ kod: 'API-Z02', ...UMOWA, do: '2027-10-31', typUmowy: 'NaCzasOkreślony' }), oczekiwane: 'Etat 2026-11-01 do 2027-10-31, typ: na czas określony.', podstawa: TEST },
+  { grupa: '3 Zatrudnienie', id: 'Z-03', nazwa: 'Okres próbny', z: zatr({ kod: 'API-Z03', ...UMOWA, do: '2027-01-31', typUmowy: 'NaOkresPróbny' }), oczekiwane: 'Etat do 2027-01-31, typ: na okres próbny.', podstawa: TEST },
+  { grupa: '3 Zatrudnienie', id: 'Z-04', nazwa: 'Pół etatu', z: zatr({ kod: 'API-Z04', ...UMOWA, licznik: '1', mianownik: '2' }), oczekiwane: 'Wymiar etatu 1/2.', podstawa: TEST },
+  { grupa: '3 Zatrudnienie', id: 'Z-05', nazwa: 'Z adresem, kontaktem i rachunkiem', z: zatr({ kod: 'API-Z05', ...UMOWA, ulica: 'Testowa', nrDomu: '1', kodPocztowy: '00-001', miejscowosc: 'Warszawa', email: 'jan.testowy@example.com', rachunek: '12105000000000000000000001' }), oczekiwane: 'Adres, e-mail i rachunek w kartotece.', podstawa: TEST },
+  { grupa: '3 Zatrudnienie', id: 'Z-06', nazwa: 'Z cechą (pole dodatkowe)', z: zatr({ kod: 'API-Z06', ...UMOWA, cechy: '{{cecha}}=Test' }), oczekiwane: 'Cecha zapisana. Wymaga zmiennej cecha z nazwą cechy z dostępem przez WebAPI; bez niej błąd braku definicji.', podstawa: DOKUMENT },
 
-  { grupa: '4 Przedłużenie', id: 'P-01', nazwa: 'Przedłużenie umowy określonej', z: akt('przedluz', { kod: 'API-Z02', od: '2026-11-01', do: '2028-10-31', typUmowy: 'NaCzasOkreślony', dataZmiany: '2027-11-01', powod: 'Przedłużenie umowy' }), oczekiwane: 'Ustalić: nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31.', podstawa: HIPOTEZA },
-  { grupa: '4 Przedłużenie', id: 'P-02', nazwa: 'Kontrola po przedłużeniu', z: odczyt('API-Z02'), oczekiwane: 'OkresDo = 2028-10-31.', podstawa: DOKUMENT },
-  { grupa: '4 Przedłużenie', id: 'P-03', nazwa: 'Zamiana na czas nieokreślony', z: akt('przedluz', { kod: 'API-Z03', od: '2026-11-01', typUmowy: 'NaCzasNieokreślony', dataZmiany: '2027-02-01', powod: 'Umowa na czas nieokreślony' }), oczekiwane: 'Ustalić: typ zmieniony, koniec Etatu pusty. Brak OkresDo może nie czyścić daty końca.', podstawa: HIPOTEZA },
+  { grupa: '4 Przedłużenie', id: 'P-01', nazwa: 'Przedłużenie umowy określonej', z: akt('przedluz', { kod: 'API-Z02', do: '2028-10-31', dataZmiany: '2027-11-01', powod: 'Przedłużenie umowy' }), oczekiwane: 'Nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31. Wystarczy OkresDo.', podstawa: TEST },
+  { grupa: '4 Przedłużenie', id: 'P-02', nazwa: 'Kontrola po przedłużeniu', z: odczyt('API-Z02', '2027-12-01'), oczekiwane: 'OkresDo = 2028-10-31.', podstawa: TEST },
+  { grupa: '4 Przedłużenie', id: 'P-03', nazwa: 'Zamiana na czas nieokreślony', z: akt('przedluz', { kod: 'API-Z03', typUmowy: 'NaCzasNieokreślony', dataZmiany: '2027-02-01', powod: 'Umowa na czas nieokreślony' }), oczekiwane: 'Typ zmieniony, OkresDo = 9999-12-31.', podstawa: TEST },
+  { grupa: '4 Przedłużenie', id: 'P-04', nazwa: 'Nowa umowa po przerwie', z: akt('przedluz', { kod: 'API-Z04', od: '2027-06-01', do: '2028-05-31', typUmowy: 'NaCzasOkreślony', dataZmiany: '2027-06-01', powod: 'Ponowne zatrudnienie' }), oczekiwane: 'Nowy zapis z nowym okresem umowy. Wcześniejsza umowa zostaje w historii.', podstawa: TEST },
 
-  { grupa: '5 Zwolnienie', id: 'R-01', nazwa: 'Koniec umowy i Zwolniony', z: akt('zwolnij', { kod: 'API-Z01', od: '2026-11-01', do: '2027-03-31', dataZmiany: '2027-03-31', powod: 'Rozwiązanie umowy' }), oczekiwane: 'Ustalić: koniec Etatu 2027-03-31, status zwolnienia w enova.', podstawa: HIPOTEZA },
-  { grupa: '5 Zwolnienie', id: 'R-02', nazwa: 'Kontrola po zwolnieniu', z: odczyt('API-Z01'), oczekiwane: 'Zwolniony = true, OkresDo = 2027-03-31.', podstawa: HIPOTEZA },
-  { grupa: '5 Zwolnienie', id: 'R-03', nazwa: 'Zmiana adresu po zwolnieniu', z: akt('zmien', { kod: 'API-Z01', ulica: 'Nowa', nrDomu: '2', dataZmiany: '2027-04-15', powod: 'Zmiana adresu' }), oczekiwane: 'Ustalić: zwolnienie NIE może zniknąć (w poprzednim dodatku WebAPI aktualizacja je cofała).', podstawa: HIPOTEZA },
+  { grupa: '5 Zwolnienie', id: 'R-01', nazwa: 'Koniec umowy i Zwolniony', z: akt('zwolnij', { kod: 'API-Z01', do: '2027-03-31', dataZmiany: '2027-03-31', powod: 'Rozwiązanie umowy' }), oczekiwane: 'Nowy zapis od 2027-03-31, koniec Etatu 2027-03-31. Przyczyna i kod zwolnienia zostają puste.', podstawa: TEST },
+  { grupa: '5 Zwolnienie', id: 'R-02', nazwa: 'Kontrola po zwolnieniu', z: odczyt('API-Z01', '2027-03-31'), oczekiwane: 'Zwolniony = true, OkresDo = 2027-03-31. Na wcześniejszą datę Zwolniony = false.', podstawa: TEST },
+  { grupa: '5 Zwolnienie', id: 'R-03', nazwa: 'Zmiana adresu po zwolnieniu', z: akt('zmien', { kod: 'API-Z01', ulica: 'Nowa', nrDomu: '2', dataZmiany: '2027-04-15', powod: 'Zmiana adresu' }), oczekiwane: 'Zwolnienie zostaje w historii, ale nowy zapis po końcu umowy nie ma etatu.', podstawa: TEST },
 
-  { grupa: '6 Zmiana danych', id: 'C-01', nazwa: 'Zmiana nazwiska', z: zbudujZapytanie({ operacja: 'zmien', kod: 'API-Z04', imie: 'Jan', nazwisko: 'Testowy-Nowak', dataZmiany: '2027-01-01', powod: 'Zmiana nazwiska' }), oczekiwane: 'Nowy zapis historii z nowym nazwiskiem.', podstawa: DOKUMENT },
-  { grupa: '6 Zmiana danych', id: 'C-02', nazwa: 'Częściowa aktualizacja', z: akt('zmien', { kod: 'API-Z05', email: 'nowy.adres@example.com', dataZmiany: '2027-01-01', powod: 'Zmiana e-mail' }), oczekiwane: 'Ustalić: e-mail zmieniony, a adres i rachunek z Z-05 zostają.', podstawa: HIPOTEZA },
-  { grupa: '6 Zmiana danych', id: 'C-03', nazwa: 'Zmiana stanowiska i wymiaru od daty', z: akt('zmien', { kod: 'API-Z01', stanowisko: '{{stanowisko}}', licznik: '3', mianownik: '4', dataZmiany: '2027-02-01', powod: 'Aneks' }), oczekiwane: 'Ustalić: nowy zapis historii od 2027-02-01, wymiar 3/4, okres Etatu bez zmian.', podstawa: HIPOTEZA },
-  { grupa: '6 Zmiana danych', id: 'C-04', nazwa: 'Zmiana bez znacznika Aktualizuj', z: sonda({ Kod: 'API-Z04', Imie: 'Jan', Nazwisko: 'Bez-Historii' }), oczekiwane: 'Ustalić: czy zmiana nadpisuje bieżący zapis bez historii.', podstawa: HIPOTEZA },
+  { grupa: '6 Zmiana danych', id: 'C-01', nazwa: 'Zmiana nazwiska', z: zbudujZapytanie({ operacja: 'zmien', kod: 'API-Z05', imie: 'Jan', nazwisko: 'Testowy-Nowak', dataZmiany: '2027-01-01', powod: 'Zmiana nazwiska' }), oczekiwane: 'Nowy zapis historii z nowym nazwiskiem.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-02', nazwa: 'Częściowa aktualizacja', z: akt('zmien', { kod: 'API-Z05', email: 'nowy.adres@example.com', dataZmiany: '2027-02-01', powod: 'Zmiana e-mail' }), oczekiwane: 'E-mail zmieniony od daty, adres i rachunek bez zmian.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-03', nazwa: 'Zmiana stanowiska i wymiaru od daty', z: akt('zmien', { kod: 'API-Z02', stanowisko: 'Kierownik', wydzial: '{{wydzial}}', licznik: '3', mianownik: '4', dataZmiany: '2027-02-01', powod: 'Aneks' }), oczekiwane: 'Nowy zapis od daty, okres Etatu bez zmian. Późniejsze zapisy nie są nadpisywane.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-04', nazwa: 'Zmiana bez znacznika Aktualizuj', z: { metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: TEST_MODE, Kod: 'API-Z05', Imie: 'Janek', Nazwisko: 'Testowy' } }, oczekiwane: 'Nadpisuje bieżący zapis historii bez nowego wpisu.', podstawa: TEST },
 
-  { grupa: '7 Błędy', id: 'N-01', nazwa: 'Nieistniejący wydział', z: zatr({ kod: 'API-N01', ...UMOWA, wydzial: 'NIE-MA-TAKIEGO' }), sukces: false, komunikat: 'Nie znaleziono Wydziału', oczekiwane: 'Odrzucenie: nie znaleziono wydziału.', podstawa: DOKUMENT },
-  { grupa: '7 Błędy', id: 'N-02', nazwa: 'Nieistniejący pracownik w odczycie', z: odczyt('NIE-MA-TAKIEGO'), sukces: false, komunikat: 'Nie znaleziono pracownika', oczekiwane: 'Odrzucenie: nie znaleziono pracownika.', podstawa: DOKUMENT },
-  { grupa: '7 Błędy', id: 'N-03', nazwa: 'Odczyt bez klucza', z: { metoda: 'GetEmployee', usluga: 'KadryPlace', cialo: {} }, sukces: false, komunikat: 'Nie wprowadzono', oczekiwane: 'Odrzucenie: brak klucza pracownika.', podstawa: DOKUMENT },
-  { grupa: '7 Błędy', id: 'N-04', nazwa: 'Cecha bez nazwy', z: sonda({ Kod: 'API-N04', Imie: 'Jan', Nazwisko: 'Testowy', Features: [{ Name: '', Value: 'x' }] }), sukces: false, komunikat: "'Name'", oczekiwane: 'Odrzucenie: cecha musi mieć nazwę.', podstawa: DOKUMENT },
-  { grupa: '7 Błędy', id: 'N-05', nazwa: 'Cecha historyczna bez daty', z: sonda({ Kod: 'API-N05', Imie: 'Jan', Nazwisko: 'Testowy', Features: [{ Name: 'UZUPELNIJ_CECHA_HISTORYCZNA', Value: 'x' }] }), sukces: false, komunikat: 'datę aktualizacji', oczekiwane: 'Odrzucenie: cecha historyczna wymaga UpdateDate.', podstawa: DOKUMENT }
+  { grupa: '7 Błędy', id: 'N-01', nazwa: 'Nieistniejący wydział', z: sonda({ Kod: 'API-N01', ...OS, Zatrudnienie: { ...okres, ...stanowisko, JednostkaOrg: 'NIE-MA-TAKIEGO' } }), sukces: false, komunikat: 'Nie znaleziono Wydziału', oczekiwane: 'Odrzucenie: nie znaleziono wydziału.', podstawa: TEST },
+  { grupa: '7 Błędy', id: 'N-02', nazwa: 'Nieistniejący pracownik w odczycie', z: odczyt('NIE-MA-TAKIEGO'), sukces: false, komunikat: 'Nie znaleziono pracownika', oczekiwane: 'Odrzucenie: nie znaleziono pracownika.', podstawa: TEST },
+  { grupa: '7 Błędy', id: 'N-03', nazwa: 'Odczyt bez klucza', z: { metoda: 'GetEmployee', usluga: 'KadryPlace', cialo: {} }, sukces: false, komunikat: 'Nie wprowadzono', oczekiwane: 'Odrzucenie: brak klucza pracownika.', podstawa: TEST },
+  { grupa: '7 Błędy', id: 'N-04', nazwa: 'Cecha bez nazwy', z: sonda({ Kod: 'API-N04', ...OS, Features: [{ Name: '', Value: 'x' }] }), oczekiwane: 'Sukces: cecha bez nazwy jest pomijana bez ostrzeżenia.', podstawa: TEST },
+  { grupa: '7 Błędy', id: 'N-05', nazwa: 'Nieistniejąca cecha', z: sonda({ Kod: 'API-N05', ...OS, Features: [{ Name: 'NIE_MA_TAKIEJ_CECHY', Value: 'x' }] }), sukces: false, komunikat: 'nie znaleziono definicji cechy', oczekiwane: 'Odrzucenie: brak definicji cechy.', podstawa: TEST },
+  { grupa: '7 Błędy', id: 'N-06', nazwa: 'Aktualizacja nieistniejącego kodu', z: sonda({ Kod: 'API-LITEROWKA', ...OS, Aktualizuj: true, DataAktualizacji: dataCzas('2027-01-01'), PowodAktualizacji: 'Literówka' }), komunikat: 'dodany nowy pracownik', oczekiwane: 'RYZYKO: zamiast błędu powstaje nowy pracownik. Przed aktualizacją sprawdź Kod przez GetEmployee.', podstawa: TEST }
 ];
 
 function pakiet(tryb) {
