@@ -23,9 +23,9 @@ aktualizacji. Dzień z dwiema strefami przechodzi poprawnie.
 ## Testy
 
 - Warunek kompiluje się na DLL 2610.
-- Cechy nie ma w FeatureDefs baz Al i Claude, więc nie było testu na dokumencie.
+- Cechy nie ma w FeatureDefs baz Al i Claude, więc test na dokumencie wykonał użytkownik.
+- Użytkownik potwierdził, że poprawka działa, i zlecił przeniesienie na `Produkcja`.
 
 ## Otwarte punkty
 
-- Wgrać kod do bazy, w której działa cecha, i przejść tabelę testów z punktu 4 dokumentacji.
-- Po akceptacji przenieść rozwiązanie na `Produkcja`.
+Brak.

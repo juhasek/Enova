@@ -115,8 +115,8 @@ kopiuje na dokument **plan** dnia. Strefa rozliczeniowa znikała, a na jej miejs
 (`d.Any(s => s.Definicja.Kod != "NB")`). Dni z samą strefą „NB” i dni bez stref działają jak
 dotąd, czyli przez przeliczenie, więc poprawki z punktów 2 i 3 pozostają bez zmian.
 
-**Testy:** warunek skompilowany na DLL 2610; cechy nie ma w bazach Al i Claude, więc poprawka nie
-była jeszcze sprawdzona na dokumencie. Do sprawdzenia:
+**Testy:** warunek skompilowany na DLL 2610; działanie na dokumencie potwierdził użytkownik
+(30.10.2026). Scenariusze:
 
 | Dzień w czasie pracy | Oczekiwany wynik na dokumencie |
 |---|---|
