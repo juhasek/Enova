@@ -29,6 +29,18 @@ assert.strictEqual(zwolnij.cialo.Aktualizuj, true);
 assert.strictEqual(zwolnij.cialo.Zatrudnienie.Zwolniony, true);
 assert.strictEqual(zwolnij.cialo.DataAktualizacji, '2027-03-31T00:00:00');
 
+// Aktualizacja bez imienia i nazwiska, rachunek bez aktualizacji
+assert.strictEqual(k.sprawdz({ operacja: 'przedluz', kod: 'A', do: '2028-01-31', dataZmiany: '2027-01-01' }).bledy.length, 0);
+assert.strictEqual(k.zbudujZapytanie({ operacja: 'przedluz', kod: 'A', do: '2028-01-31', dataZmiany: '2027-01-01' }).cialo.Aktualizuj, true);
+const rachunek = k.zbudujZapytanie({ operacja: 'rachunek', kod: 'A', rachunek: '1', dataZmiany: '2027-01-01' }).cialo;
+assert.deepStrictEqual(r(rachunek), { TestMode: true, Kod: 'A', Rachunki: [{ Numer: '1', Domyslne: true }] });
+assert.ok(k.sprawdz({ operacja: 'rachunek', kod: 'A' }).bledy.some(b => b.includes('rachunku')));
+assert.ok(k.sprawdz({ operacja: 'rachunek', rachunek: '1' }).bledy.some(b => b.includes('Kod')));
+f = k.parsujPolecenie('zmień rachunek kod A1 na 12 1050 0000 0000 0000 0000 0001');
+assert.strictEqual(f.operacja, 'rachunek');
+assert.strictEqual(f.rachunek, '12105000000000000000000001');
+assert.strictEqual(k.parsujPolecenie('zatrudnij Jan Testowy od 2026-11-01 rachunek 12105000000000000000000001').operacja, 'zatrudnij');
+
 // Cechy
 assert.deepStrictEqual(r(k.parsujCechy('A=1\nB=x@2026-02-10\nzly')), [{ Name: 'A', Value: '1' }, { Name: 'B', Value: 'x', UpdateDate: { Year: 2026, Month: 2, Day: 10 } }, { blad: 'zly' }]);
 

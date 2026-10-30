@@ -692,7 +692,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z02\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-11-01T00:00:00\",\n      \"PowodAktualizacji\": \"Przedłużenie umowy\",\n      \"Zatrudnienie\": {\n        \"OkresDo\": {\n          \"Year\": 2028,\n          \"Month\": 10,\n          \"Day\": 31\n        }\n      }\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z02\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-11-01T00:00:00\",\n      \"PowodAktualizacji\": \"Przedłużenie umowy\",\n      \"Zatrudnienie\": {\n        \"OkresDo\": {\n          \"Year\": 2028,\n          \"Month\": 10,\n          \"Day\": 31\n        }\n      }\n    }\n  }\n}"
             },
             "description": "Oczekiwane: Nowy zapis historii od 2027-11-01, koniec Etatu 2028-10-31. Wystarczy OkresDo. Podstawa: test 30.10.2026."
           },
@@ -768,7 +768,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z03\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Umowa na czas nieokreślony\",\n      \"Zatrudnienie\": {\n        \"OkresDo\": {\n          \"Year\": 9999,\n          \"Month\": 12,\n          \"Day\": 31\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\"\n      }\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z03\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Umowa na czas nieokreślony\",\n      \"Zatrudnienie\": {\n        \"OkresDo\": {\n          \"Year\": 9999,\n          \"Month\": 12,\n          \"Day\": 31\n        },\n        \"TypUmowy\": \"NaCzasNieokreślony\"\n      }\n    }\n  }\n}"
             },
             "description": "Oczekiwane: Typ zmieniony, OkresDo = 9999-12-31. Podstawa: test 30.10.2026."
           },
@@ -806,7 +806,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z04\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-06-01T00:00:00\",\n      \"PowodAktualizacji\": \"Ponowne zatrudnienie\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2027,\n          \"Month\": 6,\n          \"Day\": 1\n        },\n        \"OkresDo\": {\n          \"Year\": 2028,\n          \"Month\": 5,\n          \"Day\": 31\n        },\n        \"TypUmowy\": \"NaCzasOkreślony\"\n      }\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z04\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-06-01T00:00:00\",\n      \"PowodAktualizacji\": \"Ponowne zatrudnienie\",\n      \"Zatrudnienie\": {\n        \"OkresOd\": {\n          \"Year\": 2027,\n          \"Month\": 6,\n          \"Day\": 1\n        },\n        \"OkresDo\": {\n          \"Year\": 2028,\n          \"Month\": 5,\n          \"Day\": 31\n        },\n        \"TypUmowy\": \"NaCzasOkreślony\"\n      }\n    }\n  }\n}"
             },
             "description": "Oczekiwane: Nowy zapis z nowym okresem umowy. Wcześniejsza umowa zostaje w historii. Podstawa: test 30.10.2026."
           },
@@ -849,7 +849,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z01\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-03-31T00:00:00\",\n      \"PowodAktualizacji\": \"Rozwiązanie umowy\",\n      \"Zatrudnienie\": {\n        \"OkresDo\": {\n          \"Year\": 2027,\n          \"Month\": 3,\n          \"Day\": 31\n        },\n        \"Zwolniony\": true\n      }\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z01\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-03-31T00:00:00\",\n      \"PowodAktualizacji\": \"Rozwiązanie umowy\",\n      \"Zatrudnienie\": {\n        \"OkresDo\": {\n          \"Year\": 2027,\n          \"Month\": 3,\n          \"Day\": 31\n        },\n        \"Zwolniony\": true\n      }\n    }\n  }\n}"
             },
             "description": "Oczekiwane: Nowy zapis od 2027-03-31, koniec Etatu 2027-03-31. Przyczyna i kod zwolnienia zostają puste. Podstawa: test 30.10.2026."
           },
@@ -925,7 +925,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z01\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"AdresZamieszkania\": {\n        \"Ulica\": \"Nowa\",\n        \"NrDomu\": \"2\"\n      },\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-04-15T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana adresu\"\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z01\",\n      \"AdresZamieszkania\": {\n        \"Ulica\": \"Nowa\",\n        \"NrDomu\": \"2\"\n      },\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-04-15T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana adresu\"\n    }\n  }\n}"
             },
             "description": "Oczekiwane: Zwolnienie zostaje w historii, ale nowy zapis po końcu umowy nie ma etatu. Podstawa: test 30.10.2026."
           },
@@ -968,7 +968,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z05\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy-Nowak\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana nazwiska\"\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z05\",\n      \"Nazwisko\": \"Testowy-Nowak\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-01-01T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana nazwiska\"\n    }\n  }\n}"
             },
             "description": "Oczekiwane: Nowy zapis historii z nowym nazwiskiem. Podstawa: test 30.10.2026."
           },
@@ -1006,7 +1006,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z05\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Kontakt\": {\n        \"EMAIL\": \"nowy.adres@example.com\"\n      },\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana e-mail\"\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z05\",\n      \"Kontakt\": {\n        \"EMAIL\": \"nowy.adres@example.com\"\n      },\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Zmiana e-mail\"\n    }\n  }\n}"
             },
             "description": "Oczekiwane: E-mail zmieniony od daty, adres i rachunek bez zmian. Podstawa: test 30.10.2026."
           },
@@ -1044,7 +1044,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z02\",\n      \"Imie\": \"Jan\",\n      \"Nazwisko\": \"Testowy\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Aneks\",\n      \"Zatrudnienie\": {\n        \"Wymiar\": {\n          \"Numerator\": 3,\n          \"Denominator\": 4\n        },\n        \"Stanowisko\": \"Kierownik\",\n        \"JednostkaOrg\": \"ADM\"\n      }\n    }\n  }\n}"
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z02\",\n      \"Aktualizuj\": true,\n      \"DataAktualizacji\": \"2027-02-01T00:00:00\",\n      \"PowodAktualizacji\": \"Aneks\",\n      \"Zatrudnienie\": {\n        \"Wymiar\": {\n          \"Numerator\": 3,\n          \"Denominator\": 4\n        },\n        \"Stanowisko\": \"Kierownik\",\n        \"JednostkaOrg\": \"ADM\"\n      }\n    }\n  }\n}"
             },
             "description": "Oczekiwane: Nowy zapis od daty, okres Etatu bez zmian. Późniejsze zapisy nie są nadpisywane. Podstawa: test 30.10.2026."
           },
@@ -1084,7 +1084,45 @@
               },
               "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z05\",\n      \"Imie\": \"Janek\",\n      \"Nazwisko\": \"Testowy\"\n    }\n  }\n}"
             },
-            "description": "Oczekiwane: Nadpisuje bieżący zapis historii bez nowego wpisu. Podstawa: test 30.10.2026."
+            "description": "Oczekiwane: Nie używać przy zmianie danych: nadpisuje bieżący zapis historii bez nowego wpisu. Podstawa: test 30.10.2026."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const odp = pm.response.json();",
+                  "if ('IsException' in odp) pm.test('Brak wyjątku WebAPI', () => pm.expect(odp.IsException, odp.ExceptionMessage).to.eql(false));",
+                  "const wynik = odp.ResultInstance || odp;",
+                  "pm.test('Success = true', () => pm.expect(wynik.Success, wynik.Description).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-05 Zmiana rachunku bankowego",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/MethodInvoker/InvokeServiceMethod",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"DatabaseHandle\": \"{{database}}\",\n  \"Operator\": \"{{operator}}\",\n  \"Password\": \"{{password}}\",\n  \"ServiceName\": \"AltOne.WCF.Core.Interfaces.IKadryPlace2, AltOne.WCF.Core\",\n  \"MethodName\": \"UpdateEmployee\",\n  \"MethodArgs\": {\n    \"pars\": {\n      \"TestMode\": false,\n      \"Kod\": \"API-Z05\",\n      \"Rachunki\": [\n        {\n          \"Numer\": \"12105000000000000000000005\",\n          \"Domyslne\": true\n        }\n      ]\n    }\n  }\n}"
+            },
+            "description": "Oczekiwane: Rachunek dopisany i główny, bez aktualizacji i bez zapisu historii. Poprzednie rachunki zostają. Podstawa: test 30.10.2026."
           },
           "event": [
             {

@@ -220,7 +220,15 @@
     "Grupa": "6 Zmiana danych",
     "Nazwa": "Zmiana bez znacznika Aktualizuj",
     "Metoda": "UpdateEmployee",
-    "Oczekiwane": "Nadpisuje bieżący zapis historii bez nowego wpisu.",
+    "Oczekiwane": "Nie używać przy zmianie danych: nadpisuje bieżący zapis historii bez nowego wpisu.",
+    "Podstawa": "test 30.10.2026"
+  },
+  {
+    "Id": "C-05",
+    "Grupa": "6 Zmiana danych",
+    "Nazwa": "Zmiana rachunku bankowego",
+    "Metoda": "UpdateEmployee",
+    "Oczekiwane": "Rachunek dopisany i główny, bez aktualizacji i bez zapisu historii. Poprzednie rachunki zostają.",
     "Podstawa": "test 30.10.2026"
   },
   {

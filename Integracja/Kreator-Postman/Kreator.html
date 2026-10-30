@@ -54,6 +54,7 @@ ul { margin:6px 0 0; padding-left:18px; }
           <option value="przedluz">Przedłuż umowę</option>
           <option value="zwolnij">Zwolnij</option>
           <option value="zmien">Zmień dane</option>
+          <option value="rachunek">Zmień rachunek bankowy</option>
           <option value="odczytaj">Odczytaj pracownika</option>
         </select>
 
@@ -203,6 +204,10 @@ function zbudujZapytanie(f) {
       cialo: bezPustych({ Kod: f.kod, DataAktualnosci: f.dataZmiany ? dataCzas(f.dataZmiany) : undefined, Zatrudnienie: true, AdresDoKorespondencji: true, Rachunki: true })
     };
   }
+  // Sam rachunek nie wymaga aktualizacji: nie tworzy zapisu historii. Domyslne ustawia go jako główny.
+  if (f.operacja === 'rachunek') {
+    return { metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: f.proba !== false, Kod: f.kod, Rachunki: [{ Numer: f.rachunek, Domyslne: true }] } };
+  }
   const cialo = { TestMode: f.proba !== false, ...daneOsoby(f) };
   if (f.operacja === 'zatrudnij') {
     cialo.Zatrudnienie = zatrudnienie(f, true);
@@ -224,7 +229,12 @@ function sprawdz(f) {
   const zmienna = s => /^\{\{.+\}\}$/.test(s || '');
   if (!f.kod && f.operacja !== 'zatrudnij') bledy.push('Podaj Kod: to po nim metoda znajduje pracownika.');
   if (f.operacja === 'odczytaj') return { bledy, uwagi };
-  if (!f.imie || !f.nazwisko) bledy.push('Imię i nazwisko są wymagane przez schemat PracownikDTO, także przy aktualizacji.');
+  if (f.operacja === 'rachunek') {
+    if (!f.rachunek) bledy.push('Podaj numer rachunku.');
+    uwagi.push('Nowy rachunek zostanie dopisany i ustawiony jako główny. Poprzednie zostają w kartotece.');
+    return { bledy, uwagi };
+  }
+  if (f.operacja === 'zatrudnij' && (!f.imie || !f.nazwisko)) bledy.push('Nowa kartoteka wymaga imienia i nazwiska.');
   parsujCechy(f.cechy).filter(c => c.blad).forEach(c => bledy.push(`Niepoprawny wiersz cechy: ${c.blad}`));
   if (f.od && f.do && f.do < f.od) bledy.push('Okres do jest wcześniejszy niż okres od.');
   if (f.pesel && !zmienna(f.pesel)) {
@@ -241,7 +251,7 @@ function sprawdz(f) {
   if (f.operacja === 'zwolnij') uwagi.push('API nie zapisuje przyczyny ani kodu zwolnienia: trzeba je uzupełnić w enova.');
   if (['przedluz', 'zmien'].includes(f.operacja) && !f.dataZmiany) bledy.push('Podaj datę zmiany: od niej powstaje nowy zapis historii.');
   if (f.operacja === 'zatrudnij') uwagi.push(f.kod ? 'Enova przepisze kod do nowej kartoteki. Jeśli kod już istnieje, zaktualizuje tę kartotekę.' : 'Bez kodu enova założy kartotekę i nada numer zgodnie ze schematem.');
-  else uwagi.push('Kod spoza bazy założy nową kartotekę z tym kodem.');
+  else uwagi.push('Aktualizacja wymaga kodu z bazy: kod spoza bazy założy nową kartotekę. Imię i nazwisko podawaj tylko przy ich zmianie.');
   if (f.operacja === 'zmien') uwagi.push('Pominięte pola zostają bez zmian. Data zmiany po końcu umowy tworzy zapis historii bez etatu.');
   return { bledy, uwagi };
 }
@@ -329,7 +339,7 @@ const TEST = 'test 30.10.2026', DOKUMENT = 'dokumentacja';
 const sonda = cialo => ({ metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: true, ...cialo } });
 // Grupy 3-6 budują na sobie, więc muszą zapisywać: TestMode = false wprost w żądaniu.
 const zatr = (f) => zbudujZapytanie({ operacja: 'zatrudnij', proba: false, ...OSOBA, ...f });
-const akt = (operacja, f) => zbudujZapytanie({ operacja, proba: false, ...OSOBA, ...f });
+const akt = (operacja, f) => zbudujZapytanie({ operacja, proba: false, ...f });
 const odczyt = (kod, data) => zbudujZapytanie({ operacja: 'odczytaj', kod, dataZmiany: data });
 const OS = { Imie: 'Jan', Nazwisko: 'Testowy' };
 const okres = { OkresOd: dataDTO('2026-11-01'), OkresDo: dataDTO('2027-10-31') };
@@ -365,10 +375,11 @@ const SCENARIUSZE = [
   { grupa: '5 Zwolnienie', id: 'R-02', nazwa: 'Kontrola po zwolnieniu', z: odczyt('API-Z01', '2027-03-31'), oczekiwane: 'Zwolniony = true, OkresDo = 2027-03-31. Na wcześniejszą datę Zwolniony = false.', podstawa: TEST },
   { grupa: '5 Zwolnienie', id: 'R-03', nazwa: 'Zmiana adresu po zwolnieniu', z: akt('zmien', { kod: 'API-Z01', ulica: 'Nowa', nrDomu: '2', dataZmiany: '2027-04-15', powod: 'Zmiana adresu' }), oczekiwane: 'Zwolnienie zostaje w historii, ale nowy zapis po końcu umowy nie ma etatu.', podstawa: TEST },
 
-  { grupa: '6 Zmiana danych', id: 'C-01', nazwa: 'Zmiana nazwiska', z: zbudujZapytanie({ operacja: 'zmien', proba: false, kod: 'API-Z05', imie: 'Jan', nazwisko: 'Testowy-Nowak', dataZmiany: '2027-01-01', powod: 'Zmiana nazwiska' }), oczekiwane: 'Nowy zapis historii z nowym nazwiskiem.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-01', nazwa: 'Zmiana nazwiska', z: akt('zmien', { kod: 'API-Z05', nazwisko: 'Testowy-Nowak', dataZmiany: '2027-01-01', powod: 'Zmiana nazwiska' }), oczekiwane: 'Nowy zapis historii z nowym nazwiskiem.', podstawa: TEST },
   { grupa: '6 Zmiana danych', id: 'C-02', nazwa: 'Częściowa aktualizacja', z: akt('zmien', { kod: 'API-Z05', email: 'nowy.adres@example.com', dataZmiany: '2027-02-01', powod: 'Zmiana e-mail' }), oczekiwane: 'E-mail zmieniony od daty, adres i rachunek bez zmian.', podstawa: TEST },
   { grupa: '6 Zmiana danych', id: 'C-03', nazwa: 'Zmiana stanowiska i wymiaru od daty', z: akt('zmien', { kod: 'API-Z02', stanowisko: 'Kierownik', wydzial: 'ADM', licznik: '3', mianownik: '4', dataZmiany: '2027-02-01', powod: 'Aneks' }), oczekiwane: 'Nowy zapis od daty, okres Etatu bez zmian. Późniejsze zapisy nie są nadpisywane.', podstawa: TEST },
-  { grupa: '6 Zmiana danych', id: 'C-04', nazwa: 'Zmiana bez znacznika Aktualizuj', z: { metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: false, Kod: 'API-Z05', Imie: 'Janek', Nazwisko: 'Testowy' } }, oczekiwane: 'Nadpisuje bieżący zapis historii bez nowego wpisu.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-04', nazwa: 'Zmiana bez znacznika Aktualizuj', z: { metoda: 'UpdateEmployee', usluga: 'KadryPlace', cialo: { TestMode: false, Kod: 'API-Z05', Imie: 'Janek', Nazwisko: 'Testowy' } }, oczekiwane: 'Nie używać przy zmianie danych: nadpisuje bieżący zapis historii bez nowego wpisu.', podstawa: TEST },
+  { grupa: '6 Zmiana danych', id: 'C-05', nazwa: 'Zmiana rachunku bankowego', z: akt('rachunek', { kod: 'API-Z05', rachunek: '12105000000000000000000005' }), oczekiwane: 'Rachunek dopisany i główny, bez aktualizacji i bez zapisu historii. Poprzednie rachunki zostają.', podstawa: TEST },
 
   { grupa: '7 Błędy', id: 'N-01', nazwa: 'Nieistniejący wydział', z: sonda({ Kod: 'API-N01', ...OS, Zatrudnienie: { ...okres, ...stanowisko, JednostkaOrg: 'NIE-MA-TAKIEGO' } }), sukces: false, komunikat: 'Nie znaleziono Wydziału', oczekiwane: 'Odrzucenie: nie znaleziono wydziału.', podstawa: TEST },
   { grupa: '7 Błędy', id: 'N-02', nazwa: 'Nieistniejący pracownik w odczycie', z: odczyt('NIE-MA-TAKIEGO'), sukces: false, komunikat: 'Nie znaleziono pracownika', oczekiwane: 'Odrzucenie: nie znaleziono pracownika.', podstawa: TEST },
@@ -395,7 +406,7 @@ function parsujPolecenie(tekst) {
   const data = '(\\d{4}-\\d{2}-\\d{2}|\\d{1,2}\\.\\d{1,2}\\.\\d{4})';
   const wez = wzor => { const m = t.match(wzor); return m ? m[1].trim() : undefined; };
 
-  f.operacja = /zwoln|rozwi[ąa]/.test(n) ? 'zwolnij' : /przed[łl]u/.test(n) ? 'przedluz' : /zmie[nńi]/.test(n) ? 'zmien' : /odczyt|pobierz|poka[żz]/.test(n) ? 'odczytaj' : 'zatrudnij';
+  f.operacja = /(zmie[nńi]\p{L}*|dodaj|ustaw)\s+(\p{L}+\s+)?rachun/iu.test(t) ? 'rachunek' : /zwoln|rozwi[ąa]/.test(n) ? 'zwolnij' : /przed[łl]u/.test(n) ? 'przedluz' : /zmie[nńi]/.test(n) ? 'zmien' : /odczyt|pobierz|poka[żz]/.test(n) ? 'odczytaj' : 'zatrudnij';
   const osoba = t.match(/(?:zatrudnij|zwolnij|przedłuż|przedluz|zmień|zmien|odczytaj|pobierz|pokaż)(?:\s+(?:umow\p{L}*|dane|pracownika|pracownik))*\s+(\p{Lu}[\p{L}-]+)\s+(\p{Lu}[\p{L}-]+)/u);
   if (osoba) { f.imie = osoba[1]; f.nazwisko = osoba[2]; }
   f.kod = wez(/\bkod\w*\s*:?\s*([^\s,;]+)/i);
@@ -405,6 +416,8 @@ function parsujPolecenie(tekst) {
   if (z) f.dataZmiany = iso(z);
   f.stanowisko = wez(/\bstanowisk\w*\s*:?\s*(.+?)(?=\s+w\s+wydzia|\s+wydzia|\s+od\s|\s+do\s|\s+kod|[,;]|$)/i);
   f.wydzial = wez(/\bwydzia\p{L}*\s*:?\s*([^\s,;]+)/iu);
+  const numer = t.match(/\b(?:\d ?){26}\b/);
+  if (numer) f.rachunek = numer[0].replace(/ /g, '');
   const wymiar = t.match(/\b(\d+)\s*\/\s*(\d+)\b/);
   if (wymiar) { f.licznik = wymiar[1]; f.mianownik = wymiar[2]; }
   f.typUmowy = /nieokre[śs]l/.test(n) ? 'NaCzasNieokreślony' : /pr[óo]bn/.test(n) ? 'NaOkresPróbny' : /zast[ęe]pstw/.test(n) ? 'NaOkresZastępstwa' : /okre[śs]lon/.test(n) ? 'NaCzasOkreślony' : undefined;

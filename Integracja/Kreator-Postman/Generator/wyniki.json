@@ -105,7 +105,7 @@
   },
   "C-04": {
     "Wynik": "OK",
-    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
+    "Odpowiedz": "Success=true przy ponowieniu. Dwie pierwsze próby: timeout SQL i błąd modyfikacji zapisu (przyczyna nieustalona)."
   },
   "N-01": {
     "Wynik": "OK",
@@ -134,5 +134,9 @@
   "N-06": {
     "Wynik": "OK",
     "Odpowiedz": "Success=true. Do bazy danych został dodany nowy pracownik wg klucza Kod: API-NOWY"
+  },
+  "C-05": {
+    "Wynik": "OK",
+    "Odpowiedz": "Success=true. Nastąpiła aktualizacja kartoteki pracownika wg klucza Kod: API-Z05"
   }
 }

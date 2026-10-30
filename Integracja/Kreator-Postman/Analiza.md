@@ -12,7 +12,7 @@ i kolekcji Postman. Podstawa: dokumentacja WebAPI v. 5.1 oraz testy 30.10.2026 n
 3. Popraw pola, kliknij **Dodaj do kolekcji**, potem **Pobierz kolekcję** i **Pobierz środowisko**.
 4. W Postmanie: Import obu plików, wybór środowiska, uzupełnienie zmiennych.
 
-Gotowy pakiet 34 scenariuszy: [Postman/](Postman/). Arkusz z wynikami testów:
+Gotowy pakiet 35 scenariuszy: [Postman/](Postman/). Arkusz z wynikami testów:
 [Scenariusze testowe.xlsx](Scenariusze%20testowe.xlsx).
 
 Regeneracja po zmianie `Kreator.html` (testy logiki + pliki Postman + lista scenariuszy, potem arkusz):
@@ -69,9 +69,10 @@ Tryb demo pomija obie kontrole.
 | Kartoteka bez umowy | `Imie`, `Nazwisko` |
 | Umowa | jak wyżej + `Zatrudnienie`: `OkresOd`, `OkresDo`, `Stanowisko`, `JednostkaOrg` (kod wydziału) |
 | Czas nieokreślony | jak umowa + `TypUmowy`, a `OkresDo` = `{9999,12,31}` (w bazie 2099-12-31) |
-| Przedłużenie | `Kod`, `Imie`, `Nazwisko`, `Aktualizuj: true`, `DataAktualizacji`, `Zatrudnienie.OkresDo` |
+| Przedłużenie | `Kod`, `Aktualizuj: true`, `DataAktualizacji`, `Zatrudnienie.OkresDo` |
 | Zwolnienie | jak przedłużenie + `Zatrudnienie.Zwolniony: true` |
-| Zmiana danych | `Kod`, `Imie`, `Nazwisko`, `Aktualizuj: true`, `DataAktualizacji` + zmieniane pola |
+| Zmiana danych | `Kod`, `Aktualizuj: true`, `DataAktualizacji` + zmieniane pola |
+| Zmiana rachunku | `Kod`, `Rachunki: [{ Numer, Domyslne: true }]`, bez aktualizacji |
 
 Bez `OkresDo` serwer zwraca „Błędny zakres dat”, także dla umowy na czas nieokreślony. Bez `TypUmowy` i `Wymiar` zapis
 przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły enova na etacie.
@@ -79,7 +80,11 @@ przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły en
 ## Zachowanie (potwierdzone)
 
 - **`Kod`:** brak kodu albo kod spoza bazy zakłada nową kartotekę. Enova nadaje numer zgodnie ze schematem albo przepisuje kod z żądania.
-  Kod istniejący aktualizuje kartotekę.
+  Aktualizacja pracownika musi mieć kod z bazy.
+- **Aktualizacja:** przedłużenie umowy i każda zmiana danych oprócz rachunku idą z `Aktualizuj: true` i `DataAktualizacji`.
+  Schemat wymaga `Imie` i `Nazwisko`, ale serwer nie: przy aktualizacji można je pominąć i zostają bez zmian. Podane nadpisują dane.
+- **Rachunek:** zmiana nie wymaga aktualizacji i nie tworzy zapisu historii. Rachunek jest dopisywany, poprzednie zostają, a ponowne
+  wysłanie tego samego numeru nie tworzy duplikatu. `Domyslne: true` ustawia go jako główny, bez tego główny pozostaje stary.
 - **`TestMode`** działa: `Success` i komunikaty jak przy zapisie, w bazie bez zmian. Ponieważ zapis jest wycofywany,
   aktualizacje nie widzą pracownika założonego wcześniejszym żądaniem próbnym.
 - **Przedłużenie:** powstaje nowy zapis historii od `DataAktualizacji`. Wcześniejszy zapis zachowuje stary koniec umowy.
@@ -87,7 +92,7 @@ przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły en
 - **Częściowa aktualizacja:** pominięte pola i całe sekcje zostają bez zmian.
 - **Zmiana z datą wsteczną** nie nadpisuje późniejszych zapisów historii (inaczej niż w poprzednim dodatku WebAPI). Późniejszy
   zapis zachowuje stare wartości, więc aneks działa tylko do następnej zmiany.
-- **Bez `Aktualizuj`** zmiana nadpisuje bieżący zapis historii, bez nowego wpisu.
+- **Bez `Aktualizuj`** zmiana nadpisuje bieżący zapis historii, bez nowego wpisu (dotyczy to też `Imie` i `Nazwisko` wysłanych przy zmianie rachunku).
 - **Zwolnienie:** `OkresDo` kończy etat, a `Zwolniony: true` ustawia znacznik od `DataAktualizacji`. Bez `Zwolniony`
   etat też się kończy, ale znacznik zostaje `false`.
 
@@ -105,6 +110,8 @@ przechodzi. Schemat w dokumentacji tych wymagań nie pokazuje: są to reguły en
 - **Cechy (pola dodatkowe):** baza demo nie ma definicji cechy pracownika, więc zapisu cech nie sprawdzono (Z-06).
   Potwierdzono tylko błąd braku definicji (N-05). Plik testów klienta był pusty, lista pól nie jest znana.
 - **Dynamic API:** pełne logowanie tokenem nieprzetestowane.
+- **Wolne zapisy:** zapis trwał lokalnie 2–20 s. Kilka razy pojawił się timeout SQL albo „Wystąpił błąd podczas modyfikacji zapisu w bazie”, a ponowienie przechodziło.
+  Blokady SQL nie zaobserwowano, przyczyna nieznana. System wywołujący powinien ponawiać takie żądania.
 - **Serwer 2606.2.3:** testy przeszły na 2610.
 
 ## Rozbieżności w dokumentacji
